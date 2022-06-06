@@ -8,8 +8,7 @@ class Metronome {
   /// Automatically resets [count] when changed.
   static int get bpm => bpmNotifier.value;
   static set bpm(int value) => bpmNotifier.value = value;
-  static ValueNotifier<int> bpmNotifier = ValueNotifier(60)
-    ..addListener(restart);
+  static ValueNotifier<int> bpmNotifier = ValueNotifier(60)..addListener(reset);
 
   /// Beats per bar.
   ///
@@ -17,7 +16,7 @@ class Metronome {
   static int get higher => higherNotifier.value;
   static set higher(int value) => higherNotifier.value = value;
   static ValueNotifier<int> higherNotifier = ValueNotifier(4)
-    ..addListener(restart);
+    ..addListener(reset);
 
   /// Current beat. Ranges from 0 to [higher] - 1.
   static int get count => countNotifier.value;
@@ -43,7 +42,6 @@ class Metronome {
   static void start() {
     if (!_timer.isActive) {
       _timer = Timer.periodic(Duration(milliseconds: 60000 ~/ bpm), _onTimeout);
-      count = 0;
       isRunning = true;
     }
   }
@@ -56,9 +54,12 @@ class Metronome {
     }
   }
 
-  /// Stop the metronome if it's running, then start it again.
-  static void restart() {
-    stop();
-    start();
+  /// Reset [count] and, if it is running, restart [_timer].
+  static void reset() {
+    count = 0;
+    if (isRunning) {
+      _timer.cancel();
+      _timer = Timer.periodic(Duration(milliseconds: 60000 ~/ bpm), _onTimeout);
+    }
   }
 }
