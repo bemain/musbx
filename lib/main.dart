@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/metronome/bottom_bar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,9 +31,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Home Page"),
-        ),
-        body: Container());
+      appBar: AppBar(
+        title: const Text("Home Page"),
+      ),
+      body: Container(),
+      bottomNavigationBar: const MetronomeBottomBar(),
+    );
   }
 }
