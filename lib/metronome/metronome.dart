@@ -10,6 +10,9 @@ class Metronome {
   static set bpm(int value) => bpmNotifier.value = value;
   static ValueNotifier<int> bpmNotifier = ValueNotifier(60)..addListener(reset);
 
+  static const int minBpm = 20;
+  static const int maxBpm = 400;
+
   /// Beats per bar.
   ///
   /// Automatically resets [count] when changed.

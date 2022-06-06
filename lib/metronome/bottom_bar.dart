@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/widgets.dart';
 
 class MetronomeBottomBar extends StatefulWidget {
   const MetronomeBottomBar({Key? key}) : super(key: key);
@@ -35,27 +36,26 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextButton(
-                  child: const Icon(Icons.arrow_drop_up),
+                ContinuousButton(
                   onPressed: () {
-                    setState(() {
-                      Metronome.bpm++;
-                    });
+                    if (Metronome.bpm < Metronome.maxBpm) Metronome.bpm++;
                   },
+                  child: const Icon(Icons.arrow_drop_up),
                 ),
                 ValueListenableBuilder(
                   valueListenable: Metronome.bpmNotifier,
                   builder: (BuildContext context, int bpm, Widget? child) =>
-                      Text("$bpm"),
+                      Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Text("$bpm"),
+                  ),
                 ),
-                TextButton(
-                  child: const Icon(Icons.arrow_drop_down),
+                ContinuousButton(
                   onPressed: () {
-                    setState(() {
-                      Metronome.bpm--;
-                    });
+                    if (Metronome.bpm > Metronome.minBpm) Metronome.bpm--;
                   },
-                ),
+                  child: const Icon(Icons.arrow_drop_down),
+                )
               ],
             ),
           )
