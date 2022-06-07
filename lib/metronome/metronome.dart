@@ -1,23 +1,32 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/metronome/beat_players.dart';
 
 class Metronome {
+  /// Minimum [bpm] allowed. [bpm] can never be less than this.
+  static const int minBpm = 20;
+
+  /// Maximum [bpm] allowed. [bpm] can never be more than this.
+  static const int maxBpm = 300;
+
   /// Beats per minutes.
+  ///
+  /// Will always be between [minBpm] and [maxBpm].
   ///
   /// Automatically resets [count] when changed.
   static int get bpm => bpmNotifier.value;
   static set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
   static ValueNotifier<int> bpmNotifier = ValueNotifier(60)..addListener(reset);
 
-  static const int minBpm = 20;
-  static const int maxBpm = 300;
+  /// Sounds for beats.
+  static MetronomeBeatPlayers beatSounds = MetronomeBeatPlayers();
 
   /// Beats per bar.
   ///
   /// Automatically resets [count] when changed.
-  static int get higher => higherNotifier.value;
-  static set higher(int value) => higherNotifier.value = value;
+  static int get higher => beatSounds.length;
+  static set higher(int value) => beatSounds.length = value;
   static ValueNotifier<int> higherNotifier = ValueNotifier(4)
     ..addListener(reset);
 
@@ -37,6 +46,8 @@ class Metronome {
   /// Called on [_timer] timeout.
   /// Increases [count] and plays a sound.
   static void _onTimeout(Timer timer) {
+    beatSounds[count].play();
+
     count++;
     count %= higher;
   }
