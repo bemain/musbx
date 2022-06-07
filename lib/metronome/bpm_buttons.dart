@@ -12,7 +12,7 @@ class BpmButtons extends StatelessWidget {
       children: [
         ContinuousButton(
           onPressed: () {
-            if (Metronome.bpm < Metronome.maxBpm) Metronome.bpm++;
+            Metronome.bpm++;
           },
           child: const Icon(
             Icons.arrow_drop_up,
@@ -24,7 +24,7 @@ class BpmButtons extends StatelessWidget {
             child: _buildBpmText()),
         ContinuousButton(
           onPressed: () {
-            if (Metronome.bpm > Metronome.minBpm) Metronome.bpm--;
+            Metronome.bpm--;
           },
           child: const Icon(
             Icons.arrow_drop_down,
