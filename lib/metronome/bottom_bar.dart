@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
+import 'package:musbx/metronome/bpm_tapper.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/widgets.dart';
 
@@ -22,7 +23,13 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
               child: Column(
                 children: [
                   _buildBpmSlider(),
-                  const BpmButtons(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: const [
+                      BpmButtons(),
+                      BpmTapper(),
+                    ],
+                  ),
                 ],
               ),
             ),
