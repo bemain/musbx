@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/widgets.dart';
 
@@ -21,7 +22,7 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
               child: Column(
                 children: [
                   _buildBpmSlider(),
-                  _buildBpmButtons(),
+                  const BpmButtons(),
                 ],
               ),
             ),
@@ -63,47 +64,6 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
           onChanged: (double value) {
             Metronome.bpm = value.toInt();
           },
-        );
-      },
-    );
-  }
-
-  Widget _buildBpmButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        ContinuousButton(
-          onPressed: () {
-            if (Metronome.bpm < Metronome.maxBpm) Metronome.bpm++;
-          },
-          child: const Icon(
-            Icons.arrow_drop_up,
-            size: 35,
-          ),
-        ),
-        Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: _buildBpmText()),
-        ContinuousButton(
-          onPressed: () {
-            if (Metronome.bpm > Metronome.minBpm) Metronome.bpm--;
-          },
-          child: const Icon(
-            Icons.arrow_drop_down,
-            size: 35,
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget _buildBpmText() {
-    return ValueListenableBuilder(
-      valueListenable: Metronome.bpmNotifier,
-      builder: (c, int bpm, Widget? child) {
-        return Text(
-          "$bpm",
-          style: const TextStyle(fontSize: 20),
         );
       },
     );
