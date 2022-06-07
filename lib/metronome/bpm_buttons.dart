@@ -3,6 +3,8 @@ import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/widgets.dart';
 
 class BpmButtons extends StatelessWidget {
+  /// Buttons for adjusting bpm and a label showing the current bpm,
+  /// arranged horizontally.
   const BpmButtons({super.key});
 
   @override

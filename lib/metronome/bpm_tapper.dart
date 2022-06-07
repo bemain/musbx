@@ -40,7 +40,7 @@ class BpmTapper extends StatelessWidget {
       },
       child: const Padding(
         padding: EdgeInsets.all(10.0),
-        child: Icon(Icons.tap_and_play),
+        child: Icon(Icons.ads_click_rounded),
       ),
     );
   }

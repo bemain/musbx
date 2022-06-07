@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';
 import 'package:musbx/metronome/metronome.dart';
-import 'package:musbx/widgets.dart';
 
 class MetronomeBottomBar extends StatefulWidget {
+  /// BottomBar offering controls for [Metronome], including:
+  /// - Play / pause button
+  /// - Buttons for adjusting bpm
+  /// - Slider for adjusting bpm
+  /// - Button for setting bpm by tapping.
   const MetronomeBottomBar({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => MetronomeBottomBarState();
 }
@@ -39,6 +44,7 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
     );
   }
 
+  /// Play / pause button to start or stop the [Metronome].
   Widget _buildPlayButton() {
     return ValueListenableBuilder<bool>(
       valueListenable: Metronome.isRunningNotifier,
@@ -60,6 +66,7 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
     );
   }
 
+  /// Simple Slider for adjusting bpm.
   Widget _buildBpmSlider() {
     return ValueListenableBuilder(
       valueListenable: Metronome.bpmNotifier,
