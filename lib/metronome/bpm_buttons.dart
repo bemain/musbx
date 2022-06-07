@@ -14,10 +14,10 @@ class BpmButtons extends StatelessWidget {
       children: [
         ContinuousButton(
           onPressed: () {
-            Metronome.bpm++;
+            Metronome.bpm--;
           },
           child: const Icon(
-            Icons.arrow_drop_up,
+            Icons.arrow_drop_down_rounded,
             size: 35,
           ),
         ),
@@ -26,10 +26,10 @@ class BpmButtons extends StatelessWidget {
             child: _buildBpmText()),
         ContinuousButton(
           onPressed: () {
-            Metronome.bpm--;
+            Metronome.bpm++;
           },
           child: const Icon(
-            Icons.arrow_drop_down,
+            Icons.arrow_drop_up_rounded,
             size: 35,
           ),
         )

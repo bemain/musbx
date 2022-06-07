@@ -7,7 +7,7 @@ class ContinuousButton extends StatelessWidget {
   const ContinuousButton({
     super.key,
     required this.onPressed,
-    this.interval = const Duration(milliseconds: 50),
+    this.interval = const Duration(milliseconds: 100),
     required this.child,
   });
 
