@@ -24,13 +24,13 @@ class ContinuousButton extends StatelessWidget {
     Timer timer = Timer(const Duration(), () {});
     return GestureDetector(
       onTap: onPressed,
-      onTapDown: (TapDownDetails details) {
+      onLongPressStart: (LongPressStartDetails details) {
         timer = Timer.periodic(interval, (timer) => onPressed());
       },
-      onTapUp: (TapUpDetails details) {
+      onLongPressUp: () {
         timer.cancel();
       },
-      onTapCancel: () {
+      onLongPressCancel: () {
         timer.cancel();
       },
       child: child,
