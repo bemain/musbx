@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/metronome/beat_sounds.dart';
+import 'package:musbx/metronome/beat_sound.dart';
 import 'package:musbx/metronome/metronome.dart';
 
 class BeatSoundViewer extends StatefulWidget {
   /// Widget for displaying and editing the sounds played by the [Metronome] on
   /// each of the beats.
   ///
-  /// Displays the beats as circles, using the color of the beat's [SoundType].
+  /// Displays the beats as circles, using the color of the beat's [BeatSound].
   /// Clicking a circle changes the sound played on that beat.
   ///
   /// Pressing long on a circle removes that beats. Also offers a plus button
@@ -42,7 +42,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
             ..._buildBeatButtons(),
             IconButton(
               onPressed: (() {
-                Metronome.beatSounds.add(SoundType.sticks);
+                Metronome.beatSounds.add(BeatSound.sticks);
               }),
               icon: const Icon(Icons.add_circle_outline_rounded),
             )
@@ -53,7 +53,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
   List<Widget> _buildBeatButtons() {
     return Metronome.beatSounds.sounds
         .asMap()
-        .map((int index, SoundType sound) => MapEntry(
+        .map((int index, BeatSound sound) => MapEntry(
               index,
               Ink(
                 child: InkWell(
@@ -61,8 +61,8 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                   onTap: () {
                     // Change beat sound
                     var sound = Metronome.beatSounds[index];
-                    Metronome.beatSounds[index] = SoundType
-                        .values[(sound.index + 1) % SoundType.values.length];
+                    Metronome.beatSounds[index] = BeatSound
+                        .values[(sound.index + 1) % BeatSound.values.length];
                   },
                   onLongPress: () {
                     if (Metronome.beatSounds.length >= 2) {

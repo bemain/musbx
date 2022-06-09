@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/metronome/beat_sounds.dart';
+import 'package:musbx/metronome/metronome_beats.dart';
 
 class Metronome {
   /// Minimum [bpm] allowed. [bpm] can never be less than this.
@@ -20,7 +20,7 @@ class Metronome {
   static ValueNotifier<int> bpmNotifier = ValueNotifier(60)..addListener(reset);
 
   /// Sounds for beats.
-  static BeatSounds beatSounds = BeatSounds();
+  static MetronomeBeats beatSounds = MetronomeBeats();
 
   /// Beats per bar.
   ///
