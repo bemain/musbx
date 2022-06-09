@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/metronome/beat_players.dart';
+import 'package:musbx/metronome/beat_sounds.dart';
 
 class Metronome {
   /// Minimum [bpm] allowed. [bpm] can never be less than this.
@@ -20,7 +20,7 @@ class Metronome {
   static ValueNotifier<int> bpmNotifier = ValueNotifier(60)..addListener(reset);
 
   /// Sounds for beats.
-  static MetronomeBeatPlayers beatSounds = MetronomeBeatPlayers();
+  static BeatSounds beatSounds = BeatSounds();
 
   /// Beats per bar.
   ///
@@ -40,13 +40,13 @@ class Metronome {
   static set isRunning(bool value) => isRunningNotifier.value = value;
   static ValueNotifier<bool> isRunningNotifier = ValueNotifier(false);
 
-  /// Internal [Timer], calls [_onTimeout] [bpm] times per minute.
+  /// Internal timer, calls [_onTimeout] [bpm] times per minute.
   static Timer _timer = Timer(const Duration(), () {});
 
   /// Called on [_timer] timeout.
   /// Increases [count] and plays a sound.
   static void _onTimeout(Timer timer) {
-    beatSounds[count].play();
+    beatSounds.playBeat(count);
 
     count++;
     count %= higher;
