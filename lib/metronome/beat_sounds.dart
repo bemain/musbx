@@ -8,6 +8,13 @@ enum SoundType {
 }
 
 class BeatSounds extends ChangeNotifier {
+  BeatSounds() {
+    // Preload sounds
+    _audioCache.loadAll(SoundType.values
+        .map((SoundType sound) => "${sound.index}.mp3")
+        .toList());
+  }
+
   /// Number of sounds.
   int get length => _sounds.length;
   set length(int value) {
