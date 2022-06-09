@@ -2,17 +2,24 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 enum SoundType {
-  sticks,
-  pop1,
-  pop2,
+  sticks(fileName: "0.mp3", color: Colors.blue),
+  pop1(fileName: "1.mp3", color: Colors.green),
+  pop2(fileName: "2.mp3", color: Colors.purple);
+
+  const SoundType({required this.fileName, required this.color});
+
+  /// File used when playing this sound, eg. in BeatSounds.
+  final String fileName;
+
+  /// Color used when displaying this sound, eg. in BeatSoundViewer.
+  final Color color;
 }
 
 class BeatSounds extends ChangeNotifier {
   BeatSounds() {
     // Preload sounds
-    _audioCache.loadAll(SoundType.values
-        .map((SoundType sound) => "${sound.index}.mp3")
-        .toList());
+    _audioCache.loadAll(
+        SoundType.values.map((SoundType sound) => sound.fileName).toList());
   }
 
   /// Number of sounds.
@@ -23,6 +30,7 @@ class BeatSounds extends ChangeNotifier {
   }
 
   /// Sounds to play at each beat.
+  List<SoundType> get sounds => _sounds;
   final List<SoundType> _sounds = List.generate(4, ((i) => SoundType.sticks));
 
   /// Get sound at [index].
@@ -50,7 +58,7 @@ class BeatSounds extends ChangeNotifier {
         "No sound defined for beat $count");
 
     audioPlayer = await _audioCache.play(
-      "${_sounds[count].index}.mp3",
+      _sounds[count].fileName,
       mode: PlayerMode.LOW_LATENCY,
     );
   }
