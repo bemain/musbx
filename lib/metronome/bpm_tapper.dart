@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
 
@@ -8,6 +10,7 @@ class BpmTapper extends StatelessWidget {
   const BpmTapper({
     super.key,
     this.resetDuration = const Duration(seconds: 60 ~/ Metronome.minBpm),
+    this.tapsRemembered = 10,
   });
 
   /// How long between two taps for them to be considered seperate, and not
@@ -15,6 +18,9 @@ class BpmTapper extends StatelessWidget {
   ///
   /// Defaults to the time between two beats if bpm is [Metronome.minBpm].
   final Duration resetDuration;
+
+  /// How many taps to remember. Only keeps this many of the most recent taps.
+  final int tapsRemembered;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +39,9 @@ class BpmTapper extends StatelessWidget {
         }
 
         tapBpms.add(60000 ~/ stopwatch.elapsedMilliseconds); // Add bpm
+        // Only keep the last [tapsRemembered] taps
+        tapBpms.removeRange(0, max(tapBpms.length - tapsRemembered, 0));
+
         // Calculate average
         Metronome.bpm = tapBpms.reduce((a, b) => a + b) ~/ tapBpms.length;
 
