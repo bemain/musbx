@@ -5,6 +5,17 @@ enum SoundType {
   sticks(fileName: "sticks.mp3", color: Colors.blue),
   cowbell(fileName: "cowbell.mp3", color: Colors.green);
 
+  /// Internal AudioPlayer for controlling the sound that is currently playing.
+  static final AudioPlayer audioPlayer = AudioPlayer(
+    mode: PlayerMode.LOW_LATENCY,
+  );
+
+  /// Internal AudioCache for playing sounds.
+  static final AudioCache audioCache = AudioCache(
+    prefix: "assets/metronome/",
+    fixedPlayer: audioPlayer,
+  );
+
   const SoundType({required this.fileName, required this.color});
 
   /// File used when playing this sound, eg. in BeatSounds.
@@ -12,12 +23,20 @@ enum SoundType {
 
   /// Color used when displaying this sound, eg. in BeatSoundViewer.
   final Color color;
+
+  /// Play this sound.
+  void play() async {
+    await audioCache.play(
+      fileName,
+      mode: PlayerMode.LOW_LATENCY,
+    );
+  }
 }
 
 class BeatSounds extends ChangeNotifier {
   BeatSounds() {
-    // Preload sounds
-    _audioCache.loadAll(
+    // Preload sounds to avoid latency when first sound is played.
+    SoundType.audioCache.loadAll(
         SoundType.values.map((SoundType sound) => sound.fileName).toList());
   }
 
@@ -57,24 +76,5 @@ class BeatSounds extends ChangeNotifier {
     var res = _sounds.removeAt(index);
     notifyListeners();
     return res;
-  }
-
-  /// Internal AudioCache for playing sounds.
-  final AudioCache _audioCache = AudioCache(prefix: "assets/metronome/");
-
-  /// AudioPlayer that played the last sound, if any.
-  AudioPlayer? audioPlayer;
-
-  /// Play the sound corresponding with beat number [count].
-  ///
-  /// [count] must be between `0` and `sounds.length`.
-  void playBeat(int count) async {
-    assert(0 <= count && count < _sounds.length,
-        "No sound defined for beat $count");
-
-    audioPlayer = await _audioCache.play(
-      _sounds[count].fileName,
-      mode: PlayerMode.LOW_LATENCY,
-    );
   }
 }
