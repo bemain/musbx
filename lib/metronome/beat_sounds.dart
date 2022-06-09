@@ -2,9 +2,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 enum SoundType {
-  sticks(fileName: "0.mp3", color: Colors.blue),
-  pop1(fileName: "1.mp3", color: Colors.green),
-  pop2(fileName: "2.mp3", color: Colors.purple);
+  sticks(fileName: "sticks.mp3", color: Colors.blue),
+  cowbell(fileName: "cowbell.mp3", color: Colors.green);
 
   const SoundType({required this.fileName, required this.color});
 
@@ -45,7 +44,7 @@ class BeatSounds extends ChangeNotifier {
   }
 
   /// Internal AudioCache for playing sounds.
-  final AudioCache _audioCache = AudioCache();
+  final AudioCache _audioCache = AudioCache(prefix: "assets/metronome/");
 
   /// AudioPlayer that played the last sound, if any.
   AudioPlayer? audioPlayer;
