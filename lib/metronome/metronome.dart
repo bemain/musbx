@@ -46,10 +46,10 @@ class Metronome {
   /// Called on [_timer] timeout.
   /// Increases [count] and plays a sound.
   static void _onTimeout(Timer timer) {
-    beatSounds.playBeat(count);
-
     count++;
     count %= higher;
+
+    beatSounds.playBeat(count);
   }
 
   /// Start the metronome.
@@ -70,7 +70,7 @@ class Metronome {
 
   /// Reset [count] and, if it is running, restart [_timer].
   static void reset() {
-    count = 0;
+    count = higher - 1;
     if (isRunning) {
       _timer.cancel();
       _timer = Timer.periodic(Duration(milliseconds: 60000 ~/ bpm), _onTimeout);
