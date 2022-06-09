@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
 
@@ -27,6 +28,12 @@ class BpmTapper extends StatelessWidget {
     final Stopwatch stopwatch = Stopwatch();
     List<int> tapBpms = [];
 
+    final AudioPlayer audioPlayer = AudioPlayer();
+    final AudioCache audioCache = AudioCache(
+      prefix: "assets/metronome/",
+      fixedPlayer: audioPlayer,
+    );
+
     return ElevatedButton(
       onPressed: () {
         if (!stopwatch.isRunning || stopwatch.elapsed > resetDuration) {
@@ -37,6 +44,12 @@ class BpmTapper extends StatelessWidget {
           stopwatch.start();
           return;
         }
+
+        // Stop metronome so it doesn't play sound while user is tapping
+        Metronome.stop();
+
+        // Play sound
+        audioCache.play("bpm_tapper.mp3", mode: PlayerMode.LOW_LATENCY);
 
         tapBpms.add(60000 ~/ stopwatch.elapsedMilliseconds); // Add bpm
         // Only keep the last [tapsRemembered] taps
