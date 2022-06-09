@@ -43,6 +43,22 @@ class BeatSounds extends ChangeNotifier {
     notifyListeners();
   }
 
+  void add(SoundType value) {
+    _sounds.add(value);
+    notifyListeners();
+  }
+
+  SoundType removeAt(int index) {
+    if (sounds.length <= 1) {
+      debugPrint(
+          "BeatSounds.removeAt($index) ignored! BeatSounds must always contain at least one sound!");
+      return _sounds[0];
+    }
+    var res = _sounds.removeAt(index);
+    notifyListeners();
+    return res;
+  }
+
   /// Internal AudioCache for playing sounds.
   final AudioCache _audioCache = AudioCache(prefix: "assets/metronome/");
 

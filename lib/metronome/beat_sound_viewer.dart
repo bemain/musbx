@@ -9,6 +9,9 @@ class BeatSoundViewer extends StatefulWidget {
   /// Displays the beats as circles, using the color of the beat's [SoundType].
   /// Clicking a circle changes the sound played on that beat.
   ///
+  /// Pressing long on a circle removes that beats. Also offers a plus button
+  /// for adding new beats.
+  ///
   /// The beat that was most recently played ([Metronome.count]) is highlighted.
   const BeatSoundViewer({super.key});
 
@@ -33,20 +36,42 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
     return Padding(
       padding: const EdgeInsets.only(left: 5),
       child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: Metronome.beatSounds.sounds
-            .asMap()
-            .map((int index, SoundType sound) => MapEntry(
-                  index,
-                  IconButton(
-                    onPressed: () {
-                      // Change beat sound
-                      var sound = Metronome.beatSounds[index];
-                      Metronome.beatSounds[index] = SoundType
-                          .values[(sound.index + 1) % SoundType.values.length];
-                    },
-                    icon: Icon(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ..._buildBeatButtons(),
+            IconButton(
+              onPressed: (() {
+                Metronome.beatSounds.add(SoundType.sticks);
+              }),
+              icon: const Icon(Icons.add_circle_outline_rounded),
+            )
+          ]),
+    );
+  }
+
+  List<Widget> _buildBeatButtons() {
+    return Metronome.beatSounds.sounds
+        .asMap()
+        .map((int index, SoundType sound) => MapEntry(
+              index,
+              Ink(
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () {
+                    // Change beat sound
+                    var sound = Metronome.beatSounds[index];
+                    Metronome.beatSounds[index] = SoundType
+                        .values[(sound.index + 1) % SoundType.values.length];
+                  },
+                  onLongPress: () {
+                    if (Metronome.beatSounds.length >= 2) {
+                      Metronome.beatSounds.removeAt(index);
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Icon(
                       Icons.circle,
                       color: sound.color,
                       shadows: (Metronome.count == index)
@@ -54,10 +79,10 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                           : [], // Highlight current beat
                     ),
                   ),
-                ))
-            .values
-            .toList(),
-      ),
-    );
+                ),
+              ),
+            ))
+        .values
+        .toList();
   }
 }
