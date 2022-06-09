@@ -33,6 +33,8 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
     return Padding(
       padding: const EdgeInsets.only(left: 5),
       child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: Metronome.beatSounds.sounds
             .asMap()
             .map((int index, SoundType sound) => MapEntry(

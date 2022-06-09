@@ -10,6 +10,7 @@ class MetronomeBottomBar extends StatefulWidget {
   /// - Buttons for adjusting bpm
   /// - Slider for adjusting bpm
   /// - Button for setting bpm by tapping.
+  /// - Buttons for setting what sound is played each beat.
   const MetronomeBottomBar({Key? key}) : super(key: key);
 
   @override
@@ -20,32 +21,33 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      child: SizedBox(
-        height: 130,
-        child: Row(
-          children: <Widget>[
-            Column(
-              children: [
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: 100,
+            child: Row(
+              children: <Widget>[
                 _buildPlayButton(),
-                const BeatSoundViewer(),
-              ],
-            ),
-            Expanded(
-              child: Column(
-                children: [
-                  _buildBpmSlider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: const [
-                      BpmButtons(),
-                      BpmTapper(),
+                Expanded(
+                  child: Column(
+                    children: [
+                      _buildBpmSlider(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: const [
+                          BpmButtons(),
+                          BpmTapper(),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          const BeatSoundViewer()
+        ],
       ),
     );
   }
@@ -65,7 +67,7 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
           },
           child: Icon(
             isRunning ? Icons.stop_rounded : Icons.play_arrow_rounded,
-            size: 60,
+            size: 75,
           ),
         );
       },
