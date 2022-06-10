@@ -8,7 +8,7 @@ class Metronome {
   static const int minBpm = 20;
 
   /// Maximum [bpm] allowed. [bpm] can never be more than this.
-  static const int maxBpm = 300;
+  static const int maxBpm = 250;
 
   /// Beats per minutes.
   ///
@@ -20,7 +20,7 @@ class Metronome {
   static ValueNotifier<int> bpmNotifier = ValueNotifier(60)..addListener(reset);
 
   /// Sounds for beats.
-  static MetronomeBeats beatSounds = MetronomeBeats();
+  static final MetronomeBeats beatSounds = MetronomeBeats();
 
   /// Beats per bar.
   ///

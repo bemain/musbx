@@ -30,7 +30,6 @@ class BpmTapper extends StatelessWidget {
 
     final AudioPlayer audioPlayer = AudioPlayer();
     final AudioCache audioCache = AudioCache(
-      prefix: "assets/metronome/",
       fixedPlayer: audioPlayer,
     );
 
