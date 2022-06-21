@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/slowdowner/button_panel.dart';
 import 'package:musbx/slowdowner/stream_slider.dart';
@@ -49,17 +51,18 @@ class SlowdownerScreenState extends State<SlowdownerScreen> {
 
   Widget buildPitchSlider() {
     return StreamSlider(
-      stream: Slowdowner.audioPlayer.pitchStream,
+      stream: Slowdowner.audioPlayer.pitchStream
+          .map((double pitch) => (12 * log(pitch) / log(2)).toDouble()),
       onChangeEnd: (double value) {
-        Slowdowner.audioPlayer.setPitch(value);
+        Slowdowner.setPitchSemitones(value);
       },
       onClear: () {
-        Slowdowner.audioPlayer.setPitch(1.0);
+        Slowdowner.setPitchSemitones(1.0);
       },
-      min: 0.1,
-      max: 2,
-      startValue: 1.0,
-      divisions: 19,
+      min: -8,
+      max: 8,
+      startValue: 0.0,
+      divisions: 16,
       labelFractionDigits: 1,
     );
   }
