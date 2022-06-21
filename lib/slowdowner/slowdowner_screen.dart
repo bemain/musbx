@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/slowdowner/button_panel.dart';
 import 'package:musbx/slowdowner/position_slider.dart';
 import 'package:musbx/slowdowner/slowdowner.dart';
 
@@ -20,57 +21,10 @@ class SlowdownerScreenState extends State<SlowdownerScreen> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
-        const PositionSlider(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              onPressed: () {
-                Slowdowner.audioPlayer.seek(Slowdowner.audioPlayer.position -
-                    const Duration(seconds: 1));
-              },
-              onLongPress: () {
-                setState(() {
-                  Slowdowner.audioPlayer.seek(Duration.zero);
-                });
-              },
-              child: const Icon(Icons.fast_rewind_rounded, size: 40),
-            ),
-            buildPlayButton(),
-            TextButton(
-              onPressed: () {
-                Slowdowner.audioPlayer.seek(Slowdowner.audioPlayer.position +
-                    const Duration(seconds: 1));
-              },
-              child: const Icon(Icons.fast_forward_rounded, size: 40),
-            ),
-          ],
-        ),
+      children: const [
+        PositionSlider(),
+        ButtonPanel(),
       ],
-    );
-  }
-
-  Widget buildPlayButton() {
-    return StreamBuilder<bool>(
-      stream: Slowdowner.audioPlayer.playingStream,
-      initialData: false,
-      builder: (context, snapshot) {
-        bool isPlaying = snapshot.data!;
-        return TextButton(
-          onPressed: (() {
-            if (isPlaying) {
-              Slowdowner.audioPlayer.pause();
-            } else {
-              Slowdowner.audioPlayer.play();
-            }
-          }),
-          child: Icon(
-            isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
-            size: 75,
-          ),
-        );
-      },
     );
   }
 }
