@@ -21,11 +21,14 @@ class CurrentSongPanel extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(5),
-                child: Text(
-                  Slowdowner.instance.songTitle ?? "Test",
-                  style: Theme.of(context).textTheme.titleLarge,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: ValueListenableBuilder<String?>(
+                  valueListenable: Slowdowner.instance.songTitleNotifier,
+                  builder: (context, songTitle, child) => Text(
+                    songTitle ?? "(No song loaded)",
+                    style: Theme.of(context).textTheme.titleLarge,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ],

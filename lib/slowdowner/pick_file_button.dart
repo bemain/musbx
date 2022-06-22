@@ -15,7 +15,7 @@ class PickFileButton extends StatelessWidget {
 
         if (result != null && result.files.single.path != null) {
           await Slowdowner.instance.setFilePath(result.files.single.path!);
-          Slowdowner.instance.songTitle = result.files.single.path!;
+          Slowdowner.instance.songTitle = result.files.single.name;
         }
       },
       child: const Icon(Icons.file_upload_rounded),
