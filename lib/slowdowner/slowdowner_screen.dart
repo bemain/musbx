@@ -7,6 +7,12 @@ import 'package:musbx/slowdowner/position_slider.dart';
 import 'package:musbx/slowdowner/slowdowner.dart';
 
 class SlowdownerScreen extends StatefulWidget {
+  /// Screen that allows the user to select and play a song.
+  ///
+  /// Inlcudes:
+  ///  - Buttons; play/pause, forward, rewind
+  ///  - Slider for seeking a position in the song
+  ///  - Sliders for changing pitch and speed of the song.
   const SlowdownerScreen({super.key});
 
   @override
@@ -14,11 +20,13 @@ class SlowdownerScreen extends StatefulWidget {
 }
 
 class SlowdownerScreenState extends State<SlowdownerScreen> {
+  final Slowdowner slowdowner = Slowdowner.instance;
+
   @override
   void initState() {
     super.initState();
 
-    Slowdowner.audioPlayer.setAsset("assets/youve_got.mp3");
+    slowdowner.setAsset("assets/youve_got.mp3");
   }
 
   @override
@@ -51,35 +59,35 @@ class SlowdownerScreenState extends State<SlowdownerScreen> {
 
   Widget buildPitchSlider() {
     return StreamSlider(
-      stream: Slowdowner.audioPlayer.pitchStream
-          .map((double pitch) => (12 * log(pitch) / log(2)).toDouble()),
+      stream: slowdowner.pitchStream
+          .map((double pitch) => (12 * log(pitch) / log(2)).roundToDouble()),
       onChangeEnd: (double value) {
-        Slowdowner.setPitchSemitones(value);
+        slowdowner.setPitchSemitones(value);
       },
       onClear: () {
-        Slowdowner.setPitchSemitones(1.0);
+        slowdowner.setPitchSemitones(0);
       },
-      min: -8,
-      max: 8,
-      startValue: 0.0,
-      divisions: 16,
-      labelFractionDigits: 1,
+      min: -9,
+      max: 9,
+      startValue: 0,
+      divisions: 18,
+      labelFractionDigits: 0,
     );
   }
 
   Widget buildSpeedSlider() {
     return StreamSlider(
-      stream: Slowdowner.audioPlayer.speedStream,
+      stream: slowdowner.speedStream,
       onChangeEnd: (double value) {
-        Slowdowner.audioPlayer.setSpeed(value);
+        slowdowner.setSpeed(value);
       },
       onClear: () {
-        Slowdowner.audioPlayer.setSpeed(1.0);
+        slowdowner.setSpeed(1.0);
       },
-      min: 0.1,
+      min: 0.2,
       max: 2,
       startValue: 1.0,
-      divisions: 19,
+      divisions: 18,
       labelFractionDigits: 1,
     );
   }

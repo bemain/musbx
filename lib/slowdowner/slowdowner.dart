@@ -2,12 +2,16 @@ import 'dart:math';
 
 import 'package:just_audio/just_audio.dart';
 
-class Slowdowner {
-  static final AudioPlayer audioPlayer = AudioPlayer();
+/// Singleton for playing songs.
+class Slowdowner extends AudioPlayer {
+  Slowdowner._internal(); // Only way to access is through [instance]
+  static final Slowdowner instance = Slowdowner._internal();
 
-  static double get pitchSemitones =>
-      (12 * log(audioPlayer.pitch) / log(2)).toDouble();
-  static setPitchSemitones(double value) {
-    audioPlayer.setPitch(pow(2, value / 12).toDouble());
+  /// How much the pitch will be shifted, in semitones.
+  double get pitchSemitones => (12 * log(pitch) / log(2)).toDouble();
+
+  /// Set how much the pitch will be shifted, in semitones.
+  Future<void> setPitchSemitones(final double semitones) async {
+    await setPitch(pow(2, semitones / 12).toDouble());
   }
 }

@@ -2,34 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:musbx/slowdowner/slowdowner.dart';
 
 class ButtonPanel extends StatelessWidget {
+  /// Panel including play/pause, forward and rewind buttons for controlling [Slowdowner].
   const ButtonPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final Slowdowner slowdowner = Slowdowner.instance;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         TextButton(
           onPressed: () {
-            Slowdowner.audioPlayer.seek(
-                Slowdowner.audioPlayer.position - const Duration(seconds: 1));
+            slowdowner.seek(slowdowner.position - const Duration(seconds: 1));
           },
           onLongPress: () {
-            Slowdowner.audioPlayer.seek(Duration.zero);
+            slowdowner.seek(Duration.zero);
           },
           child: const Icon(Icons.fast_rewind_rounded, size: 40),
         ),
         StreamBuilder<bool>(
-          stream: Slowdowner.audioPlayer.playingStream,
+          stream: slowdowner.playingStream,
           initialData: false,
           builder: (context, snapshot) {
             bool isPlaying = snapshot.data!;
             return TextButton(
               onPressed: (() {
                 if (isPlaying) {
-                  Slowdowner.audioPlayer.pause();
+                  slowdowner.pause();
                 } else {
-                  Slowdowner.audioPlayer.play();
+                  slowdowner.play();
                 }
               }),
               child: Icon(
@@ -41,8 +43,7 @@ class ButtonPanel extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {
-            Slowdowner.audioPlayer.seek(
-                Slowdowner.audioPlayer.position + const Duration(seconds: 1));
+            slowdowner.seek(slowdowner.position + const Duration(seconds: 1));
           },
           child: const Icon(Icons.fast_forward_rounded, size: 40),
         ),

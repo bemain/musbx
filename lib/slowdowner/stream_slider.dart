@@ -76,7 +76,7 @@ class StreamSliderState extends State<StreamSlider> {
     return Row(
       children: [
         SizedBox(
-          width: 40,
+          width: 30,
           child: Padding(
             padding: const EdgeInsets.only(left: 10),
             child: Text(
@@ -103,6 +103,7 @@ class StreamSliderState extends State<StreamSlider> {
           ),
         ),
         IconButton(
+            alignment: Alignment.centerLeft,
             onPressed: widget.onClear?.call,
             icon: const Icon(Icons.backspace_rounded))
       ],

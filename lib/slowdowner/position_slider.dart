@@ -11,15 +11,16 @@ class PositionSlider extends StatefulWidget {
 }
 
 class PositionSliderState extends State<PositionSlider> {
+  final Slowdowner slowdowner = Slowdowner.instance;
+
   Duration get position => _position;
   set position(Duration value) {
     _position = value;
 
     if (_position.isNegative) _position = Duration.zero; // Clamp lower
     // Clamp higher
-    if (_position >
-        (Slowdowner.audioPlayer.duration ?? const Duration(seconds: 1))) {
-      _position = Slowdowner.audioPlayer.duration ?? const Duration(seconds: 1);
+    if (_position > (slowdowner.duration ?? const Duration(seconds: 1))) {
+      _position = slowdowner.duration ?? const Duration(seconds: 1);
     }
   }
 
@@ -30,7 +31,7 @@ class PositionSliderState extends State<PositionSlider> {
     super.initState();
 
     // When a new song is loaded, rebuild
-    Slowdowner.audioPlayer.durationStream.listen((duration) {
+    slowdowner.durationStream.listen((duration) {
       setState(() {
         if (duration != null && position > duration) {
           position = duration;
@@ -39,7 +40,7 @@ class PositionSliderState extends State<PositionSlider> {
     });
 
     // When position changes, update it locally
-    Slowdowner.audioPlayer.positionStream.listen((position) {
+    slowdowner.positionStream.listen((position) {
       setState(() {
         this.position = position;
       });
@@ -57,8 +58,7 @@ class PositionSliderState extends State<PositionSlider> {
         Expanded(
           child: Slider(
             min: 0,
-            max:
-                Slowdowner.audioPlayer.duration?.inSeconds.roundToDouble() ?? 1,
+            max: slowdowner.duration?.inSeconds.roundToDouble() ?? 1,
             value: position.inSeconds.roundToDouble(),
             onChanged: (double value) {
               setState(() {
@@ -66,14 +66,13 @@ class PositionSliderState extends State<PositionSlider> {
               });
             },
             onChangeEnd: (double value) {
-              Slowdowner.audioPlayer.seek(position);
+              slowdowner.seek(position);
             },
           ),
         ),
         Padding(
           padding: const EdgeInsets.only(right: 10),
-          child: _buildDurationText(
-              Slowdowner.audioPlayer.duration ?? Duration.zero),
+          child: _buildDurationText(slowdowner.duration ?? Duration.zero),
         )
       ],
     );
