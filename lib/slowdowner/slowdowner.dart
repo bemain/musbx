@@ -7,6 +7,9 @@ class Slowdowner extends AudioPlayer {
   Slowdowner._internal(); // Only way to access is through [instance]
   static final Slowdowner instance = Slowdowner._internal();
 
+  /// Title of the current song, if any has been loaded.
+  String? songTitle;
+
   /// How much the pitch will be shifted, in semitones.
   double get pitchSemitones => (12 * log(pitch) / log(2)).toDouble();
 

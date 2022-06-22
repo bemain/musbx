@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/slowdowner/button_panel.dart';
+import 'package:musbx/slowdowner/current_song_panel.dart';
 import 'package:musbx/slowdowner/stream_slider.dart';
 import 'package:musbx/slowdowner/position_slider.dart';
 import 'package:musbx/slowdowner/slowdowner.dart';
@@ -27,6 +28,7 @@ class SlowdownerScreenState extends State<SlowdownerScreen> {
     super.initState();
 
     slowdowner.setAsset("assets/youve_got.mp3");
+    slowdowner.songTitle = "You've got a friend in me - Randy Newman";
   }
 
   @override
@@ -53,6 +55,8 @@ class SlowdownerScreenState extends State<SlowdownerScreen> {
         const Divider(),
         const PositionSlider(),
         const ButtonPanel(),
+        const Divider(),
+        const CurrentSongPanel(),
       ],
     );
   }
