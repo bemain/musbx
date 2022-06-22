@@ -33,31 +33,28 @@ class SlowdownerScreenState extends State<SlowdownerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: Text(
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
             "Pitch",
             style: Theme.of(context).textTheme.titleMedium,
           ),
-        ),
-        buildPitchSlider(),
-        Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: Text(
+          buildPitchSlider(),
+          Text(
             "Speed",
             style: Theme.of(context).textTheme.titleMedium,
           ),
-        ),
-        buildSpeedSlider(),
-        const Divider(),
-        const PositionSlider(),
-        const ButtonPanel(),
-        const Divider(),
-        const CurrentSongPanel(),
-      ],
+          buildSpeedSlider(),
+          const Divider(),
+          const PositionSlider(),
+          const ButtonPanel(),
+          const Divider(),
+          const CurrentSongPanel(),
+        ],
+      ),
     );
   }
 

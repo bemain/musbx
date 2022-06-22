@@ -76,15 +76,12 @@ class StreamSliderState extends State<StreamSlider> {
     return Row(
       children: [
         SizedBox(
-          width: 30,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: Text(
-              value.toStringAsFixed(widget.labelFractionDigits),
-              style: Theme.of(context).textTheme.caption,
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-            ),
+          width: 20,
+          child: Text(
+            value.toStringAsFixed(widget.labelFractionDigits),
+            style: Theme.of(context).textTheme.caption,
+            maxLines: 1,
+            overflow: TextOverflow.clip,
           ),
         ),
         Expanded(
@@ -103,9 +100,10 @@ class StreamSliderState extends State<StreamSlider> {
           ),
         ),
         IconButton(
-            alignment: Alignment.centerLeft,
-            onPressed: widget.onClear?.call,
-            icon: const Icon(Icons.backspace_rounded))
+          iconSize: 20,
+          onPressed: widget.onClear?.call,
+          icon: const Icon(Icons.backspace_rounded),
+        )
       ],
     );
   }

@@ -51,10 +51,7 @@ class PositionSliderState extends State<PositionSlider> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: _buildDurationText(position),
-        ),
+        _buildDurationText(position),
         Expanded(
           child: Slider(
             min: 0,
@@ -70,10 +67,7 @@ class PositionSliderState extends State<PositionSlider> {
             },
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(right: 10),
-          child: _buildDurationText(slowdowner.duration ?? Duration.zero),
-        )
+        _buildDurationText(slowdowner.duration ?? Duration.zero),
       ],
     );
   }
