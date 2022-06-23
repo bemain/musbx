@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 /// Singleton for playing songs.
-class Slowdowner extends AudioPlayer {
-  Slowdowner._internal(); // Only way to access is through [instance]
-  static final Slowdowner instance = Slowdowner._internal();
+class MusicPlayer extends AudioPlayer {
+  MusicPlayer._internal(); // Only way to access is through [instance]
+  static final MusicPlayer instance = MusicPlayer._internal();
 
   /// Title of the current song, if any has been loaded.
   String? get songTitle => songTitleNotifier.value;

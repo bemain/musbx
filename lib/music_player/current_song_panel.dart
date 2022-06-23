@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/slowdowner/pick_file_button.dart';
-import 'package:musbx/slowdowner/slowdowner.dart';
+import 'package:musbx/music_player/pick_file_button.dart';
+import 'package:musbx/music_player/music_player.dart';
 
 class CurrentSongPanel extends StatelessWidget {
   /// Panel displaying the currently loaded song, with buttons to load a new song,
@@ -22,7 +22,7 @@ class CurrentSongPanel extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(5),
                 child: ValueListenableBuilder<String?>(
-                  valueListenable: Slowdowner.instance.songTitleNotifier,
+                  valueListenable: MusicPlayer.instance.songTitleNotifier,
                   builder: (context, songTitle, child) => Text(
                     songTitle ?? "(No song loaded)",
                     style: Theme.of(context).textTheme.titleLarge,

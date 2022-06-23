@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/bottom_bar.dart';
-import 'package:musbx/slowdowner/slowdowner_screen.dart';
+import 'package:musbx/music_player/slowdowner_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text("Home Page"),
       ),
-      body: SlowdownerScreen(),
+      body: MusicPlayerScreen(),
       bottomNavigationBar: const MetronomeBottomBar(),
     );
   }

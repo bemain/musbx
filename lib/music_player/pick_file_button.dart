@@ -1,6 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/slowdowner/slowdowner.dart';
+import 'package:musbx/music_player/music_player.dart';
 
 class PickFileButton extends StatelessWidget {
   const PickFileButton({super.key});
@@ -14,8 +14,8 @@ class PickFileButton extends StatelessWidget {
         );
 
         if (result != null && result.files.single.path != null) {
-          await Slowdowner.instance.setFilePath(result.files.single.path!);
-          Slowdowner.instance.songTitle = result.files.single.name;
+          await MusicPlayer.instance.setFilePath(result.files.single.path!);
+          MusicPlayer.instance.songTitle = result.files.single.name;
         }
       },
       child: const Icon(Icons.file_upload_rounded),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/slowdowner/slowdowner.dart';
+import 'package:musbx/music_player/music_player.dart';
 
-/// Slider for seeking a position on [Slowdowner.audioPlayer].
+/// Slider for seeking a position on [MusicPlayer.audioPlayer].
 /// Also displays current position and duration of current song.
 class PositionSlider extends StatefulWidget {
   const PositionSlider({super.key});
@@ -11,7 +11,7 @@ class PositionSlider extends StatefulWidget {
 }
 
 class PositionSliderState extends State<PositionSlider> {
-  final Slowdowner slowdowner = Slowdowner.instance;
+  final MusicPlayer player = MusicPlayer.instance;
 
   Duration get position => _position;
   set position(Duration value) {
@@ -19,8 +19,8 @@ class PositionSliderState extends State<PositionSlider> {
 
     if (_position.isNegative) _position = Duration.zero; // Clamp lower
     // Clamp higher
-    if (_position > (slowdowner.duration ?? const Duration(seconds: 1))) {
-      _position = slowdowner.duration ?? const Duration(seconds: 1);
+    if (_position > (player.duration ?? const Duration(seconds: 1))) {
+      _position = player.duration ?? const Duration(seconds: 1);
     }
   }
 
@@ -31,7 +31,7 @@ class PositionSliderState extends State<PositionSlider> {
     super.initState();
 
     // When a new song is loaded, rebuild
-    slowdowner.durationStream.listen((duration) {
+    player.durationStream.listen((duration) {
       setState(() {
         if (duration != null && position > duration) {
           position = duration;
@@ -40,7 +40,7 @@ class PositionSliderState extends State<PositionSlider> {
     });
 
     // When position changes, update it locally
-    slowdowner.positionStream.listen((position) {
+    player.positionStream.listen((position) {
       setState(() {
         this.position = position;
       });
@@ -55,7 +55,7 @@ class PositionSliderState extends State<PositionSlider> {
         Expanded(
           child: Slider(
             min: 0,
-            max: slowdowner.duration?.inSeconds.roundToDouble() ?? 1,
+            max: player.duration?.inSeconds.roundToDouble() ?? 1,
             value: position.inSeconds.roundToDouble(),
             onChanged: (double value) {
               setState(() {
@@ -63,11 +63,11 @@ class PositionSliderState extends State<PositionSlider> {
               });
             },
             onChangeEnd: (double value) {
-              slowdowner.seek(position);
+              player.seek(position);
             },
           ),
         ),
-        _buildDurationText(slowdowner.duration ?? Duration.zero),
+        _buildDurationText(player.duration ?? Duration.zero),
       ],
     );
   }
