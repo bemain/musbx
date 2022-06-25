@@ -10,7 +10,7 @@ import 'package:musbx/music_player/music_player.dart';
 class MusicPlayerScreen extends StatefulWidget {
   /// Screen that allows the user to select and play a song.
   ///
-  /// Inlcudes:
+  /// Includes:
   ///  - Buttons; play/pause, forward, rewind
   ///  - Slider for seeking a position in the song
   ///  - Sliders for changing pitch and speed of the song.
@@ -38,15 +38,21 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            "Pitch",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Row(children: [
+            const Icon(Icons.music_note_rounded),
+            Text(
+              " Pitch",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ]),
           buildPitchSlider(),
-          Text(
-            "Speed",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Row(children: [
+            const Icon(Icons.speed_rounded),
+            Text(
+              "  Speed",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ]),
           buildSpeedSlider(),
           const Divider(),
           const PositionSlider(),
