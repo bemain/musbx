@@ -70,7 +70,35 @@ class TunerScreenState extends State<TunerScreen> {
               }
             }
 
-            return TunerGauge(previousNotes: previousNotes);
+            // Calculate average pitch iffset
+            List<double> pitchOffsets =
+                previousNotes.map((note) => note.pitchOffset).toList();
+            double avgPitchOffset =
+                pitchOffsets.reduce((a, b) => a + b) / pitchOffsets.length;
+
+            return Stack(
+              children: [
+                Positioned(
+                  left: 75,
+                  top: 115,
+                  child: Text(
+                    previousNotes.last.name,
+                    style: Theme.of(context).textTheme.displayMedium,
+                  ),
+                ),
+                Positioned(
+                  left: 250,
+                  top: 125,
+                  child: Text(
+                    (avgPitchOffset.toInt().isNegative)
+                        ? "${avgPitchOffset.toInt()}¢"
+                        : "+${avgPitchOffset.toInt()}¢",
+                    style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                ),
+                TunerGauge(averagePitchOffset: avgPitchOffset),
+              ],
+            );
           },
         );
       },

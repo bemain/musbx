@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gauges/gauges.dart';
-import 'package:musbx/tuner/note.dart';
 
 class TunerGauge extends StatelessWidget {
-  const TunerGauge({super.key, required this.previousNotes});
+  const TunerGauge({super.key, required this.averagePitchOffset});
 
-  final List<Note> previousNotes;
+  final double averagePitchOffset;
 
   @override
   Widget build(BuildContext context) {
-    List<double> pitchOffsets =
-        previousNotes.map((note) => note.pitchOffset).toList();
-    double avgPitchOffset =
-        pitchOffsets.reduce((a, b) => a + b) / pitchOffsets.length;
-
     return RadialGauge(
       axes: [
         RadialGaugeAxis(
@@ -37,7 +31,7 @@ class TunerGauge extends StatelessWidget {
             ],
             pointers: [
               RadialNeedlePointer(
-                value: avgPitchOffset,
+                value: averagePitchOffset,
                 thicknessStart: 20,
                 thicknessEnd: 0,
                 length: 0.8,
