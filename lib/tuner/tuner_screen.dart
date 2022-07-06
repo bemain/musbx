@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mic_stream/mic_stream.dart';
+import 'package:musbx/tuner/note.dart';
 import 'package:musbx/widgets.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitch_detector_dart/pitch_detector_result.dart';
@@ -54,10 +55,14 @@ class TunerScreenState extends State<TunerScreen> {
             }
 
             PitchDetectorResult pitchResult = snapshot.data!;
+            if (!pitchResult.pitched) return const Text("x");
+
+            Note note = Note.fromFrequency(pitchResult.pitch);
+
             return Padding(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Text(
-                    "${pitchResult.pitch.toInt()} | ${pitchResult.probability}%"));
+                    "${note.name} ${note.pitchOffset} | ${pitchResult.probability * 100}%"));
           },
         );
       },
