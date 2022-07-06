@@ -31,7 +31,8 @@ class TunerScreenState extends State<TunerScreen> {
   }
 
   /// The most recent note detected.
-  Note lastNote = Note.a4();
+  List<Note> previousNotes = <Note>[Note.a4()];
+  int averageN = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +60,18 @@ class TunerScreenState extends State<TunerScreen> {
 
             PitchDetectorResult pitchResult = snapshot.data!;
             if (pitchResult.pitched) {
-              lastNote = Note.fromFrequency(pitchResult.pitch);
+              // Store new note
+              previousNotes.add(Note.fromFrequency(pitchResult.pitch));
+              // Only keep [averageN] last notes
+              while (previousNotes.length > averageN) {
+                previousNotes.removeAt(0);
+              }
             }
+
+            List<double> pitchOffsets =
+                previousNotes.map((note) => note.pitchOffset).toList();
+            double avgPitchOffset =
+                pitchOffsets.reduce((a, b) => a + b) / pitchOffsets.length;
 
             return RadialGauge(
               axes: [
@@ -85,7 +96,7 @@ class TunerScreenState extends State<TunerScreen> {
                     ],
                     pointers: [
                       RadialNeedlePointer(
-                        value: lastNote.pitchOffset,
+                        value: avgPitchOffset,
                         thicknessStart: 20,
                         thicknessEnd: 0,
                         length: 0.8,
