@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gauges/gauges.dart';
 import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/tuner/note.dart';
+import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/widgets.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitch_detector_dart/pitch_detector_result.dart';
@@ -30,9 +30,11 @@ class TunerScreenState extends State<TunerScreen> {
         .getPitch(audio.map((int val) => val.toDouble()).toList()));
   }
 
-  /// The most recent note detected.
+  /// The [averageNotesN] most recent notes detected.
   List<Note> previousNotes = <Note>[Note.a4()];
-  int averageN = 5;
+
+  /// The number of notes to take average of.
+  static const int averageNotesN = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -63,57 +65,12 @@ class TunerScreenState extends State<TunerScreen> {
               // Store new note
               previousNotes.add(Note.fromFrequency(pitchResult.pitch));
               // Only keep [averageN] last notes
-              while (previousNotes.length > averageN) {
+              while (previousNotes.length > averageNotesN) {
                 previousNotes.removeAt(0);
               }
             }
 
-            List<double> pitchOffsets =
-                previousNotes.map((note) => note.pitchOffset).toList();
-            double avgPitchOffset =
-                pitchOffsets.reduce((a, b) => a + b) / pitchOffsets.length;
-
-            return RadialGauge(
-              axes: [
-                RadialGaugeAxis(
-                    minValue: -50,
-                    maxValue: 50,
-                    minAngle: -90,
-                    maxAngle: 90,
-                    ticks: [
-                      RadialTicks(
-                          interval: 10,
-                          alignment: RadialTickAxisAlignment.inside,
-                          length: 0.1,
-                          color: Theme.of(context).primaryColor,
-                          children: [
-                            RadialTicks(
-                              ticksInBetween: 4,
-                              length: 0.05,
-                              color: Theme.of(context).hintColor,
-                            )
-                          ]),
-                    ],
-                    pointers: [
-                      RadialNeedlePointer(
-                        value: avgPitchOffset,
-                        thicknessStart: 20,
-                        thicknessEnd: 0,
-                        length: 0.8,
-                        knobRadiusAbsolute: 10,
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).primaryColor,
-                            Theme.of(context).primaryColorDark,
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          stops: const [0.5, 0.5],
-                        ),
-                      ),
-                    ]),
-              ],
-            );
+            return TunerGauge(previousNotes: previousNotes);
           },
         );
       },
