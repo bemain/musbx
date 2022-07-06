@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gauges/gauges.dart';
 import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/tuner/note.dart';
 import 'package:musbx/widgets.dart';
@@ -14,14 +15,13 @@ class TunerScreen extends StatefulWidget {
 
 class TunerScreenState extends State<TunerScreen> {
   final PitchDetector pitchDetector = PitchDetector(44100, 1792);
-  Stream<List<int>>? audioStream;
   Stream<PitchDetectorResult>? pitchStream;
-
   late final Future initAudioFuture = initAudio();
 
   /// Create the stream for getting pitch from microphone
   Future<void> initAudio() async {
-    audioStream = await MicStream.microphone(sampleRate: 44100);
+    Stream<List<int>>? audioStream =
+        await MicStream.microphone(sampleRate: 44100);
     assert(
       audioStream != null,
       "TUNER: Unable to capture audio from microphone",
@@ -29,6 +29,9 @@ class TunerScreenState extends State<TunerScreen> {
     pitchStream = audioStream!.map((audio) => pitchDetector
         .getPitch(audio.map((int val) => val.toDouble()).toList()));
   }
+
+  /// The most recent note detected.
+  Note lastNote = Note.a4();
 
   @override
   Widget build(BuildContext context) {
@@ -55,14 +58,51 @@ class TunerScreenState extends State<TunerScreen> {
             }
 
             PitchDetectorResult pitchResult = snapshot.data!;
-            if (!pitchResult.pitched) return const Text("x");
+            if (pitchResult.pitched) {
+              lastNote = Note.fromFrequency(pitchResult.pitch);
+            }
 
-            Note note = Note.fromFrequency(pitchResult.pitch);
-
-            return Padding(
-                padding: const EdgeInsets.all(10),
-                child: Text(
-                    "${note.name} ${note.pitchOffset} | ${pitchResult.probability * 100}%"));
+            return RadialGauge(
+              axes: [
+                RadialGaugeAxis(
+                    minValue: -50,
+                    maxValue: 50,
+                    minAngle: -90,
+                    maxAngle: 90,
+                    ticks: [
+                      RadialTicks(
+                          interval: 10,
+                          alignment: RadialTickAxisAlignment.inside,
+                          length: 0.1,
+                          color: Theme.of(context).primaryColor,
+                          children: [
+                            RadialTicks(
+                              ticksInBetween: 4,
+                              length: 0.05,
+                              color: Theme.of(context).hintColor,
+                            )
+                          ]),
+                    ],
+                    pointers: [
+                      RadialNeedlePointer(
+                        value: lastNote.pitchOffset,
+                        thicknessStart: 20,
+                        thicknessEnd: 0,
+                        length: 0.8,
+                        knobRadiusAbsolute: 10,
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).primaryColor,
+                            Theme.of(context).primaryColorDark,
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          stops: const [0.5, 0.5],
+                        ),
+                      ),
+                    ]),
+              ],
+            );
           },
         );
       },
