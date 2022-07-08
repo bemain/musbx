@@ -34,7 +34,7 @@ class TunerScreenState extends State<TunerScreen> {
   List<Note> previousNotes = <Note>[Note.a4()];
 
   /// The number of notes to take average of.
-  static const int averageNotesN = 5;
+  static const int averageNotesN = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -71,16 +71,17 @@ class TunerScreenState extends State<TunerScreen> {
             }
 
             // Calculate average pitch iffset
-            List<double> pitchOffsets =
-                previousNotes.map((note) => note.pitchOffset).toList();
-            double avgPitchOffset =
-                pitchOffsets.reduce((a, b) => a + b) / pitchOffsets.length;
+            List<double> previousFrequencies =
+                previousNotes.map((note) => note.frequency).toList();
+            double avgFrequency = previousFrequencies.reduce((a, b) => a + b) /
+                previousFrequencies.length;
+            Note avgNote = Note.fromFrequency(avgFrequency);
 
             return Stack(
               children: [
                 Positioned(
                   left: 75,
-                  top: 115,
+                  top: 118,
                   child: Text(
                     previousNotes.last.name,
                     style: Theme.of(context).textTheme.displayMedium,
@@ -90,13 +91,13 @@ class TunerScreenState extends State<TunerScreen> {
                   left: 250,
                   top: 125,
                   child: Text(
-                    (avgPitchOffset.toInt().isNegative)
-                        ? "${avgPitchOffset.toInt()}¢"
-                        : "+${avgPitchOffset.toInt()}¢",
+                    (avgNote.pitchOffset.toInt().isNegative)
+                        ? "${avgNote.pitchOffset.toInt()}¢"
+                        : "+${avgNote.pitchOffset.toInt()}¢",
                     style: Theme.of(context).textTheme.displaySmall,
                   ),
                 ),
-                TunerGauge(averagePitchOffset: avgPitchOffset),
+                TunerGauge(pitchOffset: avgNote.pitchOffset),
               ],
             );
           },
