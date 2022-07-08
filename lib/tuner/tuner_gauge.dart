@@ -8,8 +8,24 @@ class TunerGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Color> needleColors = (pitchOffset.abs() < 10)
+        ? [Colors.lightGreen, Colors.green]
+        : [
+            Theme.of(context).primaryColor,
+            Theme.of(context).primaryColorDark,
+          ];
+
     return RadialGauge(
       axes: [
+        RadialGaugeAxis(
+          minValue: -1,
+          maxValue: 1,
+          minAngle: -18,
+          maxAngle: 18,
+          radius: 0,
+          width: 0.8,
+          color: Colors.green.withOpacity(0.1),
+        ),
         RadialGaugeAxis(
           minValue: -50,
           maxValue: 50,
@@ -29,6 +45,11 @@ class TunerGauge extends StatelessWidget {
                 )
               ],
             ),
+            RadialTicks(
+              values: [for (double i = -9; i <= 9; i++) i]..remove(0),
+              length: 0.05,
+              color: Colors.green,
+            )
           ],
           pointers: [
             RadialNeedlePointer(
@@ -38,10 +59,7 @@ class TunerGauge extends StatelessWidget {
               length: 0.8,
               knobRadiusAbsolute: 10,
               gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).primaryColor,
-                  Theme.of(context).primaryColorDark,
-                ],
+                colors: needleColors,
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 stops: const [0.5, 0.5],
