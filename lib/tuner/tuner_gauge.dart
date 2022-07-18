@@ -1,14 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:gauges/gauges.dart';
+import 'package:musbx/tuner/note.dart';
 
 class TunerGauge extends StatelessWidget {
-  const TunerGauge({super.key, required this.pitchOffset});
+  const TunerGauge({super.key, required this.note});
 
-  final double pitchOffset;
+  final Note note;
 
   @override
   Widget build(BuildContext context) {
-    List<Color> needleColors = (pitchOffset.abs() < 10)
+    return Stack(
+      children: [
+        Positioned(
+          left: 75,
+          top: 118,
+          child: Text(
+            note.name,
+            style: Theme.of(context).textTheme.displayMedium,
+          ),
+        ),
+        Positioned(
+          left: 250,
+          top: 125,
+          child: Text(
+            (note.pitchOffset.toInt().isNegative)
+                ? "${note.pitchOffset.toInt()}¢"
+                : "+${note.pitchOffset.toInt()}¢",
+            style: Theme.of(context).textTheme.displaySmall,
+          ),
+        ),
+        _buildGauge(context),
+      ],
+    );
+  }
+
+  Widget _buildGauge(BuildContext context) {
+    // If note is in tune, make needle green
+    List<Color> needleColors = (note.pitchOffset.abs() < 10)
         ? [Colors.lightGreen, Colors.green]
         : [
             Theme.of(context).primaryColor,
@@ -53,7 +81,7 @@ class TunerGauge extends StatelessWidget {
           ],
           pointers: [
             RadialNeedlePointer(
-              value: pitchOffset,
+              value: note.pitchOffset,
               thicknessStart: 20,
               thicknessEnd: 0,
               length: 0.8,

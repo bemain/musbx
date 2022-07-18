@@ -70,36 +70,14 @@ class TunerScreenState extends State<TunerScreen> {
               }
             }
 
-            // Calculate average pitch iffset
+            // Calculate average note
             List<double> previousFrequencies =
                 previousNotes.map((note) => note.frequency).toList();
             double avgFrequency = previousFrequencies.reduce((a, b) => a + b) /
                 previousFrequencies.length;
             Note avgNote = Note.fromFrequency(avgFrequency);
 
-            return Stack(
-              children: [
-                Positioned(
-                  left: 75,
-                  top: 118,
-                  child: Text(
-                    previousNotes.last.name,
-                    style: Theme.of(context).textTheme.displayMedium,
-                  ),
-                ),
-                Positioned(
-                  left: 250,
-                  top: 125,
-                  child: Text(
-                    (avgNote.pitchOffset.toInt().isNegative)
-                        ? "${avgNote.pitchOffset.toInt()}¢"
-                        : "+${avgNote.pitchOffset.toInt()}¢",
-                    style: Theme.of(context).textTheme.displaySmall,
-                  ),
-                ),
-                TunerGauge(pitchOffset: avgNote.pitchOffset),
-              ],
-            );
+            return TunerGauge(note: avgNote);
           },
         );
       },
