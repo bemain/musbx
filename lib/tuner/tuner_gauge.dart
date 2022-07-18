@@ -11,25 +11,33 @@ class TunerGauge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Positioned(
-          left: 75,
-          top: 118,
-          child: Text(
-            note.name,
-            style: Theme.of(context).textTheme.displayMedium,
+        Positioned.fill(
+          child: Align(
+            alignment: const Alignment(-0.55, 0.7),
+            child: Text(
+              note.name,
+              style: Theme.of(context).textTheme.displayMedium,
+            ),
           ),
         ),
-        Positioned(
-          left: 250,
-          top: 125,
-          child: Text(
-            (note.pitchOffset.toInt().isNegative)
-                ? "${note.pitchOffset.toInt()}¢"
-                : "+${note.pitchOffset.toInt()}¢",
-            style: Theme.of(context).textTheme.displaySmall,
+        Positioned.fill(
+          child: Align(
+            alignment: const Alignment(0.6, 0.7),
+            child: Text(
+              (note.pitchOffset.toInt().isNegative)
+                  ? "${note.pitchOffset.toInt()}¢"
+                  : "+${note.pitchOffset.toInt()}¢",
+              style: Theme.of(context).textTheme.displaySmall,
+            ),
           ),
         ),
-        _buildGauge(context),
+        ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: 0.53,
+            child: _buildGauge(context),
+          ),
+        ),
       ],
     );
   }
