@@ -29,6 +29,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  
+  gauges: ^1.0.0
+  pitch_detector_dart: ^0.0.2
+  mic_stream: ^0.6.1
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
