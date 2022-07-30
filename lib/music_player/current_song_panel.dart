@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/pick_file_button.dart';
+import 'package:musbx/music_player/pick_song_button.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class CurrentSongPanel extends StatelessWidget {
@@ -34,7 +34,7 @@ class CurrentSongPanel extends StatelessWidget {
             ],
           ),
         ),
-        const PickFileButton(),
+        const PickSongButton(),
       ],
     );
   }

@@ -2,8 +2,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 
-class PickFileButton extends StatelessWidget {
-  const PickFileButton({super.key});
+class PickSongButton extends StatelessWidget {
+  /// Button for picking a song from the device and loading it to [MusicPlayer].
+  const PickSongButton({super.key});
 
   @override
   Widget build(BuildContext context) {

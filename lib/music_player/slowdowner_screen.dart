@@ -11,8 +11,8 @@ class MusicPlayerScreen extends StatefulWidget {
   /// Screen that allows the user to select and play a song.
   ///
   /// Includes:
-  ///  - Buttons; play/pause, forward, rewind
-  ///  - Slider for seeking a position in the song
+  ///  - Buttons to play/pause, forward and rewind.
+  ///  - Slider for seeking a position in the song.
   ///  - Sliders for changing pitch and speed of the song.
   const MusicPlayerScreen({super.key});
 
@@ -22,14 +22,6 @@ class MusicPlayerScreen extends StatefulWidget {
 
 class MusicPlayerScreenState extends State<MusicPlayerScreen> {
   final MusicPlayer player = MusicPlayer.instance;
-
-  @override
-  void initState() {
-    super.initState();
-
-    player.setAsset("assets/youve_got.mp3");
-    player.songTitle = "You've got a friend in me - Randy Newman";
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 
-/// Slider for seeking a position on [MusicPlayer.audioPlayer].
-/// Also displays current position and duration of current song.
 class PositionSlider extends StatefulWidget {
+  /// Slider for seeking a position in the song played by [MusicPlayer].
+  /// Also displays current position and duration of current song.
   const PositionSlider({super.key});
 
   @override
@@ -13,6 +13,10 @@ class PositionSlider extends StatefulWidget {
 class PositionSliderState extends State<PositionSlider> {
   final MusicPlayer player = MusicPlayer.instance;
 
+  Duration _position = Duration.zero;
+
+  /// The position used internally to avoid updating [MusicPlayer]'s
+  /// position too often.
   Duration get position => _position;
   set position(Duration value) {
     _position = value;
@@ -23,8 +27,6 @@ class PositionSliderState extends State<PositionSlider> {
       _position = player.duration ?? const Duration(seconds: 1);
     }
   }
-
-  Duration _position = Duration.zero;
 
   @override
   void initState() {

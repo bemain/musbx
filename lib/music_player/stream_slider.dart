@@ -64,10 +64,11 @@ class StreamSliderState extends State<StreamSlider> {
 
     // Rebuild whenever [widget.stream] updates
     widget.stream.listen((newValue) {
-      if (value == newValue) return;
-      setState(() {
-        value = newValue;
-      });
+      if (value != newValue) {
+        setState(() {
+          value = newValue;
+        });
+      }
     });
   }
 
