@@ -23,8 +23,8 @@ class PositionSliderState extends State<PositionSlider> {
 
     if (_position.isNegative) _position = Duration.zero; // Clamp lower
     // Clamp higher
-    if (_position > (player.duration ?? const Duration(seconds: 1))) {
-      _position = player.duration ?? const Duration(seconds: 1);
+    if (_position > (player.duration ?? Duration.zero)) {
+      _position = player.duration ?? Duration.zero;
     }
   }
 
