@@ -14,6 +14,7 @@ class MusicPlayerScreen extends StatefulWidget {
   ///  - Buttons to play/pause, forward and rewind.
   ///  - Slider for seeking a position in the song.
   ///  - Sliders for changing pitch and speed of the song.
+  ///  - Label showing current song, and button to load a song from device.
   const MusicPlayerScreen({super.key});
 
   @override
