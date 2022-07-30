@@ -14,27 +14,31 @@ class TunerScreen extends StatefulWidget {
 }
 
 class TunerScreenState extends State<TunerScreen> {
-  final PitchDetector pitchDetector = PitchDetector(44100, 1792);
+  /// The pitch detected from the microphone.
   Stream<PitchDetectorResult>? pitchStream;
-  late final Future initAudioFuture = initAudio();
 
-  /// Create the stream for getting pitch from microphone
-  Future<void> initAudio() async {
-    Stream<List<int>>? audioStream =
-        await MicStream.microphone(sampleRate: 44100);
-    assert(
-      audioStream != null,
-      "TUNER: Unable to capture audio from microphone",
-    );
-    pitchStream = audioStream!.map((audio) => pitchDetector
-        .getPitch(audio.map((int val) => val.toDouble()).toList()));
-  }
+  /// Future for creating [pitchStream].
+  late final Future initAudioFuture = initAudio();
 
   /// The [averageNotesN] most recent notes detected.
   List<Note> previousNotes = <Note>[Note.a4()];
 
   /// The number of notes to take average of.
   static const int averageNotesN = 10;
+
+  /// Create the stream for getting pitch from microphone.
+  Future<void> initAudio() async {
+    final Stream<List<int>>? audioStream =
+        await MicStream.microphone(sampleRate: 44100);
+    assert(
+      audioStream != null,
+      "TUNER: Unable to capture audio from microphone",
+    );
+
+    final PitchDetector pitchDetector = PitchDetector(44100, 1792);
+    pitchStream = audioStream!.map((audio) => pitchDetector
+        .getPitch(audio.map((int val) => val.toDouble()).toList()));
+  }
 
   @override
   Widget build(BuildContext context) {

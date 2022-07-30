@@ -3,8 +3,13 @@ import 'package:gauges/gauges.dart';
 import 'package:musbx/tuner/note.dart';
 
 class TunerGauge extends StatelessWidget {
+  /// Gauge for showing how out of tune [note] is.
+  ///
+  /// Includes labels displaying the name of [note]
+  /// and how many cents out of tune it is.
   const TunerGauge({super.key, required this.note});
 
+  /// The note to display. Shows how out of tune it is and what note it is.
   final Note note;
 
   @override
