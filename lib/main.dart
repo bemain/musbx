@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/bottom_bar.dart';
-import 'package:musbx/music_player/slowdowner_screen.dart';
+import 'package:musbx/music_player/music_player_screen.dart';
 
 void main() {
   runApp(const MyApp());
