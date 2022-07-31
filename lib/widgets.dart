@@ -37,3 +37,47 @@ class ContinuousButton extends StatelessWidget {
     );
   }
 }
+
+class InfoScreen extends StatelessWidget {
+  const InfoScreen({Key? key, required this.icon, required this.text})
+      : super(key: key);
+
+  final Widget icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[icon, Text(text)]));
+  }
+}
+
+class ErrorScreen extends StatelessWidget {
+  const ErrorScreen({Key? key, required this.text}) : super(key: key);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoScreen(
+      icon: const Icon(Icons.error),
+      text: text,
+    );
+  }
+}
+
+class LoadingScreen extends StatelessWidget {
+  const LoadingScreen({Key? key, required this.text}) : super(key: key);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoScreen(
+      icon: const CircularProgressIndicator(),
+      text: text,
+    );
+  }
+}
