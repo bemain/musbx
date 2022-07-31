@@ -84,8 +84,8 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
       onClear: () {
         player.setSpeed(1.0);
       },
-      min: 0.2,
-      max: 2,
+      min: 0.1,
+      max: 1.9,
       startValue: 1.0,
       divisions: 18,
       labelFractionDigits: 1,
