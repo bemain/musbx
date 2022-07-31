@@ -31,21 +31,15 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(children: [
-            const Icon(Icons.music_note_rounded),
-            Text(
-              " Pitch",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ]),
+          Text(
+            " Pitch",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           buildPitchSlider(),
-          Row(children: [
-            const Icon(Icons.speed_rounded),
-            Text(
-              "  Speed",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ]),
+          Text(
+            "  Speed",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           buildSpeedSlider(),
           const Divider(),
           const PositionSlider(),
