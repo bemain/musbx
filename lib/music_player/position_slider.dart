@@ -33,16 +33,14 @@ class PositionSliderState extends State<PositionSlider> {
     super.initState();
 
     // When a new song is loaded, rebuild
-    player.durationStream.listen((duration) {
+    player.durationStream.listen((final Duration? duration) {
       setState(() {
-        if (duration != null && position > duration) {
-          position = duration;
-        }
+        position = Duration.zero;
       });
     });
 
     // When position changes, update it locally
-    player.positionStream.listen((position) {
+    player.positionStream.listen((final Duration position) {
       setState(() {
         this.position = position;
       });
@@ -51,35 +49,44 @@ class PositionSliderState extends State<PositionSlider> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _buildDurationText(position),
-        Expanded(
-          child: Slider(
-            min: 0,
-            max: player.duration?.inSeconds.roundToDouble() ?? 1,
-            value: position.inSeconds.roundToDouble(),
-            onChanged: (double value) {
-              setState(() {
-                position = Duration(seconds: value.round());
-              });
-            },
-            onChangeEnd: (double value) {
-              player.seek(position);
-            },
-          ),
-        ),
-        _buildDurationText(player.duration ?? Duration.zero),
-      ],
+    return ValueListenableBuilder(
+      valueListenable: player.songTitleNotifier,
+      builder: (context, songTitle, child) {
+        return Row(
+          children: [
+            _buildDurationText(position),
+            Expanded(
+              child: Slider(
+                min: 0,
+                max: player.duration?.inSeconds.roundToDouble() ?? 1,
+                value: position.inSeconds.roundToDouble(),
+                onChanged: (songTitle == null)
+                    ? null
+                    : (double value) {
+                        setState(() {
+                          position = Duration(seconds: value.round());
+                        });
+                      },
+                onChangeEnd: (double value) {
+                  player.seek(position);
+                },
+              ),
+            ),
+            _buildDurationText(player.duration),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildDurationText(Duration duration) {
+  Widget _buildDurationText(Duration? duration) {
     return Text(
-      RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
-              .firstMatch("$duration")
-              ?.group(1) ??
-          "$duration",
+      (duration == null)
+          ? "-- : --"
+          : RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
+                  .firstMatch("$duration")
+                  ?.group(1) ??
+              "$duration",
       style: Theme.of(context).textTheme.caption,
     );
   }
