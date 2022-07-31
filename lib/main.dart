@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/bottom_bar.dart';
+import 'package:musbx/music_player/music_player_screen.dart';
 import 'package:musbx/tuner/tuner_screen.dart';
 
 void main() {
@@ -35,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text("Home Page"),
       ),
-      body: TunerScreen(),
+      body: MusicPlayerScreen(),
       bottomNavigationBar: const MetronomeBottomBar(),
     );
   }
