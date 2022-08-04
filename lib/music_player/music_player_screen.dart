@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/card_list.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
 import 'package:musbx/music_player/stream_slider.dart';
@@ -26,28 +27,30 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            " Pitch",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          buildPitchSlider(),
-          Text(
-            "  Speed",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          buildSpeedSlider(),
-          const Divider(),
-          const PositionSlider(),
-          const ButtonPanel(),
-          const Divider(),
-          const CurrentSongPanel(),
-        ],
-      ),
+    return CardList(
+      children: [
+        const CurrentSongPanel(),
+        Column(
+          children: [
+            Text(
+              " Pitch",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            buildPitchSlider(),
+            Text(
+              "  Speed",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            buildSpeedSlider(),
+          ],
+        ),
+        Column(
+          children: const [
+            PositionSlider(),
+            ButtonPanel(),
+          ],
+        ),
+      ],
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mic_stream/mic_stream.dart';
+import 'package:musbx/card_list.dart';
 import 'package:musbx/tuner/note.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/widgets.dart';
@@ -81,7 +82,7 @@ class TunerScreenState extends State<TunerScreen> {
                 previousFrequencies.length;
             Note avgNote = Note.fromFrequency(avgFrequency);
 
-            return TunerGauge(note: avgNote);
+            return CardList(children: [TunerGauge(note: avgNote)]);
           },
         );
       },
