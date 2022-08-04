@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 
@@ -28,23 +30,41 @@ class PositionSliderState extends State<PositionSlider> {
     }
   }
 
+  /// The subsciption listening for changes to [MusicPlayer.duration]
+  late StreamSubscription<Duration?> durationSubscription;
+
+  /// The subsciption listening for changes to [MusicPlayer.position]
+  late StreamSubscription<Duration> positionSubscription;
+
   @override
   void initState() {
     super.initState();
 
     // When a new song is loaded, rebuild
-    player.durationStream.listen((final Duration? duration) {
-      setState(() {
-        position = Duration.zero;
-      });
-    });
+    durationSubscription = player.durationStream.listen(
+      (final Duration? duration) {
+        setState(() {
+          position = Duration.zero;
+        });
+      },
+    );
 
     // When position changes, update it locally
-    player.positionStream.listen((final Duration position) {
-      setState(() {
-        this.position = position;
-      });
-    });
+    positionSubscription = player.positionStream.listen(
+      (final Duration position) {
+        setState(() {
+          this.position = position;
+        });
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    durationSubscription.cancel();
+    positionSubscription.cancel();
+
+    super.dispose();
   }
 
   @override

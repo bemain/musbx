@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 class StreamSlider extends StatefulWidget {
@@ -58,18 +60,28 @@ class StreamSlider extends StatefulWidget {
 class StreamSliderState extends State<StreamSlider> {
   late double value = widget.startValue;
 
+  /// The subsciption listening for updates on [widget.stream].
+  late StreamSubscription<double> subscription;
+
   @override
   void initState() {
     super.initState();
 
     // Rebuild whenever [widget.stream] updates
-    widget.stream.listen((newValue) {
+    subscription = widget.stream.listen((newValue) {
       if (value != newValue) {
         setState(() {
           value = newValue;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    subscription.cancel();
+
+    super.dispose();
   }
 
   @override
