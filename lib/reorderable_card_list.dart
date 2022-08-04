@@ -4,10 +4,12 @@ class ReorderableCardList extends StatefulWidget {
   const ReorderableCardList({
     super.key,
     required this.children,
+    this.onReorder,
     this.onReorderDone,
   });
 
   final List<Widget> children;
+  final Function(List<Widget> reorderedChildren)? onReorder;
   final Function(List<Widget> reorderedChildren)? onReorderDone;
 
   @override
@@ -30,6 +32,7 @@ class ReorderableCardListState extends State<ReorderableCardList> {
             reorderedChildren.insert(newIndex, child);
           }
         });
+        widget.onReorder?.call(reorderedChildren);
       },
       footer: Padding(
         padding: const EdgeInsets.only(top: 10),
