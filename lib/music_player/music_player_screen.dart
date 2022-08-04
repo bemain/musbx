@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/card_list.dart';
+import 'package:musbx/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
 import 'package:musbx/music_player/stream_slider.dart';
@@ -27,8 +27,9 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CardList(
-      children: [
+    return EditableScreen(
+      title: "Music Player",
+      widgets: [
         const CurrentSongPanel(),
         Column(
           children: [
