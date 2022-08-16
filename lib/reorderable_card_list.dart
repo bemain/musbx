@@ -5,12 +5,10 @@ class ReorderableCardList extends StatefulWidget {
     super.key,
     required this.children,
     this.onReorder,
-    this.onReorderDone,
   });
 
   final List<Widget> children;
   final Function(List<Widget> reorderedChildren)? onReorder;
-  final Function(List<Widget> reorderedChildren)? onReorderDone;
 
   @override
   State<StatefulWidget> createState() => ReorderableCardListState();
@@ -34,19 +32,6 @@ class ReorderableCardListState extends State<ReorderableCardList> {
         });
         widget.onReorder?.call(reorderedChildren);
       },
-      footer: Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child: ElevatedButton(
-          onPressed: () {
-            widget.onReorderDone?.call(reorderedChildren);
-          },
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-            padding: const EdgeInsets.all(15),
-          ),
-          child: const Icon(Icons.check),
-        ),
-      ),
       children: reorderedChildren
           .map((Widget widget) => Card(
                 key: ValueKey(widget),

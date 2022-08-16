@@ -35,12 +35,20 @@ class EditableScreenState extends State<EditableScreen> {
             ),
             body: ReorderableCardList(
               children: widgets,
-              onReorderDone: (reorderedChildren) {
+              onReorder: (reorderedWidgets) {
+                widgets = reorderedWidgets;
+              },
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
                 setState(() {
                   editing = false;
                 });
               },
+              child: const Icon(Icons.check),
             ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
           )
         : Scaffold(
             appBar: AppBar(
