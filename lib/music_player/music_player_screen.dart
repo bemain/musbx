@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:musbx/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
@@ -57,8 +55,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
   Widget buildPitchSlider() {
     return StreamSlider(
-      stream: player.pitchStream
-          .map((double pitch) => (12 * log(pitch) / log(2)).roundToDouble()),
+      stream: player.pitchSemitonesStream,
       onChangeEnd: (double value) {
         player.setPitchSemitones(value);
       },
@@ -67,7 +64,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
       },
       min: -9,
       max: 9,
-      startValue: 0,
+      initialValue: MusicPlayer.instance.pitchSemitones,
       divisions: 18,
       labelFractionDigits: 0,
     );
@@ -84,7 +81,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
       },
       min: 0.1,
       max: 1.9,
-      startValue: 1.0,
+      initialValue: MusicPlayer.instance.speed,
       divisions: 18,
       labelFractionDigits: 1,
     );

@@ -14,7 +14,7 @@ class StreamSlider extends StatefulWidget {
     this.onChanged,
     this.onChangeEnd,
     this.onClear,
-    this.startValue = 0.0,
+    this.initialValue = 0.0,
     this.min = 0.0,
     this.max = 1.0,
     this.divisions,
@@ -36,7 +36,7 @@ class StreamSlider extends StatefulWidget {
   final Function()? onClear;
 
   /// Initial value for the slider.
-  final double startValue;
+  final double initialValue;
 
   /// The minimum value the user can select.
   /// See [Slider.min]
@@ -58,7 +58,7 @@ class StreamSlider extends StatefulWidget {
 }
 
 class StreamSliderState extends State<StreamSlider> {
-  late double value = widget.startValue;
+  late double value = widget.initialValue;
 
   /// The subsciption listening for updates on [widget.stream].
   late StreamSubscription<double> subscription;

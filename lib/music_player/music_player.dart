@@ -18,6 +18,10 @@ class MusicPlayer extends AudioPlayer {
   /// How much the pitch will be shifted, in semitones.
   double get pitchSemitones => (12 * log(pitch) / log(2)).toDouble();
 
+  /// How much the pitch will be shifted, in semitones.
+  Stream<double> get pitchSemitonesStream => pitchStream
+      .map((double pitch) => (12 * log(pitch) / log(2)).roundToDouble());
+
   /// Set how much the pitch will be shifted, in semitones.
   Future<void> setPitchSemitones(double semitones) async {
     await setPitch(pow(2, semitones / 12).toDouble());
