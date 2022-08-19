@@ -13,57 +13,59 @@ class EditableScreen extends StatefulWidget {
 }
 
 class EditableScreenState extends State<EditableScreen> {
-  late List<Widget> widgets = widget.widgets;
+  late List<int> widgetOrder =
+      List.generate(widget.widgets.length, (index) => index);
 
-  bool editing = false;
+  bool editing = true;
 
   @override
   Widget build(BuildContext context) {
-    return editing
-        ? Scaffold(
-            appBar: AppBar(
-              title: Text("Editing ${widget.title}..."),
-              actions: [
-                IconButton(
-                    onPressed: () {
-                      setState(() {
-                        editing = false;
-                      });
-                    },
-                    icon: const Icon(Icons.done))
-              ],
-            ),
-            body: ReorderableCardList(
-              children: widgets,
-              onReorder: (reorderedWidgets) {
-                widgets = reorderedWidgets;
+    List<Widget> sortedWidgets = widgetOrder
+        .map(
+          (widgetIndex) => widget.widgets[widgetIndex],
+        )
+        .toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(editing ? "Editing ${widget.title}..." : widget.title),
+        actions: [
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  editing = !editing;
+                });
               },
-            ),
-            floatingActionButton: FloatingActionButton(
+              icon: Icon(editing ? Icons.done : Icons.edit)),
+        ],
+      ),
+      floatingActionButton: editing
+          ? FloatingActionButton(
               onPressed: () {
                 setState(() {
                   editing = false;
                 });
               },
               child: const Icon(Icons.check),
-            ),
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.centerFloat,
-          )
-        : Scaffold(
-            appBar: AppBar(
-              title: Text(widget.title),
-              actions: [
-                IconButton(
-                    onPressed: () {
-                      setState(() {
-                        editing = true;
-                      });
-                    },
-                    icon: const Icon(Icons.edit))
-              ],
-            ),
-            body: CardList(children: widgets),
-          );
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      body: editing
+          ? ReorderableCardList(
+              children: sortedWidgets,
+              onReorder: (int oldIndex, int newIndex) {
+                setState(() {
+                  int widgetIndex = widgetOrder[oldIndex];
+                  widgetOrder.remove(widgetIndex);
+                  if (newIndex > widgetOrder.length) {
+                    widgetOrder.add(widgetIndex);
+                  } else {
+                    widgetOrder.insert(newIndex, widgetIndex);
+                  }
+                });
+              },
+            )
+          : CardList(children: sortedWidgets),
+    );
   }
 }

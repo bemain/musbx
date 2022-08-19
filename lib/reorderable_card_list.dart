@@ -1,38 +1,20 @@
 import 'package:flutter/material.dart';
 
-class ReorderableCardList extends StatefulWidget {
+class ReorderableCardList extends StatelessWidget {
   const ReorderableCardList({
     super.key,
     required this.children,
-    this.onReorder,
+    required this.onReorder,
   });
 
   final List<Widget> children;
-  final Function(List<Widget> reorderedChildren)? onReorder;
-
-  @override
-  State<StatefulWidget> createState() => ReorderableCardListState();
-}
-
-class ReorderableCardListState extends State<ReorderableCardList> {
-  late List<Widget> reorderedChildren = widget.children;
+  final void Function(int oldIndex, int newIndex) onReorder;
 
   @override
   Widget build(BuildContext context) {
     return ReorderableListView(
-      onReorder: (oldIndex, newIndex) {
-        setState(() {
-          Widget child = reorderedChildren[oldIndex];
-          reorderedChildren.remove(child);
-          if (newIndex > reorderedChildren.length) {
-            reorderedChildren.add(child);
-          } else {
-            reorderedChildren.insert(newIndex, child);
-          }
-        });
-        widget.onReorder?.call(reorderedChildren);
-      },
-      children: reorderedChildren
+      onReorder: onReorder,
+      children: children
           .map((Widget widget) => Card(
                 key: ValueKey(widget),
                 child: Padding(
