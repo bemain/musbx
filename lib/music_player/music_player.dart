@@ -1,7 +1,10 @@
 import 'dart:math';
 
+import 'package:audio_service/audio_service.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/music_player/audio_handler.dart';
 
 /// Singleton for playing songs.
 class MusicPlayer extends AudioPlayer {
@@ -21,5 +24,15 @@ class MusicPlayer extends AudioPlayer {
   /// Set how much the pitch will be shifted, in semitones.
   Future<void> setPitchSemitones(double semitones) async {
     await setPitch(pow(2, semitones / 12).toDouble());
+  }
+
+  Future<void> playFile(PlatformFile file) async {
+    songTitle = file.name;
+    await setFilePath(file.path!);
+    MyAudioHandler.instance.mediaItem.add(MediaItem(
+      id: file.path!,
+      title: file.name,
+      duration: duration,
+    ));
   }
 }
