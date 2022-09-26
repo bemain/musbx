@@ -36,6 +36,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.9.0"
+  audio_service:
+    dependency: "direct main"
+    description:
+      name: audio_service
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.18.7"
+  audio_service_platform_interface:
+    dependency: transitive
+    description:
+      name: audio_service_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
+  audio_service_web:
+    dependency: transitive
+    description:
+      name: audio_service_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.1"
   audio_session:
     dependency: transitive
     description:
@@ -146,6 +167,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_cache_manager:
+    dependency: transitive
+    description:
+      name: flutter_cache_manager
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.3.0"
   flutter_launcher_icons:
     dependency: "direct dev"
     description:
@@ -387,6 +415,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
+  pedantic:
+    dependency: transitive
+    description:
+      name: pedantic
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.11.1"
   permission_handler:
     dependency: transitive
     description:
@@ -532,6 +567,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.9.0"
+  sqflite:
+    dependency: transitive
+    description:
+      name: sqflite
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
+  sqflite_common:
+    dependency: transitive
+    description:
+      name: sqflite_common
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.3.0"
   stack_trace:
     dependency: transitive
     description:
@@ -553,6 +602,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.1"
+  synchronized:
+    dependency: transitive
+    description:
+      name: synchronized
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0+3"
   term_glyph:
     dependency: transitive
     description:
@@ -660,4 +716,4 @@ packages:
     version: "3.1.1"
 sdks:
   dart: ">=2.18.0-139.0.dev <3.0.0"
-  flutter: ">=3.0.0"
+  flutter: ">=3.3.0-0"

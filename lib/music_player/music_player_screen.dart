@@ -1,10 +1,8 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:musbx/editable_screen/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
-import 'package:musbx/music_player/stream_slider.dart';
-import 'package:musbx/music_player/position_slider.dart';
+import 'package:musbx/music_player/labeled_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
@@ -22,67 +20,117 @@ class MusicPlayerScreen extends StatefulWidget {
 }
 
 class MusicPlayerScreenState extends State<MusicPlayerScreen> {
-  final MusicPlayer player = MusicPlayer.instance;
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            " Pitch",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          buildPitchSlider(),
-          Text(
-            "  Speed",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          buildSpeedSlider(),
-          const Divider(),
-          const PositionSlider(),
-          const ButtonPanel(),
-          const Divider(),
-          const CurrentSongPanel(),
-        ],
-      ),
+    return EditableScreen(
+      title: "Music Player",
+      widgets: [
+        const CurrentSongPanel(),
+        Column(
+          children: [
+            Text(
+              "Pitch",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            buildPitchSlider(),
+            Text(
+              "Speed",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            buildSpeedSlider(),
+          ],
+        ),
+        Column(
+          children: [
+            buildPositionSlider(),
+            const ButtonPanel(),
+          ],
+        ),
+      ],
     );
   }
 
   Widget buildPitchSlider() {
-    return StreamSlider(
-      stream: player.pitchStream
-          .map((double pitch) => (12 * log(pitch) / log(2)).roundToDouble()),
-      onChangeEnd: (double value) {
-        player.setPitchSemitones(value);
-      },
-      onClear: () {
-        player.setPitchSemitones(0);
-      },
-      min: -9,
-      max: 9,
-      startValue: 0,
-      divisions: 18,
-      labelFractionDigits: 0,
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.pitchSemitonesNotifier,
+      builder: (context, pitch, child) => LabeledSlider(
+        value: pitch,
+        nDigits: 0,
+        clearDisabled: pitch == 0,
+        onClear: () {
+          musicPlayer.setPitchSemitones(0);
+        },
+        child: Slider(
+            value: pitch,
+            min: -9,
+            max: 9,
+            divisions: 18,
+            onChanged: musicPlayer.setPitchSemitones),
+      ),
     );
   }
 
   Widget buildSpeedSlider() {
-    return StreamSlider(
-      stream: player.speedStream,
-      onChangeEnd: (double value) {
-        player.setSpeed(value);
-      },
-      onClear: () {
-        player.setSpeed(1.0);
-      },
-      min: 0.1,
-      max: 1.9,
-      startValue: 1.0,
-      divisions: 18,
-      labelFractionDigits: 1,
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.speedNotifier,
+      builder: (context, speed, child) => LabeledSlider(
+        value: speed,
+        nDigits: 1,
+        clearDisabled: speed == 1.0,
+        onClear: () {
+          musicPlayer.setSpeed(1.0);
+        },
+        child: Slider(
+            value: speed,
+            min: 0.1,
+            max: 1.9,
+            divisions: 18,
+            onChanged: musicPlayer.setSpeed),
+      ),
+    );
+  }
+
+  Widget buildPositionSlider() {
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.durationNotifier,
+      builder: (context, duration, child) => ValueListenableBuilder(
+        valueListenable: musicPlayer.positionNotifier,
+        builder: (context, position, child) {
+          return Row(
+            children: [
+              _buildDurationText(position),
+              Expanded(
+                child: Slider(
+                  min: 0,
+                  max: duration?.inMilliseconds.roundToDouble() ?? 0,
+                  value: position.inMilliseconds.roundToDouble(),
+                  onChanged: (musicPlayer.songTitle == null)
+                      ? null
+                      : (double value) {
+                          musicPlayer
+                              .seek(Duration(milliseconds: value.round()));
+                        },
+                ),
+              ),
+              _buildDurationText(duration),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDurationText(Duration? duration) {
+    return Text(
+      (duration == null)
+          ? "-- : --"
+          : RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
+                  .firstMatch("$duration")
+                  ?.group(1) ??
+              "$duration",
+      style: Theme.of(context).textTheme.caption,
     );
   }
 }

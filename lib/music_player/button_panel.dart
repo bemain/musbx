@@ -9,10 +9,10 @@ class ButtonPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MusicPlayer player = MusicPlayer.instance;
+    final MusicPlayer musicPlayer = MusicPlayer.instance;
 
     return ValueListenableBuilder(
-      valueListenable: player.songTitleNotifier,
+      valueListenable: musicPlayer.songTitleNotifier,
       builder: (context, songTitle, child) {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -21,28 +21,27 @@ class ButtonPanel extends StatelessWidget {
               onPressed: (songTitle == null)
                   ? null
                   : () {
-                      player.seek(player.position - const Duration(seconds: 1));
+                      musicPlayer.seek(
+                          musicPlayer.position - const Duration(seconds: 1));
                     },
               onLongPress: (songTitle == null)
                   ? null
                   : () {
-                      player.seek(Duration.zero);
+                      musicPlayer.seek(Duration.zero);
                     },
               child: const Icon(Icons.fast_rewind_rounded, size: 40),
             ),
-            StreamBuilder<bool>(
-              stream: player.playingStream,
-              initialData: false,
-              builder: (context, snapshot) {
-                bool isPlaying = snapshot.data!;
+            ValueListenableBuilder<bool>(
+              valueListenable: musicPlayer.isPlayingNotifier,
+              builder: (context, isPlaying, child) {
                 return TextButton(
                   onPressed: (songTitle == null)
                       ? null
                       : () {
                           if (isPlaying) {
-                            player.pause();
+                            musicPlayer.pause();
                           } else {
-                            player.play();
+                            musicPlayer.play();
                           }
                         },
                   child: Icon(
@@ -56,7 +55,8 @@ class ButtonPanel extends StatelessWidget {
               onPressed: (songTitle == null)
                   ? null
                   : () {
-                      player.seek(player.position + const Duration(seconds: 1));
+                      musicPlayer.seek(
+                          musicPlayer.position + const Duration(seconds: 1));
                     },
               child: const Icon(Icons.fast_forward_rounded, size: 40),
             ),
