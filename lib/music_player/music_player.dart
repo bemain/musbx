@@ -32,6 +32,7 @@ class MusicPlayer {
   /// Set the playback speed.
   Future<void> setSpeed(double speed) async {
     await _audioHandler.setSpeed(speed);
+    speedNotifier.value = speed;
   }
 
   Future<void> setPitchSemitones(double pitch) async {
@@ -73,11 +74,10 @@ class MusicPlayer {
 
   /// Listen for changes from [_audioHandler].
   void _listenForChanges() {
-    // bufferedPosition & isPlaying & speed
+    // bufferedPosition & isPlaying
     _audioHandler.playbackState.listen((newState) {
       bufferedPositionNotifier.value = newState.bufferedPosition;
       isPlayingNotifier.value = newState.playing;
-      speedNotifier.value = newState.speed;
     });
 
     // position
