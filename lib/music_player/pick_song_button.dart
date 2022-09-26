@@ -15,8 +15,7 @@ class PickSongButton extends StatelessWidget {
         );
 
         if (result != null && result.files.single.path != null) {
-          await MusicPlayer.instance.setFilePath(result.files.single.path!);
-          MusicPlayer.instance.songTitle = result.files.single.name;
+          await MusicPlayer.instance.playFile(result.files.single);
         }
       },
       child: const Icon(Icons.file_upload_rounded),

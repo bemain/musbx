@@ -11,7 +11,7 @@ class PositionSlider extends StatefulWidget {
 }
 
 class PositionSliderState extends State<PositionSlider> {
-  final MusicPlayer player = MusicPlayer.instance;
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   Duration _position = Duration.zero;
 
@@ -23,8 +23,8 @@ class PositionSliderState extends State<PositionSlider> {
 
     if (_position.isNegative) _position = Duration.zero; // Clamp lower
     // Clamp higher
-    if (_position > (player.duration ?? Duration.zero)) {
-      _position = player.duration ?? Duration.zero;
+    if (_position > (musicPlayer.durationNotifier.value ?? Duration.zero)) {
+      _position = musicPlayer.durationNotifier.value ?? Duration.zero;
     }
   }
 
@@ -33,16 +33,16 @@ class PositionSliderState extends State<PositionSlider> {
     super.initState();
 
     // When a new song is loaded, rebuild
-    player.durationStream.listen((final Duration? duration) {
+    musicPlayer.durationNotifier.addListener(() {
       setState(() {
         position = Duration.zero;
       });
     });
 
     // When position changes, update it locally
-    player.positionStream.listen((final Duration position) {
+    musicPlayer.positionNotifier.addListener(() {
       setState(() {
-        this.position = position;
+        position = musicPlayer.positionNotifier.value;
       });
     });
   }
@@ -50,7 +50,7 @@ class PositionSliderState extends State<PositionSlider> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: player.songTitleNotifier,
+      valueListenable: musicPlayer.songTitleNotifier,
       builder: (context, songTitle, child) {
         return Row(
           children: [
@@ -58,7 +58,9 @@ class PositionSliderState extends State<PositionSlider> {
             Expanded(
               child: Slider(
                 min: 0,
-                max: player.duration?.inSeconds.roundToDouble() ?? 1,
+                max: musicPlayer.durationNotifier.value?.inSeconds
+                        .roundToDouble() ??
+                    1,
                 value: position.inSeconds.roundToDouble(),
                 onChanged: (songTitle == null)
                     ? null
@@ -68,11 +70,11 @@ class PositionSliderState extends State<PositionSlider> {
                         });
                       },
                 onChangeEnd: (double value) {
-                  player.seek(position);
+                  musicPlayer.seek(position);
                 },
               ),
             ),
-            _buildDurationText(player.duration),
+            _buildDurationText(musicPlayer.durationNotifier.value),
           ],
         );
       },

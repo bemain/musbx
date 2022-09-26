@@ -1,9 +1,22 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/bottom_bar.dart';
+import 'package:musbx/music_player/audio_handler.dart';
+import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_screen.dart';
-import 'package:musbx/tuner/tuner_screen.dart';
 
-void main() {
+Future<void> main() async {
+  // Create audio service
+  MusicPlayer.instance = MusicPlayer.internal(
+    await AudioService.init(
+      builder: () => JustAudioHandler(),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'se.agardh.musbx.channel.audio',
+        androidNotificationChannelName: 'Musbx',
+      ),
+    ),
+  );
+
   runApp(const MyApp());
 }
 
