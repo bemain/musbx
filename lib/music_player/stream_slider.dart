@@ -1,5 +1,4 @@
-import 'dart:async';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class StreamSlider extends StatefulWidget {
@@ -10,7 +9,7 @@ class StreamSlider extends StatefulWidget {
   /// the user changes the slider or the stream changes.
   const StreamSlider({
     super.key,
-    required this.stream,
+    required this.listenable,
     this.onChanged,
     this.onChangeEnd,
     this.onClear,
@@ -22,7 +21,7 @@ class StreamSlider extends StatefulWidget {
   });
 
   /// The stream to listen to. Updates whenever this changes.
-  final Stream<double> stream;
+  final ValueListenable<double> listenable;
 
   /// Called during a drag when the user is selecting a new value for the slider by dragging.
   /// See [Slider.onChanged]
@@ -60,26 +59,25 @@ class StreamSlider extends StatefulWidget {
 class StreamSliderState extends State<StreamSlider> {
   late double value = widget.initialValue;
 
-  /// The subsciption listening for updates on [widget.stream].
-  late StreamSubscription<double> subscription;
+  void _updateValue() {
+    if (value != widget.listenable.value) {
+      setState(() {
+        value = widget.listenable.value;
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
 
     // Rebuild whenever [widget.stream] updates
-    subscription = widget.stream.listen((newValue) {
-      if (value != newValue) {
-        setState(() {
-          value = newValue;
-        });
-      }
-    });
+    widget.listenable.addListener(_updateValue);
   }
 
   @override
   void dispose() {
-    subscription.cancel();
+    widget.listenable.removeListener(_updateValue);
 
     super.dispose();
   }
