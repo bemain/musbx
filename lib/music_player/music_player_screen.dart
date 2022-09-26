@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
-import 'package:musbx/music_player/stream_slider.dart';
+import 'package:musbx/music_player/labeled_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
@@ -31,12 +31,12 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
         Column(
           children: [
             Text(
-              " Pitch",
+              "Pitch",
               style: Theme.of(context).textTheme.titleMedium,
             ),
             buildPitchSlider(),
             Text(
-              "  Speed",
+              "Speed",
               style: Theme.of(context).textTheme.titleMedium,
             ),
             buildSpeedSlider(),
@@ -53,36 +53,42 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
   }
 
   Widget buildPitchSlider() {
-    return StreamSlider(
-      listenable: musicPlayer.pitchSemitonesNotifier,
-      onChangeEnd: (double value) {
-        musicPlayer.setPitchSemitones(value);
-      },
-      onClear: () {
-        musicPlayer.setPitchSemitones(0);
-      },
-      min: -9,
-      max: 9,
-      initialValue: MusicPlayer.instance.pitchSemitonesNotifier.value,
-      divisions: 18,
-      labelFractionDigits: 0,
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.pitchSemitonesNotifier,
+      builder: (context, pitch, child) => LabeledSlider(
+        value: pitch,
+        nDigits: 0,
+        clearDisabled: pitch == 0,
+        onClear: () {
+          musicPlayer.setPitchSemitones(0);
+        },
+        child: Slider(
+            value: pitch,
+            min: -9,
+            max: 9,
+            divisions: 18,
+            onChanged: musicPlayer.setPitchSemitones),
+      ),
     );
   }
 
   Widget buildSpeedSlider() {
-    return StreamSlider(
-      listenable: musicPlayer.speedNotifier,
-      onChangeEnd: (double value) {
-        musicPlayer.setSpeed(value);
-      },
-      onClear: () {
-        musicPlayer.setSpeed(1.0);
-      },
-      min: 0.1,
-      max: 1.9,
-      initialValue: MusicPlayer.instance.speedNotifier.value,
-      divisions: 18,
-      labelFractionDigits: 1,
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.speedNotifier,
+      builder: (context, speed, child) => LabeledSlider(
+        value: speed,
+        nDigits: 1,
+        clearDisabled: speed == 1.0,
+        onClear: () {
+          musicPlayer.setSpeed(1.0);
+        },
+        child: Slider(
+            value: speed,
+            min: 0.1,
+            max: 1.9,
+            divisions: 18,
+            onChanged: musicPlayer.setSpeed),
+      ),
     );
   }
 
@@ -100,9 +106,11 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   min: 0,
                   max: duration?.inSeconds.roundToDouble() ?? 1,
                   value: position.inSeconds.roundToDouble(),
-                  onChanged: (double value) {
-                    musicPlayer.seek(Duration(seconds: value.round()));
-                  },
+                  onChanged: (musicPlayer.songTitleNotifier.value == null)
+                      ? null
+                      : (double value) {
+                          musicPlayer.seek(Duration(seconds: value.round()));
+                        },
                 ),
               ),
               _buildDurationText(duration),
