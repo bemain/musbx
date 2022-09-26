@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/card_list.dart';
-import 'package:musbx/reorderable_card_list.dart';
+import 'package:musbx/editable_screen/card_list.dart';
+import 'package:musbx/editable_screen/reorderable_card_list.dart';
 
 class EditableScreen extends StatefulWidget {
   const EditableScreen({super.key, required this.title, required this.widgets});
@@ -16,7 +16,7 @@ class EditableScreenState extends State<EditableScreen> {
   late List<int> widgetOrder =
       List.generate(widget.widgets.length, (index) => index);
 
-  bool editing = true;
+  bool editing = false;
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/editable_screen.dart';
+import 'package:musbx/editable_screen/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
 import 'package:musbx/music_player/labeled_slider.dart';
