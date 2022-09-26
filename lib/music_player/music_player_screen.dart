@@ -104,12 +104,13 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
               Expanded(
                 child: Slider(
                   min: 0,
-                  max: duration?.inSeconds.roundToDouble() ?? 1,
-                  value: position.inSeconds.roundToDouble(),
+                  max: duration?.inMilliseconds.roundToDouble() ?? 0,
+                  value: position.inMilliseconds.roundToDouble(),
                   onChanged: (musicPlayer.songTitle == null)
                       ? null
                       : (double value) {
-                          musicPlayer.seek(Duration(seconds: value.round()));
+                          musicPlayer
+                              .seek(Duration(milliseconds: value.round()));
                         },
                 ),
               ),

@@ -90,7 +90,12 @@ class MusicPlayer {
 
     // position
     AudioService.position.listen((position) {
-      positionNotifier.value = position;
+      positionNotifier.value = Duration(
+        milliseconds: position.inMilliseconds.clamp(
+          0,
+          duration?.inMilliseconds ?? 0,
+        ),
+      );
     });
 
     // duration & songTitle
