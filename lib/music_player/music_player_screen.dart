@@ -22,7 +22,7 @@ class MusicPlayerScreen extends StatefulWidget {
 }
 
 class MusicPlayerScreenState extends State<MusicPlayerScreen> {
-  final MusicPlayer player = MusicPlayer.instance;
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -53,13 +53,12 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
   Widget buildPitchSlider() {
     return StreamSlider(
-      stream: player.pitchStream
-          .map((double pitch) => (12 * log(pitch) / log(2)).roundToDouble()),
+      listenable: musicPlayer.pitchSemitonesNotifier,
       onChangeEnd: (double value) {
-        player.setPitchSemitones(value);
+        musicPlayer.pitchSemitonesNotifier.value = value;
       },
       onClear: () {
-        player.setPitchSemitones(0);
+        musicPlayer.pitchSemitonesNotifier.value = 0;
       },
       min: -9,
       max: 9,
@@ -71,12 +70,12 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
   Widget buildSpeedSlider() {
     return StreamSlider(
-      stream: player.speedStream,
+      listenable: musicPlayer.speedNotifier,
       onChangeEnd: (double value) {
-        player.setSpeed(value);
+        musicPlayer.setSpeed(value);
       },
       onClear: () {
-        player.setSpeed(1.0);
+        musicPlayer.setSpeed(1.0);
       },
       min: 0.1,
       max: 1.9,

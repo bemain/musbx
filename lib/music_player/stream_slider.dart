@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class StreamSlider extends StatefulWidget {
@@ -8,7 +9,7 @@ class StreamSlider extends StatefulWidget {
   /// the user changes the slider or the stream changes.
   const StreamSlider({
     super.key,
-    required this.stream,
+    required this.listenable,
     this.onChanged,
     this.onChangeEnd,
     this.onClear,
@@ -20,7 +21,7 @@ class StreamSlider extends StatefulWidget {
   });
 
   /// The stream to listen to. Updates whenever this changes.
-  final Stream<double> stream;
+  final ValueListenable<double> listenable;
 
   /// Called during a drag when the user is selecting a new value for the slider by dragging.
   /// See [Slider.onChanged]
@@ -63,10 +64,10 @@ class StreamSliderState extends State<StreamSlider> {
     super.initState();
 
     // Rebuild whenever [widget.stream] updates
-    widget.stream.listen((newValue) {
-      if (value != newValue) {
+    widget.listenable.addListener(() {
+      if (value != widget.listenable.value) {
         setState(() {
-          value = newValue;
+          value = widget.listenable.value;
         });
       }
     });

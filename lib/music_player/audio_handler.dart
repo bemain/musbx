@@ -2,29 +2,23 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musbx/music_player/music_player.dart';
 
 /// Uses just_audio to handle playback.
 /// Inherit to override getMediaItem, if you want to get metadata from a media id.
 class MyAudioHandler extends BaseAudioHandler with SeekHandler {
   // Only way to access is through [instance]
-  MyAudioHandler._internal() {
+  MyAudioHandler() {
     // Notify AudioHandler about playback events from AudioPlayer.
     player.playbackEventStream.map(_transformEvent).pipe(playbackState);
   }
 
-  /// The instance of this singleton.
-  static final MyAudioHandler instance = MyAudioHandler._internal();
-
-  final MusicPlayer player = MusicPlayer.instance;
+  final AudioPlayer player = AudioPlayer();
 
   @override
-  Future<void> play() => player.play();
+  Future<void> play() async => await player.play();
 
   @override
-  Future<void> pause() async {
-    await player.pause();
-  }
+  Future<void> pause() async => await player.pause();
 
   @override
   Future<void> stop() async {
@@ -64,7 +58,6 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
         ProcessingState.ready: AudioProcessingState.ready,
         ProcessingState.completed: AudioProcessingState.ready,
       }[player.processingState]!,
-      // If completed, audioPlayer might say playing, but really we aren't.
       playing: player.playing && !isCompleted,
       updatePosition: player.position,
       bufferedPosition: player.bufferedPosition,
