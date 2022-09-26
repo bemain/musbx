@@ -16,7 +16,7 @@ class MusicPlayer {
   static late final MusicPlayer instance;
 
   /// The AudioHandler used internally to play sound.
-  final MyAudioHandler _audioHandler;
+  final JustAudioHandler _audioHandler;
 
   /// Start or resume playback.
   Future<void> play() async => await _audioHandler.play();

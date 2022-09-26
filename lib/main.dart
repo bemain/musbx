@@ -9,7 +9,7 @@ Future<void> main() async {
   // Create audio service
   MusicPlayer.instance = MusicPlayer.internal(
     await AudioService.init(
-      builder: () => MyAudioHandler(),
+      builder: () => JustAudioHandler(),
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'se.agardh.musbx.channel.audio',
         androidNotificationChannelName: 'Musbx',

@@ -5,9 +5,9 @@ import 'package:just_audio/just_audio.dart';
 
 /// Uses just_audio to handle playback.
 /// Inherit to override getMediaItem, if you want to get metadata from a media id.
-class MyAudioHandler extends BaseAudioHandler with SeekHandler {
+class JustAudioHandler extends BaseAudioHandler with SeekHandler {
   // Only way to access is through [instance]
-  MyAudioHandler() {
+  JustAudioHandler() {
     // Notify AudioHandler about playback events from AudioPlayer.
     player.playbackEventStream.map(_transformEvent).pipe(playbackState);
   }
