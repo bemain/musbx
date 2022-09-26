@@ -5,9 +5,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 
-/// Singleton for playing songs.
+/// Singleton for playing audio.
 class MusicPlayer {
-  // Should only be accessed through [instance]
+  // Should only be accessed through [instance].
   MusicPlayer.internal(this._audioHandler) {
     _listenForChanges();
   }
@@ -34,7 +34,7 @@ class MusicPlayer {
     await _audioHandler.setSpeed(speed);
   }
 
-  /// Title of the current song or `null` if no song loaded.
+  /// Title of the current song, or `null` if no song loaded.
   final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
 
   /// How much the pitch will be shifted, in semitones.
@@ -50,13 +50,13 @@ class MusicPlayer {
   final ValueNotifier<Duration> bufferedPositionNotifier =
       ValueNotifier(Duration.zero);
 
-  /// The duration of the current audio or null if unknown.
+  /// The duration of the current audio, or null if no audio has been loaded.
   final ValueNotifier<Duration?> durationNotifier = ValueNotifier(null);
 
   /// Whether the player is playing.
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 
-  /// Play [file].
+  /// Play a [PlatformFile].
   Future<void> playFile(PlatformFile file) async {
     await _audioHandler.player.setFilePath(file.path!);
     _audioHandler.mediaItem.add(MediaItem(

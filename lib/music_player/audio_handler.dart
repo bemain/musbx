@@ -3,15 +3,16 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
-/// Uses just_audio to handle playback.
-/// Inherit to override getMediaItem, if you want to get metadata from a media id.
 class JustAudioHandler extends BaseAudioHandler with SeekHandler {
-  // Only way to access is through [instance]
+  /// Interface to the audio notification.
+  ///
+  /// Uses just_audio to handle playback.
   JustAudioHandler() {
     // Notify AudioHandler about playback events from AudioPlayer.
     player.playbackEventStream.map(_transformEvent).pipe(playbackState);
   }
 
+  /// The [AudioPlayer] used for playback.
   final AudioPlayer player = AudioPlayer();
 
   @override
@@ -36,6 +37,7 @@ class JustAudioHandler extends BaseAudioHandler with SeekHandler {
     await player.setSpeed(speed);
   }
 
+  /// Transform an event from just_audio's AudioPlayer to audio_service's AudioHandler.
   PlaybackState _transformEvent(PlaybackEvent event) {
     final isCompleted = (player.processingState == ProcessingState.completed);
 
