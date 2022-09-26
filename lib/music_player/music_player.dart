@@ -32,28 +32,42 @@ class MusicPlayer {
   /// Set the playback speed.
   Future<void> setSpeed(double speed) async {
     await _audioHandler.setSpeed(speed);
+    speedNotifier.value = speed;
+  }
+
+  /// Set how much the pitch will be shifted, in semitones.
+  Future<void> setPitchSemitones(double pitch) async {
+    await _audioHandler.player.setPitch(pow(2, pitch / 12).toDouble());
+    pitchSemitonesNotifier.value = pitch;
   }
 
   /// Title of the current song, or `null` if no song loaded.
+  String? get songTitle => songTitleNotifier.value;
   final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
 
   /// How much the pitch will be shifted, in semitones.
+  double get pitchSemitones => pitchSemitonesNotifier.value;
   final ValueNotifier<double> pitchSemitonesNotifier = ValueNotifier(0);
 
   /// The current speed of the player.
+  double get speed => speedNotifier.value;
   final ValueNotifier<double> speedNotifier = ValueNotifier(1);
 
   /// The current position of the player.
+  Duration get position => positionNotifier.value;
   final ValueNotifier<Duration> positionNotifier = ValueNotifier(Duration.zero);
 
   /// The buffered position of the player.
+  Duration get bufferedPosition => bufferedPositionNotifier.value;
   final ValueNotifier<Duration> bufferedPositionNotifier =
       ValueNotifier(Duration.zero);
 
   /// The duration of the current audio, or null if no audio has been loaded.
+  Duration? get duration => durationNotifier.value;
   final ValueNotifier<Duration?> durationNotifier = ValueNotifier(null);
 
   /// Whether the player is playing.
+  bool get isPlaying => isPlayingNotifier.value;
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 
   /// Play a [PlatformFile].
@@ -68,16 +82,20 @@ class MusicPlayer {
 
   /// Listen for changes from [_audioHandler].
   void _listenForChanges() {
-    // bufferedPosition & isPlaying & speed
+    // bufferedPosition & isPlaying
     _audioHandler.playbackState.listen((newState) {
       bufferedPositionNotifier.value = newState.bufferedPosition;
       isPlayingNotifier.value = newState.playing;
-      speedNotifier.value = newState.speed;
     });
 
     // position
     AudioService.position.listen((position) {
-      positionNotifier.value = position;
+      positionNotifier.value = Duration(
+        milliseconds: position.inMilliseconds.clamp(
+          0,
+          duration?.inMilliseconds ?? 0,
+        ),
+      );
     });
 
     // duration & songTitle
@@ -89,12 +107,6 @@ class MusicPlayer {
     // pitch
     _audioHandler.player.pitchStream.listen((pitch) {
       pitchSemitonesNotifier.value = (12 * log(pitch) / log(2)).toDouble();
-    });
-
-    // Update AudioPlayer's pitch when it changes.
-    pitchSemitonesNotifier.addListener(() async {
-      await _audioHandler.player
-          .setPitch(pow(2, pitchSemitonesNotifier.value / 12).toDouble());
     });
   }
 }
