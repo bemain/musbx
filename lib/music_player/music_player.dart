@@ -4,6 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/audio_handler.dart';
+import 'package:youtube_api/youtube_api.dart';
 
 /// Singleton for playing audio.
 class MusicPlayer {
@@ -78,6 +79,25 @@ class MusicPlayer {
       title: file.name,
       duration: _audioHandler.player.duration,
     ));
+  }
+
+  Future<void> playVideo(YouTubeVideo video) async {
+    // TODO: Get this method to work...
+    throw UnimplementedError();
+    _audioHandler.player.setUrl(video.url);
+    _audioHandler.mediaItem.add(MediaItem(
+      id: video.id ?? "",
+      title: video.title,
+      duration: _parseDuration(video.duration ?? "0:0"),
+    ));
+  }
+
+  Duration _parseDuration(String s) {
+    List<String> parts = s.split(":");
+    return Duration(
+      minutes: int.parse(parts[0]),
+      seconds: int.parse(parts[1]),
+    );
   }
 
   /// Listen for changes from [_audioHandler].
