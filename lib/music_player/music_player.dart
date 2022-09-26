@@ -34,6 +34,11 @@ class MusicPlayer {
     await _audioHandler.setSpeed(speed);
   }
 
+  Future<void> setPitchSemitones(double pitch) async {
+    await _audioHandler.player.setPitch(pow(2, pitch / 12).toDouble());
+    pitchSemitonesNotifier.value = pitch;
+  }
+
   /// Title of the current song, or `null` if no song loaded.
   final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
 
@@ -89,12 +94,6 @@ class MusicPlayer {
     // pitch
     _audioHandler.player.pitchStream.listen((pitch) {
       pitchSemitonesNotifier.value = (12 * log(pitch) / log(2)).toDouble();
-    });
-
-    // Update AudioPlayer's pitch when it changes.
-    pitchSemitonesNotifier.addListener(() async {
-      await _audioHandler.player
-          .setPitch(pow(2, pitchSemitonesNotifier.value / 12).toDouble());
     });
   }
 }

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class StreamSlider extends StatefulWidget {
@@ -21,7 +20,7 @@ class StreamSlider extends StatefulWidget {
   });
 
   /// The stream to listen to. Updates whenever this changes.
-  final ValueListenable<double> listenable;
+  final ValueNotifier<double> listenable;
 
   /// Called during a drag when the user is selecting a new value for the slider by dragging.
   /// See [Slider.onChanged]
@@ -57,65 +56,40 @@ class StreamSlider extends StatefulWidget {
 }
 
 class StreamSliderState extends State<StreamSlider> {
-  late double value = widget.initialValue;
-
-  void _updateValue() {
-    if (value != widget.listenable.value) {
-      setState(() {
-        value = widget.listenable.value;
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Rebuild whenever [widget.stream] updates
-    widget.listenable.addListener(_updateValue);
-  }
-
-  @override
-  void dispose() {
-    widget.listenable.removeListener(_updateValue);
-
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 20,
-          child: Text(
-            value.toStringAsFixed(widget.labelFractionDigits),
-            style: Theme.of(context).textTheme.caption,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
+    return ValueListenableBuilder(
+      valueListenable: widget.listenable,
+      builder: (context, value, child) => Row(
+        children: [
+          SizedBox(
+            width: 20,
+            child: Text(
+              value.toStringAsFixed(widget.labelFractionDigits),
+              style: Theme.of(context).textTheme.caption,
+              maxLines: 1,
+              overflow: TextOverflow.clip,
+            ),
           ),
-        ),
-        Expanded(
-          child: Slider(
-            value: value.toDouble(),
-            onChanged: (double value) {
-              setState(() {
-                this.value = value;
-              });
-              widget.onChanged?.call(value);
-            },
-            min: widget.min.toDouble(),
-            max: widget.max.toDouble(),
-            divisions: widget.divisions,
-            onChangeEnd: widget.onChangeEnd?.call,
+          Expanded(
+            child: Slider(
+              value: value.toDouble(),
+              onChanged: (double value) {
+                widget.onChanged?.call(value);
+              },
+              min: widget.min.toDouble(),
+              max: widget.max.toDouble(),
+              divisions: widget.divisions,
+              onChangeEnd: widget.onChangeEnd?.call,
+            ),
           ),
-        ),
-        IconButton(
-          iconSize: 20,
-          onPressed: widget.onClear?.call,
-          icon: const Icon(Icons.backspace_rounded),
-        )
-      ],
+          IconButton(
+            iconSize: 20,
+            onPressed: widget.onClear?.call,
+            icon: const Icon(Icons.backspace_rounded),
+          )
+        ],
+      ),
     );
   }
 }

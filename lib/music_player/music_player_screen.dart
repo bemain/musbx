@@ -3,7 +3,6 @@ import 'package:musbx/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
 import 'package:musbx/music_player/stream_slider.dart';
-import 'package:musbx/music_player/position_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
@@ -44,9 +43,9 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
           ],
         ),
         Column(
-          children: const [
-            PositionSlider(),
-            ButtonPanel(),
+          children: [
+            buildPositionSlider(),
+            const ButtonPanel(),
           ],
         ),
       ],
@@ -57,10 +56,10 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
     return StreamSlider(
       listenable: musicPlayer.pitchSemitonesNotifier,
       onChangeEnd: (double value) {
-        musicPlayer.pitchSemitonesNotifier.value = value;
+        musicPlayer.setPitchSemitones(value);
       },
       onClear: () {
-        musicPlayer.pitchSemitonesNotifier.value = 0;
+        musicPlayer.setPitchSemitones(0);
       },
       min: -9,
       max: 9,
@@ -84,6 +83,45 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
       initialValue: MusicPlayer.instance.speedNotifier.value,
       divisions: 18,
       labelFractionDigits: 1,
+    );
+  }
+
+  Widget buildPositionSlider() {
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.durationNotifier,
+      builder: (context, duration, child) => ValueListenableBuilder(
+        valueListenable: musicPlayer.positionNotifier,
+        builder: (context, position, child) {
+          return Row(
+            children: [
+              _buildDurationText(position),
+              Expanded(
+                child: Slider(
+                  min: 0,
+                  max: duration?.inSeconds.roundToDouble() ?? 1,
+                  value: position.inSeconds.roundToDouble(),
+                  onChanged: (double value) {
+                    musicPlayer.seek(Duration(seconds: value.round()));
+                  },
+                ),
+              ),
+              _buildDurationText(duration),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDurationText(Duration? duration) {
+    return Text(
+      (duration == null)
+          ? "-- : --"
+          : RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
+                  .firstMatch("$duration")
+                  ?.group(1) ??
+              "$duration",
+      style: Theme.of(context).textTheme.caption,
     );
   }
 }
