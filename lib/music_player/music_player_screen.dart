@@ -106,7 +106,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   min: 0,
                   max: duration?.inSeconds.roundToDouble() ?? 1,
                   value: position.inSeconds.roundToDouble(),
-                  onChanged: (musicPlayer.songTitleNotifier.value == null)
+                  onChanged: (musicPlayer.songTitle == null)
                       ? null
                       : (double value) {
                           musicPlayer.seek(Duration(seconds: value.round()));

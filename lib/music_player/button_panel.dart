@@ -21,8 +21,8 @@ class ButtonPanel extends StatelessWidget {
               onPressed: (songTitle == null)
                   ? null
                   : () {
-                      musicPlayer.seek(musicPlayer.positionNotifier.value -
-                          const Duration(seconds: 1));
+                      musicPlayer.seek(
+                          musicPlayer.position - const Duration(seconds: 1));
                     },
               onLongPress: (songTitle == null)
                   ? null
@@ -55,8 +55,8 @@ class ButtonPanel extends StatelessWidget {
               onPressed: (songTitle == null)
                   ? null
                   : () {
-                      musicPlayer.seek(musicPlayer.positionNotifier.value +
-                          const Duration(seconds: 1));
+                      musicPlayer.seek(
+                          musicPlayer.position + const Duration(seconds: 1));
                     },
               child: const Icon(Icons.fast_forward_rounded, size: 40),
             ),
