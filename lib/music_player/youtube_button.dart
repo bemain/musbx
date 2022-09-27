@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/api_key.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/widgets.dart';
 import 'package:youtube_api/youtube_api.dart';
-
-const String apiKey = "AIzaSyAoBBNr77PXXKZ7zOLbNVXOPzTjgu58sN4";
 
 class YoutubeButton extends StatelessWidget {
   const YoutubeButton({super.key});
