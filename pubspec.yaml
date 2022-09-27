@@ -38,6 +38,7 @@ dependencies:
   mic_stream: ^0.6.1
   audio_service: ^0.18.7
   youtube_api: ^1.0.4
+  youtube_explode_dart: ^1.12.1
 
 
   # The following adds the Cupertino Icons font to your application.
