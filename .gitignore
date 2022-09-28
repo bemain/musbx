@@ -1,3 +1,6 @@
+# API key
+lib/music_player/api_key.dart
+
 # Miscellaneous
 *.class
 *.log
