@@ -34,6 +34,8 @@ class YoutubeButton extends StatelessWidget {
 }
 
 class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
+  static Set<String> searchHistory = {};
+
   final YoutubeAPI youtubeApi = YoutubeAPI(apiKey);
 
   @override
@@ -59,7 +61,24 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
   }
 
   @override
+  Widget buildSuggestions(BuildContext context) {
+    return ListView(
+      children: searchHistory
+          .map((query) => ListTile(
+                title: Text(query),
+                onTap: () {
+                  this.query = query;
+                  showResults(context);
+                },
+              ))
+          .toList(),
+    );
+  }
+
+  @override
   Widget buildResults(BuildContext context) {
+    if (query != "") searchHistory.add(query.trim());
+
     return FutureBuilder(
       future: youtubeApi.search(query, type: "video"),
       builder: (context, snapshot) {
@@ -91,7 +110,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
                 padding: const EdgeInsets.only(right: 20.0),
                 child: Image.network(
                   video.thumbnail.small.url ?? '',
-                  width: 120,
+                  width: 100,
                 ),
               ),
               Expanded(
@@ -104,17 +123,12 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
                       style: Theme.of(context).textTheme.subtitle1,
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 3.0),
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
                       child: Text(
                         video.channelTitle,
                         softWrap: true,
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
-                    ),
-                    Text(
-                      video.url,
-                      softWrap: true,
-                      style: Theme.of(context).textTheme.caption,
                     ),
                   ],
                 ),
@@ -124,10 +138,5 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
         ),
       ),
     );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return Container();
   }
 }
