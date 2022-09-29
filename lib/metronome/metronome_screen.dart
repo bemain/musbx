@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/editable_screen/editable_screen.dart';
 import 'package:musbx/metronome/beat_sound_viewer.dart';
-import 'package:musbx/metronome/bottom_bar/bpm_buttons.dart';
+import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';
 import 'package:musbx/metronome/play_button.dart';
