@@ -1,12 +1,19 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
+const List<BeatSound> selectableBeatSounds = [
+  BeatSound.sticks,
+  BeatSound.cowbell,
+  BeatSound.none,
+];
+
 enum BeatSound {
   sticks(fileName: "sticks.wav", color: Colors.blue),
   cowbell(fileName: "cowbell.mp3", color: Colors.green),
   hihat(fileName: "hihat.wav", color: Colors.orange),
   snare(fileName: "snare.wav", color: Colors.purple),
-  kick(fileName: "kick.wav", color: Colors.indigo);
+  kick(fileName: "kick.wav", color: Colors.indigo),
+  none(fileName: "", color: Colors.grey);
 
   /// Internal AudioCache for playing sounds.
   static final AudioCache audioCache = AudioCache(
@@ -24,6 +31,7 @@ enum BeatSound {
 
   /// Play this sound.
   void play() async {
+    if (fileName == "") return;
     await audioCache.play(
       fileName,
       mode: PlayerMode.LOW_LATENCY,

@@ -77,8 +77,9 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                   onTap: () {
                     // Change beat sound
                     var sound = Metronome.beatSounds[index];
-                    Metronome.beatSounds[index] = BeatSound
-                        .values[(sound.index + 1) % BeatSound.values.length];
+                    Metronome.beatSounds[index] = selectableBeatSounds[
+                        (selectableBeatSounds.indexOf(sound) + 1) %
+                            selectableBeatSounds.length];
                   },
                   onLongPress: () {
                     if (Metronome.beatSounds.length >= 2) {
