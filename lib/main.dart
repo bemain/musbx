@@ -31,9 +31,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Scaffold(
+      home: const Scaffold(
         body: MetronomeScreen(),
-        bottomNavigationBar: const MetronomeBottomBar(),
       ),
     );
   }

@@ -5,8 +5,15 @@ import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';
 import 'package:musbx/metronome/play_button.dart';
+import 'package:musbx/metronome/metronome.dart';
 
 class MetronomeScreen extends StatelessWidget {
+  /// Screen for controlling [Metronome], including:
+  /// - Play / pause button
+  /// - Buttons for adjusting bpm
+  /// - Slider for adjusting bpm
+  /// - Button for setting bpm by tapping.
+  /// - Buttons for setting what sound is played each beat.
   const MetronomeScreen({super.key});
 
   @override
