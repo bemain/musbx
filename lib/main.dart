@@ -1,6 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/metronome/bottom_bar.dart';
+import 'package:musbx/metronome/bottom_bar/bottom_bar.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_screen.dart';
