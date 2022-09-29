@@ -40,7 +40,7 @@ class LabeledSlider extends StatelessWidget {
       IconButton(
         iconSize: 20,
         onPressed: clearDisabled ? null : onClear?.call,
-        icon: const Icon(Icons.backspace_rounded),
+        icon: const Icon(Icons.refresh_rounded),
       ),
     ]);
   }
