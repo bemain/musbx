@@ -88,11 +88,10 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                   child: Padding(
                     padding: const EdgeInsets.all(8),
                     child: Icon(
-                      Icons.circle,
+                      (Metronome.count == index)
+                          ? Icons.circle
+                          : Icons.circle_outlined, // Highlight current beat
                       color: sound.color,
-                      shadows: (Metronome.count == index)
-                          ? [const Shadow(blurRadius: 10)]
-                          : [], // Highlight current beat
                     ),
                   ),
                 ),
