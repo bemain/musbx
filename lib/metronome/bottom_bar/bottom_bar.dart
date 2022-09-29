@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/beat_sound_viewer.dart';
-import 'package:musbx/metronome/bpm_buttons.dart';
+import 'package:musbx/metronome/bottom_bar/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';
 import 'package:musbx/metronome/metronome.dart';
@@ -30,11 +30,11 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
             height: 100,
             child: Row(
               children: <Widget>[
-                PlayButton(),
+                const PlayButton(),
                 Expanded(
                   child: Column(
                     children: [
-                      BpmSlider(),
+                      const BpmSlider(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: const [
@@ -48,7 +48,10 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
               ],
             ),
           ),
-          const BeatSoundViewer()
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: BeatSoundViewer(),
+          )
         ],
       ),
     );

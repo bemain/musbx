@@ -3,7 +3,9 @@ import 'package:musbx/metronome/metronome.dart';
 
 class PlayButton extends StatelessWidget {
   /// Play / pause button to start or stop the [Metronome].
-  const PlayButton({Key? key}) : super(key: key);
+  const PlayButton({Key? key, this.size = 75}) : super(key: key);
+
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,7 @@ class PlayButton extends StatelessWidget {
           },
           child: Icon(
             isRunning ? Icons.stop_rounded : Icons.play_arrow_rounded,
-            size: 75,
+            size: size,
           ),
         );
       },
