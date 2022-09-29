@@ -5,7 +5,7 @@ import 'package:musbx/music_player/current_song_panel.dart';
 import 'package:musbx/music_player/labeled_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
 
-class MusicPlayerScreen extends StatefulWidget {
+class MusicPlayerScreen extends StatelessWidget {
   /// Screen that allows the user to select and play a song.
   ///
   /// Includes:
@@ -13,13 +13,8 @@ class MusicPlayerScreen extends StatefulWidget {
   ///  - Slider for seeking a position in the song.
   ///  - Sliders for changing pitch and speed of the song.
   ///  - Label showing current song, and button to load a song from device.
-  const MusicPlayerScreen({super.key});
+  MusicPlayerScreen({super.key});
 
-  @override
-  State<StatefulWidget> createState() => MusicPlayerScreenState();
-}
-
-class MusicPlayerScreenState extends State<MusicPlayerScreen> {
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
@@ -100,7 +95,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
         builder: (context, position, child) {
           return Row(
             children: [
-              _buildDurationText(position),
+              _buildDurationText(context, position),
               Expanded(
                 child: Slider(
                   min: 0,
@@ -114,7 +109,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
                         },
                 ),
               ),
-              _buildDurationText(duration),
+              _buildDurationText(context, duration),
             ],
           );
         },
@@ -122,7 +117,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen> {
     );
   }
 
-  Widget _buildDurationText(Duration? duration) {
+  Widget _buildDurationText(BuildContext context, Duration? duration) {
     return Text(
       (duration == null)
           ? "-- : --"

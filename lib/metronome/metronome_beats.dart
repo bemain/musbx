@@ -4,8 +4,10 @@ import 'package:musbx/metronome/beat_sound.dart';
 class MetronomeBeats extends ChangeNotifier {
   MetronomeBeats() {
     // Preload sounds to avoid latency when first sound is played.
-    BeatSound.audioCache.loadAll(
-        BeatSound.values.map((BeatSound sound) => sound.fileName).toList());
+    List<String> beatPaths =
+        BeatSound.values.map((BeatSound sound) => sound.fileName).toList();
+    beatPaths.remove("");
+    BeatSound.audioCache.loadAll(beatPaths);
   }
 
   /// Number of sounds.

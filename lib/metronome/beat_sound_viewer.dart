@@ -27,26 +27,42 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
     // Listen for changes to:
     // - sounds: change number of circles
     // - count: change which circle is highlighted.
-    Metronome.beatSounds.addListener(() => setState(() {}));
-    Metronome.countNotifier.addListener(() => setState(() {}));
+    Metronome.beatSounds.addListener(_listenForUpdates);
+    Metronome.countNotifier.addListener(_listenForUpdates);
+  }
+
+  @override
+  void dispose() {
+    Metronome.beatSounds.removeListener(_listenForUpdates);
+    Metronome.countNotifier.removeListener(_listenForUpdates);
+    super.dispose();
+  }
+
+  void _listenForUpdates() {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 5),
-      child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ..._buildBeatButtons(),
-            IconButton(
-              onPressed: (() {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ..._buildBeatButtons(),
+        if (Metronome.beatSounds.length < 8)
+          Ink(
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () {
                 Metronome.beatSounds.add(BeatSound.sticks);
-              }),
-              icon: const Icon(Icons.add_circle_outline_rounded),
-            )
-          ]),
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(Icons.add_circle_outline_rounded),
+              ),
+            ),
+          )
+      ],
     );
   }
 
@@ -61,8 +77,9 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                   onTap: () {
                     // Change beat sound
                     var sound = Metronome.beatSounds[index];
-                    Metronome.beatSounds[index] = BeatSound
-                        .values[(sound.index + 1) % BeatSound.values.length];
+                    Metronome.beatSounds[index] = selectableBeatSounds[
+                        (selectableBeatSounds.indexOf(sound) + 1) %
+                            selectableBeatSounds.length];
                   },
                   onLongPress: () {
                     if (Metronome.beatSounds.length >= 2) {
@@ -70,7 +87,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                     }
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(8),
                     child: Icon(
                       (Metronome.count == index)
                           ? Icons.circle

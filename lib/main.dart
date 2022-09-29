@@ -1,6 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/bottom_bar.dart';
+import 'package:musbx/metronome/metronome_screen.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_screen.dart';
@@ -31,8 +32,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const Scaffold(
-        body: MusicPlayerScreen(),
-        bottomNavigationBar: MetronomeBottomBar(),
+        body: MetronomeScreen(),
       ),
     );
   }
