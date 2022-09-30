@@ -1,10 +1,8 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/metronome/bottom_bar.dart';
-import 'package:musbx/metronome/metronome_screen.dart';
+import 'package:musbx/home_screen.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/music_player_screen.dart';
 
 Future<void> main() async {
   // Create audio service
@@ -27,13 +25,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Musician's Toolbox",
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const Scaffold(
-        body: MetronomeScreen(),
-      ),
-    );
+        title: "Musician's Toolbox",
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const HomeScreen());
   }
 }
