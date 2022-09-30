@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/editable_screen/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
+import 'package:musbx/music_player/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/music_player/labeled_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
 
@@ -88,6 +89,9 @@ class MusicPlayerScreen extends StatelessWidget {
   }
 
   Widget buildPositionSlider() {
+    Duration repeatStart = Duration(seconds: 30);
+    Duration repeatEnd = Duration(seconds: 120);
+
     return ValueListenableBuilder(
       valueListenable: musicPlayer.durationNotifier,
       builder: (context, duration, child) => ValueListenableBuilder(
@@ -97,16 +101,31 @@ class MusicPlayerScreen extends StatelessWidget {
             children: [
               _buildDurationText(context, position),
               Expanded(
-                child: Slider(
-                  min: 0,
-                  max: duration?.inMilliseconds.roundToDouble() ?? 0,
-                  value: position.inMilliseconds.roundToDouble(),
-                  onChanged: (musicPlayer.songTitle == null)
-                      ? null
-                      : (double value) {
-                          musicPlayer
-                              .seek(Duration(milliseconds: value.round()));
-                        },
+                child: SliderTheme(
+                  data: SliderThemeData(
+                    thumbColor: (repeatStart < position && position < repeatEnd)
+                        ? Colors.deepPurple
+                        : null,
+                    trackShape: HighlightedSectionSliderTrackShape(
+                      highlightStart: repeatStart.inMilliseconds /
+                          (duration?.inMilliseconds ?? 1),
+                      highlightEnd: repeatEnd.inMilliseconds /
+                          (duration?.inMilliseconds ?? 1),
+                      activeHighlightColor: Colors.deepPurple,
+                      inactiveHighlightColor: Colors.purple.withAlpha(100),
+                    ),
+                  ),
+                  child: Slider(
+                    min: 0,
+                    max: duration?.inMilliseconds.roundToDouble() ?? 0,
+                    value: position.inMilliseconds.roundToDouble(),
+                    onChanged: (musicPlayer.songTitle == null)
+                        ? null
+                        : (double value) {
+                            musicPlayer
+                                .seek(Duration(milliseconds: value.round()));
+                          },
+                  ),
                 ),
               ),
               _buildDurationText(context, duration),
