@@ -5,6 +5,7 @@ import 'package:musbx/music_player/current_song_panel.dart';
 import 'package:musbx/music_player/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/music_player/labeled_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/music_player/position_slider.dart';
 
 class MusicPlayerScreen extends StatelessWidget {
   /// Screen that allows the user to select and play a song.
@@ -39,9 +40,9 @@ class MusicPlayerScreen extends StatelessWidget {
           ],
         ),
         Column(
-          children: [
-            buildPositionSlider(),
-            const ButtonPanel(),
+          children: const [
+            PositionSlider(),
+            ButtonPanel(),
           ],
         ),
       ],
@@ -85,66 +86,6 @@ class MusicPlayerScreen extends StatelessWidget {
             divisions: 18,
             onChanged: musicPlayer.setSpeed),
       ),
-    );
-  }
-
-  Widget buildPositionSlider() {
-    Duration repeatStart = Duration(seconds: 30);
-    Duration repeatEnd = Duration(seconds: 120);
-
-    return ValueListenableBuilder(
-      valueListenable: musicPlayer.durationNotifier,
-      builder: (context, duration, child) => ValueListenableBuilder(
-        valueListenable: musicPlayer.positionNotifier,
-        builder: (context, position, child) {
-          return Row(
-            children: [
-              _buildDurationText(context, position),
-              Expanded(
-                child: SliderTheme(
-                  data: SliderThemeData(
-                    thumbColor: (repeatStart < position && position < repeatEnd)
-                        ? Colors.deepPurple
-                        : null,
-                    trackShape: HighlightedSectionSliderTrackShape(
-                      highlightStart: repeatStart.inMilliseconds /
-                          (duration?.inMilliseconds ?? 1),
-                      highlightEnd: repeatEnd.inMilliseconds /
-                          (duration?.inMilliseconds ?? 1),
-                      activeHighlightColor: Colors.deepPurple,
-                      inactiveHighlightColor: Colors.purple.withAlpha(100),
-                    ),
-                  ),
-                  child: Slider(
-                    min: 0,
-                    max: duration?.inMilliseconds.roundToDouble() ?? 0,
-                    value: position.inMilliseconds.roundToDouble(),
-                    onChanged: (musicPlayer.songTitle == null)
-                        ? null
-                        : (double value) {
-                            musicPlayer
-                                .seek(Duration(milliseconds: value.round()));
-                          },
-                  ),
-                ),
-              ),
-              _buildDurationText(context, duration),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildDurationText(BuildContext context, Duration? duration) {
-    return Text(
-      (duration == null)
-          ? "-- : --"
-          : RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
-                  .firstMatch("$duration")
-                  ?.group(1) ??
-              "$duration",
-      style: Theme.of(context).textTheme.caption,
     );
   }
 }
