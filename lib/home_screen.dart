@@ -4,6 +4,7 @@ import 'package:musbx/music_player/music_player_screen.dart';
 import 'package:musbx/tuner/tuner_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  /// Home screen offering a bottom bar for switching between the different screens.
   const HomeScreen({super.key});
 
   @override
@@ -33,16 +34,16 @@ class HomeScreenState extends State<HomeScreen> {
         currentIndex: selectedIndex,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
             label: "Metronome",
+            icon: Icon(Icons.more_horiz),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.music_note_rounded),
             label: "Music player",
+            icon: Icon(Icons.music_note_rounded),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.speed_rounded),
             label: "Tuner",
+            icon: Icon(Icons.speed_rounded),
           ),
         ],
       ),
