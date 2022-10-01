@@ -26,15 +26,6 @@ class MusicPlayer {
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {
-    if (loopEnabled) {
-      // Clamp duration
-      position = Duration(
-        milliseconds: position.inMilliseconds.clamp(
-          loopSection.start.inMilliseconds,
-          loopSection.end.inMilliseconds,
-        ),
-      );
-    }
     await _audioHandler.seek(position);
   }
 
@@ -109,12 +100,25 @@ class MusicPlayer {
 
     // position
     AudioService.position.listen((position) {
-      positionNotifier.value = Duration(
-        milliseconds: position.inMilliseconds.clamp(
-          0,
-          duration?.inMilliseconds ?? 0,
-        ),
-      );
+      // Limit upper
+      if ((loopEnabled && position >= loopSection.end) ||
+          position >= (duration ?? const Duration(seconds: 1))) {
+        _audioHandler.pause();
+        seek(loopEnabled
+            ? loopSection.end
+            : duration ?? const Duration(seconds: 1));
+      } else if (loopEnabled && position < loopSection.start) {
+        // Limit lower
+        seek(loopSection.start);
+      } else {
+        // Update position
+        positionNotifier.value = Duration(
+          milliseconds: position.inMilliseconds.clamp(
+            0,
+            duration?.inMilliseconds ?? 0,
+          ),
+        );
+      }
     });
 
     // duration & songTitle
