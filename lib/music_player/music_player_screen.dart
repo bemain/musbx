@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:musbx/editable_screen/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
-import 'package:musbx/music_player/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/music_player/labeled_slider.dart';
+import 'package:musbx/music_player/loop_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/position_slider.dart';
 
@@ -45,6 +45,7 @@ class MusicPlayerScreen extends StatelessWidget {
             ButtonPanel(),
           ],
         ),
+        LoopSlider(),
       ],
     );
   }
