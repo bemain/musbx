@@ -26,6 +26,15 @@ class MusicPlayer {
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {
+    if (loopEnabled) {
+      // Clamp duration
+      position = Duration(
+        milliseconds: position.inMilliseconds.clamp(
+          loopSection.start.inMilliseconds,
+          loopSection.end.inMilliseconds,
+        ),
+      );
+    }
     await _audioHandler.seek(position);
   }
 
@@ -66,6 +75,16 @@ class MusicPlayer {
   Duration? get duration => durationNotifier.value;
   final ValueNotifier<Duration?> durationNotifier = ValueNotifier(null);
 
+  /// Whether we are currently looping a section of the song or not.
+  bool get loopEnabled => loopEnabledNotifier.value;
+  final ValueNotifier<bool> loopEnabledNotifier = ValueNotifier(true);
+
+  /// The section being
+  LoopSection get loopSection => loopSectionNotifier.value;
+  set loopSection(LoopSection section) => loopSectionNotifier.value = section;
+  final ValueNotifier<LoopSection> loopSectionNotifier =
+      ValueNotifier(LoopSection());
+
   /// Whether the player is playing.
   bool get isPlaying => isPlayingNotifier.value;
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
@@ -100,7 +119,8 @@ class MusicPlayer {
 
     // duration & songTitle
     _audioHandler.mediaItem.listen((mediaItem) {
-      durationNotifier.value = mediaItem?.duration ?? Duration.zero;
+      durationNotifier.value =
+          mediaItem?.duration ?? const Duration(seconds: 1);
       songTitleNotifier.value = mediaItem?.title;
     });
 
@@ -108,5 +128,26 @@ class MusicPlayer {
     _audioHandler.player.pitchStream.listen((pitch) {
       pitchSemitonesNotifier.value = (12 * log(pitch) / log(2)).toDouble();
     });
+
+    // When loopSection changes, clamp position
+    loopSectionNotifier.addListener(() {
+      seek(Duration(
+        milliseconds: position.inMilliseconds.clamp(
+          loopSection.start.inMilliseconds,
+          loopSection.end.inMilliseconds,
+        ),
+      ));
+    });
   }
+}
+
+class LoopSection {
+  LoopSection(
+      {this.start = Duration.zero, this.end = const Duration(seconds: 1)});
+
+  final Duration start;
+  final Duration end;
+
+  /// Duration between [start] and [end].
+  Duration get length => end - start;
 }
