@@ -3,6 +3,7 @@ import 'package:musbx/editable_screen/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
 import 'package:musbx/music_player/labeled_slider.dart';
+import 'package:musbx/music_player/loop_buttons.dart';
 import 'package:musbx/music_player/loop_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/position_slider.dart';
@@ -45,21 +46,9 @@ class MusicPlayerScreen extends StatelessWidget {
             ButtonPanel(),
           ],
         ),
-        Column(children: [
-          const LoopSlider(),
-          Row(children: [
-            ValueListenableBuilder(
-              valueListenable: musicPlayer.loopEnabledNotifier,
-              builder: (context, loopEnabled, child) => ElevatedButton(
-                onPressed: () {
-                  musicPlayer.loopEnabled = !loopEnabled;
-                },
-                child: Icon(loopEnabled
-                    ? Icons.trending_flat_rounded
-                    : Icons.loop_rounded),
-              ),
-            ),
-          ])
+        Column(children: const [
+          LoopSlider(),
+          LoopButtons(),
         ])
       ],
     );
