@@ -23,7 +23,7 @@ class LoopSlider extends StatelessWidget {
                 durationString(loopSection.end),
               ),
               min: 0,
-              max: duration?.inMilliseconds.toDouble() ?? 1000,
+              max: duration.inMilliseconds.toDouble(),
               values: RangeValues(
                 loopSection.start.inMilliseconds.toDouble(),
                 loopSection.end.inMilliseconds.toDouble(),

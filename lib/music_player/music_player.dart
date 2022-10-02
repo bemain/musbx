@@ -68,8 +68,9 @@ class MusicPlayer {
   final ValueNotifier<Duration> positionNotifier = ValueNotifier(Duration.zero);
 
   /// The duration of the current audio, or null if no audio has been loaded.
-  Duration? get duration => durationNotifier.value;
-  final ValueNotifier<Duration?> durationNotifier = ValueNotifier(null);
+  Duration get duration => durationNotifier.value;
+  final ValueNotifier<Duration> durationNotifier =
+      ValueNotifier(const Duration(seconds: 1));
 
   /// Whether we are currently looping a section of the song or not.
   bool get loopEnabled => loopEnabledNotifier.value;
@@ -95,7 +96,7 @@ class MusicPlayer {
     // Update songTitle
     songTitleNotifier.value = file.name;
     // Reset loopSection
-    loopSection = LoopSection(end: duration!);
+    loopSection = LoopSection(end: duration);
 
     // Inform notification
     JustAudioHandler.instance.mediaItem.add(MediaItem(
@@ -117,7 +118,7 @@ class MusicPlayer {
     // Update songTitle
     songTitleNotifier.value = video.title;
     // Reset loopSection
-    loopSection = LoopSection(end: duration!);
+    loopSection = LoopSection(end: duration);
 
     // Inform notification
     JustAudioHandler.instance.mediaItem.add(MediaItem(
@@ -146,14 +147,11 @@ class MusicPlayer {
     player.positionStream.listen((position) {
       // Limit upper
       if ((loopEnabled && position >= loopSection.end) ||
-          position >= (duration ?? const Duration(seconds: 1))) {
+          position >= duration) {
         player.pause();
-        seek(loopEnabled
-            ? loopSection.end
-            : duration ?? const Duration(seconds: 1));
+        seek(loopEnabled ? loopSection.end : duration);
       } else if (loopEnabled && position < loopSection.start) {
         // Limit lower
-        player.pause();
         seek(loopSection.start);
       } else {
         // Update position
@@ -163,17 +161,19 @@ class MusicPlayer {
 
     // duration
     player.durationStream.listen((duration) {
-      durationNotifier.value = duration;
+      durationNotifier.value = duration ?? const Duration(seconds: 1);
     });
 
     // When loopSection changes, clamp position
     loopSectionNotifier.addListener(() {
-      seek(Duration(
-        milliseconds: position.inMilliseconds.clamp(
-          loopSection.start.inMilliseconds,
-          loopSection.end.inMilliseconds,
-        ),
-      ));
+      if (position < loopSection.start || position > loopSection.end) {
+        seek(Duration(
+          milliseconds: position.inMilliseconds.clamp(
+            loopSection.start.inMilliseconds,
+            loopSection.end.inMilliseconds,
+          ),
+        ));
+      }
     });
   }
 }

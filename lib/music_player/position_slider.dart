@@ -33,10 +33,10 @@ class PositionSlider extends StatelessWidget {
                           trackShape: (musicPlayer.songTitle == null ||
                                   !loopEnabled)
                               ? null
-                              : _buildSliderTrackShape(duration!, loopSection)),
+                              : _buildSliderTrackShape(duration, loopSection)),
                       child: Slider(
                         min: 0,
-                        max: duration?.inMilliseconds.roundToDouble() ?? 0,
+                        max: duration.inMilliseconds.roundToDouble(),
                         value: position.inMilliseconds.roundToDouble(),
                         onChanged: (musicPlayer.songTitle == null)
                             ? null
@@ -57,9 +57,11 @@ class PositionSlider extends StatelessWidget {
     );
   }
 
-  Widget _buildDurationText(BuildContext context, Duration? duration) {
+  Widget _buildDurationText(BuildContext context, Duration duration) {
     return Text(
-      (duration == null) ? "-- : --" : durationString(duration),
+      (MusicPlayer.instance.songTitle == null)
+          ? "-- : --"
+          : durationString(duration),
       style: Theme.of(context).textTheme.caption,
     );
   }
