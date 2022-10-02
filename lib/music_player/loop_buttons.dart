@@ -12,45 +12,46 @@ class LoopButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     final MusicPlayer musicPlayer = MusicPlayer.instance;
 
-    final bool disabled = (musicPlayer.songTitle == null);
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Set the loopSection's start to position
-        IconButton(
-          onPressed: musicPlayer.nullIfNoSongElse(() {
-            musicPlayer.loopSection = LoopSection(
-              start: musicPlayer.position,
-              end: musicPlayer.loopSection.end,
-            );
-          }),
-          icon: const Icon(Icons.arrow_circle_right_outlined),
-        ),
-        // Toggle loopEnabled
-        ValueListenableBuilder(
-          valueListenable: musicPlayer.loopEnabledNotifier,
-          builder: (context, loopEnabled, child) => TextButton(
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.songTitleNotifier,
+      builder: (context, _, __) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Set the loopSection's start to position
+          IconButton(
             onPressed: musicPlayer.nullIfNoSongElse(() {
-              musicPlayer.loopEnabled = !loopEnabled;
+              musicPlayer.loopSection = LoopSection(
+                start: musicPlayer.position,
+                end: musicPlayer.loopSection.end,
+              );
             }),
-            child: Icon(
-              loopEnabled ? Icons.trending_flat_rounded : Icons.loop_rounded,
-              size: 50,
+            icon: const Icon(Icons.arrow_circle_right_outlined),
+          ),
+          // Toggle loopEnabled
+          ValueListenableBuilder(
+            valueListenable: musicPlayer.loopEnabledNotifier,
+            builder: (context, loopEnabled, _) => TextButton(
+              onPressed: musicPlayer.nullIfNoSongElse(() {
+                musicPlayer.loopEnabled = !loopEnabled;
+              }),
+              child: Icon(
+                loopEnabled ? Icons.trending_flat_rounded : Icons.loop_rounded,
+                size: 50,
+              ),
             ),
           ),
-        ),
-        // Set the loopSection's end to position
-        IconButton(
-          onPressed: musicPlayer.nullIfNoSongElse(() {
-            musicPlayer.loopSection = LoopSection(
-              start: musicPlayer.loopSection.start,
-              end: musicPlayer.position,
-            );
-          }),
-          icon: const Icon(Icons.arrow_circle_left_outlined),
-        ),
-      ],
+          // Set the loopSection's end to position
+          IconButton(
+            onPressed: musicPlayer.nullIfNoSongElse(() {
+              musicPlayer.loopSection = LoopSection(
+                start: musicPlayer.loopSection.start,
+                end: musicPlayer.position,
+              );
+            }),
+            icon: const Icon(Icons.arrow_circle_left_outlined),
+          ),
+        ],
+      ),
     );
   }
 }
