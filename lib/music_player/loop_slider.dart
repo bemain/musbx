@@ -28,14 +28,14 @@ class LoopSlider extends StatelessWidget {
                 loopSection.start.inMilliseconds.toDouble(),
                 loopSection.end.inMilliseconds.toDouble(),
               ),
-              onChanged: (musicPlayer.songTitle == null || !loopEnabled)
+              onChanged: !loopEnabled
                   ? null
-                  : (RangeValues values) {
+                  : musicPlayer.nullIfNoSongElse((RangeValues values) {
                       musicPlayer.loopSection = LoopSection(
                         start: Duration(milliseconds: values.start.toInt()),
                         end: Duration(milliseconds: values.end.toInt()),
                       );
-                    },
+                    }),
             );
           },
         ),

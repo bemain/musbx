@@ -53,6 +53,9 @@ class MusicPlayer {
   String? get songTitle => songTitleNotifier.value;
   final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
 
+  /// Returns `null` if no song loaded, value otherwise.
+  T? nullIfNoSongElse<T>(T value) => (songTitle == null) ? null : value;
+
   /// How much the pitch will be shifted, in semitones.
   double get pitchSemitones => pitchSemitonesNotifier.value;
   set pitchSemitones(double value) => setPitchSemitones(value);

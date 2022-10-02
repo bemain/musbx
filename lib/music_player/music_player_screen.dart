@@ -41,9 +41,9 @@ class MusicPlayerScreen extends StatelessWidget {
           ],
         ),
         Column(
-          children: const [
+          children: [
             PositionSlider(),
-            ButtonPanel(),
+            const ButtonPanel(),
           ],
         ),
         Column(children: const [
