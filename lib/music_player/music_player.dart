@@ -111,11 +111,19 @@ class MusicPlayer {
         await _youtubeExplode.videos.streams.getManifest(video.id);
     AudioOnlyStreamInfo streamInfo = manifest.audioOnly.withHighestBitrate();
 
-    _audioHandler.player.setUrl(streamInfo.url.toString());
-    _audioHandler.mediaItem.add(MediaItem(
+    // Set URL
+    await player.setUrl(streamInfo.url.toString());
+
+    // Update songTitle
+    songTitleNotifier.value = video.title;
+    // Reset loopSection
+    loopSection = LoopSection(end: duration!);
+
+    // Inform notification
+    JustAudioHandler.instance.mediaItem.add(MediaItem(
       id: video.id ?? "",
       title: video.title,
-      duration: _parseDuration(video.duration ?? "0:0"),
+      duration: _parseDuration(video.duration ?? "0:1"),
     ));
   }
 
