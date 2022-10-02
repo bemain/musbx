@@ -3,7 +3,10 @@ import 'package:musbx/editable_screen/editable_screen.dart';
 import 'package:musbx/music_player/button_panel.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
 import 'package:musbx/music_player/labeled_slider.dart';
+import 'package:musbx/music_player/loop_buttons.dart';
+import 'package:musbx/music_player/loop_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/music_player/position_slider.dart';
 
 class MusicPlayerScreen extends StatelessWidget {
   /// Screen that allows the user to select and play a song.
@@ -39,10 +42,14 @@ class MusicPlayerScreen extends StatelessWidget {
         ),
         Column(
           children: [
-            buildPositionSlider(),
+            PositionSlider(),
             const ButtonPanel(),
           ],
         ),
+        Column(children: const [
+          LoopSlider(),
+          LoopButtons(),
+        ])
       ],
     );
   }
@@ -84,48 +91,6 @@ class MusicPlayerScreen extends StatelessWidget {
             divisions: 18,
             onChanged: musicPlayer.setSpeed),
       ),
-    );
-  }
-
-  Widget buildPositionSlider() {
-    return ValueListenableBuilder(
-      valueListenable: musicPlayer.durationNotifier,
-      builder: (context, duration, child) => ValueListenableBuilder(
-        valueListenable: musicPlayer.positionNotifier,
-        builder: (context, position, child) {
-          return Row(
-            children: [
-              _buildDurationText(context, position),
-              Expanded(
-                child: Slider(
-                  min: 0,
-                  max: duration?.inMilliseconds.roundToDouble() ?? 0,
-                  value: position.inMilliseconds.roundToDouble(),
-                  onChanged: (musicPlayer.songTitle == null)
-                      ? null
-                      : (double value) {
-                          musicPlayer
-                              .seek(Duration(milliseconds: value.round()));
-                        },
-                ),
-              ),
-              _buildDurationText(context, duration),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildDurationText(BuildContext context, Duration? duration) {
-    return Text(
-      (duration == null)
-          ? "-- : --"
-          : RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
-                  .firstMatch("$duration")
-                  ?.group(1) ??
-              "$duration",
-      style: Theme.of(context).textTheme.caption,
     );
   }
 }
