@@ -48,11 +48,7 @@ class PositionSlider extends StatelessWidget {
         Expanded(
           child: SliderTheme(
             data: SliderThemeData(
-                thumbColor: (loopEnabled &&
-                        loopSection.start <= position &&
-                        position <= loopSection.end)
-                    ? Colors.deepPurple
-                    : null,
+                thumbColor: loopEnabled ? Colors.deepPurple : null,
                 trackShape: !loopEnabled
                     ? null
                     : musicPlayer.nullIfNoSongElse(
