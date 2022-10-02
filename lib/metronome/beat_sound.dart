@@ -1,19 +1,10 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
-const List<BeatSound> selectableBeatSounds = [
-  BeatSound.sticks,
-  BeatSound.cowbell,
-  BeatSound.none,
-];
-
 enum BeatSound {
-  sticks(fileName: "sticks.wav", color: Colors.blue),
-  cowbell(fileName: "cowbell.mp3", color: Colors.green),
-  hihat(fileName: "hihat.wav", color: Colors.orange),
-  snare(fileName: "snare.wav", color: Colors.purple),
-  kick(fileName: "kick.wav", color: Colors.indigo),
-  none(fileName: "", color: Colors.grey);
+  primary(fileName: "sticks.wav"),
+  accented(fileName: "cowbell.mp3"),
+  none(fileName: "");
 
   /// Internal AudioCache for playing sounds.
   static final AudioCache audioCache = AudioCache(
@@ -21,13 +12,10 @@ enum BeatSound {
     respectSilence: true,
   );
 
-  const BeatSound({required this.fileName, required this.color});
+  const BeatSound({required this.fileName});
 
-  /// File used when playing this sound, eg. in BeatSounds.
+  /// File used when playing this sound, e.g. in BeatSounds.
   final String fileName;
-
-  /// Color used when displaying this sound, eg. in BeatSoundViewer.
-  final Color color;
 
   /// Play this sound.
   void play() async {
@@ -36,5 +24,17 @@ enum BeatSound {
       fileName,
       mode: PlayerMode.LOW_LATENCY,
     );
+  }
+}
+
+/// The color used when displaying [BeatSound], e.g. in BeatSoundViewer.
+Color beatSoundColor(BuildContext context, BeatSound beatSound) {
+  switch (beatSound) {
+    case BeatSound.primary:
+      return Theme.of(context).colorScheme.primary;
+    case BeatSound.accented:
+      return Theme.of(context).colorScheme.secondary;
+    case BeatSound.none:
+      return Theme.of(context).colorScheme.background;
   }
 }

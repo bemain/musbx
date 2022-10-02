@@ -19,7 +19,7 @@ class MetronomeBeats extends ChangeNotifier {
 
   /// Sounds to play at each beat.
   List<BeatSound> get sounds => _sounds;
-  final List<BeatSound> _sounds = List.generate(4, ((i) => BeatSound.sticks));
+  final List<BeatSound> _sounds = List.generate(4, ((i) => BeatSound.primary));
 
   /// Get sound at [index].
   BeatSound operator [](int index) {
