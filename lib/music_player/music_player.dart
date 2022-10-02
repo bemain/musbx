@@ -31,7 +31,16 @@ class MusicPlayer {
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {
-    if (position == this.position) return;
+    if (loopEnabled) {
+      // Clamp position to loopSection
+      position = Duration(
+        milliseconds: position.inMilliseconds.clamp(
+          loopSection.start.inMilliseconds,
+          loopSection.end.inMilliseconds,
+        ),
+      );
+    }
+
     await player.seek(position);
     await JustAudioHandler.instance.seek(position);
   }
@@ -131,7 +140,7 @@ class MusicPlayer {
     ));
   }
 
-  /// Listen for changes from [_audioHandler].
+  /// Listen for changes from [player].
   void _listenForChanges() {
     // isPlaying
     player.playingStream.listen((playing) {
@@ -139,18 +148,15 @@ class MusicPlayer {
     });
 
     // position
-    player.positionStream.listen((position) {
-      // Limit upper
-      if ((loopEnabled && position >= loopSection.end) ||
+    player.positionStream.listen((position) async {
+      // Update position
+      positionNotifier.value = position;
+
+      // If we have reached the end of the song, pause
+      if ((isPlaying && loopEnabled && position >= loopSection.end) ||
           position >= duration) {
-        player.pause();
-        seek(loopEnabled ? loopSection.end : duration);
-      } else if (loopEnabled && position < loopSection.start) {
-        // Limit lower
-        seek(loopSection.start);
-      } else {
-        // Update position
-        positionNotifier.value = position;
+        await player.pause();
+        await seek(loopEnabled ? loopSection.end : duration);
       }
     });
 
@@ -160,14 +166,17 @@ class MusicPlayer {
     });
 
     // When loopSection changes, clamp position
-    loopSectionNotifier.addListener(() {
+    loopSectionNotifier.addListener(() async {
+      if (!loopEnabled) return;
       if (position < loopSection.start || position > loopSection.end) {
-        seek(Duration(
-          milliseconds: position.inMilliseconds.clamp(
-            loopSection.start.inMilliseconds,
-            loopSection.end.inMilliseconds,
-          ),
-        ));
+        await seek(position);
+      }
+    });
+
+    // When loopEnabled changes, clamp position
+    loopEnabledNotifier.addListener(() async {
+      if (position < loopSection.start || position > loopSection.end) {
+        await seek(position);
       }
     });
   }
