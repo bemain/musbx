@@ -5,6 +5,7 @@ import 'package:musbx/widgets.dart';
 import 'package:youtube_api/youtube_api.dart';
 
 class YoutubeButton extends StatelessWidget {
+  /// Button for searching for a song from Youtube and loading it to [MusicPlayer].
   const YoutubeButton({super.key});
 
   @override
@@ -24,6 +25,7 @@ class YoutubeButton extends StatelessWidget {
     );
   }
 
+  /// Parse [String] to [Duration].
   Duration parseDuration(String s) {
     List<String> parts = s.split(":");
     return Duration(
@@ -33,9 +35,12 @@ class YoutubeButton extends StatelessWidget {
   }
 }
 
+/// [SearchDelegate] for searching for a song on Youtube.
 class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
+  /// Previous search queries.
   static Set<String> searchHistory = {};
 
+  /// The API key used to access Youtube.
   final YoutubeAPI youtubeApi = YoutubeAPI(apiKey);
 
   @override
@@ -95,6 +100,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
     );
   }
 
+  /// Result item, showing a [YouTubeVideo]'s title, channel and thumbnail.
   Widget listItem(BuildContext context, YouTubeVideo video) {
     return GestureDetector(
       onTap: () {
