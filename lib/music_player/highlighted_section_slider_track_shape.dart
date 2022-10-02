@@ -46,7 +46,7 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
 
     assert(highlightStart >= 0 && highlightStart <= 1);
     assert(highlightEnd >= 0 && highlightEnd <= 1);
-    assert(highlightStart < highlightEnd);
+    assert(highlightStart <= highlightEnd);
 
     final Rect trackRect = getPreferredRect(
       parentBox: parentBox,
