@@ -76,7 +76,7 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
     final Paint inactiveHighlightPaint = Paint()
       ..color = inactiveHighlightColor;
 
-    final Radius trackRadius = Radius.circular(trackRect.height / 2);
+    final Radius inactiveTrackRadius = Radius.circular(trackRect.height / 2);
     final Radius activeTrackRadius = Radius.circular(trackRect.height / 2 + 1);
 
     // Draw regular slider track
@@ -97,33 +97,33 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
         trackRect.top,
         trackRect.right,
         trackRect.bottom,
-        topRight: (textDirection == TextDirection.rtl)
-            ? activeTrackRadius
-            : trackRadius,
-        bottomRight: (textDirection == TextDirection.rtl)
-            ? activeTrackRadius
-            : trackRadius,
+        topRight: inactiveTrackRadius,
+        bottomRight: inactiveTrackRadius,
       ),
       inactivePaint,
     );
     // Overlay highlight
     if (thumbCenter.dx > highlightStartOffset.dx) {
-      context.canvas.drawRect(
-          Rect.fromLTRB(
+      context.canvas.drawRRect(
+          RRect.fromLTRBAndCorners(
             highlightStartOffset.dx,
             trackRect.top - 1,
             min(thumbCenter.dx, highlightEndOffset.dx),
             trackRect.bottom + 1,
+            topLeft: activeTrackRadius,
+            bottomLeft: activeTrackRadius,
           ),
           activeHighlightPaint);
     }
     if (thumbCenter.dx < highlightEndOffset.dx) {
-      context.canvas.drawRect(
-          Rect.fromLTRB(
+      context.canvas.drawRRect(
+          RRect.fromLTRBAndCorners(
             max(thumbCenter.dx, highlightStartOffset.dx),
             trackRect.top,
             highlightEndOffset.dx,
             trackRect.bottom,
+            topRight: inactiveTrackRadius,
+            bottomRight: inactiveTrackRadius,
           ),
           inactiveHighlightPaint);
     }
