@@ -48,11 +48,13 @@ class PositionSlider extends StatelessWidget {
         Expanded(
           child: SliderTheme(
             data: SliderThemeData(
-                thumbColor: loopEnabled ? Colors.deepPurple : null,
+                thumbColor: loopEnabled
+                    ? Theme.of(context).colorScheme.secondary
+                    : null,
                 trackShape: !loopEnabled
                     ? null
-                    : musicPlayer.nullIfNoSongElse(
-                        _buildSliderTrackShape(duration, loopSection))),
+                    : musicPlayer.nullIfNoSongElse(_buildSliderTrackShape(
+                        context, duration, loopSection))),
             child: Slider(
               min: 0,
               max: duration.inMilliseconds.roundToDouble(),
@@ -76,6 +78,7 @@ class PositionSlider extends StatelessWidget {
   }
 
   SliderTrackShape _buildSliderTrackShape(
+    BuildContext context,
     Duration duration,
     LoopSection loopSection,
   ) {
@@ -83,8 +86,9 @@ class PositionSlider extends StatelessWidget {
       highlightStart:
           loopSection.start.inMilliseconds / duration.inMilliseconds,
       highlightEnd: loopSection.end.inMilliseconds / duration.inMilliseconds,
-      activeHighlightColor: Colors.deepPurple,
-      inactiveHighlightColor: Colors.purple.withAlpha(100),
+      activeHighlightColor: Theme.of(context).colorScheme.secondary,
+      inactiveHighlightColor:
+          Theme.of(context).colorScheme.secondaryContainer.withAlpha(100),
     );
   }
 }

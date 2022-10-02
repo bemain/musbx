@@ -50,7 +50,10 @@ class TunerGauge extends StatelessWidget {
   Widget _buildGauge(BuildContext context) {
     // If note is in tune, make needle green
     List<Color> needleColors = (note.pitchOffset.abs() < 10)
-        ? [Colors.lightGreen, Colors.green]
+        ? [
+            Theme.of(context).colorScheme.tertiaryContainer,
+            Theme.of(context).colorScheme.tertiary,
+          ]
         : [
             Theme.of(context).primaryColor,
             Theme.of(context).primaryColorDark,
@@ -65,7 +68,7 @@ class TunerGauge extends StatelessWidget {
           maxAngle: 18,
           radius: 0,
           width: 0.8,
-          color: Colors.green.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.tertiary.withOpacity(0.1),
         ),
         RadialGaugeAxis(
           minValue: -50,
@@ -89,7 +92,7 @@ class TunerGauge extends StatelessWidget {
             RadialTicks(
               values: [for (double i = -9; i <= 9; i++) i]..remove(0),
               length: 0.05,
-              color: Colors.green,
+              color: Theme.of(context).colorScheme.tertiary,
             )
           ],
           pointers: [

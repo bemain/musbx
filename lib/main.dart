@@ -24,7 +24,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         title: "Musician's Toolbox",
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          colorScheme: ColorScheme.fromSwatch().copyWith(
+            secondary: Colors.deepPurple,
+            secondaryContainer: Colors.purple,
+            tertiary: Colors.green,
+            tertiaryContainer: Colors.lightGreen,
+          ),
           sliderTheme: const SliderThemeData(
             showValueIndicator: ShowValueIndicator.always,
           ),
