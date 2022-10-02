@@ -124,16 +124,8 @@ class MusicPlayer {
     JustAudioHandler.instance.mediaItem.add(MediaItem(
       id: video.id ?? "",
       title: video.title,
-      duration: _parseDuration(video.duration ?? "0:1"),
+      duration: duration,
     ));
-  }
-
-  Duration _parseDuration(String s) {
-    List<String> parts = s.split(":");
-    return Duration(
-      minutes: int.parse(parts[0]),
-      seconds: int.parse(parts[1]),
-    );
   }
 
   /// Listen for changes from [_audioHandler].
