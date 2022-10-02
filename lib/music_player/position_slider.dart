@@ -4,12 +4,16 @@ import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/widgets.dart';
 
 class PositionSlider extends StatelessWidget {
-  const PositionSlider({super.key});
+  /// Slider for seeking a position in the current song.
+  ///
+  /// Includes labels displaying the current position and duration of the current song.
+  /// If looping is enabled, highlights the section of the slider being looped.
+  PositionSlider({super.key});
+
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
-    final MusicPlayer musicPlayer = MusicPlayer.instance;
-
     return ValueListenableBuilder(
       valueListenable: musicPlayer.durationNotifier,
       builder: (_, duration, __) => ValueListenableBuilder(
@@ -18,50 +22,59 @@ class PositionSlider extends StatelessWidget {
           valueListenable: musicPlayer.loopSectionNotifier,
           builder: (_, loopSection, __) => ValueListenableBuilder(
             valueListenable: musicPlayer.positionNotifier,
-            builder: (context, position, _) {
-              return Row(
-                children: [
-                  _buildDurationText(context, position),
-                  Expanded(
-                    child: SliderTheme(
-                      data: SliderThemeData(
-                          thumbColor: (loopEnabled &&
-                                  loopSection.start <= position &&
-                                  position <= loopSection.end)
-                              ? Colors.deepPurple
-                              : null,
-                          trackShape: (musicPlayer.songTitle == null ||
-                                  !loopEnabled)
-                              ? null
-                              : _buildSliderTrackShape(duration, loopSection)),
-                      child: Slider(
-                        min: 0,
-                        max: duration.inMilliseconds.roundToDouble(),
-                        value: position.inMilliseconds.roundToDouble(),
-                        onChanged: (musicPlayer.songTitle == null)
-                            ? null
-                            : (double value) {
-                                musicPlayer.seek(
-                                    Duration(milliseconds: value.round()));
-                              },
-                      ),
-                    ),
-                  ),
-                  _buildDurationText(context, duration),
-                ],
-              );
-            },
+            builder: (context, position, _) => _buildSlider(
+              context,
+              duration,
+              position,
+              loopEnabled,
+              loopSection,
+            ),
           ),
         ),
       ),
     );
   }
 
+  Widget _buildSlider(
+    BuildContext context,
+    Duration duration,
+    Duration position,
+    bool loopEnabled,
+    LoopSection loopSection,
+  ) {
+    return Row(
+      children: [
+        _buildDurationText(context, position),
+        Expanded(
+          child: SliderTheme(
+            data: SliderThemeData(
+                thumbColor: (loopEnabled &&
+                        loopSection.start <= position &&
+                        position <= loopSection.end)
+                    ? Colors.deepPurple
+                    : null,
+                trackShape: !loopEnabled
+                    ? null
+                    : musicPlayer.nullIfNoSongElse(
+                        _buildSliderTrackShape(duration, loopSection))),
+            child: Slider(
+              min: 0,
+              max: duration.inMilliseconds.roundToDouble(),
+              value: position.inMilliseconds.roundToDouble(),
+              onChanged: musicPlayer.nullIfNoSongElse((double value) {
+                musicPlayer.seek(Duration(milliseconds: value.round()));
+              }),
+            ),
+          ),
+        ),
+        _buildDurationText(context, duration),
+      ],
+    );
+  }
+
   Widget _buildDurationText(BuildContext context, Duration duration) {
     return Text(
-      (MusicPlayer.instance.songTitle == null)
-          ? "-- : --"
-          : durationString(duration),
+      (musicPlayer.songTitle == null) ? "-- : --" : durationString(duration),
       style: Theme.of(context).textTheme.caption,
     );
   }
