@@ -5,6 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
+import 'package:youtube_api/youtube_api.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// Singleton for playing audio.
 class MusicPlayer {
@@ -18,6 +20,8 @@ class MusicPlayer {
 
   /// The [AudioPlayer] used for playback.
   final AudioPlayer player = AudioPlayer();
+
+  final YoutubeExplode _youtubeExplode = YoutubeExplode();
 
   /// Start or resume playback.
   Future<void> play() async => await player.play();
@@ -99,6 +103,28 @@ class MusicPlayer {
       title: file.name,
       duration: player.duration,
     ));
+  }
+
+  Future<void> playVideo(YouTubeVideo video) async {
+    // Get stream info
+    StreamManifest manifest =
+        await _youtubeExplode.videos.streams.getManifest(video.id);
+    AudioOnlyStreamInfo streamInfo = manifest.audioOnly.withHighestBitrate();
+
+    _audioHandler.player.setUrl(streamInfo.url.toString());
+    _audioHandler.mediaItem.add(MediaItem(
+      id: video.id ?? "",
+      title: video.title,
+      duration: _parseDuration(video.duration ?? "0:0"),
+    ));
+  }
+
+  Duration _parseDuration(String s) {
+    List<String> parts = s.split(":");
+    return Duration(
+      minutes: int.parse(parts[0]),
+      seconds: int.parse(parts[1]),
+    );
   }
 
   /// Listen for changes from [_audioHandler].
