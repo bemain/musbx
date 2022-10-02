@@ -13,40 +13,45 @@ class PositionSlider extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.durationNotifier,
       builder: (_, duration, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.loopSectionNotifier,
-        builder: (_, loopSection, __) => ValueListenableBuilder(
-          valueListenable: musicPlayer.positionNotifier,
-          builder: (context, position, _) {
-            return Row(
-              children: [
-                _buildDurationText(context, position),
-                Expanded(
-                  child: SliderTheme(
-                    data: SliderThemeData(
-                        thumbColor: (loopSection.start <= position &&
-                                position <= loopSection.end)
-                            ? Colors.deepPurple
-                            : null,
-                        trackShape: (musicPlayer.songTitle == null)
+        valueListenable: musicPlayer.loopEnabledNotifier,
+        builder: (_, loopEnabled, __) => ValueListenableBuilder(
+          valueListenable: musicPlayer.loopSectionNotifier,
+          builder: (_, loopSection, __) => ValueListenableBuilder(
+            valueListenable: musicPlayer.positionNotifier,
+            builder: (context, position, _) {
+              return Row(
+                children: [
+                  _buildDurationText(context, position),
+                  Expanded(
+                    child: SliderTheme(
+                      data: SliderThemeData(
+                          thumbColor: (loopEnabled &&
+                                  loopSection.start <= position &&
+                                  position <= loopSection.end)
+                              ? Colors.deepPurple
+                              : null,
+                          trackShape: (musicPlayer.songTitle == null ||
+                                  !loopEnabled)
+                              ? null
+                              : _buildSliderTrackShape(duration!, loopSection)),
+                      child: Slider(
+                        min: 0,
+                        max: duration?.inMilliseconds.roundToDouble() ?? 0,
+                        value: position.inMilliseconds.roundToDouble(),
+                        onChanged: (musicPlayer.songTitle == null)
                             ? null
-                            : _buildSliderTrackShape(duration!, loopSection)),
-                    child: Slider(
-                      min: 0,
-                      max: duration?.inMilliseconds.roundToDouble() ?? 0,
-                      value: position.inMilliseconds.roundToDouble(),
-                      onChanged: (musicPlayer.songTitle == null)
-                          ? null
-                          : (double value) {
-                              musicPlayer
-                                  .seek(Duration(milliseconds: value.round()));
-                            },
+                            : (double value) {
+                                musicPlayer.seek(
+                                    Duration(milliseconds: value.round()));
+                              },
+                      ),
                     ),
                   ),
-                ),
-                _buildDurationText(context, duration),
-              ],
-            );
-          },
+                  _buildDurationText(context, duration),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

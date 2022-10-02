@@ -12,10 +12,11 @@ class LoopSlider extends StatelessWidget {
 
     return ValueListenableBuilder(
       valueListenable: musicPlayer.durationNotifier,
-      builder: (context, duration, child) {
-        return ValueListenableBuilder(
+      builder: (_, duration, __) => ValueListenableBuilder(
+        valueListenable: musicPlayer.loopEnabledNotifier,
+        builder: (_, loopEnabled, __) => ValueListenableBuilder(
           valueListenable: musicPlayer.loopSectionNotifier,
-          builder: (context, loopSection, child) {
+          builder: (context, loopSection, _) {
             return RangeSlider(
               labels: RangeLabels(
                 durationString(loopSection.start),
@@ -27,7 +28,7 @@ class LoopSlider extends StatelessWidget {
                 loopSection.start.inMilliseconds.toDouble(),
                 loopSection.end.inMilliseconds.toDouble(),
               ),
-              onChanged: (musicPlayer.songTitle == null)
+              onChanged: (musicPlayer.songTitle == null || !loopEnabled)
                   ? null
                   : (RangeValues values) {
                       musicPlayer.loopSection = LoopSection(
@@ -37,8 +38,8 @@ class LoopSlider extends StatelessWidget {
                     },
             );
           },
-        );
-      },
+        ),
+      ),
     );
   }
 }

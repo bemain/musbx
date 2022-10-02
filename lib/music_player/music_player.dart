@@ -68,6 +68,7 @@ class MusicPlayer {
 
   /// Whether we are currently looping a section of the song or not.
   bool get loopEnabled => loopEnabledNotifier.value;
+  set loopEnabled(bool value) => loopEnabledNotifier.value = value;
   final ValueNotifier<bool> loopEnabledNotifier = ValueNotifier(true);
 
   /// The section being
@@ -123,8 +124,15 @@ class MusicPlayer {
 
     // duration & songTitle
     _audioHandler.mediaItem.listen((mediaItem) {
-      durationNotifier.value =
-          mediaItem?.duration ?? const Duration(seconds: 1);
+      if (mediaItem?.duration != duration) {
+        // Update duration
+        durationNotifier.value =
+            mediaItem?.duration ?? const Duration(seconds: 1);
+        // Reset loopSection
+        loopSection = LoopSection(end: duration!);
+      }
+
+      // Update songTitle
       songTitleNotifier.value = mediaItem?.title;
     });
 

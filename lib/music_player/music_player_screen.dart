@@ -45,7 +45,22 @@ class MusicPlayerScreen extends StatelessWidget {
             ButtonPanel(),
           ],
         ),
-        LoopSlider(),
+        Column(children: [
+          const LoopSlider(),
+          Row(children: [
+            ValueListenableBuilder(
+              valueListenable: musicPlayer.loopEnabledNotifier,
+              builder: (context, loopEnabled, child) => ElevatedButton(
+                onPressed: () {
+                  musicPlayer.loopEnabled = !loopEnabled;
+                },
+                child: Icon(loopEnabled
+                    ? Icons.trending_flat_rounded
+                    : Icons.loop_rounded),
+              ),
+            ),
+          ])
+        ])
       ],
     );
   }
