@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/widgets.dart';
 
 class PositionSlider extends StatelessWidget {
   const PositionSlider({super.key});
@@ -53,12 +54,7 @@ class PositionSlider extends StatelessWidget {
 
   Widget _buildDurationText(BuildContext context, Duration? duration) {
     return Text(
-      (duration == null)
-          ? "-- : --"
-          : RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
-                  .firstMatch("$duration")
-                  ?.group(1) ??
-              "$duration",
+      (duration == null) ? "-- : --" : durationString(duration),
       style: Theme.of(context).textTheme.caption,
     );
   }

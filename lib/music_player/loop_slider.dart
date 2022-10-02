@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/widgets.dart';
 
 class LoopSlider extends StatelessWidget {
   /// Range slider for selecting the section to loop.
@@ -16,18 +17,24 @@ class LoopSlider extends StatelessWidget {
           valueListenable: musicPlayer.loopSectionNotifier,
           builder: (context, loopSection, child) {
             return RangeSlider(
+              labels: RangeLabels(
+                durationString(loopSection.start),
+                durationString(loopSection.end),
+              ),
               min: 0,
               max: duration?.inMilliseconds.toDouble() ?? 1000,
               values: RangeValues(
                 loopSection.start.inMilliseconds.toDouble(),
                 loopSection.end.inMilliseconds.toDouble(),
               ),
-              onChanged: (RangeValues values) {
-                musicPlayer.loopSection = LoopSection(
-                  start: Duration(milliseconds: values.start.toInt()),
-                  end: Duration(milliseconds: values.end.toInt()),
-                );
-              },
+              onChanged: (musicPlayer.songTitle == null)
+                  ? null
+                  : (RangeValues values) {
+                      musicPlayer.loopSection = LoopSection(
+                        start: Duration(milliseconds: values.start.toInt()),
+                        end: Duration(milliseconds: values.end.toInt()),
+                      );
+                    },
             );
           },
         );

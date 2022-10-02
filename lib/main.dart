@@ -28,6 +28,9 @@ class MyApp extends StatelessWidget {
         title: "Musician's Toolbox",
         theme: ThemeData(
           primarySwatch: Colors.blue,
+          sliderTheme: const SliderThemeData(
+            showValueIndicator: ShowValueIndicator.always,
+          ),
         ),
         home: const HomeScreen());
   }

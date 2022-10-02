@@ -12,19 +12,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
+  List<Widget> screens = [
+    const MetronomeScreen(),
+    MusicPlayerScreen(),
+    const TunerScreen(),
+  ];
   int selectedIndex = 1;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: selectedIndex,
-        children: [
-          const MetronomeScreen(),
-          MusicPlayerScreen(),
-          const TunerScreen(),
-        ],
-      ),
+      body: screens[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         onTap: (int index) {
           setState(() {
