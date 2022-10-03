@@ -11,7 +11,7 @@ class YoutubeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return OutlinedButton(
       onPressed: () async {
         YouTubeVideo? video = await showSearch<YouTubeVideo?>(
           context: context,

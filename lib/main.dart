@@ -51,7 +51,6 @@ class MyApp extends StatelessWidget {
             showValueIndicator: ShowValueIndicator.always,
           ),
         ),
-        themeMode: ThemeMode.system,
         home: const HomeScreen());
   }
 }
