@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/editable_screen/editable_screen.dart';
+import 'package:musbx/editable_screen/card_list.dart';
 import 'package:musbx/metronome/beat_sound_viewer.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
@@ -18,9 +18,8 @@ class MetronomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EditableScreen(
-      title: "Metronome",
-      widgets: [
+    return CardList(
+      children: [
         Column(children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
