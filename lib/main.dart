@@ -27,8 +27,8 @@ class MyApp extends StatelessWidget {
           colorScheme: ThemeData.light(useMaterial3: true).colorScheme.copyWith(
                 primary: Colors.blue,
                 primaryContainer: Colors.blueAccent,
-                secondary: Colors.deepPurple,
-                secondaryContainer: Colors.purple,
+                secondary: Colors.amber,
+                secondaryContainer: Colors.amberAccent,
                 tertiary: Colors.green,
                 tertiaryContainer: Colors.lightGreen,
                 background: Colors.grey,
