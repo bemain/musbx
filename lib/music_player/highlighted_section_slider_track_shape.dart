@@ -79,53 +79,71 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
     final Radius inactiveTrackRadius = Radius.circular(trackRect.height / 2);
     final Radius activeTrackRadius = Radius.circular(trackRect.height / 2 + 1);
 
-    // Draw regular slider track
+    // DRAW HIGHLIGHT
+    // Active part
+    final RRect activeHighlightRRect = RRect.fromLTRBAndCorners(
+      highlightStartOffset.dx,
+      trackRect.top - 1,
+      min(thumbCenter.dx, highlightEndOffset.dx),
+      trackRect.bottom + 1,
+      topLeft: activeTrackRadius,
+      bottomLeft: activeTrackRadius,
+    );
     context.canvas.drawRRect(
-      RRect.fromLTRBAndCorners(
-        trackRect.left,
-        trackRect.top - 1,
-        thumbCenter.dx,
-        trackRect.bottom + 1,
-        topLeft: activeTrackRadius,
-        bottomLeft: activeTrackRadius,
+      activeHighlightRRect,
+      activeHighlightPaint,
+    );
+
+    // Inactive part
+    final RRect inactiveHighlightRRect = RRect.fromLTRBAndCorners(
+      max(thumbCenter.dx, highlightStartOffset.dx),
+      trackRect.top,
+      highlightEndOffset.dx,
+      trackRect.bottom,
+      topRight: inactiveTrackRadius,
+      bottomRight: inactiveTrackRadius,
+    );
+    context.canvas.drawRRect(
+      inactiveHighlightRRect,
+      inactiveHighlightPaint,
+    );
+
+    // Draw regular slider track
+    context.canvas.drawPath(
+      Path.combine(
+        PathOperation.difference,
+        Path()
+          ..addRRect(
+            RRect.fromLTRBAndCorners(
+              trackRect.left,
+              trackRect.top - 1,
+              highlightStartOffset.dx + activeTrackRadius.x,
+              trackRect.bottom + 1,
+              topLeft: activeTrackRadius,
+              bottomLeft: activeTrackRadius,
+            ),
+          ),
+        Path()..addRRect(activeHighlightRRect),
       ),
       activePaint,
     );
-    context.canvas.drawRRect(
-      RRect.fromLTRBAndCorners(
-        thumbCenter.dx,
-        trackRect.top,
-        trackRect.right,
-        trackRect.bottom,
-        topRight: inactiveTrackRadius,
-        bottomRight: inactiveTrackRadius,
+    context.canvas.drawPath(
+      Path.combine(
+        PathOperation.difference,
+        Path()
+          ..addRRect(
+            RRect.fromLTRBAndCorners(
+              highlightEndOffset.dx - inactiveTrackRadius.x,
+              trackRect.top,
+              trackRect.right,
+              trackRect.bottom,
+              topRight: inactiveTrackRadius,
+              bottomRight: inactiveTrackRadius,
+            ),
+          ),
+        Path()..addRRect(inactiveHighlightRRect),
       ),
       inactivePaint,
     );
-    // Overlay highlight
-    if (thumbCenter.dx > highlightStartOffset.dx) {
-      context.canvas.drawRRect(
-          RRect.fromLTRBAndCorners(
-            highlightStartOffset.dx,
-            trackRect.top - 1,
-            min(thumbCenter.dx, highlightEndOffset.dx),
-            trackRect.bottom + 1,
-            topLeft: activeTrackRadius,
-            bottomLeft: activeTrackRadius,
-          ),
-          activeHighlightPaint);
-    }
-    if (thumbCenter.dx < highlightEndOffset.dx) {
-      context.canvas.drawRRect(
-          RRect.fromLTRBAndCorners(
-            max(thumbCenter.dx, highlightStartOffset.dx),
-            trackRect.top,
-            highlightEndOffset.dx,
-            trackRect.bottom,
-            topRight: inactiveTrackRadius,
-            bottomRight: inactiveTrackRadius,
-          ),
-          inactiveHighlightPaint);
-    }
   }
 }
