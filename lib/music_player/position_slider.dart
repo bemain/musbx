@@ -47,15 +47,22 @@ class PositionSlider extends StatelessWidget {
         _buildDurationText(context, position),
         Expanded(
           child: SliderTheme(
-            data: SliderThemeData(
-                thumbColor: loopEnabled
-                    ? Theme.of(context).colorScheme.secondary
-                    : null,
+            data: Theme.of(context).sliderTheme.copyWith(
                 trackShape: !loopEnabled
                     ? null
                     : musicPlayer.nullIfNoSongElse(_buildSliderTrackShape(
-                        context, duration, loopSection))),
+                        context,
+                        duration,
+                        loopSection,
+                      ))),
             child: Slider(
+              activeColor: loopEnabled
+                  ? Theme.of(context).colorScheme.background.withOpacity(0.24)
+                  : null,
+              inactiveColor: loopEnabled
+                  ? Theme.of(context).colorScheme.background.withOpacity(0.24)
+                  : null,
+              thumbColor: Theme.of(context).colorScheme.primary,
               min: 0,
               max: duration.inMilliseconds.roundToDouble(),
               value: position.inMilliseconds.roundToDouble(),
@@ -86,9 +93,9 @@ class PositionSlider extends StatelessWidget {
       highlightStart:
           loopSection.start.inMilliseconds / duration.inMilliseconds,
       highlightEnd: loopSection.end.inMilliseconds / duration.inMilliseconds,
-      activeHighlightColor: Theme.of(context).colorScheme.secondary,
+      activeHighlightColor: Theme.of(context).colorScheme.primary,
       inactiveHighlightColor:
-          Theme.of(context).colorScheme.secondaryContainer.withAlpha(100),
+          Theme.of(context).colorScheme.primary.withOpacity(0.24),
     );
   }
 }

@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
                 secondaryContainer: Colors.amberAccent,
                 tertiary: Colors.green,
                 tertiaryContainer: Colors.lightGreen,
-                background: Colors.grey,
+                background: Colors.grey[700],
               ),
           sliderTheme: const SliderThemeData(
             showValueIndicator: ShowValueIndicator.always,

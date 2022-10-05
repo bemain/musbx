@@ -17,31 +17,25 @@ class LoopSlider extends StatelessWidget {
         builder: (_, loopEnabled, __) => ValueListenableBuilder(
           valueListenable: musicPlayer.loopSectionNotifier,
           builder: (context, loopSection, _) {
-            return SliderTheme(
-              data: SliderThemeData(
-                thumbColor: Theme.of(context).colorScheme.secondary,
+            return RangeSlider(
+              labels: RangeLabels(
+                durationString(loopSection.start),
+                durationString(loopSection.end),
               ),
-              child: RangeSlider(
-                activeColor: Theme.of(context).colorScheme.secondary,
-                labels: RangeLabels(
-                  durationString(loopSection.start),
-                  durationString(loopSection.end),
-                ),
-                min: 0,
-                max: duration.inMilliseconds.toDouble(),
-                values: RangeValues(
-                  loopSection.start.inMilliseconds.toDouble(),
-                  loopSection.end.inMilliseconds.toDouble(),
-                ),
-                onChanged: !loopEnabled
-                    ? null
-                    : musicPlayer.nullIfNoSongElse((RangeValues values) {
-                        musicPlayer.loopSection = LoopSection(
-                          start: Duration(milliseconds: values.start.toInt()),
-                          end: Duration(milliseconds: values.end.toInt()),
-                        );
-                      }),
+              min: 0,
+              max: duration.inMilliseconds.toDouble(),
+              values: RangeValues(
+                loopSection.start.inMilliseconds.toDouble(),
+                loopSection.end.inMilliseconds.toDouble(),
               ),
+              onChanged: !loopEnabled
+                  ? null
+                  : musicPlayer.nullIfNoSongElse((RangeValues values) {
+                      musicPlayer.loopSection = LoopSection(
+                        start: Duration(milliseconds: values.start.toInt()),
+                        end: Duration(milliseconds: values.end.toInt()),
+                      );
+                    }),
             );
           },
         ),
