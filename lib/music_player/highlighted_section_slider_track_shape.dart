@@ -116,11 +116,11 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
           ..addRRect(
             RRect.fromLTRBAndCorners(
               trackRect.left,
-              trackRect.top - 1,
+              trackRect.top,
               highlightStartOffset.dx + activeTrackRadius.x,
-              trackRect.bottom + 1,
-              topLeft: activeTrackRadius,
-              bottomLeft: activeTrackRadius,
+              trackRect.bottom,
+              topLeft: inactiveTrackRadius,
+              bottomLeft: inactiveTrackRadius,
             ),
           ),
         Path()..addRRect(activeHighlightRRect),
