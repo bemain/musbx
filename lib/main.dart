@@ -33,6 +33,11 @@ class MyApp extends StatelessWidget {
                 tertiaryContainer: Colors.lightGreen,
                 background: Colors.grey,
               ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.grey),
+            ),
+          ),
           sliderTheme: const SliderThemeData(
             showValueIndicator: ShowValueIndicator.always,
           ),
