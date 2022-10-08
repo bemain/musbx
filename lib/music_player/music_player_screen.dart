@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/editable_screen/card_list.dart';
 import 'package:musbx/music_player/button_panel.dart';
+import 'package:musbx/music_player/circular_slider/circular_slider.dart';
 import 'package:musbx/music_player/current_song_panel.dart';
 import 'package:musbx/music_player/labeled_slider.dart';
 import 'package:musbx/music_player/loop_buttons.dart';
@@ -48,7 +49,16 @@ class MusicPlayerScreen extends StatelessWidget {
         Column(children: const [
           LoopSlider(),
           LoopButtons(),
-        ])
+        ]),
+        ValueListenableBuilder(
+          valueListenable: musicPlayer.pitchSemitonesNotifier,
+          builder: (context, pitch, child) => CircularSlider(
+            value: pitch,
+            min: -9,
+            max: 9,
+            onChanged: musicPlayer.setPitchSemitones,
+          ),
+        ),
       ],
     );
   }
