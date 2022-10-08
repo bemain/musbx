@@ -33,7 +33,7 @@ class BpmTapper extends StatelessWidget {
       fixedPlayer: audioPlayer,
     );
 
-    return ElevatedButton(
+    return OutlinedButton(
       onPressed: () {
         if (!stopwatch.isRunning || stopwatch.elapsed > resetDuration) {
           // Complete reset

@@ -83,9 +83,10 @@ class TunerScreenState extends State<TunerScreen> {
                 previousFrequencies.length;
             Note avgNote = Note.fromFrequency(avgFrequency);
 
-            return EditableScreen(
-              title: "Tuner",
-              widgets: [TunerGauge(note: avgNote)],
+            return CardList(
+              children: [
+                TunerGauge(note: avgNote),
+              ],
             );
           },
         );

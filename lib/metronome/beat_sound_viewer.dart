@@ -54,7 +54,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: () {
-                Metronome.beatSounds.add(BeatSound.sticks);
+                Metronome.beatSounds.add(BeatSound.primary);
               },
               child: const Padding(
                 padding: EdgeInsets.all(8),
@@ -77,9 +77,8 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                   onTap: () {
                     // Change beat sound
                     var sound = Metronome.beatSounds[index];
-                    Metronome.beatSounds[index] = selectableBeatSounds[
-                        (selectableBeatSounds.indexOf(sound) + 1) %
-                            selectableBeatSounds.length];
+                    Metronome.beatSounds[index] = BeatSound
+                        .values[(sound.index + 1) % BeatSound.values.length];
                   },
                   onLongPress: () {
                     if (Metronome.beatSounds.length >= 2) {
@@ -92,7 +91,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                       (Metronome.count == index)
                           ? Icons.circle
                           : Icons.circle_outlined, // Highlight current beat
-                      color: sound.color,
+                      color: beatSoundColor(context, sound),
                     ),
                   ),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class LoopButtons extends StatelessWidget {
@@ -35,7 +36,7 @@ class LoopButtons extends StatelessWidget {
                 musicPlayer.loopEnabled = !loopEnabled;
               }),
               child: Icon(
-                loopEnabled ? Icons.trending_flat_rounded : Icons.loop_rounded,
+                loopEnabled ? CustomIcons.line : CustomIcons.section,
                 size: 50,
               ),
             ),

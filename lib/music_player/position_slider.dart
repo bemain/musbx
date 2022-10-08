@@ -42,28 +42,45 @@ class PositionSlider extends StatelessWidget {
     bool loopEnabled,
     LoopSection loopSection,
   ) {
-    return Row(
+    return Stack(
       children: [
-        _buildDurationText(context, position),
-        Expanded(
-          child: SliderTheme(
-            data: SliderThemeData(
-                thumbColor: loopEnabled ? Colors.deepPurple : null,
-                trackShape: !loopEnabled
-                    ? null
-                    : musicPlayer.nullIfNoSongElse(
-                        _buildSliderTrackShape(duration, loopSection))),
-            child: Slider(
-              min: 0,
-              max: duration.inMilliseconds.roundToDouble(),
-              value: position.inMilliseconds.roundToDouble(),
-              onChanged: musicPlayer.nullIfNoSongElse((double value) {
-                musicPlayer.seek(Duration(milliseconds: value.round()));
-              }),
-            ),
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: _buildDurationText(context, position),
           ),
         ),
-        _buildDurationText(context, duration),
+        SliderTheme(
+          data: Theme.of(context).sliderTheme.copyWith(
+              trackShape: !loopEnabled
+                  ? null
+                  : musicPlayer.nullIfNoSongElse(_buildSliderTrackShape(
+                      context,
+                      duration,
+                      loopSection,
+                    ))),
+          child: Slider(
+            activeColor: loopEnabled
+                ? Theme.of(context).colorScheme.background.withOpacity(0.24)
+                : null,
+            inactiveColor: loopEnabled
+                ? Theme.of(context).colorScheme.background.withOpacity(0.24)
+                : null,
+            thumbColor: Theme.of(context).colorScheme.primary,
+            min: 0,
+            max: duration.inMilliseconds.roundToDouble(),
+            value: position.inMilliseconds.roundToDouble(),
+            onChanged: musicPlayer.nullIfNoSongElse((double value) {
+              musicPlayer.seek(Duration(milliseconds: value.round()));
+            }),
+          ),
+        ),
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: _buildDurationText(context, duration),
+          ),
+        ),
       ],
     );
   }
@@ -76,6 +93,7 @@ class PositionSlider extends StatelessWidget {
   }
 
   SliderTrackShape _buildSliderTrackShape(
+    BuildContext context,
     Duration duration,
     LoopSection loopSection,
   ) {
@@ -83,8 +101,9 @@ class PositionSlider extends StatelessWidget {
       highlightStart:
           loopSection.start.inMilliseconds / duration.inMilliseconds,
       highlightEnd: loopSection.end.inMilliseconds / duration.inMilliseconds,
-      activeHighlightColor: Colors.deepPurple,
-      inactiveHighlightColor: Colors.purple.withAlpha(100),
+      activeHighlightColor: Theme.of(context).colorScheme.primary,
+      inactiveHighlightColor:
+          Theme.of(context).colorScheme.primary.withOpacity(0.24),
     );
   }
 }

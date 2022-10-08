@@ -23,8 +23,35 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: "Musician's Toolbox",
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
+        theme: ThemeData.light(useMaterial3: true).copyWith(
+          colorScheme: ThemeData.light(useMaterial3: true).colorScheme.copyWith(
+                primary: Colors.blue,
+                primaryContainer: Colors.blueAccent,
+                secondary: Colors.amber,
+                secondaryContainer: Colors.amberAccent,
+                tertiary: Colors.green,
+                tertiaryContainer: Colors.lightGreen,
+                background: Colors.grey,
+              ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.grey),
+            ),
+          ),
+          sliderTheme: const SliderThemeData(
+            showValueIndicator: ShowValueIndicator.always,
+          ),
+        ),
+        darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+          colorScheme: ThemeData.dark(useMaterial3: true).colorScheme.copyWith(
+                primary: Colors.blue,
+                primaryContainer: Colors.blueAccent,
+                secondary: Colors.amber,
+                secondaryContainer: Colors.amberAccent,
+                tertiary: Colors.green,
+                tertiaryContainer: Colors.lightGreen,
+                background: Colors.grey[700],
+              ),
           sliderTheme: const SliderThemeData(
             showValueIndicator: ShowValueIndicator.always,
           ),

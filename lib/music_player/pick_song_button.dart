@@ -8,7 +8,7 @@ class PickSongButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return OutlinedButton(
       onPressed: () async {
         FilePickerResult? result = await FilePicker.platform.pickFiles(
           type: FileType.audio,

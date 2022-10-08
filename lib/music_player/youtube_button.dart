@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/api_key.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/widgets.dart';
@@ -10,7 +11,7 @@ class YoutubeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return OutlinedButton(
       onPressed: () async {
         YouTubeVideo? video = await showSearch<YouTubeVideo?>(
           context: context,
@@ -21,7 +22,7 @@ class YoutubeButton extends StatelessWidget {
           MusicPlayer.instance.playVideo(video);
         }
       },
-      child: const Icon(Icons.search_rounded),
+      child: const Icon(CustomIcons.youtube),
     );
   }
 
