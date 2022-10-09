@@ -49,7 +49,7 @@ class Metronome {
     count++;
     count %= higher;
 
-    beatSounds.sounds[count].play();
+    beatSounds.playBeat(count);
   }
 
   /// Start the metronome.
