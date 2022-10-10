@@ -30,7 +30,6 @@ dependencies:
   flutter:
     sdk: flutter
   
-  audioplayers: ^0.20.1
   just_audio: ^0.9.24
   file_picker: ^3.0.4
   gauges: ^1.0.0
