@@ -19,8 +19,8 @@ class LoopSlider extends StatelessWidget {
           builder: (context, loopSection, _) {
             return RangeSlider(
               labels: RangeLabels(
-                durationString(loopSection.start),
-                durationString(loopSection.end),
+                loopSection.start.toString().substring(2, 10),
+                loopSection.end.toString().substring(2, 10),
               ),
               min: 0,
               max: duration.inMilliseconds.toDouble(),
