@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/music_player.dart';
@@ -22,7 +24,12 @@ class LoopButtons extends StatelessWidget {
           IconButton(
             onPressed: musicPlayer.nullIfNoSongElse(() {
               musicPlayer.loopSection = LoopSection(
-                start: musicPlayer.position,
+                start: Duration(
+                  milliseconds: min(
+                    musicPlayer.loopSection.end.inMilliseconds - 1000,
+                    musicPlayer.position.inMilliseconds,
+                  ),
+                ),
                 end: musicPlayer.loopSection.end,
               );
             }),
@@ -36,7 +43,7 @@ class LoopButtons extends StatelessWidget {
                 musicPlayer.loopEnabled = !loopEnabled;
               }),
               child: Icon(
-                loopEnabled ? CustomIcons.line : CustomIcons.section,
+                loopEnabled ? CustomIcons.repeat_off : CustomIcons.repeat,
                 size: 50,
               ),
             ),
@@ -46,7 +53,12 @@ class LoopButtons extends StatelessWidget {
             onPressed: musicPlayer.nullIfNoSongElse(() {
               musicPlayer.loopSection = LoopSection(
                 start: musicPlayer.loopSection.start,
-                end: musicPlayer.position,
+                end: Duration(
+                  milliseconds: max(
+                    musicPlayer.position.inMilliseconds,
+                    musicPlayer.loopSection.start.inMilliseconds + 1000,
+                  ),
+                ),
               );
             }),
             icon: const Icon(Icons.arrow_circle_left_outlined),

@@ -38,9 +38,9 @@ class MyApp extends StatelessWidget {
               side: const BorderSide(color: Colors.grey),
             ),
           ),
-          sliderTheme: const SliderThemeData(
-            showValueIndicator: ShowValueIndicator.always,
-          ),
+          sliderTheme: ThemeData.light(useMaterial3: true).sliderTheme.copyWith(
+                showValueIndicator: ShowValueIndicator.always,
+              ),
         ),
         darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
           colorScheme: ThemeData.dark(useMaterial3: true).colorScheme.copyWith(
@@ -52,9 +52,10 @@ class MyApp extends StatelessWidget {
                 tertiaryContainer: Colors.lightGreen,
                 background: Colors.grey[700],
               ),
-          sliderTheme: const SliderThemeData(
-            showValueIndicator: ShowValueIndicator.always,
-          ),
+          sliderTheme: ThemeData.dark(useMaterial3: true).sliderTheme.copyWith(
+                valueIndicatorColor: Colors.grey[700],
+                showValueIndicator: ShowValueIndicator.always,
+              ),
         ),
         home: const HomeScreen());
   }

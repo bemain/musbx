@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/editable_screen/card_list.dart';
-import 'package:musbx/music_player/button_panel.dart';
-import 'package:musbx/music_player/current_song_panel.dart';
+import 'package:musbx/music_player/position_card/button_panel.dart';
+import 'package:musbx/music_player/current_song_card/current_song_label.dart';
 import 'package:musbx/music_player/labeled_slider.dart';
-import 'package:musbx/music_player/loop_buttons.dart';
-import 'package:musbx/music_player/loop_slider.dart';
+import 'package:musbx/music_player/loop_card/loop_buttons.dart';
+import 'package:musbx/music_player/loop_card/loop_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/position_slider.dart';
+import 'package:musbx/music_player/position_card/position_slider.dart';
 
 class MusicPlayerScreen extends StatelessWidget {
   /// Screen that allows the user to select and play a song.
@@ -39,16 +39,16 @@ class MusicPlayerScreen extends StatelessWidget {
             buildSpeedSlider(),
           ],
         ),
+        Column(children: const [
+          LoopButtons(),
+          LoopSlider(),
+        ]),
         Column(
           children: [
             PositionSlider(),
             const ButtonPanel(),
           ],
         ),
-        Column(children: const [
-          LoopSlider(),
-          LoopButtons(),
-        ])
       ],
     );
   }
@@ -64,11 +64,12 @@ class MusicPlayerScreen extends StatelessWidget {
           musicPlayer.setPitchSemitones(0);
         },
         child: Slider(
-            value: pitch,
-            min: -9,
-            max: 9,
-            divisions: 18,
-            onChanged: musicPlayer.setPitchSemitones),
+          value: pitch,
+          min: -9,
+          max: 9,
+          divisions: 18,
+          onChanged: musicPlayer.setPitchSemitones,
+        ),
       ),
     );
   }
@@ -84,11 +85,12 @@ class MusicPlayerScreen extends StatelessWidget {
           musicPlayer.setSpeed(1.0);
         },
         child: Slider(
-            value: speed,
-            min: 0.1,
-            max: 1.9,
-            divisions: 18,
-            onChanged: musicPlayer.setSpeed),
+          value: speed,
+          min: 0.1,
+          max: 1.9,
+          divisions: 18,
+          onChanged: musicPlayer.setSpeed,
+        ),
       ),
     );
   }

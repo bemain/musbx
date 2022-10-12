@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/highlighted_section_slider_track_shape.dart';
+import 'package:musbx/music_player/position_card/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/widgets.dart';
 
 class PositionSlider extends StatelessWidget {
   /// Slider for seeking a position in the current song.
@@ -106,4 +105,11 @@ class PositionSlider extends StatelessWidget {
           Theme.of(context).colorScheme.primary.withOpacity(0.24),
     );
   }
+}
+
+String durationString(Duration duration) {
+  return RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
+          .firstMatch("$duration")
+          ?.group(1) ??
+      "$duration";
 }
