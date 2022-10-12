@@ -152,11 +152,15 @@ class MusicPlayer {
       // Update position
       positionNotifier.value = position;
 
-      // If we have reached the end of the song, pause
-      if ((isPlaying && loopEnabled && position >= loopSection.end) ||
-          position >= duration) {
+      // If we have reached the end of the loop section while looping, seek to the start.
+      if ((isPlaying && loopEnabled && position >= loopSection.end)) {
+        await seek(Duration.zero);
+      }
+
+      // If we have reached the end of the song, pause.
+      if (isPlaying && !loopEnabled && position >= duration) {
         await player.pause();
-        await seek(loopEnabled ? loopSection.end : duration);
+        await seek(duration);
       }
     });
 
