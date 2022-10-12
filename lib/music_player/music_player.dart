@@ -183,8 +183,12 @@ class MusicPlayer {
 }
 
 class LoopSection {
-  LoopSection(
-      {this.start = Duration.zero, this.end = const Duration(seconds: 1)});
+  LoopSection({
+    this.start = Duration.zero,
+    this.end = const Duration(seconds: 1),
+  }) {
+    assert(start <= end);
+  }
 
   final Duration start;
   final Duration end;
