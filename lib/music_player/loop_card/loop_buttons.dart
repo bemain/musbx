@@ -36,7 +36,7 @@ class LoopButtons extends StatelessWidget {
                 musicPlayer.loopEnabled = !loopEnabled;
               }),
               child: Icon(
-                loopEnabled ? CustomIcons.line : CustomIcons.section,
+                loopEnabled ? CustomIcons.line : CustomIcons.loop_section,
                 size: 50,
               ),
             ),

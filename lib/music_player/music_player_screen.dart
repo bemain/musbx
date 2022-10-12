@@ -39,16 +39,16 @@ class MusicPlayerScreen extends StatelessWidget {
             buildSpeedSlider(),
           ],
         ),
+        Column(children: const [
+          LoopButtons(),
+          LoopSlider(),
+        ]),
         Column(
           children: [
             PositionSlider(),
             const ButtonPanel(),
           ],
         ),
-        Column(children: const [
-          LoopSlider(),
-          LoopButtons(),
-        ])
       ],
     );
   }
@@ -64,11 +64,12 @@ class MusicPlayerScreen extends StatelessWidget {
           musicPlayer.setPitchSemitones(0);
         },
         child: Slider(
-            value: pitch,
-            min: -9,
-            max: 9,
-            divisions: 18,
-            onChanged: musicPlayer.setPitchSemitones),
+          value: pitch,
+          min: -9,
+          max: 9,
+          divisions: 18,
+          onChanged: musicPlayer.setPitchSemitones,
+        ),
       ),
     );
   }
@@ -84,11 +85,12 @@ class MusicPlayerScreen extends StatelessWidget {
           musicPlayer.setSpeed(1.0);
         },
         child: Slider(
-            value: speed,
-            min: 0.1,
-            max: 1.9,
-            divisions: 18,
-            onChanged: musicPlayer.setSpeed),
+          value: speed,
+          min: 0.1,
+          max: 1.9,
+          divisions: 18,
+          onChanged: musicPlayer.setSpeed,
+        ),
       ),
     );
   }
