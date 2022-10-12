@@ -41,7 +41,7 @@ class Metronome {
   static ValueNotifier<bool> isRunningNotifier = ValueNotifier(false);
 
   /// Internal timer, calls [_onTimeout] [bpm] times per minute.
-  static Timer _timer = Timer(const Duration(), () {});
+  static Timer _timer = Timer(Duration.zero, () {})..cancel();
 
   /// Called on [_timer] timeout.
   /// Increases [count] and plays a sound.
