@@ -57,8 +57,7 @@ class MusicPlayerScreen extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.pitchSemitonesNotifier,
       builder: (context, pitch, child) => LabeledSlider(
-        value: pitch,
-        nDigits: 0,
+        label: pitch.toStringAsFixed(1),
         clearDisabled: pitch == 0,
         onClear: () {
           musicPlayer.setPitchSemitones(0);
@@ -68,6 +67,7 @@ class MusicPlayerScreen extends StatelessWidget {
           min: -9,
           max: 9,
           divisions: 18,
+          label: pitch.toStringAsFixed(1),
           onChanged: musicPlayer.setPitchSemitones,
         ),
       ),
@@ -78,9 +78,8 @@ class MusicPlayerScreen extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.speedNotifier,
       builder: (context, speed, child) => LabeledSlider(
-        value: speed,
-        nDigits: 1,
-        clearDisabled: speed == 1.0,
+        label: speed.toStringAsFixed(1),
+        clearDisabled: speed.toStringAsFixed(2) == "1.00",
         onClear: () {
           musicPlayer.setSpeed(1.0);
         },
@@ -89,6 +88,7 @@ class MusicPlayerScreen extends StatelessWidget {
           min: 0.1,
           max: 1.9,
           divisions: 18,
+          label: speed.toStringAsFixed(1),
           onChanged: musicPlayer.setSpeed,
         ),
       ),
