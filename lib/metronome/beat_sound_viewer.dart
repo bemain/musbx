@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:musbx/metronome/beat_sound.dart';
 import 'package:musbx/metronome/metronome.dart';
 
@@ -54,6 +55,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: () {
+                HapticFeedback.vibrate();
                 Metronome.beatSounds.add(BeatSound.primary);
               },
               child: const Padding(
