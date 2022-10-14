@@ -15,7 +15,8 @@ class MusicPlayerScreen extends StatelessWidget {
   ///  - Slider for seeking a position in the song.
   ///  - Sliders for changing pitch and speed of the song.
   ///  - Label showing current song, and button to load a song from device.
-  MusicPlayerScreen({super.key});
+  ///  - Slider and buttons for looping a section of the song.
+  const MusicPlayerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

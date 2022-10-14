@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class PitchSpeedCard extends StatelessWidget {
+  /// Card with sliders for changing the pitch and speed of [MusicPlayer].
+  ///
+  /// Each slider is labeled with max and min value.
+  /// Also features a button for resetting pitch and speed to the deafault values.
   PitchSpeedCard({super.key});
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
@@ -19,7 +23,7 @@ class PitchSpeedCard extends StatelessWidget {
         valueListenable: musicPlayer.songTitleNotifier,
         builder: (context, songTitle, _) => Column(
           children: [
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Text(
               "Pitch",
               style: Theme.of(context).textTheme.titleMedium,

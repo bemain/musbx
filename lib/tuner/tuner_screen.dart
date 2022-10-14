@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/editable_screen/card_list.dart';
-import 'package:musbx/editable_screen/editable_screen.dart';
 import 'package:musbx/tuner/note.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/widgets.dart';
