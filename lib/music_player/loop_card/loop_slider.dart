@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/widgets.dart';
 
 class LoopSlider extends StatelessWidget {
   /// Range slider for selecting the section to loop.
