@@ -47,6 +47,8 @@ class BpmTapper extends StatelessWidget {
       onPressed: () async {
         // Play sound
         if (soundId != null) await _pool.play(soundId!);
+        // Vibrate
+        HapticFeedback.vibrate();
 
         if (!stopwatch.isRunning || stopwatch.elapsed > resetDuration) {
           // Complete reset
