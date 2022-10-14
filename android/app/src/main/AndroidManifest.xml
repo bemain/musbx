@@ -48,11 +48,13 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-    <!-- The RECORD_AUDIO permission is required by mic_stream package. -->
+    <!-- Required by mic_stream package. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <!-- Required by audio_service package. -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <!-- Required by just_audio package. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required for haptic feedback. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>
