@@ -1,19 +1,15 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/metronome/bottom_bar.dart';
+import 'package:musbx/home_screen.dart';
 import 'package:musbx/music_player/audio_handler.dart';
-import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/music_player_screen.dart';
 
 Future<void> main() async {
   // Create audio service
-  MusicPlayer.instance = MusicPlayer.internal(
-    await AudioService.init(
-      builder: () => JustAudioHandler(),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'se.agardh.musbx.channel.audio',
-        androidNotificationChannelName: 'Musbx',
-      ),
+  JustAudioHandler.instance = await AudioService.init(
+    builder: () => JustAudioHandler(),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'se.agardh.musbx.channel.audio',
+      androidNotificationChannelName: 'Musbx',
     ),
   );
 
@@ -26,14 +22,41 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Musician's Toolbox",
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const Scaffold(
-        body: MusicPlayerScreen(),
-        bottomNavigationBar: MetronomeBottomBar(),
-      ),
-    );
+        title: "Musician's Toolbox",
+        theme: ThemeData.light(useMaterial3: true).copyWith(
+          colorScheme: ThemeData.light(useMaterial3: true).colorScheme.copyWith(
+                primary: Colors.blue,
+                primaryContainer: Colors.blueAccent,
+                secondary: Colors.amber,
+                secondaryContainer: Colors.amberAccent,
+                tertiary: Colors.green,
+                tertiaryContainer: Colors.lightGreen,
+                background: Colors.grey,
+              ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.grey),
+            ),
+          ),
+          sliderTheme: ThemeData.light(useMaterial3: true).sliderTheme.copyWith(
+                showValueIndicator: ShowValueIndicator.always,
+              ),
+        ),
+        darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+          colorScheme: ThemeData.dark(useMaterial3: true).colorScheme.copyWith(
+                primary: Colors.blue,
+                primaryContainer: Colors.blueAccent,
+                secondary: Colors.amber,
+                secondaryContainer: Colors.amberAccent,
+                tertiary: Colors.green,
+                tertiaryContainer: Colors.lightGreen,
+                background: Colors.grey[700],
+              ),
+          sliderTheme: ThemeData.dark(useMaterial3: true).sliderTheme.copyWith(
+                valueIndicatorColor: Colors.grey[700],
+                showValueIndicator: ShowValueIndicator.always,
+              ),
+        ),
+        home: const HomeScreen());
   }
 }

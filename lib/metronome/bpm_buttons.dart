@@ -5,7 +5,10 @@ import 'package:musbx/widgets.dart';
 class BpmButtons extends StatelessWidget {
   /// Buttons for adjusting bpm and a label showing the current bpm,
   /// arranged horizontally.
-  const BpmButtons({super.key});
+  const BpmButtons({super.key, this.iconSize = 30, this.fontSize = 25});
+
+  final double fontSize;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -16,34 +19,36 @@ class BpmButtons extends StatelessWidget {
           onPressed: () {
             Metronome.bpm--;
           },
-          child: const Icon(
+          child: Icon(
             Icons.arrow_drop_down_rounded,
-            size: 35,
+            size: iconSize,
           ),
         ),
-        Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: _buildBpmText()),
+        SizedBox(
+          width: fontSize * 2,
+          child: buildBpmText(),
+        ),
         ContinuousButton(
           onPressed: () {
             Metronome.bpm++;
           },
-          child: const Icon(
+          child: Icon(
             Icons.arrow_drop_up_rounded,
-            size: 35,
+            size: iconSize,
           ),
         )
       ],
     );
   }
 
-  Widget _buildBpmText() {
+  Widget buildBpmText() {
     return ValueListenableBuilder(
       valueListenable: Metronome.bpmNotifier,
       builder: (c, int bpm, Widget? child) {
         return Text(
           "$bpm",
-          style: const TextStyle(fontSize: 20),
+          style: TextStyle(fontSize: fontSize),
+          textAlign: TextAlign.center,
         );
       },
     );

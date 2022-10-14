@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/custom_icons.dart';
+import 'package:musbx/music_player/api_key.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/widgets.dart';
 import 'package:youtube_api/youtube_api.dart';
 
-const String apiKey = "AIzaSyAoBBNr77PXXKZ7zOLbNVXOPzTjgu58sN4";
-
 class YoutubeButton extends StatelessWidget {
+  /// Button for searching for a song from Youtube and loading it to [MusicPlayer].
   const YoutubeButton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return OutlinedButton(
       onPressed: () async {
         YouTubeVideo? video = await showSearch<YouTubeVideo?>(
           context: context,
@@ -21,10 +22,11 @@ class YoutubeButton extends StatelessWidget {
           MusicPlayer.instance.playVideo(video);
         }
       },
-      child: const Icon(Icons.search_rounded),
+      child: const Icon(CustomIcons.youtube),
     );
   }
 
+  /// Parse [String] to [Duration].
   Duration parseDuration(String s) {
     List<String> parts = s.split(":");
     return Duration(
@@ -34,7 +36,12 @@ class YoutubeButton extends StatelessWidget {
   }
 }
 
+/// [SearchDelegate] for searching for a song on Youtube.
 class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
+  /// Previous search queries.
+  static Set<String> searchHistory = {};
+
+  /// The API key used to access Youtube.
   final YoutubeAPI youtubeApi = YoutubeAPI(apiKey);
 
   @override
@@ -60,7 +67,24 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
   }
 
   @override
+  Widget buildSuggestions(BuildContext context) {
+    return ListView(
+      children: searchHistory
+          .map((query) => ListTile(
+                title: Text(query),
+                onTap: () {
+                  this.query = query;
+                  showResults(context);
+                },
+              ))
+          .toList(),
+    );
+  }
+
+  @override
   Widget buildResults(BuildContext context) {
+    if (query != "") searchHistory.add(query.trim());
+
     return FutureBuilder(
       future: youtubeApi.search(query, type: "video"),
       builder: (context, snapshot) {
@@ -77,6 +101,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
     );
   }
 
+  /// Result item, showing a [YouTubeVideo]'s title, channel and thumbnail.
   Widget listItem(BuildContext context, YouTubeVideo video) {
     return GestureDetector(
       onTap: () {
@@ -92,7 +117,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
                 padding: const EdgeInsets.only(right: 20.0),
                 child: Image.network(
                   video.thumbnail.small.url ?? '',
-                  width: 120,
+                  width: 100,
                 ),
               ),
               Expanded(
@@ -105,17 +130,12 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
                       style: Theme.of(context).textTheme.subtitle1,
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 3.0),
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
                       child: Text(
                         video.channelTitle,
                         softWrap: true,
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
-                    ),
-                    Text(
-                      video.url,
-                      softWrap: true,
-                      style: Theme.of(context).textTheme.caption,
                     ),
                   ],
                 ),
@@ -125,10 +145,5 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
         ),
       ),
     );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return Container();
   }
 }

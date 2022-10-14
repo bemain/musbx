@@ -2,56 +2,43 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/music_player/music_player.dart';
 
-class JustAudioHandler extends BaseAudioHandler with SeekHandler {
+class JustAudioHandler extends BaseAudioHandler {
   /// Interface to the audio notification.
   ///
-  /// Uses just_audio to handle playback.
+  /// Uses [MusicPlayer.instance._player] to handle playback.
   JustAudioHandler() {
-    // Notify AudioHandler about playback events from AudioPlayer.
-    player.playbackEventStream.map(_transformEvent).pipe(playbackState);
+    // Listen to playback events from AudioPlayer.
+    _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
   }
 
-  /// The [AudioPlayer] used for playback.
-  final AudioPlayer player = AudioPlayer();
+  /// The instance of this singleton.
+  static late final JustAudioHandler instance;
+
+  /// The player used for playing audio.
+  final AudioPlayer _player = MusicPlayer.instance.player;
 
   @override
-  Future<void> play() async => await player.play();
+  Future<void> play() async => await _player.play();
 
   @override
-  Future<void> pause() async => await player.pause();
+  Future<void> pause() async => await _player.pause();
 
   @override
   Future<void> stop() async {
-    await player.stop();
+    await _player.stop();
     await super.stop();
-  }
-
-  @override
-  Future<void> seek(Duration position) async {
-    await player.seek(position);
-  }
-
-  @override
-  Future<void> setSpeed(double speed) async {
-    await player.setSpeed(speed);
   }
 
   /// Transform an event from just_audio's AudioPlayer to audio_service's AudioHandler.
   PlaybackState _transformEvent(PlaybackEvent event) {
-    final isCompleted = (player.processingState == ProcessingState.completed);
+    final isCompleted = (_player.processingState == ProcessingState.completed);
 
     return PlaybackState(
       controls: [
-        MediaControl.rewind,
-        if (player.playing) MediaControl.pause else MediaControl.play,
-        MediaControl.fastForward,
+        if (_player.playing) MediaControl.pause else MediaControl.play,
       ],
-      systemActions: const {
-        MediaAction.seek,
-        MediaAction.seekBackward,
-        MediaAction.seekForward,
-      },
       androidCompactActionIndices: const [0, 1],
       processingState: const {
         ProcessingState.idle: AudioProcessingState.idle,
@@ -59,11 +46,11 @@ class JustAudioHandler extends BaseAudioHandler with SeekHandler {
         ProcessingState.buffering: AudioProcessingState.buffering,
         ProcessingState.ready: AudioProcessingState.ready,
         ProcessingState.completed: AudioProcessingState.ready,
-      }[player.processingState]!,
-      playing: player.playing && !isCompleted,
-      updatePosition: player.position,
-      bufferedPosition: player.bufferedPosition,
-      speed: player.speed,
+      }[_player.processingState]!,
+      playing: _player.playing && !isCompleted,
+      updatePosition: _player.position,
+      bufferedPosition: _player.bufferedPosition,
+      speed: _player.speed,
     );
   }
 }

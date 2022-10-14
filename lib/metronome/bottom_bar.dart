@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/beat_sound_viewer.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
+import 'package:musbx/metronome/bpm_slider.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';
 import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/metronome/play_button.dart';
 
 class MetronomeBottomBar extends StatefulWidget {
   /// BottomBar offering controls for [Metronome], including:
@@ -28,11 +30,11 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
             height: 100,
             child: Row(
               children: <Widget>[
-                _buildPlayButton(),
+                const PlayButton(),
                 Expanded(
                   child: Column(
                     children: [
-                      _buildBpmSlider(),
+                      const BpmSlider(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: const [
@@ -46,48 +48,12 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
               ],
             ),
           ),
-          const BeatSoundViewer()
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: BeatSoundViewer(),
+          )
         ],
       ),
-    );
-  }
-
-  /// Play / pause button to start or stop the [Metronome].
-  Widget _buildPlayButton() {
-    return ValueListenableBuilder<bool>(
-      valueListenable: Metronome.isRunningNotifier,
-      builder: (context, bool isRunning, child) {
-        return TextButton(
-          onPressed: () {
-            if (isRunning) {
-              Metronome.stop();
-            } else {
-              Metronome.start();
-            }
-          },
-          child: Icon(
-            isRunning ? Icons.stop_rounded : Icons.play_arrow_rounded,
-            size: 75,
-          ),
-        );
-      },
-    );
-  }
-
-  /// Simple Slider for adjusting bpm.
-  Widget _buildBpmSlider() {
-    return ValueListenableBuilder(
-      valueListenable: Metronome.bpmNotifier,
-      builder: (c, int bpm, Widget? child) {
-        return Slider(
-          min: Metronome.minBpm.toDouble(),
-          max: Metronome.maxBpm.toDouble(),
-          value: Metronome.bpm.toDouble(),
-          onChanged: (double value) {
-            Metronome.bpm = value.toInt();
-          },
-        );
-      },
     );
   }
 }

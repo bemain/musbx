@@ -54,6 +54,9 @@ class EditableScreenState extends State<EditableScreen> {
           ? ReorderableCardList(
               children: sortedWidgets,
               onReorder: (int oldIndex, int newIndex) {
+                // Fix bug with ReorderableCardList onReorder
+                if (newIndex > oldIndex) newIndex--;
+
                 setState(() {
                   int widgetIndex = widgetOrder[oldIndex];
                   widgetOrder.remove(widgetIndex);

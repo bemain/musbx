@@ -9,17 +9,17 @@ class Note {
   /// Names of all notes, starting with A.
   static const List<String> noteNames = [
     "A",
-    "Bb",
+    "B♭",
     "B",
     "C",
-    "C#",
+    "D♭",
     "D",
-    "Eb",
+    "E♭",
     "E",
     "F",
-    "F#",
+    "G♭",
     "G",
-    "G#"
+    "A♭"
   ];
 
   /// Create note from a given [frequency] in Hz.
