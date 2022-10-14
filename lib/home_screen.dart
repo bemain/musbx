@@ -12,10 +12,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  List<Widget> screens = [
-    const MetronomeScreen(),
+  List<Widget> screens = const [
+    MetronomeScreen(),
     MusicPlayerScreen(),
-    const TunerScreen(),
+    TunerScreen(),
   ];
   int selectedIndex = 1;
 

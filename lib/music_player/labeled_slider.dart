@@ -4,8 +4,7 @@ class LabeledSlider extends StatelessWidget {
   /// Label and clear button for Slider.
   const LabeledSlider({
     super.key,
-    required this.value,
-    this.nDigits = 1,
+    required this.label,
     this.clearDisabled = false,
     this.onClear,
     required this.child,
@@ -14,10 +13,7 @@ class LabeledSlider extends StatelessWidget {
   final Widget child;
 
   /// The value to show on the label.
-  final double value;
-
-  /// The number of digits used when displaying [value].
-  final int nDigits;
+  final String label;
 
   final bool clearDisabled;
 
@@ -28,9 +24,9 @@ class LabeledSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(children: [
       SizedBox(
-        width: 20,
+        width: 22,
         child: Text(
-          value.toStringAsFixed(nDigits),
+          label,
           style: Theme.of(context).textTheme.caption,
           maxLines: 1,
           overflow: TextOverflow.clip,
