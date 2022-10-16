@@ -19,7 +19,13 @@ class MusicPlayer {
   static final MusicPlayer instance = MusicPlayer._();
 
   /// The [AudioPlayer] used for playback.
-  final AudioPlayer player = AudioPlayer();
+  late final AudioPlayer player = AudioPlayer(
+    audioPipeline: AudioPipeline(androidAudioEffects: [equalizer]),
+  );
+
+  /// The [AndroidEqualizer] used to adjust the gain for different frequency
+  /// bands of [player]'s audio.
+  final AndroidEqualizer equalizer = AndroidEqualizer();
 
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
 
