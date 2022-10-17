@@ -31,10 +31,10 @@ dependencies:
     sdk: flutter
   
   just_audio: ^0.9.24
-  file_picker: ^3.0.4
+  file_picker: ^5.2.1
   gauges: ^1.0.0
   pitch_detector_dart: ^0.0.2
-  mic_stream: ^0.6.1
+  mic_stream: ^0.6.2
   audio_service: ^0.18.7
   youtube_api: ^1.0.4
   youtube_explode_dart: ^1.12.1
