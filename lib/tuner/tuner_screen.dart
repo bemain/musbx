@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/editable_screen/card_list.dart';
 import 'package:musbx/tuner/note.dart';
+import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/widgets.dart';
-import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitch_detector_dart/pitch_detector_result.dart';
 
 class TunerScreen extends StatefulWidget {
@@ -15,11 +14,7 @@ class TunerScreen extends StatefulWidget {
 }
 
 class TunerScreenState extends State<TunerScreen> {
-  /// The pitch detected from the microphone.
-  Stream<PitchDetectorResult>? pitchStream;
-
-  /// Future for creating [pitchStream].
-  late final Future initAudioFuture = initAudio();
+  final Tuner tuner = Tuner.instance;
 
   /// The [averageNotesN] most recent notes detected.
   List<Note> previousNotes = <Note>[Note.a4()];
@@ -27,38 +22,26 @@ class TunerScreenState extends State<TunerScreen> {
   /// The number of notes to take average of.
   static const int averageNotesN = 10;
 
-  /// Create the stream for getting pitch from microphone.
-  Future<void> initAudio() async {
-    final Stream<List<int>>? audioStream =
-        await MicStream.microphone(sampleRate: 44100);
-    assert(
-      audioStream != null,
-      "TUNER: Unable to capture audio from microphone",
-    );
-
-    final PitchDetector pitchDetector = PitchDetector(44100, 1792);
-    pitchStream = audioStream!.map((audio) => pitchDetector
-        .getPitch(audio.map((int val) => val.toDouble()).toList()));
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: initAudioFuture,
+      future: tuner.initAudioFuture,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const ErrorScreen(text: "Unable to initialize audio");
+          return ErrorScreen(
+            text: "Unable to initialize audio: \n${snapshot.error}",
+          );
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const LoadingScreen(text: "Initializing audio...");
         }
 
         return StreamBuilder<PitchDetectorResult>(
-          stream: pitchStream,
+          stream: tuner.pitchStream,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return ErrorScreen(
-                text: "Unable to capture audio, ${snapshot.error}",
+                text: "Unable to capture audio: \n${snapshot.error}",
               );
             }
             if (!snapshot.hasData) {
