@@ -137,6 +137,8 @@ class MusicPlayer {
       id: video.id ?? "",
       title: video.title,
       duration: duration,
+      artist: video.channelTitle,
+      artUri: Uri.tryParse(video.thumbnail.high.url ?? ""),
     ));
   }
 
