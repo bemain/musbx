@@ -1,4 +1,4 @@
-package com.example.musbx
+package se.agardh.musbx
 
 import io.flutter.embedding.android.FlutterActivity
 
