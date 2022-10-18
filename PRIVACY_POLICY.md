@@ -5,7 +5,13 @@ As an avid Android user myself, I take privacy very seriously. I know how irrita
 
 I hereby state, to the best of my knowledge and belief, that I have not programmed this app to collect any personally identifiable information. All data (app preferences like theme, etc.) created by you (the user) is stored on your device only, and can be erased by simply clearing the app's data or uninstalling it.
 
-The Tuner uses the phone’s microphone to record audio. The data recorded is not stored, neither on device nor on a server, and is only used for the Tuner to function. Audio is only recorded while the app is running.
+
+## Permissions requested in the app
+| Permission | Why it is required |
+| --- | --- |
+| android.permission.RECORD_AUDIO | Required for the Tuner to function. The data recorded is not stored, neither on device nor on a server, and is only recorded while the app is running. |
+| android.permission.READ_EXTERNAL_STORAGE | Required by the Music player if the user wants to upload a song from the device. Can be revoked by the system or the user at any time, and the app will still function. |
+
 
 If you find any security vulnerability that has been inadvertently caused by me, or have any question regarding how the app protectes your privacy, please send me an email at bemain.dev@gmail.com.
 
