@@ -9,9 +9,6 @@ class Tuner {
   /// The instance of this singleton.
   static final Tuner instance = Tuner._();
 
-  /// Used internally to detect pitch.
-  final PitchDetector _pitchDetector = PitchDetector(44100, 1792);
-
   /// The pitch detected from the microphone.
   Stream<PitchDetectorResult>? pitchStream;
 
@@ -27,7 +24,10 @@ class Tuner {
       "TUNER: Unable to capture audio from microphone",
     );
 
-    pitchStream = audioStream!.map((audio) => _pitchDetector
+    final PitchDetector pitchDetector =
+        PitchDetector(44100, await MicStream.bufferSize ?? 1792);
+
+    pitchStream = audioStream!.map((audio) => pitchDetector
         .getPitch(audio.map((int val) => val.toDouble()).toList()));
   }
 }
