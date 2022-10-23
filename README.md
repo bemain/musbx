@@ -1,9 +1,14 @@
 # Musician's Toolbox
 
-A set of tools to aid musicians of all skill levels and interests, whether it be for practicing, tuning or composing.
+Musician's Toolbox offers a set of tools to aid musicians of all skill levels and interests in practicing, performing and composing.
 
-## Planned features
-
+## Current features
 - Metronome
 - Tuner
-- Music player w. slowdown and pitch change
+- Music player for changing the pitch and speed of audio
+
+## Planned features
+- Equalizer
+- Drone
+- Settings
+- and enhancements to the current features

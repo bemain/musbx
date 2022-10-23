@@ -1,6 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/home_screen.dart';
+import 'package:musbx/navigation_screen.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 
 Future<void> main() async {
@@ -57,6 +57,6 @@ class MyApp extends StatelessWidget {
                 showValueIndicator: ShowValueIndicator.always,
               ),
         ),
-        home: const HomeScreen());
+        home: const NavigationScreen());
   }
 }

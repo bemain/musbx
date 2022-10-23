@@ -22,6 +22,10 @@ class MusicPlayerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardList(
+      screenHelp: """Load song from device or YouTube.
+Adjust pitch and speed using the sliders.
+If looping is enabled, change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.
+Long press rewind button to restart song.""",
       children: [
         const CurrentSongPanel(),
         PitchSpeedCard(),

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.musbx">
+    package="se.agardh.musbx">
    <application
-        android:label="musbx"
+        android:label="Musician's Toolbox"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"> <!-- Required by just_audio package. -->
