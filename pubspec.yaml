@@ -39,6 +39,7 @@ dependencies:
   youtube_api: ^1.0.4
   youtube_explode_dart: ^1.12.1
   soundpool: ^2.3.0
+  package_info_plus: ^3.0.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -80,6 +81,7 @@ flutter:
   assets:
     - assets/
     - assets/metronome/
+    - assets/icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
