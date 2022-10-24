@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/drone/drone_screen.dart';
 import 'package:musbx/metronome/metronome_screen.dart';
 import 'package:musbx/music_player/music_player_screen.dart';
 import 'package:musbx/tuner/tuner_screen.dart';
@@ -21,6 +22,7 @@ class NavigationScreenState extends State<NavigationScreen> {
         MetronomeScreen(),
         MusicPlayerScreen(),
         TunerScreen(),
+        DroneScreen(),
       ][selectedIndex],
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
@@ -41,6 +43,10 @@ class NavigationScreenState extends State<NavigationScreen> {
           NavigationDestination(
             label: "Tuner",
             icon: Icon(Icons.speed_rounded),
+          ),
+          NavigationDestination(
+            label: "Drone",
+            icon: Icon(Icons.waves_rounded),
           ),
         ],
       ),
