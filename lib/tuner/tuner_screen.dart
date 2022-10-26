@@ -34,6 +34,7 @@ class TunerScreenState extends State<TunerScreen> {
             return CardList(
               children: [
                 TunerGauge(note: tuner.noteHistory.last),
+                TuningGraph(),
               ],
             );
           },

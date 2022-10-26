@@ -17,7 +17,7 @@ class Tuner {
   late final Stream<PitchDetectorResult> pitchStream;
 
   /// Future for creating [pitchStream].
-  late final Future initAudioFuture = initAudio();
+  late final Future initAudioFuture = _initAudio();
 
   /// The most previous note detected.
   final ValueNotifier<Note?> currentNoteNotifier = ValueNotifier(null);
@@ -31,8 +31,10 @@ class Tuner {
   /// The previous notes detected.
   final List<Note> noteHistory = [Note.a4()];
 
+  static const double inTuneThreshold = 10;
+
   /// Create the stream for getting pitch from microphone.
-  Future<void> initAudio() async {
+  Future<void> _initAudio() async {
     final Stream<List<int>>? audioStream =
         await MicStream.microphone(sampleRate: 44100);
     assert(

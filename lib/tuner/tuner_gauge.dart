@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gauges/gauges.dart';
 import 'package:musbx/tuner/note.dart';
+import 'package:musbx/tuner/tuner.dart';
 
 class TunerGauge extends StatelessWidget {
   /// Gauge for showing how out of tune [note] is.
@@ -49,7 +50,7 @@ class TunerGauge extends StatelessWidget {
 
   Widget _buildGauge(BuildContext context) {
     // If note is in tune, make needle green
-    List<Color> needleColors = (note.pitchOffset.abs() < 10)
+    List<Color> needleColors = (note.pitchOffset.abs() < Tuner.inTuneThreshold)
         ? [
             Colors.lightGreen,
             Colors.green,
