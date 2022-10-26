@@ -68,6 +68,8 @@ class Tuner {
         .where((frequency) => (frequency - _frequencyHistory.last).abs() < 10)
         .toList();
 
+    if (previousFrequencies.length <= averageNotesN / 3) return;
+
     // Add note
     Note avgNote = Note.fromFrequency(
         previousFrequencies.reduce((a, b) => a + b) /
