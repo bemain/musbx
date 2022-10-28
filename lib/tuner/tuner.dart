@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/tuner/note.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
@@ -13,25 +13,26 @@ class Tuner {
   /// The instance of this singleton.
   static final Tuner instance = Tuner._();
 
-  /// The pitch detected from the microphone.
-  late final Stream<PitchDetectorResult> pitchStream;
-
-  /// Future for creating [pitchStream].
-  late final Future initAudioFuture = _initAudio();
-
-  /// The most previous note detected.
-  final ValueNotifier<Note?> currentNoteNotifier = ValueNotifier(null);
-  Note? get currentNote => currentNoteNotifier.value;
-
   /// The number of notes to take average of.
   static const int averageNotesN = 10;
 
+  /// How many cents off a Note can be to be considered in tune.
+  static const double inTuneThreshold = 10;
+
+  /// Future initializing the tuner.
+  late final Future initAudioFuture = _initAudio();
+
+  /// The pitch detected from the microphone.
+  late final Stream<PitchDetectorResult> pitchStream;
+
+  /// The previous frequencies detected, unfiltered.
   final List<double> _frequencyHistory = [];
 
-  /// The previous notes detected.
-  final List<Note> noteHistory = [Note.a4()];
+  /// The previous notes detected, averaged and filtered.
+  final List<Note> noteHistory = [];
 
-  static const double inTuneThreshold = 10;
+  /// The current note detected, or null if no pitch could be detected.
+  late final Stream<Note?> noteStream;
 
   /// Create the stream for getting pitch from microphone.
   Future<void> _initAudio() async {
@@ -48,19 +49,22 @@ class Tuner {
     pitchStream = audioStream!.map((audio) => pitchDetector
         .getPitch(audio.map((int val) => val.toDouble()).toList()));
 
-    pitchStream.listen((result) {
+    noteStream = pitchStream.map((result) {
       if (result.pitched) {
         _frequencyHistory.add(result.pitch);
-        _addAverageNote();
-      } else {
-        currentNoteNotifier.value = null;
+        Note? avgNote = _getAverageNote();
+        if (avgNote != null) {
+          noteHistory.add(avgNote);
+          return avgNote;
+        }
       }
+      return null;
     });
   }
 
   /// Calculate the average of the last [averageNotesN] frequencies and add a
   /// [Note] with that frequency to [noteHistory].
-  void _addAverageNote() {
+  Note? _getAverageNote() {
     List<double> previousFrequencies = _frequencyHistory
         // Only the [averageNotesN] last entries
         .sublist(max(0, _frequencyHistory.length - averageNotesN))
@@ -68,13 +72,9 @@ class Tuner {
         .where((frequency) => (frequency - _frequencyHistory.last).abs() < 10)
         .toList();
 
-    if (previousFrequencies.length <= averageNotesN / 3) return;
+    if (previousFrequencies.length <= averageNotesN / 3) return null;
 
-    // Add note
-    Note avgNote = Note.fromFrequency(
-        previousFrequencies.reduce((a, b) => a + b) /
-            previousFrequencies.length);
-    noteHistory.add(avgNote);
-    currentNoteNotifier.value = avgNote;
+    return Note.fromFrequency(previousFrequencies.reduce((a, b) => a + b) /
+        previousFrequencies.length);
   }
 }

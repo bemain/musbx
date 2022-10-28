@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/editable_screen/card_list.dart';
+import 'package:musbx/tuner/note.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/tuner/tuning_graph.dart';
@@ -14,6 +15,7 @@ class TunerScreen extends StatefulWidget {
 
 class TunerScreenState extends State<TunerScreen> {
   final Tuner tuner = Tuner.instance;
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -28,16 +30,17 @@ class TunerScreenState extends State<TunerScreen> {
           return const LoadingScreen(text: "Initializing audio...");
         }
 
-        return ValueListenableBuilder(
-          valueListenable: tuner.currentNoteNotifier,
-          builder: (context, currentNote, child) {
-            return CardList(
-              children: [
-                TunerGauge(note: tuner.noteHistory.last),
-                TuningGraph(),
-              ],
-            );
-          },
+        return StreamBuilder(
+          stream: tuner.noteStream,
+          builder: (context, snapshot) => CardList(
+            children: [
+              TunerGauge(
+                  note: (tuner.noteHistory.isNotEmpty)
+                      ? tuner.noteHistory.last
+                      : Note.a4()),
+              TuningGraph(noteHistory: tuner.noteHistory),
+            ],
+          ),
         );
       },
     );

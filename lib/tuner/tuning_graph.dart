@@ -6,19 +6,18 @@ import 'package:musbx/tuner/note.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class TuningGraph extends StatelessWidget {
-  const TuningGraph({super.key});
+  const TuningGraph({super.key, required this.noteHistory});
+
+  final List<Note> noteHistory;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: Tuner.instance.currentNoteNotifier,
-      builder: (context, currentNote, child) => CustomPaint(
-        painter: TuningGraphPainter(
-          lineColor: Colors.white,
-          noteHistory: Tuner.instance.noteHistory,
-        ),
-        size: const Size(0, 150),
+    return CustomPaint(
+      painter: TuningGraphPainter(
+        lineColor: Colors.white,
+        noteHistory: noteHistory,
       ),
+      size: const Size(0, 150),
     );
   }
 }
