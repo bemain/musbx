@@ -16,16 +16,29 @@ class TuningGraph extends StatelessWidget {
       painter: TuningGraphPainter(
         noteHistory: noteHistory,
         lineColor: Colors.white,
+        textPlacement: TextPlacement.top,
       ),
       size: const Size(0, 150),
     );
   }
 }
 
+/// Where to place the text displaying the names of the Notes.
+enum TextPlacement {
+  /// At the top of the graph.
+  top,
+
+  /// At the bottom of the graph.
+  bottom,
+
+  /// Relative to the line. Above the line if the Note is too low and below otherwise.
+  relative,
+}
+
 class TuningGraphPainter extends CustomPainter {
   /// Paints a line showing the tuning of the notes in [noteHistory].
   ///
-  /// Displays text showing the name of the tone.
+  /// Displays text showing the names of the Notes.
   /// Highlights the section where the tone is in tune in green.
   TuningGraphPainter({
     this.continuous = false,
@@ -34,6 +47,7 @@ class TuningGraphPainter extends CustomPainter {
     this.lineWidth = 4.0,
     this.renderTextThreshold = 15,
     Color? textColor,
+    this.textPlacement = TextPlacement.relative,
     this.textOffset = 15.0,
   }) : textColor = textColor ?? lineColor;
 
@@ -52,6 +66,9 @@ class TuningGraphPainter extends CustomPainter {
 
   /// The color of the text displaying the note name.
   final Color textColor;
+
+  /// Where to place the text.
+  final TextPlacement textPlacement;
 
   /// How much to offset the text in the y-direction.
   ///
@@ -115,7 +132,7 @@ class TuningGraphPainter extends CustomPainter {
       List<Offset> offsets = [];
       for (Note note in notes.reversed) {
         if (index <= size.width.toInt()) {
-          offsets.add(calculateOffset(index, note, size));
+          offsets.add(calculatePointOffset(index, note, size));
           index++;
 
           lastNote = note;
@@ -132,13 +149,21 @@ class TuningGraphPainter extends CustomPainter {
       index += 5;
 
       if (offsets.length >= renderTextThreshold) {
-        drawText(canvas, size, offsets.last, lastNote);
+        drawText(canvas, size, lastNote, offsets.last);
       }
     }
   }
 
+  Offset calculatePointOffset(int index, Note note, Size canvasSize) {
+    return Offset(
+      canvasSize.width - index,
+      canvasSize.height / 2 - canvasSize.height * note.pitchOffset / 100,
+    );
+  }
+
   /// Draw text displaying the [lastNote]'s name, above or below the line.
-  void drawText(Canvas canvas, Size size, Offset position, Note lastNote) {
+  void drawText(
+      Canvas canvas, Size canvasSize, Note lastNote, Offset notePosition) {
     TextSpan span = TextSpan(
       text: lastNote.name,
       style: TextStyle(color: textColor),
@@ -147,22 +172,33 @@ class TuningGraphPainter extends CustomPainter {
       text: span,
       textDirection: TextDirection.ltr,
     );
-    textPainter.layout(maxWidth: size.width);
+    textPainter.layout(maxWidth: canvasSize.width);
     textPainter.paint(
       canvas,
-      position.translate(
-        0,
-        (lastNote.pitchOffset > 0)
-            ? textOffset
-            : -(textPainter.height + textOffset),
-      ),
+      calculateTextOffset(canvasSize, textPainter, lastNote, notePosition),
     );
   }
 
-  Offset calculateOffset(int index, Note note, Size canvasSize) {
-    return Offset(
-      canvasSize.width - index,
-      canvasSize.height / 2 - canvasSize.height * note.pitchOffset / 100,
-    );
+  Offset calculateTextOffset(
+    Size canvasSize,
+    TextPainter textPainter,
+    Note lastNote,
+    Offset notePosition,
+  ) {
+    switch (textPlacement) {
+      case TextPlacement.relative:
+        return notePosition.translate(
+          0,
+          (lastNote.pitchOffset > 0)
+              ? textOffset
+              : -(textPainter.height + textOffset),
+        );
+
+      case TextPlacement.top:
+        return Offset(notePosition.dx, 0);
+
+      case TextPlacement.bottom:
+        return Offset(notePosition.dx, canvasSize.height - textPainter.height);
+    }
   }
 }
