@@ -14,8 +14,8 @@ class TuningGraph extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: TuningGraphPainter(
-        lineColor: Colors.white,
         noteHistory: noteHistory,
+        lineColor: Colors.white,
       ),
       size: const Size(0, 150),
     );
@@ -33,8 +33,9 @@ class TuningGraphPainter extends CustomPainter {
     required this.lineColor,
     this.lineWidth = 4.0,
     this.renderTextThreshold = 15,
+    Color? textColor,
     this.textOffset = 15.0,
-  });
+  }) : textColor = textColor ?? lineColor;
 
   /// Whether to render the notes as a continuous line.
   /// Otherwise renders them as points.
@@ -48,6 +49,9 @@ class TuningGraphPainter extends CustomPainter {
 
   /// The width used when rendering the notes.
   final double lineWidth;
+
+  /// The color of the text displaying the note name.
+  final Color textColor;
 
   /// How much to offset the text in the y-direction.
   ///
@@ -133,9 +137,12 @@ class TuningGraphPainter extends CustomPainter {
     }
   }
 
-  /// Draw text displaying the [lastNote]'s name, above or below the line
+  /// Draw text displaying the [lastNote]'s name, above or below the line.
   void drawText(Canvas canvas, Size size, Offset position, Note lastNote) {
-    TextSpan span = TextSpan(text: lastNote.name);
+    TextSpan span = TextSpan(
+      text: lastNote.name,
+      style: TextStyle(color: textColor),
+    );
     TextPainter textPainter = TextPainter(
       text: span,
       textDirection: TextDirection.ltr,
