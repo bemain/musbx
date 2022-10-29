@@ -1,5 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:musbx/navigation_screen.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 
@@ -12,6 +13,9 @@ Future<void> main() async {
       androidNotificationChannelName: 'Musbx',
     ),
   );
+
+  // Lock screen orientation
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(const MyApp());
 }
