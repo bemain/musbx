@@ -5,8 +5,8 @@ import 'package:musbx/music_player/audio_handler.dart';
 
 Future<void> main() async {
   // Create audio service
-  JustAudioHandler.instance = await AudioService.init(
-    builder: () => JustAudioHandler(),
+  MusicPlayerAudioHandler.instance = await AudioService.init(
+    builder: () => MusicPlayerAudioHandler(),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'se.agardh.musbx.channel.audio',
       androidNotificationChannelName: 'Musbx',
