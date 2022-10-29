@@ -37,7 +37,7 @@ class TunerScreenState extends State<TunerScreen> {
               TunerGauge(
                   note: (tuner.noteHistory.isNotEmpty)
                       ? tuner.noteHistory.last
-                      : Note.a4()),
+                      : null),
               TuningGraph(noteHistory: tuner.noteHistory),
             ],
           ),
