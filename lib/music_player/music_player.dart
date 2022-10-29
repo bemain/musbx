@@ -31,15 +31,15 @@ class MusicPlayer {
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {
-    if (loopEnabled) {
-      // Clamp position to loopSection
-      position = Duration(
-        milliseconds: position.inMilliseconds.clamp(
-          loopSection.start.inMilliseconds,
-          loopSection.end.inMilliseconds,
-        ),
-      );
-    }
+    // Clamp position
+    position = Duration(
+      milliseconds: position.inMilliseconds.clamp(
+        (loopEnabled) ? loopSection.start.inMilliseconds : 0,
+        (loopEnabled)
+            ? loopSection.end.inMilliseconds
+            : duration.inMilliseconds,
+      ),
+    );
 
     await player.seek(position);
     await JustAudioHandler.instance.seek(position);
