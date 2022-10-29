@@ -4,6 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome_beats.dart';
 
 class Metronome {
+  Metronome._();
+
+  /// The instance of this singleton.
+  static final Metronome instance = Metronome._();
+
   /// Minimum [bpm] allowed. [bpm] can never be less than this.
   static const int minBpm = 20;
 
@@ -15,37 +20,38 @@ class Metronome {
   /// Clamped between [minBpm] and [maxBpm].
   ///
   /// Automatically resets [count] when changed.
-  static int get bpm => bpmNotifier.value;
-  static set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
-  static ValueNotifier<int> bpmNotifier = ValueNotifier(60)..addListener(reset);
+  int get bpm => bpmNotifier.value;
+  set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
+  late final ValueNotifier<int> bpmNotifier = ValueNotifier(60)
+    ..addListener(reset);
 
   /// Sounds for beats.
-  static final MetronomeBeats beatSounds = MetronomeBeats();
+  final MetronomeBeats beatSounds = MetronomeBeats();
 
   /// Beats per bar.
   ///
   /// Automatically resets [count] when changed.
-  static int get higher => beatSounds.length;
-  static set higher(int value) => beatSounds.length = value;
-  static ValueNotifier<int> higherNotifier = ValueNotifier(4)
+  int get higher => beatSounds.length;
+  set higher(int value) => beatSounds.length = value;
+  late final ValueNotifier<int> higherNotifier = ValueNotifier(4)
     ..addListener(reset);
 
   /// Current beat. Ranges from 0 to [higher] - 1.
-  static int get count => countNotifier.value;
-  static set count(int value) => countNotifier.value = value;
-  static ValueNotifier<int> countNotifier = ValueNotifier(0);
+  int get count => countNotifier.value;
+  set count(int value) => countNotifier.value = value;
+  final ValueNotifier<int> countNotifier = ValueNotifier(0);
 
   /// Whether or not the metronome is playing.
-  static bool get isRunning => isRunningNotifier.value;
-  static set isRunning(bool value) => isRunningNotifier.value = value;
-  static ValueNotifier<bool> isRunningNotifier = ValueNotifier(false);
+  bool get isRunning => isRunningNotifier.value;
+  set isRunning(bool value) => isRunningNotifier.value = value;
+  final ValueNotifier<bool> isRunningNotifier = ValueNotifier(false);
 
   /// Internal timer, calls [_onTimeout] [bpm] times per minute.
-  static Timer _timer = Timer(Duration.zero, () {})..cancel();
+  Timer _timer = Timer(Duration.zero, () {})..cancel();
 
   /// Called on [_timer] timeout.
   /// Increases [count] and plays a sound.
-  static void _onTimeout(Timer timer) {
+  void _onTimeout(Timer timer) {
     count++;
     count %= higher;
 
@@ -53,7 +59,7 @@ class Metronome {
   }
 
   /// Start the metronome.
-  static void start() {
+  void start() {
     if (!_timer.isActive) {
       _timer = Timer.periodic(Duration(milliseconds: 60000 ~/ bpm), _onTimeout);
       isRunning = true;
@@ -61,7 +67,7 @@ class Metronome {
   }
 
   /// Stop the metronome.
-  static void stop() {
+  void stop() {
     if (_timer.isActive) {
       _timer.cancel();
       isRunning = false;
@@ -69,7 +75,7 @@ class Metronome {
   }
 
   /// Reset [count] and, if it is running, restart [_timer].
-  static void reset() {
+  void reset() {
     count = higher - 1;
     if (isRunning) {
       _timer.cancel();

@@ -8,14 +8,14 @@ class BpmSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: Metronome.bpmNotifier,
+      valueListenable: Metronome.instance.bpmNotifier,
       builder: (c, int bpm, Widget? child) {
         return Slider(
           min: Metronome.minBpm.toDouble(),
           max: Metronome.maxBpm.toDouble(),
-          value: Metronome.bpm.toDouble(),
+          value: Metronome.instance.bpm.toDouble(),
           onChanged: (double value) {
-            Metronome.bpm = value.toInt();
+            Metronome.instance.bpm = value.toInt();
           },
         );
       },

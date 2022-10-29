@@ -20,7 +20,7 @@ class BpmButtons extends StatelessWidget {
       children: [
         ContinuousButton(
           onPressed: () {
-            Metronome.bpm--;
+            Metronome.instance.bpm--;
           },
           child: Icon(
             Icons.arrow_drop_down_rounded,
@@ -33,7 +33,7 @@ class BpmButtons extends StatelessWidget {
         ),
         ContinuousButton(
           onPressed: () {
-            Metronome.bpm++;
+            Metronome.instance.bpm++;
           },
           child: Icon(
             Icons.arrow_drop_up_rounded,
@@ -46,7 +46,7 @@ class BpmButtons extends StatelessWidget {
 
   Widget buildBpmText() {
     return ValueListenableBuilder(
-      valueListenable: Metronome.bpmNotifier,
+      valueListenable: Metronome.instance.bpmNotifier,
       builder: (c, int bpm, Widget? child) {
         return Text(
           "$bpm",
