@@ -18,11 +18,12 @@ class TunerGauge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return (note == null)
-        ? buildLoadingGauge(context)
+        ? buildListeningGauge(context)
         : buildGaugeAndText(context, note!);
   }
 
-  Widget buildLoadingGauge(BuildContext context) {
+  /// Build gauge with "listening" text.
+  Widget buildListeningGauge(BuildContext context) {
     return Stack(
       children: [
         Positioned.fill(
@@ -34,11 +35,12 @@ class TunerGauge extends StatelessWidget {
             ),
           ),
         ),
-        buildGauge(context, []),
+        buildGauge(context),
       ],
     );
   }
 
+  /// Build gage showing [note]'s name and tuning.
   Widget buildGaugeAndText(BuildContext context, Note note) {
     // If note is in tune, make needle green
     List<Color> needleColors = (note.pitchOffset.abs() < Tuner.inTuneThreshold)
@@ -92,10 +94,12 @@ class TunerGauge extends StatelessWidget {
     );
   }
 
+  /// Build a radial gauge with the "in-tune"-section highlighted green,
+  /// and optionally with some [pointers].
   Widget buildGauge(
-    BuildContext context,
-    List<RadialGaugePointer> pointers,
-  ) {
+    BuildContext context, [
+    List<RadialGaugePointer>? pointers,
+  ]) {
     return ClipRect(
       child: Align(
         alignment: Alignment.topCenter,

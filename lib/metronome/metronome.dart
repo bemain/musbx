@@ -12,7 +12,7 @@ class Metronome {
 
   /// Beats per minutes.
   ///
-  /// Will always be between [minBpm] and [maxBpm].
+  /// Clamped between [minBpm] and [maxBpm].
   ///
   /// Automatically resets [count] when changed.
   static int get bpm => bpmNotifier.value;

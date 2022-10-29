@@ -31,7 +31,7 @@ class MusicPlayerAudioHandler extends BaseAudioHandler {
     await super.stop();
   }
 
-  /// Transform an event from just_audio's AudioPlayer to audio_service's AudioHandler.
+  /// Transform an event from just_audio's [AudioPlayer] to audio_service's [AudioHandler].
   PlaybackState _transformEvent(PlaybackEvent event) {
     final isCompleted = (_player.processingState == ProcessingState.completed);
 

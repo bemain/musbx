@@ -19,7 +19,7 @@ class Note {
     "F",
     "G♭",
     "G",
-    "A♭"
+    "A♭",
   ];
 
   /// Create note from a given [frequency] in Hz.
@@ -32,21 +32,21 @@ class Note {
   /// The frequency of this note, in Hz.
   final double frequency;
 
-  late final double _diffFromA4 = log(frequency / a4frequency) / log(2);
+  double get _diffFromA4 => log(frequency / a4frequency) / log(2);
 
   /// Number of whole octaves between this note and A4.
-  late final int octavesFromA4 = _diffFromA4.round();
+  int get octavesFromA4 => _diffFromA4.round();
 
   /// Number of whole semitones between this note and A4.
-  late final int semitonesFromA4 = (12 * _diffFromA4).round();
+  int get semitonesFromA4 => (12 * _diffFromA4).round();
 
   /// Number of whole cents between this note and A4.
-  late final int centsFromA4 = (1200 * _diffFromA4).round();
+  int get centsFromA4 => (1200 * _diffFromA4).round();
 
   /// The name of this note, e.g C3.
-  late final String name =
+  String get name =>
       "${noteNames[(semitonesFromA4 - 12 * octavesFromA4) % 12]}${octavesFromA4 + 4}";
 
-  /// The error margin between this [frequency] and the closest semitone, in cents.
-  late final double pitchOffset = centsFromA4 - semitonesFromA4 * 100;
+  /// The number of cents between this [frequency] and the closest semitone.
+  double get pitchOffset => centsFromA4 - semitonesFromA4 * 100;
 }

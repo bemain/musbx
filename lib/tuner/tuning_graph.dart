@@ -6,8 +6,10 @@ import 'package:musbx/tuner/note.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class TuningGraph extends StatelessWidget {
+  /// Graph showing how the tuning of [noteHistory] has changed over time.
   const TuningGraph({super.key, required this.noteHistory});
 
+  /// The notes to display.
   final List<Note> noteHistory;
 
   @override

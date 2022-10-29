@@ -21,6 +21,7 @@ class MusicPlayer {
   /// The [AudioPlayer] used for playback.
   final AudioPlayer player = AudioPlayer();
 
+  /// Used internally to get audio from YouTube.
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
 
   /// Start or resume playback.
@@ -42,13 +43,13 @@ class MusicPlayer {
     );
 
     await player.seek(position);
-    await JustAudioHandler.instance.seek(position);
+    await MusicPlayerAudioHandler.instance.seek(position);
   }
 
   /// Set the playback speed.
   Future<void> setSpeed(double speed) async {
     await player.setSpeed(speed);
-    await JustAudioHandler.instance.setSpeed(speed);
+    await MusicPlayerAudioHandler.instance.setSpeed(speed);
     speedNotifier.value = speed;
   }
 
@@ -111,7 +112,7 @@ class MusicPlayer {
     loopSection = LoopSection(end: duration);
 
     // Inform notification
-    JustAudioHandler.instance.mediaItem.add(MediaItem(
+    MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
       id: file.path!,
       title: file.name,
       duration: player.duration,
@@ -133,7 +134,7 @@ class MusicPlayer {
     loopSection = LoopSection(end: duration);
 
     // Inform notification
-    JustAudioHandler.instance.mediaItem.add(MediaItem(
+    MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
       id: video.id ?? "",
       title: video.title,
       duration: duration,

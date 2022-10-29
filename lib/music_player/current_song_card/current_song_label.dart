@@ -5,7 +5,7 @@ import 'package:musbx/music_player/current_song_card/youtube_button.dart';
 
 class CurrentSongPanel extends StatelessWidget {
   /// Panel displaying the currently loaded song, with buttons to load a new song,
-  /// from a local file or from YouTube (WIP)
+  /// from a local file or from YouTube.
   const CurrentSongPanel({super.key});
 
   @override

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/editable_screen/card_list.dart';
-import 'package:musbx/tuner/note.dart';
+import 'package:musbx/card_list.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/tuner/tuning_graph.dart';
 import 'package:musbx/widgets.dart';
 
 class TunerScreen extends StatefulWidget {
+  /// Screen that detects the pitch from the microphone and displays it.
+  ///
+  /// Includes:
+  ///  - Gauge showing what note is being played and how out of tune it is.
+  ///  - Graph showing how the tuning has changed over time.
   const TunerScreen({super.key});
 
   @override

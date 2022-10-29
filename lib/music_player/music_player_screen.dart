@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/editable_screen/card_list.dart';
+import 'package:musbx/card_list.dart';
 import 'package:musbx/music_player/pitch_speed_card.dart';
 import 'package:musbx/music_player/position_card/button_panel.dart';
 import 'package:musbx/music_player/current_song_card/current_song_label.dart';

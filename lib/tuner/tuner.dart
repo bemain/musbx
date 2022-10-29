@@ -6,7 +6,7 @@ import 'package:musbx/tuner/note.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitch_detector_dart/pitch_detector_result.dart';
 
-/// Singleton for getting the pitch being played.
+/// Singleton for detecting what pitch is being played.
 class Tuner {
   Tuner._();
 
