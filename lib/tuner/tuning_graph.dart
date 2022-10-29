@@ -17,6 +17,7 @@ class TuningGraph extends StatelessWidget {
         noteHistory: noteHistory,
         lineColor: Colors.white,
         textPlacement: TextPlacement.top,
+        newNotePadding: 8,
       ),
       size: const Size(0, 150),
     );
@@ -42,6 +43,7 @@ class TuningGraphPainter extends CustomPainter {
   /// Highlights the section where the tone is in tune in green.
   TuningGraphPainter({
     this.continuous = false,
+    this.newNotePadding = 5,
     required this.noteHistory,
     required this.lineColor,
     this.lineWidth = 4.0,
@@ -54,6 +56,9 @@ class TuningGraphPainter extends CustomPainter {
   /// Whether to render the notes as a continuous line.
   /// Otherwise renders them as points.
   final bool continuous;
+
+  /// How many empty pixels to put between notes of different names.
+  final int newNotePadding;
 
   /// The notes to render.
   final List<Note> noteHistory;
@@ -72,10 +77,10 @@ class TuningGraphPainter extends CustomPainter {
 
   /// How much to offset the text in the y-direction.
   ///
-  /// The text is placed below the line if pitchOffset < 0 and above otherwise.
+  /// Only used if [textPlacement] is [TextPlacement.relative]
   final double textOffset;
 
-  /// The minimum entries of the same note in a row required to render text.
+  /// The minimum consecutive entries of the same note required before text is rendered.
   final int renderTextThreshold;
 
   @override
@@ -119,7 +124,7 @@ class TuningGraphPainter extends CustomPainter {
     return notesByName;
   }
 
-  /// Draw the note line and text.
+  /// Draw the note line and text labels.
   void drawNotes(Canvas canvas, Size size, List<Note> notes) {
     Paint notePaint = Paint()
       ..color = lineColor
@@ -146,7 +151,7 @@ class TuningGraphPainter extends CustomPainter {
         offsets,
         notePaint,
       );
-      index += 5;
+      index += newNotePadding;
 
       if (offsets.length >= renderTextThreshold) {
         drawText(canvas, size, lastNote, offsets.last);
@@ -163,7 +168,11 @@ class TuningGraphPainter extends CustomPainter {
 
   /// Draw text displaying the [lastNote]'s name, above or below the line.
   void drawText(
-      Canvas canvas, Size canvasSize, Note lastNote, Offset notePosition) {
+    Canvas canvas,
+    Size canvasSize,
+    Note lastNote,
+    Offset notePosition,
+  ) {
     TextSpan span = TextSpan(
       text: lastNote.name,
       style: TextStyle(color: textColor),
@@ -179,6 +188,7 @@ class TuningGraphPainter extends CustomPainter {
     );
   }
 
+  /// Calculate the offset for a text label.
   Offset calculateTextOffset(
     Size canvasSize,
     TextPainter textPainter,

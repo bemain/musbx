@@ -14,7 +14,7 @@ class Tuner {
   static final Tuner instance = Tuner._();
 
   /// The number of notes to take average of.
-  static const int averageNotesN = 10;
+  static const int averageNotesN = 15;
 
   /// How many cents off a Note can be to be considered in tune.
   static const double inTuneThreshold = 10;
