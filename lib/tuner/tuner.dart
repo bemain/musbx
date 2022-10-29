@@ -19,11 +19,14 @@ class Tuner {
   /// How many cents off a Note can be to be considered in tune.
   static const double inTuneThreshold = 10;
 
+  /// Sample rate of the recording.
+  late final double sampleRate;
+
+  /// The amount of recorded data per sample, in bytes.
+  late final int bufferSize;
+
   /// Future initializing the tuner.
   late final Future initAudioFuture = _initAudio();
-
-  /// The pitch detected from the microphone.
-  late final Stream<PitchDetectorResult> pitchStream;
 
   /// The previous frequencies detected, unfiltered.
   final List<double> _frequencyHistory = [];
@@ -36,18 +39,17 @@ class Tuner {
 
   /// Create the stream for getting pitch from microphone.
   Future<void> _initAudio() async {
-    final Stream<List<int>>? audioStream =
-        await MicStream.microphone(sampleRate: 44100);
-    assert(
-      audioStream != null,
-      "TUNER: Unable to capture audio from microphone",
-    );
+    final Stream<List<int>>? audioStream = await MicStream.microphone();
+    if (audioStream == null) {
+      throw "TUNER: Unable to capture audio from microphone";
+    }
+    sampleRate = await MicStream.sampleRate!;
+    bufferSize = await MicStream.bufferSize!;
 
-    final PitchDetector pitchDetector =
-        PitchDetector(44100, await MicStream.bufferSize ?? 1792);
-
-    pitchStream = audioStream!.map((audio) => pitchDetector
-        .getPitch(audio.map((int val) => val.toDouble()).toList()));
+    final PitchDetector pitchDetector = PitchDetector(sampleRate, bufferSize);
+    final Stream<PitchDetectorResult> pitchStream = audioStream.map((audio) =>
+        pitchDetector
+            .getPitch(audio.map((int val) => val.toDouble()).toList()));
 
     noteStream = pitchStream.map((result) {
       if (result.pitched) {
