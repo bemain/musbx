@@ -32,6 +32,7 @@ dependencies:
 
   # General
   package_info_plus: ^3.0.1
+  dynamic_color: ^1.5.4
 
   # Metronome
   soundpool: ^2.3.0

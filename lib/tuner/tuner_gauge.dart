@@ -1,3 +1,4 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:gauges/gauges.dart';
 import 'package:musbx/tuner/note.dart';
@@ -45,13 +46,19 @@ class TunerGauge extends StatelessWidget {
     // If note is in tune, make needle green
     List<Color> needleColors = (note.pitchOffset.abs() < Tuner.inTuneThreshold)
         ? [
-            Colors.lightGreen,
-            Colors.green,
+            Colors.lightGreen
+                .harmonizeWith(Theme.of(context).colorScheme.primary),
+            Colors.green.harmonizeWith(Theme.of(context).colorScheme.primary),
           ]
-        : [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColorDark,
-          ];
+        : (Theme.of(context).colorScheme.brightness == Brightness.light)
+            ? [
+                Theme.of(context).colorScheme.onSurfaceVariant,
+                Theme.of(context).colorScheme.onSurface,
+              ]
+            : [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.inversePrimary,
+              ];
 
     return Stack(
       children: [
@@ -113,7 +120,9 @@ class TunerGauge extends StatelessWidget {
               maxAngle: 18,
               radius: 0,
               width: 0.8,
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.green
+                  .harmonizeWith(Theme.of(context).colorScheme.primary)
+                  .withOpacity(0.1),
             ),
             RadialGaugeAxis(
               minValue: -50,
@@ -125,22 +134,20 @@ class TunerGauge extends StatelessWidget {
                   interval: 10,
                   alignment: RadialTickAxisAlignment.inside,
                   length: 0.1,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                   children: [
                     RadialTicks(
                       ticksInBetween: 4,
                       length: 0.05,
-                      color: (Theme.of(context).colorScheme.brightness ==
-                              Brightness.light)
-                          ? Theme.of(context).colorScheme.onBackground
-                          : Theme.of(context).colorScheme.background,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     )
                   ],
                 ),
                 RadialTicks(
                   values: [for (double i = -9; i <= 9; i++) i]..remove(0),
                   length: 0.05,
-                  color: Colors.green,
+                  color: Colors.green
+                      .harmonizeWith(Theme.of(context).colorScheme.primary),
                 )
               ],
               pointers: pointers,
