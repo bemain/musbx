@@ -17,7 +17,8 @@ class TuningGraph extends StatelessWidget {
     return CustomPaint(
       painter: TuningGraphPainter(
         noteHistory: noteHistory,
-        lineColor: Colors.white,
+        lineColor: Theme.of(context).colorScheme.onBackground,
+        textColor: Theme.of(context).colorScheme.onSurface,
         textPlacement: TextPlacement.top,
         newNotePadding: 8,
       ),
@@ -34,7 +35,7 @@ enum TextPlacement {
   /// At the bottom of the graph.
   bottom,
 
-  /// Relative to the line. Above the line if the Note is too low and below otherwise.
+  /// Relative to the note line. Above the line if the Note is too low and below otherwise.
   relative,
 }
 

@@ -130,7 +130,10 @@ class TunerGauge extends StatelessWidget {
                     RadialTicks(
                       ticksInBetween: 4,
                       length: 0.05,
-                      color: Theme.of(context).colorScheme.background,
+                      color: (Theme.of(context).colorScheme.brightness ==
+                              Brightness.light)
+                          ? Theme.of(context).colorScheme.onBackground
+                          : Theme.of(context).colorScheme.background,
                     )
                   ],
                 ),
