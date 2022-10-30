@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:musbx/navigation_screen.dart';
@@ -25,43 +26,32 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: "Musician's Toolbox",
-        theme: ThemeData.light(useMaterial3: true).copyWith(
-          colorScheme: ThemeData.light(useMaterial3: true).colorScheme.copyWith(
-                primary: Colors.blue,
-                primaryContainer: Colors.blueAccent,
-                secondary: Colors.amber,
-                secondaryContainer: Colors.amberAccent,
-                tertiary: Colors.green,
-                tertiaryContainer: Colors.lightGreen,
-                background: Colors.grey,
-                onBackground: Colors.grey[700],
+    return DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
+      ThemeData lightThemeDynamic = ThemeData.from(
+          colorScheme: lightDynamic ?? const ColorScheme.light(),
+          useMaterial3: true);
+      ThemeData darkThemeDynamic = ThemeData.from(
+          colorScheme: darkDynamic ?? const ColorScheme.dark(),
+          useMaterial3: true);
+
+      return MaterialApp(
+          title: "Musician's Toolbox",
+          theme: lightThemeDynamic.copyWith(
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.grey),
               ),
-          outlinedButtonTheme: OutlinedButtonThemeData(
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.grey),
+            ),
+            sliderTheme: lightThemeDynamic.sliderTheme.copyWith(
+              showValueIndicator: ShowValueIndicator.always,
             ),
           ),
-          sliderTheme: ThemeData.light(useMaterial3: true).sliderTheme.copyWith(
-                showValueIndicator: ShowValueIndicator.always,
-              ),
-        ),
-        darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
-          colorScheme: ThemeData.dark(useMaterial3: true).colorScheme.copyWith(
-                primary: Colors.blue,
-                primaryContainer: Colors.blueAccent,
-                secondary: Colors.amber,
-                secondaryContainer: Colors.amberAccent,
-                tertiary: Colors.green,
-                tertiaryContainer: Colors.lightGreen,
-                onBackground: Colors.black,
-              ),
-          sliderTheme: ThemeData.dark(useMaterial3: true).sliderTheme.copyWith(
-                valueIndicatorColor: Colors.grey[700],
-                showValueIndicator: ShowValueIndicator.always,
-              ),
-        ),
-        home: const NavigationScreen());
+          darkTheme: darkThemeDynamic.copyWith(
+            sliderTheme: darkThemeDynamic.sliderTheme.copyWith(
+              showValueIndicator: ShowValueIndicator.always,
+            ),
+          ),
+          home: const NavigationScreen());
+    });
   }
 }

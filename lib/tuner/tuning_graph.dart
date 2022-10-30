@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/tuner/note.dart';
 import 'package:musbx/tuner/tuner.dart';
@@ -17,8 +18,10 @@ class TuningGraph extends StatelessWidget {
     return CustomPaint(
       painter: TuningGraphPainter(
         noteHistory: noteHistory,
-        lineColor: Theme.of(context).colorScheme.onBackground,
+        lineColor: Theme.of(context).colorScheme.primary,
         textColor: Theme.of(context).colorScheme.onSurface,
+        inTuneColor:
+            Colors.green.harmonizeWith(Theme.of(context).colorScheme.primary),
         textPlacement: TextPlacement.top,
         newNotePadding: 8,
       ),
@@ -46,6 +49,7 @@ class TuningGraphPainter extends CustomPainter {
   /// Highlights the section where the tone is in tune in green.
   TuningGraphPainter({
     this.continuous = false,
+    this.inTuneColor = Colors.green,
     this.newNotePadding = 5,
     required this.noteHistory,
     required this.lineColor,
@@ -59,6 +63,9 @@ class TuningGraphPainter extends CustomPainter {
   /// Whether to render the notes as a continuous line.
   /// Otherwise renders them as points.
   final bool continuous;
+
+  /// The color used for the segment indicating where the note is in tune.
+  final Color inTuneColor;
 
   /// How many empty pixels to put between notes of different names.
   final int newNotePadding;
@@ -93,7 +100,7 @@ class TuningGraphPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint inTunePaint = Paint()..color = Colors.green.withOpacity(0.1);
+    Paint inTunePaint = Paint()..color = inTuneColor.withOpacity(0.1);
 
     // Draw the "in tune"-rect
     canvas.drawRRect(
