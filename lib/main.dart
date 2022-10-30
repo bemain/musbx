@@ -18,40 +18,57 @@ Future<void> main() async {
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  runApp(const MyApp());
+  // Get color schemes
+  var corePalette = await DynamicColorPlugin.getCorePalette();
+  final ColorScheme? lightScheme = corePalette?.toColorScheme();
+  final ColorScheme? darkScheme =
+      corePalette?.toColorScheme(brightness: Brightness.dark);
+
+  runApp(MyApp(
+    lightColorScheme: lightScheme,
+    darkColorScheme: darkScheme,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.lightColorScheme, this.darkColorScheme});
+
+  final ColorScheme? lightColorScheme;
+  final ColorScheme? darkColorScheme;
 
   @override
   Widget build(BuildContext context) {
-    return DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
-      ThemeData lightThemeDynamic = ThemeData.from(
-          colorScheme: lightDynamic ?? const ColorScheme.light(),
-          useMaterial3: true);
-      ThemeData darkThemeDynamic = ThemeData.from(
-          colorScheme: darkDynamic ?? const ColorScheme.dark(),
-          useMaterial3: true);
+    ThemeData lightTheme = ThemeData.from(
+        colorScheme: lightColorScheme ??
+            ColorScheme.fromSeed(
+              seedColor: Colors.blue,
+            ),
+        useMaterial3: true);
+    ThemeData darkTheme = ThemeData.from(
+        colorScheme: darkColorScheme ??
+            ColorScheme.fromSeed(
+              seedColor: Colors.blue,
+              brightness: Brightness.dark,
+            ),
+        useMaterial3: true);
 
-      return MaterialApp(
-          title: "Musician's Toolbox",
-          theme: lightThemeDynamic.copyWith(
-            outlinedButtonTheme: OutlinedButtonThemeData(
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.grey),
-              ),
-            ),
-            sliderTheme: lightThemeDynamic.sliderTheme.copyWith(
-              showValueIndicator: ShowValueIndicator.always,
+    return MaterialApp(
+        title: "Musician's Toolbox",
+        theme: lightTheme.copyWith(
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.grey),
             ),
           ),
-          darkTheme: darkThemeDynamic.copyWith(
-            sliderTheme: darkThemeDynamic.sliderTheme.copyWith(
-              showValueIndicator: ShowValueIndicator.always,
-            ),
+          sliderTheme: lightTheme.sliderTheme.copyWith(
+            showValueIndicator: ShowValueIndicator.always,
           ),
-          home: const NavigationScreen());
-    });
+        ),
+        darkTheme: darkTheme.copyWith(
+          sliderTheme: darkTheme.sliderTheme.copyWith(
+            showValueIndicator: ShowValueIndicator.always,
+          ),
+        ),
+        home: const NavigationScreen());
   }
 }
