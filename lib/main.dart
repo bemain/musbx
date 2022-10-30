@@ -25,32 +25,38 @@ Future<void> main() async {
       corePalette?.toColorScheme(brightness: Brightness.dark);
 
   runApp(MyApp(
-    lightColorScheme: lightScheme,
-    darkColorScheme: darkScheme,
+    lightDynamic: lightScheme,
+    darkDynamic: darkScheme,
   ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, this.lightColorScheme, this.darkColorScheme});
+  const MyApp({super.key, this.lightDynamic, this.darkDynamic});
 
-  final ColorScheme? lightColorScheme;
-  final ColorScheme? darkColorScheme;
+  /// The light [ColorScheme] obtained from the device, if any.
+  final ColorScheme? lightDynamic;
+
+  /// The dark [ColorScheme] obtained from the device, if any.
+  final ColorScheme? darkDynamic;
 
   @override
   Widget build(BuildContext context) {
-    ThemeData lightTheme = ThemeData.from(
-        colorScheme: lightColorScheme ??
-            ColorScheme.fromSeed(
-              seedColor: Colors.blue,
-            ),
-        useMaterial3: true);
-    ThemeData darkTheme = ThemeData.from(
-        colorScheme: darkColorScheme ??
-            ColorScheme.fromSeed(
-              seedColor: Colors.blue,
-              brightness: Brightness.dark,
-            ),
-        useMaterial3: true);
+    final ColorScheme lightDefault = ColorScheme.fromSeed(
+      seedColor: Colors.blue,
+    );
+    final ColorScheme darkDefault = ColorScheme.fromSeed(
+      seedColor: Colors.blue,
+      brightness: Brightness.dark,
+    );
+
+    final ThemeData lightTheme = ThemeData.from(
+      colorScheme: lightDynamic ?? lightDefault,
+      useMaterial3: true,
+    );
+    final ThemeData darkTheme = ThemeData.from(
+      colorScheme: darkDynamic ?? darkDefault,
+      useMaterial3: true,
+    );
 
     return MaterialApp(
         title: "Musician's Toolbox",

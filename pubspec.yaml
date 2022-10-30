@@ -32,6 +32,7 @@ dependencies:
 
   # General
   package_info_plus: ^3.0.1
+  dynamic_color: ^1.5.4
 
   # Metronome
   soundpool: ^2.3.0
@@ -48,7 +49,6 @@ dependencies:
   mic_stream: ^0.6.2
   gauges: ^1.0.0
   html_unescape: ^2.0.0
-  dynamic_color: ^1.5.4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
