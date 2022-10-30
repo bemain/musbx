@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
                 tertiary: Colors.green,
                 tertiaryContainer: Colors.lightGreen,
                 background: Colors.grey,
+                onBackground: Colors.grey[700],
               ),
           outlinedButtonTheme: OutlinedButtonThemeData(
             style: OutlinedButton.styleFrom(
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
                 secondaryContainer: Colors.amberAccent,
                 tertiary: Colors.green,
                 tertiaryContainer: Colors.lightGreen,
-                background: Colors.grey[700],
+                onBackground: Colors.black,
               ),
           sliderTheme: ThemeData.dark(useMaterial3: true).sliderTheme.copyWith(
                 valueIndicatorColor: Colors.grey[700],
