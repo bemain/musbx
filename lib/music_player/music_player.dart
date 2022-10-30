@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:audio_service/audio_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:html_unescape/html_unescape.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:youtube_api/youtube_api.dart';
@@ -125,20 +126,22 @@ class MusicPlayer {
         await _youtubeExplode.videos.streams.getManifest(video.id);
     AudioOnlyStreamInfo streamInfo = manifest.audioOnly.withHighestBitrate();
 
+    HtmlUnescape htmlUnescape = HtmlUnescape();
+
     // Set URL
     await player.setUrl(streamInfo.url.toString());
 
     // Update songTitle
-    songTitleNotifier.value = video.title;
+    songTitleNotifier.value = htmlUnescape.convert(video.title);
     // Reset loopSection
     loopSection = LoopSection(end: duration);
 
     // Inform notification
     MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
       id: video.id ?? "",
-      title: video.title,
+      title: htmlUnescape.convert(video.title),
       duration: duration,
-      artist: video.channelTitle,
+      artist: htmlUnescape.convert(video.channelTitle),
       artUri: Uri.tryParse(video.thumbnail.high.url ?? ""),
     ));
   }
