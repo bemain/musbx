@@ -34,10 +34,14 @@ class ButtonPanel extends StatelessWidget {
                   musicPlayer.play();
                 }
               }),
-              child: Icon(
-                isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                size: 75,
-              ),
+              child: (musicPlayer.state == MusicPlayerState.loadingAudio)
+                  ? const Padding(
+                      padding: EdgeInsets.all(19.5),
+                      child: CircularProgressIndicator())
+                  : Icon(
+                      isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                      size: 75,
+                    ),
             );
           },
         ),
