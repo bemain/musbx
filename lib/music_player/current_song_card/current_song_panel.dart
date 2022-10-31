@@ -44,12 +44,10 @@ class CurrentSongPanel extends StatelessWidget {
   /// Generate a text label based on [musicPlayer.state].
   String currentSongLabel() {
     switch (musicPlayer.state) {
-      case MusicPlayerState.initializing:
-        return "(Initializing...)";
       case MusicPlayerState.idle:
         return "(No song loaded)";
       case MusicPlayerState.loadingAudio:
-        return "(Loading audio...)";
+        return "(Loading song...)";
       case MusicPlayerState.ready:
         return musicPlayer.songTitle!;
     }

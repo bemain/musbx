@@ -12,9 +12,6 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// The state of [MusicPlayer].
 enum MusicPlayerState {
-  /// The player is initializing.
-  initializing,
-
   /// The player has been initialized, but no audio has been loaded.
   idle,
 
@@ -37,7 +34,7 @@ class MusicPlayer {
 
   MusicPlayerState get state => stateNotifier.value;
   final ValueNotifier<MusicPlayerState> stateNotifier =
-      ValueNotifier(MusicPlayerState.initializing);
+      ValueNotifier(MusicPlayerState.idle);
 
   /// The [AudioPlayer] used for playback.
   final AudioPlayer player = AudioPlayer();
@@ -220,8 +217,6 @@ class MusicPlayer {
         await seek(position);
       }
     });
-
-    stateNotifier.value = MusicPlayerState.idle;
   }
 }
 
