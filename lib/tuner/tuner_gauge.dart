@@ -43,21 +43,22 @@ class TunerGauge extends StatelessWidget {
 
   /// Build gage showing [note]'s name and tuning.
   Widget buildGaugeAndText(BuildContext context, Note note) {
+    ColorScheme scheme = Theme.of(context).colorScheme;
+
     // If note is in tune, make needle green
     List<Color> needleColors = (note.pitchOffset.abs() < Tuner.inTuneThreshold)
         ? [
-            Colors.lightGreen
-                .harmonizeWith(Theme.of(context).colorScheme.primary),
-            Colors.green.harmonizeWith(Theme.of(context).colorScheme.primary),
+            Colors.lightGreen.harmonizeWith(scheme.primary),
+            Colors.green.harmonizeWith(scheme.primary),
           ]
-        : (Theme.of(context).colorScheme.brightness == Brightness.light)
+        : (scheme.brightness == Brightness.light)
             ? [
-                Theme.of(context).colorScheme.onSurfaceVariant,
-                Theme.of(context).colorScheme.onSurface,
+                scheme.onSurfaceVariant,
+                scheme.onSurface,
               ]
             : [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.inversePrimary,
+                scheme.primary,
+                scheme.inversePrimary,
               ];
 
     return Stack(
@@ -88,6 +89,9 @@ class TunerGauge extends StatelessWidget {
             thicknessStart: 20,
             thicknessEnd: 0,
             length: 0.8,
+            knobColor: (scheme.brightness == Brightness.light)
+                ? scheme.onSurface
+                : scheme.onPrimary,
             knobRadiusAbsolute: 10,
             gradient: LinearGradient(
               colors: needleColors,
