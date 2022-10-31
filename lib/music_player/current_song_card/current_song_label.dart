@@ -6,7 +6,9 @@ import 'package:musbx/music_player/current_song_card/youtube_button.dart';
 class CurrentSongPanel extends StatelessWidget {
   /// Panel displaying the currently loaded song, with buttons to load a new song,
   /// from a local file or from YouTube.
-  const CurrentSongPanel({super.key});
+  CurrentSongPanel({super.key});
+
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -22,14 +24,11 @@ class CurrentSongPanel extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(5),
-                child: ValueListenableBuilder<String?>(
-                  valueListenable: MusicPlayer.instance.songTitleNotifier,
-                  builder: (context, songTitle, child) => Text(
-                    songTitle ?? "(No song loaded)",
-                    style: Theme.of(context).textTheme.titleLarge,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                child: Text(
+                  currentSongLabel(),
+                  style: Theme.of(context).textTheme.titleLarge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -40,5 +39,19 @@ class CurrentSongPanel extends StatelessWidget {
         const YoutubeButton(),
       ],
     );
+  }
+
+  /// Generate a text label based on [musicPlayer.state].
+  String currentSongLabel() {
+    switch (musicPlayer.state) {
+      case MusicPlayerState.initializing:
+        return "(Initializing...)";
+      case MusicPlayerState.idle:
+        return "(No song loaded)";
+      case MusicPlayerState.loadingAudio:
+        return "(Loading audio...)";
+      case MusicPlayerState.ready:
+        return musicPlayer.songTitle!;
+    }
   }
 }

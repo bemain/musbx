@@ -9,15 +9,17 @@ class PickSongButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
-      onPressed: () async {
-        FilePickerResult? result = await FilePicker.platform.pickFiles(
-          type: FileType.audio,
-        );
+      onPressed: (MusicPlayer.instance.state == MusicPlayerState.loadingAudio)
+          ? null
+          : () async {
+              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                type: FileType.audio,
+              );
 
-        if (result != null && result.files.single.path != null) {
-          await MusicPlayer.instance.playFile(result.files.single);
-        }
-      },
+              if (result != null && result.files.single.path != null) {
+                await MusicPlayer.instance.playFile(result.files.single);
+              }
+            },
       child: const Icon(Icons.file_upload_rounded),
     );
   }
