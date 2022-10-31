@@ -12,7 +12,6 @@ class YoutubeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(MusicPlayer.instance.state);
     return OutlinedButton(
       onPressed: (MusicPlayer.instance.state == MusicPlayerState.loadingAudio)
           ? null
