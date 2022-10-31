@@ -61,11 +61,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         title: "Musician's Toolbox",
         theme: lightTheme.copyWith(
-          outlinedButtonTheme: OutlinedButtonThemeData(
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.grey),
-            ),
-          ),
           sliderTheme: lightTheme.sliderTheme.copyWith(
             showValueIndicator: ShowValueIndicator.always,
           ),
