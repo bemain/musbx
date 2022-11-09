@@ -155,19 +155,21 @@ class MusicPlayer {
 
     // position
     player.positionStream.listen((position) async {
-      // Update position
-      positionNotifier.value = position;
-
       // If we have reached the end of the loop section while looping, seek to the start.
       if ((isPlaying && loopEnabled && position >= loopSection.end)) {
         await seek(Duration.zero);
+        return;
       }
 
       // If we have reached the end of the song, pause.
       if (isPlaying && !loopEnabled && position >= duration) {
         await player.pause();
         await seek(duration);
+        return;
       }
+
+      // Update position
+      positionNotifier.value = position;
     });
 
     // duration
