@@ -46,6 +46,7 @@ class CurrentSongPanel extends StatelessWidget {
     switch (musicPlayer.state) {
       case MusicPlayerState.idle:
         return "(No song loaded)";
+      case MusicPlayerState.pickingAudio:
       case MusicPlayerState.loadingAudio:
         return "(Loading song...)";
       case MusicPlayerState.ready:

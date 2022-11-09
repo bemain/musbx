@@ -15,6 +15,9 @@ enum MusicPlayerState {
   /// The player has been initialized, but no audio has been loaded.
   idle,
 
+  /// The user is picking audio to load.
+  pickingAudio,
+
   /// The player has been initialized, and is loading audio.
   loadingAudio,
 
@@ -84,6 +87,11 @@ class MusicPlayer {
   /// Returns `null` if no song loaded, value otherwise.
   T? nullIfNoSongElse<T>(T value) =>
       (state == MusicPlayerState.ready) ? value : null;
+
+  /// If true, the player is currently in a loading state.
+  /// If false, the player is either idle or have loaded audio.
+  bool get isLoading => (state == MusicPlayerState.loadingAudio ||
+      state == MusicPlayerState.pickingAudio);
 
   /// How much the pitch will be shifted, in semitones.
   double get pitchSemitones => pitchSemitonesNotifier.value;

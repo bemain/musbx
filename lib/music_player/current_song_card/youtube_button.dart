@@ -12,17 +12,25 @@ class YoutubeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final MusicPlayer musicPlayer = MusicPlayer.instance;
+
     return OutlinedButton(
-      onPressed: (MusicPlayer.instance.state == MusicPlayerState.loadingAudio)
+      onPressed: musicPlayer.isLoading
           ? null
           : () async {
+              MusicPlayerState prevState = musicPlayer.state;
+              musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
+
               YouTubeVideo? video = await showSearch<YouTubeVideo?>(
                 context: context,
                 delegate: YoutubeSearchDelegate(),
               );
 
               if (video != null) {
-                MusicPlayer.instance.playVideo(video);
+                musicPlayer.playVideo(video);
+              } else {
+                // Restore state
+                musicPlayer.stateNotifier.value = prevState;
               }
             },
       child: const Icon(CustomIcons.youtube),

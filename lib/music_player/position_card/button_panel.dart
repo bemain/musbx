@@ -34,7 +34,7 @@ class ButtonPanel extends StatelessWidget {
                   musicPlayer.play();
                 }
               }),
-              child: (musicPlayer.state == MusicPlayerState.loadingAudio)
+              child: musicPlayer.isLoading
                   ? const Padding(
                       padding: EdgeInsets.all(19.5),
                       child: CircularProgressIndicator())
