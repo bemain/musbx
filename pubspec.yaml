@@ -74,6 +74,8 @@ flutter_icons:
   ios: true
   remove_alpha_ios: true
   image_path: "assets/icon/musbx.png"
+  adaptive_icon_background: "assets/icon/musbx_background.png"
+  adaptive_icon_foreground: "assets/icon/musbx_foreground.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
