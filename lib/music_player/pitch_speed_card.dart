@@ -19,23 +19,20 @@ class PitchSpeedCard extends StatelessWidget {
           child: buildResetButton(),
         ),
       ),
-      ValueListenableBuilder(
-        valueListenable: musicPlayer.songTitleNotifier,
-        builder: (context, songTitle, _) => Column(
-          children: [
-            const SizedBox(height: 12),
-            Text(
-              "Pitch",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            buildPitchSlider(),
-            Text(
-              "Speed",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            buildSpeedSlider(),
-          ],
-        ),
+      Column(
+        children: [
+          const SizedBox(height: 12),
+          Text(
+            "Pitch",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          buildPitchSlider(),
+          Text(
+            "Speed",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          buildSpeedSlider(),
+        ],
       ),
     ]);
   }

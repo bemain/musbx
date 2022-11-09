@@ -5,64 +5,53 @@ class ButtonPanel extends StatelessWidget {
   /// Panel including play/pause, forward and rewind buttons for controlling [MusicPlayer].
   ///
   /// If no song is loaded, all buttons are disabled.
-  const ButtonPanel({super.key});
+  ButtonPanel({super.key});
+
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
-    final MusicPlayer musicPlayer = MusicPlayer.instance;
-
-    return ValueListenableBuilder(
-      valueListenable: musicPlayer.songTitleNotifier,
-      builder: (context, songTitle, child) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              onPressed: (songTitle == null)
-                  ? null
-                  : () {
-                      musicPlayer.seek(
-                          musicPlayer.position - const Duration(seconds: 1));
-                    },
-              onLongPress: (songTitle == null)
-                  ? null
-                  : () {
-                      musicPlayer.seek(Duration.zero);
-                    },
-              child: const Icon(Icons.fast_rewind_rounded, size: 40),
-            ),
-            ValueListenableBuilder<bool>(
-              valueListenable: musicPlayer.isPlayingNotifier,
-              builder: (context, isPlaying, child) {
-                return TextButton(
-                  onPressed: (songTitle == null)
-                      ? null
-                      : () {
-                          if (isPlaying) {
-                            musicPlayer.pause();
-                          } else {
-                            musicPlayer.play();
-                          }
-                        },
-                  child: Icon(
-                    isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                    size: 75,
-                  ),
-                );
-              },
-            ),
-            TextButton(
-              onPressed: (songTitle == null)
-                  ? null
-                  : () {
-                      musicPlayer.seek(
-                          musicPlayer.position + const Duration(seconds: 1));
-                    },
-              child: const Icon(Icons.fast_forward_rounded, size: 40),
-            ),
-          ],
-        );
-      },
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        TextButton(
+          onPressed: musicPlayer.nullIfNoSongElse(() {
+            musicPlayer.seek(musicPlayer.position - const Duration(seconds: 1));
+          }),
+          onLongPress: musicPlayer.nullIfNoSongElse(() {
+            musicPlayer.seek(Duration.zero);
+          }),
+          child: const Icon(Icons.fast_rewind_rounded, size: 40),
+        ),
+        ValueListenableBuilder<bool>(
+          valueListenable: musicPlayer.isPlayingNotifier,
+          builder: (context, isPlaying, child) {
+            return TextButton(
+              onPressed: musicPlayer.nullIfNoSongElse(() {
+                if (isPlaying) {
+                  musicPlayer.pause();
+                } else {
+                  musicPlayer.play();
+                }
+              }),
+              child: musicPlayer.isLoading
+                  ? const Padding(
+                      padding: EdgeInsets.all(19.5),
+                      child: CircularProgressIndicator())
+                  : Icon(
+                      isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                      size: 75,
+                    ),
+            );
+          },
+        ),
+        TextButton(
+          onPressed: musicPlayer.nullIfNoSongElse(() {
+            musicPlayer.seek(musicPlayer.position + const Duration(seconds: 1));
+          }),
+          child: const Icon(Icons.fast_forward_rounded, size: 40),
+        ),
+      ],
     );
   }
 }

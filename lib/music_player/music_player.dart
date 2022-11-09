@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:just_audio/just_audio.dart';
@@ -9,15 +10,34 @@ import 'package:musbx/music_player/audio_handler.dart';
 import 'package:youtube_api/youtube_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+/// The state of [MusicPlayer].
+enum MusicPlayerState {
+  /// The player has been initialized, but no audio has been loaded.
+  idle,
+
+  /// The user is picking audio to load.
+  pickingAudio,
+
+  /// The player has been initialized, and is loading audio.
+  loadingAudio,
+
+  /// The player has loaded audio.
+  ready,
+}
+
 /// Singleton for playing audio.
 class MusicPlayer {
   // Only way to access is through [instance].
   MusicPlayer._() {
-    _listenForChanges();
+    _init();
   }
 
   /// The instance of this singleton.
   static final MusicPlayer instance = MusicPlayer._();
+
+  MusicPlayerState get state => stateNotifier.value;
+  final ValueNotifier<MusicPlayerState> stateNotifier =
+      ValueNotifier(MusicPlayerState.idle);
 
   /// The [AudioPlayer] used for playback.
   final AudioPlayer player = AudioPlayer();
@@ -65,7 +85,13 @@ class MusicPlayer {
   final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
 
   /// Returns `null` if no song loaded, value otherwise.
-  T? nullIfNoSongElse<T>(T value) => (songTitle == null) ? null : value;
+  T? nullIfNoSongElse<T>(T value) =>
+      (state == MusicPlayerState.ready) ? value : null;
+
+  /// If true, the player is currently in a loading state.
+  /// If false, the player is either idle or have loaded audio.
+  bool get isLoading => (state == MusicPlayerState.loadingAudio ||
+      state == MusicPlayerState.pickingAudio);
 
   /// How much the pitch will be shifted, in semitones.
   double get pitchSemitones => pitchSemitonesNotifier.value;
@@ -104,6 +130,9 @@ class MusicPlayer {
 
   /// Play a [PlatformFile].
   Future<void> playFile(PlatformFile file) async {
+    await pause();
+    stateNotifier.value = MusicPlayerState.loadingAudio;
+
     // Load file
     await player.setFilePath(file.path!);
 
@@ -118,9 +147,14 @@ class MusicPlayer {
       title: file.name,
       duration: player.duration,
     ));
+
+    stateNotifier.value = MusicPlayerState.ready;
   }
 
   Future<void> playVideo(YouTubeVideo video) async {
+    await pause();
+    stateNotifier.value = MusicPlayerState.loadingAudio;
+
     // Get stream info
     StreamManifest manifest =
         await _youtubeExplode.videos.streams.getManifest(video.id);
@@ -144,10 +178,12 @@ class MusicPlayer {
       artist: htmlUnescape.convert(video.channelTitle),
       artUri: Uri.tryParse(video.thumbnail.high.url ?? ""),
     ));
+
+    stateNotifier.value = MusicPlayerState.ready;
   }
 
   /// Listen for changes from [player].
-  void _listenForChanges() {
+  void _init() {
     // isPlaying
     player.playingStream.listen((playing) {
       isPlayingNotifier.value = playing;
