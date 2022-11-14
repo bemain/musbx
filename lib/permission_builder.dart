@@ -38,7 +38,13 @@ class PermissionBuilderState extends State<PermissionBuilder>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    requestPermission();
+    widget.permission.status.then((newStatus) {
+      if (mounted) {
+        setState(() {
+          status = newStatus;
+        });
+      }
+    });
   }
 
   @override

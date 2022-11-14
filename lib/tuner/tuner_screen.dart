@@ -4,7 +4,6 @@ import 'package:musbx/permission_builder.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/tuner/tuning_graph.dart';
-import 'package:musbx/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class TunerScreen extends StatefulWidget {
@@ -32,7 +31,7 @@ class TunerScreenState extends State<TunerScreen> {
               "To use the tuner, give the app permission to access the microphone.",
           onPermissionGranted: () async {
             await tuner.initialize();
-            setState(() {});
+            if (mounted) setState(() {});
           });
     }
     return StreamBuilder(
