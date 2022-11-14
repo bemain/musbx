@@ -25,8 +25,9 @@ class Tuner {
   /// The amount of recorded data per sample, in bytes.
   late final int bufferSize;
 
-  /// Future initializing the tuner.
-  late final Future initAudioFuture = _initAudio();
+  /// Whether the Tuner has been initialized or not.
+  /// If true, [noteStream] has been created.
+  bool initialized = false;
 
   /// The previous frequencies detected, unfiltered.
   final List<double> _frequencyHistory = [];
@@ -37,8 +38,11 @@ class Tuner {
   /// The current note detected, or null if no pitch could be detected.
   late final Stream<Note?> noteStream;
 
-  /// Create the stream for getting pitch from microphone.
-  Future<void> _initAudio() async {
+  /// Initialize the Tuner.
+  /// Creates the [noteStream] for detecting pitch from the microphone.
+  ///
+  /// Assumes permission to access the microphone has already been given.
+  Future<void> initialize() async {
     final Stream<List<int>>? audioStream = await MicStream.microphone();
     if (audioStream == null) {
       throw "TUNER: Unable to capture audio from microphone";
@@ -62,6 +66,8 @@ class Tuner {
       }
       return null;
     });
+
+    initialized = true;
   }
 
   /// Calculate the average of the last [averageNotesN] frequencies and add a
