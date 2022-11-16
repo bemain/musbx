@@ -34,7 +34,7 @@ class CurrentSongPanel extends StatelessWidget {
             ],
           ),
         ),
-        const PickSongButton(),
+        PickSongButton(),
         Container(width: 10),
         const YoutubeButton(),
       ],
