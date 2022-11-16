@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PermissionBuilder extends StatefulWidget {
@@ -10,6 +11,7 @@ class PermissionBuilder extends StatefulWidget {
     required this.onPermissionGranted,
     this.permissionName,
     this.permissionText,
+    this.permissionDeniedIcon,
   });
 
   /// The permission that needs to be granted before [onPermissionGranted] is called.
@@ -24,13 +26,15 @@ class PermissionBuilder extends StatefulWidget {
   /// Short text describing why this permission is required.
   final String? permissionText;
 
+  final Widget? permissionDeniedIcon;
+
   @override
   State<StatefulWidget> createState() => PermissionBuilderState();
 }
 
 class PermissionBuilderState extends State<PermissionBuilder>
     with WidgetsBindingObserver {
-  PermissionStatus status = PermissionStatus.denied;
+  PermissionStatus? status;
 
   AppLifecycleState prevState = AppLifecycleState.resumed;
 
@@ -66,8 +70,11 @@ class PermissionBuilderState extends State<PermissionBuilder>
 
   @override
   Widget build(BuildContext context) {
+    if (status == null) return const LoadingScreen(text: "");
+
     if (status == PermissionStatus.granted) {
       widget.onPermissionGranted();
+      return const LoadingScreen(text: "Permission granted");
     }
 
     if (status == PermissionStatus.permanentlyDenied) {
@@ -110,18 +117,19 @@ class PermissionBuilderState extends State<PermissionBuilder>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Icon(Icons.mic_off_rounded, size: 128),
-            Text(
-              "Access to the ${widget.permissionName ?? widget.permission} denied. $permissionText $additionalInfoText",
-              textAlign: TextAlign.center,
-            ),
+            if (widget.permissionDeniedIcon != null)
+              widget.permissionDeniedIcon!,
             Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: OutlinedButton(
-                onPressed: onButtonPressed,
-                child: Text(buttonText),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                "Access to the ${widget.permissionName ?? widget.permission} denied. $permissionText $additionalInfoText",
+                textAlign: TextAlign.center,
               ),
-            )
+            ),
+            OutlinedButton(
+              onPressed: onButtonPressed,
+              child: Text(buttonText),
+            ),
           ],
         ),
       ),
