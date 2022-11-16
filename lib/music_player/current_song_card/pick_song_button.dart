@@ -32,6 +32,8 @@ class PickSongButton extends StatelessWidget {
                         "To load audio from the device, give the app permission to access external storage.",
                     permissionDeniedIcon:
                         const Icon(Icons.storage_rounded, size: 128),
+                    permissionGrantedIcon:
+                        const Icon(Icons.storage_rounded, size: 128),
                     onPermissionGranted: () {
                       permissionGranted = true;
 

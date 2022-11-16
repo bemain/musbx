@@ -9,10 +9,11 @@ class PermissionBuilder extends StatefulWidget {
     super.key,
     required this.permission,
     required this.onPermissionGranted,
-    this.permissionName,
+    String? permissionName,
     this.permissionText,
     this.permissionDeniedIcon,
-  });
+    this.permissionGrantedIcon,
+  }) : permissionName = permissionName ?? "$permission";
 
   /// The permission that needs to be granted before [onPermissionGranted] is called.
   final Permission permission;
@@ -21,12 +22,16 @@ class PermissionBuilder extends StatefulWidget {
   final void Function() onPermissionGranted;
 
   /// The name of this permission.
-  final String? permissionName;
+  final String permissionName;
 
   /// Short text describing why this permission is required.
   final String? permissionText;
 
+  /// The widget displayed together with text and a request button when permission has been denied.
   final Widget? permissionDeniedIcon;
+
+  /// The widget displayed when permission has been granted.
+  final Widget? permissionGrantedIcon;
 
   @override
   State<StatefulWidget> createState() => PermissionBuilderState();
@@ -75,7 +80,10 @@ class PermissionBuilderState extends State<PermissionBuilder>
     if (status == PermissionStatus.granted) {
       WidgetsBinding.instance
           .addPostFrameCallback((_) => widget.onPermissionGranted());
-      return const LoadingScreen(text: "Permission granted");
+      return InfoScreen(
+        icon: widget.permissionGrantedIcon ?? const CircularProgressIndicator(),
+        text: "Access to the ${widget.permissionName} granted.",
+      );
     }
 
     if (status == PermissionStatus.permanentlyDenied) {
@@ -123,7 +131,7 @@ class PermissionBuilderState extends State<PermissionBuilder>
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: Text(
-                "Access to the ${widget.permissionName ?? widget.permission} denied. $permissionText $additionalInfoText",
+                "Access to the ${widget.permissionName} denied. $permissionText $additionalInfoText",
                 textAlign: TextAlign.center,
               ),
             ),
