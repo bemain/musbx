@@ -23,26 +23,7 @@ class PickSongButton extends StatelessWidget {
                 pickFile();
                 return;
               }
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => Scaffold(
-                  body: PermissionBuilder(
-                    permission: Permission.storage,
-                    permissionName: "external storage",
-                    permissionText:
-                        "To load audio from the device, give the app permission to access external storage.",
-                    permissionDeniedIcon:
-                        const Icon(Icons.storage_rounded, size: 128),
-                    permissionGrantedIcon:
-                        const Icon(Icons.storage_rounded, size: 128),
-                    onPermissionGranted: () {
-                      permissionGranted = true;
-
-                      Navigator.of(context).pop();
-                      pickFile();
-                    },
-                  ),
-                ),
-              ));
+              pushPermissionBuilder(context);
             },
       child: const Icon(Icons.file_upload_rounded),
     );
@@ -62,5 +43,26 @@ class PickSongButton extends StatelessWidget {
       // Restore state
       musicPlayer.stateNotifier.value = prevState;
     }
+  }
+
+  void pushPermissionBuilder(BuildContext context) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => Scaffold(
+        body: PermissionBuilder(
+          permission: Permission.storage,
+          permissionName: "external storage",
+          permissionText:
+              "To load audio from the device, give the app permission to access external storage.",
+          permissionDeniedIcon: const Icon(Icons.storage_rounded, size: 128),
+          permissionGrantedIcon: const Icon(Icons.storage_rounded, size: 128),
+          onPermissionGranted: () {
+            permissionGranted = true;
+
+            Navigator.of(context).pop();
+            pickFile();
+          },
+        ),
+      ),
+    ));
   }
 }
