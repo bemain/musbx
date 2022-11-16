@@ -47,13 +47,11 @@ class PermissionBuilderState extends State<PermissionBuilder>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    widget.permission.status.then((newStatus) {
-      if (mounted) {
-        setState(() {
-          status = newStatus;
-        });
-      }
-    });
+
+    // [Permission.status] method is unable to return [PermissionStatus.permanentlyDenied]
+    // (see https://github.com/Baseflow/flutter-permission-handler/issues/568)
+    // Therefore, we can't just use [Permission.status] to check status, but need to make a full request.
+    requestPermission();
   }
 
   @override
