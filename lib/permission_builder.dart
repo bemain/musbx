@@ -73,7 +73,8 @@ class PermissionBuilderState extends State<PermissionBuilder>
     if (status == null) return const LoadingScreen(text: "");
 
     if (status == PermissionStatus.granted) {
-      widget.onPermissionGranted();
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => widget.onPermissionGranted());
       return const LoadingScreen(text: "Permission granted");
     }
 
