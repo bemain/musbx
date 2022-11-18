@@ -25,25 +25,30 @@ class ButtonPanel extends StatelessWidget {
         ),
         ValueListenableBuilder<bool>(
           valueListenable: musicPlayer.isPlayingNotifier,
-          builder: (context, isPlaying, child) {
-            return TextButton(
-              onPressed: musicPlayer.nullIfNoSongElse(() {
-                if (isPlaying) {
-                  musicPlayer.pause();
-                } else {
-                  musicPlayer.play();
-                }
-              }),
-              child: musicPlayer.isLoading
-                  ? const Padding(
-                      padding: EdgeInsets.all(19.5),
-                      child: CircularProgressIndicator())
-                  : Icon(
-                      isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                      size: 75,
-                    ),
-            );
-          },
+          builder: (_, isPlaying, __) => ValueListenableBuilder<bool>(
+            valueListenable: musicPlayer.isBufferingNotifier,
+            builder: (context, isBuffering, _) {
+              return TextButton(
+                onPressed: musicPlayer.nullIfNoSongElse(() {
+                  if (isPlaying) {
+                    musicPlayer.pause();
+                  } else {
+                    musicPlayer.play();
+                  }
+                }),
+                child: (musicPlayer.isLoading || isBuffering)
+                    ? const Padding(
+                        padding: EdgeInsets.all(19.5),
+                        child: CircularProgressIndicator())
+                    : Icon(
+                        isPlaying
+                            ? Icons.stop_rounded
+                            : Icons.play_arrow_rounded,
+                        size: 75,
+                      ),
+              );
+            },
+          ),
         ),
         TextButton(
           onPressed: musicPlayer.nullIfNoSongElse(() {
