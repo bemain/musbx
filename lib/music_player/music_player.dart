@@ -86,7 +86,7 @@ class MusicPlayer {
 
   /// Returns `null` if no song loaded, value otherwise.
   T? nullIfNoSongElse<T>(T value) =>
-      (state == MusicPlayerState.ready) ? value : null;
+      (isLoading || state == MusicPlayerState.idle) ? null : value;
 
   /// If true, the player is currently in a loading state.
   /// If false, the player is either idle or have loaded audio.
@@ -127,6 +127,10 @@ class MusicPlayer {
   bool get isPlaying => isPlayingNotifier.value;
   set isPlaying(bool value) => value ? play() : pause();
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
+
+  /// Whether the player is buffering audio.
+  bool get isBuffering => isBufferingNotifier.value;
+  final ValueNotifier<bool> isBufferingNotifier = ValueNotifier(false);
 
   /// Play a [PlatformFile].
   Future<void> playFile(PlatformFile file) async {
@@ -211,6 +215,17 @@ class MusicPlayer {
     // duration
     player.durationStream.listen((duration) {
       durationNotifier.value = duration ?? const Duration(seconds: 1);
+    });
+
+    // buffering
+    player.processingStateStream.listen((processingState) {
+      if (processingState == ProcessingState.buffering) {
+        isBufferingNotifier.value = true;
+      }
+
+      if (processingState == ProcessingState.ready) {
+        isBufferingNotifier.value = false;
+      }
     });
 
     // When loopSection changes, clamp position
