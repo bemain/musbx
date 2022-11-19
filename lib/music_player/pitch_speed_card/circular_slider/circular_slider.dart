@@ -26,7 +26,7 @@ class CircularSlider extends StatefulWidget {
   final double value;
   final double min;
   final double max;
-  final Function(double value) onChanged;
+  final void Function(double value)? onChanged;
 
   final SliderThemeData? theme;
 
@@ -105,6 +105,6 @@ class CircularSliderState extends State<CircularSlider> {
     double fraction =
         (angle - widget.startAngle) / (widget.endAngle - widget.startAngle);
     double newValue = fraction * (widget.max - widget.min) + widget.min;
-    widget.onChanged(newValue);
+    widget.onChanged?.call(newValue);
   }
 }

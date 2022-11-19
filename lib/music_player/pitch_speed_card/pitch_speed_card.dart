@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/music_player/pitch_speed_card/circular_slider/circular_slider.dart';
 
 class PitchSpeedCard extends StatelessWidget {
   /// Card with sliders for changing the pitch and speed of [MusicPlayer].
@@ -19,18 +20,9 @@ class PitchSpeedCard extends StatelessWidget {
           child: buildResetButton(),
         ),
       ),
-      Column(
+      Row(
         children: [
-          const SizedBox(height: 12),
-          Text(
-            "Pitch",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
           buildPitchSlider(),
-          Text(
-            "Speed",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
           buildSpeedSlider(),
         ],
       ),
@@ -40,76 +32,32 @@ class PitchSpeedCard extends StatelessWidget {
   Widget buildPitchSlider() {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.pitchSemitonesNotifier,
-      builder: (context, pitch, _) => Row(children: [
-        SizedBox(
-          width: 20,
-          child: Text(
-            "-9",
-            style: Theme.of(context).textTheme.caption,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-          ),
+      builder: (context, pitch, _) => CircularSlider(
+        value: pitch,
+        min: -9,
+        max: 9,
+        // divisions: 18,
+        // label: ((pitch > 0) ? "+" : "") + pitch.toStringAsFixed(0),
+        onChanged: musicPlayer.nullIfNoSongElse(
+          musicPlayer.setPitchSemitones,
         ),
-        Expanded(
-          child: Slider(
-            value: pitch,
-            min: -9,
-            max: 9,
-            divisions: 18,
-            label: ((pitch > 0) ? "+" : "") + pitch.toStringAsFixed(0),
-            onChanged: musicPlayer.nullIfNoSongElse(
-              musicPlayer.setPitchSemitones,
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 20,
-          child: Text(
-            "+9",
-            style: Theme.of(context).textTheme.caption,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-          ),
-        ),
-      ]),
+      ),
     );
   }
 
   Widget buildSpeedSlider() {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.speedNotifier,
-      builder: (context, speed, _) => Row(children: [
-        SizedBox(
-          width: 20,
-          child: Text(
-            "0.1",
-            style: Theme.of(context).textTheme.caption,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-          ),
+      builder: (context, speed, _) => CircularSlider(
+        value: speed,
+        min: 0.1,
+        max: 1.9,
+        // divisions: 18,
+        // label: speed.toStringAsFixed(1),
+        onChanged: musicPlayer.nullIfNoSongElse(
+          musicPlayer.setSpeed,
         ),
-        Expanded(
-          child: Slider(
-            value: speed,
-            min: 0.1,
-            max: 1.9,
-            divisions: 18,
-            label: speed.toStringAsFixed(1),
-            onChanged: musicPlayer.nullIfNoSongElse(
-              musicPlayer.setSpeed,
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 20,
-          child: Text(
-            "1.9",
-            style: Theme.of(context).textTheme.caption,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-          ),
-        ),
-      ]),
+      ),
     );
   }
 
