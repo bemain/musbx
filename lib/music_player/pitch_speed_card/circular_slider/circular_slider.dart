@@ -19,7 +19,7 @@ class CircularSlider extends StatefulWidget {
     this.label,
     this.min = 0.0,
     this.max = 1.0,
-    this.radius = 50,
+    this.outerRadius = 50,
     this.startAngle = -2.0,
     this.endAngle = 2.0,
   });
@@ -32,7 +32,7 @@ class CircularSlider extends StatefulWidget {
   /// Widget displayed in the center of the slider.
   final Widget? label;
 
-  final double radius;
+  final double outerRadius;
   final double startAngle;
   final double endAngle;
 
@@ -49,7 +49,8 @@ class CircularSliderState extends State<CircularSlider> {
       (widget.value - widget.min) / (widget.max - widget.min);
 
   double get trackRadius => theme?.sliderTheme.trackHeight ?? 16.0;
-  Size get size => Size.square(widget.radius * 2 + trackRadius * 2);
+  double get radius => widget.outerRadius - trackRadius;
+  Size get size => Size.square(widget.outerRadius * 2);
   Offset get center => size.center(Offset.zero);
 
   @override
@@ -73,7 +74,7 @@ class CircularSliderState extends State<CircularSlider> {
       child: CustomPaint(
         painter: CircularSliderPainter(
           theme: theme ?? Theme.of(context),
-          radius: widget.radius,
+          radius: radius,
           activeFraction: activeFraction,
           startAngle: widget.startAngle,
           endAngle: widget.endAngle,
@@ -91,12 +92,12 @@ class CircularSliderState extends State<CircularSlider> {
     final double thumbAngle = widget.startAngle -
         pi / 2 +
         (widget.endAngle - widget.startAngle) * activeFraction;
-    final Offset thumbOffset = angleToPoint(thumbAngle, center, widget.radius);
+    final Offset thumbOffset = angleToPoint(thumbAngle, center, radius);
 
     if (isPointAlongCircle(
           globalToLocal(event.position),
           center,
-          widget.radius,
+          radius,
           trackRadius,
         ) ||
         isPointInsideCircle(globalToLocal(event.position), thumbOffset, 10)) {

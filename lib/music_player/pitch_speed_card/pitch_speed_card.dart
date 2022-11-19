@@ -20,17 +20,19 @@ class PitchSpeedCard extends StatelessWidget {
           child: buildResetButton(),
         ),
       ),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          buildPitchSlider(),
-          buildSpeedSlider(),
-        ],
+      LayoutBuilder(
+        builder: (context, BoxConstraints constraints) => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            buildPitchSlider(constraints.maxWidth / 4),
+            buildSpeedSlider(constraints.maxWidth / 4),
+          ],
+        ),
       ),
     ]);
   }
 
-  Widget buildPitchSlider() {
+  Widget buildPitchSlider(double radius) {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.pitchSemitonesNotifier,
       builder: (context, pitch, _) => Stack(children: [
@@ -39,6 +41,7 @@ class PitchSpeedCard extends StatelessWidget {
           min: -9,
           max: 9,
           // divisions: 18,
+          outerRadius: radius,
           label: Text(
             ((pitch >= 0) ? "+" : "") + pitch.toStringAsFixed(1),
             style: const TextStyle(fontSize: 25),
@@ -57,7 +60,7 @@ class PitchSpeedCard extends StatelessWidget {
     );
   }
 
-  Widget buildSpeedSlider() {
+  Widget buildSpeedSlider(double radius) {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.speedNotifier,
       builder: (context, speed, _) => Stack(children: [
@@ -66,6 +69,7 @@ class PitchSpeedCard extends StatelessWidget {
           min: 0.1,
           max: 1.9,
           // divisions: 18,
+          outerRadius: radius,
           label: Text(
             speed.toStringAsFixed(2),
             style: const TextStyle(fontSize: 25),
