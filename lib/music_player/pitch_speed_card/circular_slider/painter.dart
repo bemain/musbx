@@ -8,20 +8,27 @@ class CircularSliderPainter extends CustomPainter {
     required this.activeFraction,
     required this.startAngle,
     required this.endAngle,
+    required this.radius,
+    this.thumbRadius = 10,
+    this.activeTrackWidth = 8,
     this.theme,
   });
 
   final double startAngle;
   final double endAngle;
 
+  final double radius;
+
   final double activeFraction;
+
   final SliderThemeData? theme;
+  final double activeTrackWidth;
+  final double thumbRadius;
 
   @override
   void paint(Canvas canvas, Size size) {
     final Color activeColor = theme?.activeTrackColor ?? Colors.blue;
     final Color inactiveColor = theme?.inactiveTrackColor ?? Colors.grey;
-    final double activeTrackWidth = theme?.trackHeight ?? 8.0;
 
     Paint activePaint = Paint()
       ..color = activeColor
@@ -35,7 +42,6 @@ class CircularSliderPainter extends CustomPainter {
       ..strokeWidth = activeTrackWidth / 2;
 
     final Offset center = Offset(size.width / 2, size.height / 2);
-    final double radius = min(size.width / 2, size.height / 2);
 
     // Draw inactive track
     canvas.drawArc(
@@ -63,7 +69,7 @@ class CircularSliderPainter extends CustomPainter {
     final double thumbAngle =
         startAngle - pi / 2 + (endAngle - startAngle) * activeFraction;
     final Offset thumbOffset = angleToPoint(thumbAngle, center, radius);
-    canvas.drawCircle(thumbOffset, 10, thumbPaint);
+    canvas.drawCircle(thumbOffset, thumbRadius, thumbPaint);
   }
 
   @override

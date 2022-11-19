@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/pitch_speed_card/circular_slider/painter.dart';
 import 'package:musbx/music_player/pitch_speed_card/circular_slider/utils.dart';
+import 'package:musbx/music_player/pitch_speed_card/custom_pan_gesture_recognizer.dart';
 
 enum DraggingMode {
   none,
@@ -41,70 +42,84 @@ class CircularSlider extends StatefulWidget {
 class CircularSliderState extends State<CircularSlider> {
   DraggingMode dragging = DraggingMode.none;
 
-  late final Offset center = Offset(widget.radius, widget.radius);
-  late CircularSliderPainter painter;
+  late final Size size = Size.square(widget.radius * 2 + trackRadius * 2);
+  late final Offset center = size.center(Offset.zero);
   SliderThemeData? theme;
 
   double get activeFraction =>
       (widget.value - widget.min) / (widget.max - widget.min);
 
+  double get trackRadius => theme?.trackHeight ?? 16.0;
+
   @override
   Widget build(BuildContext context) {
     theme ??= widget.theme ?? Theme.of(context).sliderTheme;
 
-    return SizedBox(
-      width: widget.radius * 2,
-      height: widget.radius * 2,
-      child: GestureDetector(
-        onPanDown: (details) {
-          final double thumbAngle = widget.startAngle -
-              pi / 2 +
-              (widget.endAngle - widget.startAngle) * activeFraction;
-
-          final Offset thumbOffset =
-              angleToPoint(thumbAngle, center, widget.radius);
-          if (isPointAlongCircle(
-                details.localPosition,
-                center,
-                widget.radius,
-                16.0,
-              ) ||
-              isPointInsideCircle(details.localPosition, thumbOffset, 10)) {
-            dragging = DraggingMode.along;
-            onPan(details.localPosition);
-          }
-        },
-        onPanUpdate: (DragUpdateDetails details) {
-          print(details.localPosition);
+    return buildCustomPanGestureDetector(
+      recognizer: CustomPanGestureRecognizer(
+        onPanDown: onPanDown,
+        onPanUpdate: (PointerMoveEvent event) {
           if (dragging == DraggingMode.along) {
-            onPan(details.localPosition);
+            onPan(event.position);
           }
         },
-        onPanEnd: (details) {
+        onPanEnd: (PointerUpEvent event) {
           dragging = DraggingMode.none;
         },
-        onPanCancel: () {
+        onPanCancel: (PointerCancelEvent event) {
           dragging = DraggingMode.none;
         },
+      ),
+      child: SizedBox(
+        width: size.width,
+        height: size.height,
         child: CustomPaint(
           painter: CircularSliderPainter(
             theme: theme,
+            radius: widget.radius,
             activeFraction: activeFraction,
             startAngle: widget.startAngle,
             endAngle: widget.endAngle,
           ),
-          size: Size(widget.radius * 2, widget.radius * 2),
+          size: size,
         ),
       ),
     );
   }
 
-  void onPan(Offset position) {
-    double angle = pointToAngle(position, center);
+  bool onPanDown(PointerEvent event) {
+    final double thumbAngle = widget.startAngle -
+        pi / 2 +
+        (widget.endAngle - widget.startAngle) * activeFraction;
+    final Offset thumbOffset = angleToPoint(thumbAngle, center, widget.radius);
+
+    if (isPointAlongCircle(
+          globalToLocal(event.position),
+          center,
+          widget.radius,
+          trackRadius,
+        ) ||
+        isPointInsideCircle(globalToLocal(event.position), thumbOffset, 10)) {
+      dragging = DraggingMode.along;
+      onPan(event.position);
+      return true;
+    }
+    return false;
+  }
+
+  /// Calculate the new value and invoke [onChanged] callback.
+  void onPan(Offset globalPosition) {
+    double angle = pointToAngle(globalToLocal(globalPosition), center);
     angle = angle.clamp(widget.startAngle, widget.endAngle);
     double fraction =
         (angle - widget.startAngle) / (widget.endAngle - widget.startAngle);
     double newValue = fraction * (widget.max - widget.min) + widget.min;
     widget.onChanged?.call(newValue);
+  }
+
+  /// Convert global [position] to local coordinate space.
+  Offset globalToLocal(Offset position) {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    return renderBox.globalToLocal(position);
   }
 }
