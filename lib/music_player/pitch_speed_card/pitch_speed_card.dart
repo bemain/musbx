@@ -21,6 +21,7 @@ class PitchSpeedCard extends StatelessWidget {
         ),
       ),
       Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           buildPitchSlider(),
           buildSpeedSlider(),
@@ -32,32 +33,54 @@ class PitchSpeedCard extends StatelessWidget {
   Widget buildPitchSlider() {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.pitchSemitonesNotifier,
-      builder: (context, pitch, _) => CircularSlider(
-        value: pitch,
-        min: -9,
-        max: 9,
-        // divisions: 18,
-        // label: ((pitch > 0) ? "+" : "") + pitch.toStringAsFixed(0),
-        onChanged: musicPlayer.nullIfNoSongElse(
-          musicPlayer.setPitchSemitones,
+      builder: (context, pitch, _) => Stack(children: [
+        CircularSlider(
+          value: pitch,
+          min: -9,
+          max: 9,
+          // divisions: 18,
+          label: Text(
+            ((pitch >= 0) ? "+" : "") + pitch.toStringAsFixed(1),
+            style: const TextStyle(fontSize: 25),
+          ),
+          onChanged: musicPlayer.nullIfNoSongElse(
+            musicPlayer.setPitchSemitones,
+          ),
         ),
-      ),
+        const Positioned.fill(
+          child: Align(
+            alignment: Alignment(0, 0.75),
+            child: Text("Pitch"),
+          ),
+        ),
+      ]),
     );
   }
 
   Widget buildSpeedSlider() {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.speedNotifier,
-      builder: (context, speed, _) => CircularSlider(
-        value: speed,
-        min: 0.1,
-        max: 1.9,
-        // divisions: 18,
-        // label: speed.toStringAsFixed(1),
-        onChanged: musicPlayer.nullIfNoSongElse(
-          musicPlayer.setSpeed,
+      builder: (context, speed, _) => Stack(children: [
+        CircularSlider(
+          value: speed,
+          min: 0.1,
+          max: 1.9,
+          // divisions: 18,
+          label: Text(
+            speed.toStringAsFixed(2),
+            style: const TextStyle(fontSize: 25),
+          ),
+          onChanged: musicPlayer.nullIfNoSongElse(
+            musicPlayer.setSpeed,
+          ),
         ),
-      ),
+        const Positioned.fill(
+          child: Align(
+            alignment: Alignment(0, 0.75),
+            child: Text("Speed"),
+          ),
+        ),
+      ]),
     );
   }
 

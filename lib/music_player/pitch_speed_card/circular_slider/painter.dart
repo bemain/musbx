@@ -11,7 +11,7 @@ class CircularSliderPainter extends CustomPainter {
     required this.radius,
     this.thumbRadius = 10,
     this.activeTrackWidth = 8,
-    this.theme,
+    required this.theme,
   });
 
   final double startAngle;
@@ -21,14 +21,16 @@ class CircularSliderPainter extends CustomPainter {
 
   final double activeFraction;
 
-  final SliderThemeData? theme;
+  final ThemeData theme;
   final double activeTrackWidth;
   final double thumbRadius;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Color activeColor = theme?.activeTrackColor ?? Colors.blue;
-    final Color inactiveColor = theme?.inactiveTrackColor ?? Colors.grey;
+    final Color activeColor =
+        theme.sliderTheme.activeTrackColor ?? theme.colorScheme.primary;
+    final Color inactiveColor = theme.sliderTheme.inactiveTrackColor ??
+        theme.colorScheme.primary.withOpacity(0.24);
 
     Paint activePaint = Paint()
       ..color = activeColor

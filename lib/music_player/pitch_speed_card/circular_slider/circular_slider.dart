@@ -16,11 +16,11 @@ class CircularSlider extends StatefulWidget {
     super.key,
     required this.value,
     required this.onChanged,
+    this.label,
     this.min = 0.0,
     this.max = 1.0,
     this.radius = 50,
     this.startAngle = -2.0,
-    this.theme,
     this.endAngle = 2.0,
   });
 
@@ -29,7 +29,8 @@ class CircularSlider extends StatefulWidget {
   final double max;
   final void Function(double value)? onChanged;
 
-  final SliderThemeData? theme;
+  /// Widget displayed in the center of the slider.
+  final Widget? label;
 
   final double radius;
   final double startAngle;
@@ -42,19 +43,18 @@ class CircularSlider extends StatefulWidget {
 class CircularSliderState extends State<CircularSlider> {
   DraggingMode dragging = DraggingMode.none;
 
-  late final Size size = Size.square(widget.radius * 2 + trackRadius * 2);
-  late final Offset center = size.center(Offset.zero);
-  SliderThemeData? theme;
+  ThemeData? theme;
 
   double get activeFraction =>
       (widget.value - widget.min) / (widget.max - widget.min);
 
-  double get trackRadius => theme?.trackHeight ?? 16.0;
+  double get trackRadius => theme?.sliderTheme.trackHeight ?? 16.0;
+  Size get size => Size.square(widget.radius * 2 + trackRadius * 2);
+  Offset get center => size.center(Offset.zero);
 
   @override
   Widget build(BuildContext context) {
-    theme ??= widget.theme ?? Theme.of(context).sliderTheme;
-
+    theme ??= Theme.of(context);
     return buildCustomPanGestureDetector(
       recognizer: CustomPanGestureRecognizer(
         onPanDown: onPanDown,
@@ -70,18 +70,18 @@ class CircularSliderState extends State<CircularSlider> {
           dragging = DraggingMode.none;
         },
       ),
-      child: SizedBox(
-        width: size.width,
-        height: size.height,
-        child: CustomPaint(
-          painter: CircularSliderPainter(
-            theme: theme,
-            radius: widget.radius,
-            activeFraction: activeFraction,
-            startAngle: widget.startAngle,
-            endAngle: widget.endAngle,
-          ),
-          size: size,
+      child: CustomPaint(
+        painter: CircularSliderPainter(
+          theme: theme ?? Theme.of(context),
+          radius: widget.radius,
+          activeFraction: activeFraction,
+          startAngle: widget.startAngle,
+          endAngle: widget.endAngle,
+        ),
+        child: SizedBox(
+          width: size.width,
+          height: size.height,
+          child: Center(child: widget.label),
         ),
       ),
     );
