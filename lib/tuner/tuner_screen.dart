@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:mic_stream/mic_stream.dart';
-import 'package:musbx/editable_screen/card_list.dart';
-import 'package:musbx/editable_screen/editable_screen.dart';
-import 'package:musbx/tuner/note.dart';
+import 'package:musbx/card_list.dart';
+import 'package:musbx/permission_builder.dart';
+import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
-import 'package:musbx/widgets.dart';
-import 'package:pitch_detector_dart/pitch_detector.dart';
-import 'package:pitch_detector_dart/pitch_detector_result.dart';
+import 'package:musbx/tuner/tuning_graph.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class TunerScreen extends StatefulWidget {
+  /// Screen that detects the pitch from the microphone and displays it.
+  ///
+  /// Includes:
+  ///  - Gauge showing what note is being played and how out of tune it is.
+  ///  - Graph showing how the tuning has changed over time.
   const TunerScreen({super.key});
 
   @override
@@ -16,81 +19,34 @@ class TunerScreen extends StatefulWidget {
 }
 
 class TunerScreenState extends State<TunerScreen> {
-  /// The pitch detected from the microphone.
-  Stream<PitchDetectorResult>? pitchStream;
-
-  /// Future for creating [pitchStream].
-  late final Future initAudioFuture = initAudio();
-
-  /// The [averageNotesN] most recent notes detected.
-  List<Note> previousNotes = <Note>[Note.a4()];
-
-  /// The number of notes to take average of.
-  static const int averageNotesN = 10;
-
-  /// Create the stream for getting pitch from microphone.
-  Future<void> initAudio() async {
-    final Stream<List<int>>? audioStream =
-        await MicStream.microphone(sampleRate: 44100);
-    assert(
-      audioStream != null,
-      "TUNER: Unable to capture audio from microphone",
-    );
-
-    final PitchDetector pitchDetector = PitchDetector(44100, 1792);
-    pitchStream = audioStream!.map((audio) => pitchDetector
-        .getPitch(audio.map((int val) => val.toDouble()).toList()));
-  }
+  final Tuner tuner = Tuner.instance;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: initAudioFuture,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const ErrorScreen(text: "Unable to initialize audio");
-        }
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const LoadingScreen(text: "Initializing audio...");
-        }
-
-        return StreamBuilder<PitchDetectorResult>(
-          stream: pitchStream,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return ErrorScreen(
-                text: "Unable to capture audio, ${snapshot.error}",
-              );
-            }
-            if (!snapshot.hasData) {
-              return const LoadingScreen(text: "Capturing audio...");
-            }
-
-            PitchDetectorResult pitchResult = snapshot.data!;
-            if (pitchResult.pitched) {
-              // Store new note
-              previousNotes.add(Note.fromFrequency(pitchResult.pitch));
-              // Only keep [averageN] last notes
-              while (previousNotes.length > averageNotesN) {
-                previousNotes.removeAt(0);
-              }
-            }
-
-            // Calculate average note
-            List<double> previousFrequencies =
-                previousNotes.map((note) => note.frequency).toList();
-            double avgFrequency = previousFrequencies.reduce((a, b) => a + b) /
-                previousFrequencies.length;
-            Note avgNote = Note.fromFrequency(avgFrequency);
-
-            return CardList(
-              children: [
-                TunerGauge(note: avgNote),
-              ],
-            );
-          },
-        );
-      },
+    if (!tuner.initialized) {
+      return PermissionBuilder(
+          permission: Permission.microphone,
+          permissionName: "microphone",
+          permissionText:
+              "To use the tuner, give the app permission to access the microphone.",
+          permissionDeniedIcon: const Icon(Icons.mic_off_rounded, size: 128),
+          permissionGrantedIcon: const Icon(Icons.mic_rounded, size: 128),
+          onPermissionGranted: () async {
+            await tuner.initialize();
+            if (mounted) setState(() {});
+          });
+    }
+    return StreamBuilder(
+      stream: tuner.noteStream,
+      builder: (context, snapshot) => CardList(
+        children: [
+          TunerGauge(
+              note: (tuner.noteHistory.isNotEmpty)
+                  ? tuner.noteHistory.last
+                  : null),
+          TuningGraph(noteHistory: tuner.noteHistory),
+        ],
+      ),
     );
   }
 }

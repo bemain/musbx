@@ -1,5 +1,5 @@
 name: musbx
-description: Musician's Toolbox.
+description: Musician's Toolbox
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -15,10 +15,10 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 1.2.1+9
 
 environment:
-  sdk: '>=2.18.0-139.0.dev <3.0.0'
+  sdk: '>=2.18.0 <3.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -29,17 +29,27 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # General
+  package_info_plus: ^3.0.1
+  dynamic_color: ^1.5.4
+  permission_handler: ^10.2.0
+
+  # Metronome
+  soundpool: ^2.3.0
   
-  audioplayers: ^0.20.1
+  # Music player
   just_audio: ^0.9.24
-  file_picker: ^3.0.4
-  gauges: ^1.0.0
-  pitch_detector_dart: ^0.0.2
-  mic_stream: ^0.6.1
   audio_service: ^0.18.7
+  file_picker: ^5.2.1
   youtube_api: ^1.0.4
   youtube_explode_dart: ^1.12.1
 
+  #Tuner
+  pitch_detector_dart: ^0.0.2
+  mic_stream: ^0.6.2
+  gauges: ^1.0.0
+  html_unescape: ^2.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -48,6 +58,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  
+  flutter_launcher_icons: ^0.10.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -55,6 +67,16 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+
+# To apply changes to the icon configuration, run:
+# `flutter pub run flutter_launcher_icons:main`
+flutter_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/icon/musbx.png"
+  adaptive_icon_background: "assets/icon/musbx_background.png"
+  adaptive_icon_foreground: "assets/icon/musbx_foreground.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -71,6 +93,7 @@ flutter:
   assets:
     - assets/
     - assets/metronome/
+    - assets/icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

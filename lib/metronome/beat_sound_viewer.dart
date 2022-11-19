@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:musbx/metronome/beat_sound.dart';
 import 'package:musbx/metronome/metronome.dart';
 
@@ -20,6 +21,8 @@ class BeatSoundViewer extends StatefulWidget {
 }
 
 class BeatSoundViewerState extends State<BeatSoundViewer> {
+  final Metronome metronome = Metronome.instance;
+
   @override
   void initState() {
     super.initState();
@@ -27,14 +30,14 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
     // Listen for changes to:
     // - sounds: change number of circles
     // - count: change which circle is highlighted.
-    Metronome.beatSounds.addListener(_listenForUpdates);
-    Metronome.countNotifier.addListener(_listenForUpdates);
+    metronome.beatSounds.addListener(_listenForUpdates);
+    metronome.countNotifier.addListener(_listenForUpdates);
   }
 
   @override
   void dispose() {
-    Metronome.beatSounds.removeListener(_listenForUpdates);
-    Metronome.countNotifier.removeListener(_listenForUpdates);
+    metronome.beatSounds.removeListener(_listenForUpdates);
+    metronome.countNotifier.removeListener(_listenForUpdates);
     super.dispose();
   }
 
@@ -49,12 +52,13 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ..._buildBeatButtons(),
-        if (Metronome.beatSounds.length < 8)
+        if (metronome.beatSounds.length < 8)
           Ink(
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: () {
-                Metronome.beatSounds.add(BeatSound.primary);
+                HapticFeedback.vibrate();
+                metronome.beatSounds.add(BeatSound.primary);
               },
               child: const Padding(
                 padding: EdgeInsets.all(8),
@@ -67,7 +71,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
   }
 
   List<Widget> _buildBeatButtons() {
-    return Metronome.beatSounds.sounds
+    return metronome.beatSounds.sounds
         .asMap()
         .map((int index, BeatSound sound) => MapEntry(
               index,
@@ -76,19 +80,19 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                   customBorder: const CircleBorder(),
                   onTap: () {
                     // Change beat sound
-                    var sound = Metronome.beatSounds[index];
-                    Metronome.beatSounds[index] = BeatSound
+                    var sound = metronome.beatSounds[index];
+                    metronome.beatSounds[index] = BeatSound
                         .values[(sound.index + 1) % BeatSound.values.length];
                   },
                   onLongPress: () {
-                    if (Metronome.beatSounds.length >= 2) {
-                      Metronome.beatSounds.removeAt(index);
+                    if (metronome.beatSounds.length >= 2) {
+                      metronome.beatSounds.removeAt(index);
                     }
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8),
                     child: Icon(
-                      (Metronome.count == index)
+                      (metronome.count == index)
                           ? Icons.circle
                           : Icons.circle_outlined, // Highlight current beat
                       color: beatSoundColor(context, sound),

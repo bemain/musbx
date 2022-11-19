@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:html_unescape/html_unescape.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/api_key.dart';
 import 'package:musbx/music_player/music_player.dart';
@@ -11,17 +12,27 @@ class YoutubeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: () async {
-        YouTubeVideo? video = await showSearch<YouTubeVideo?>(
-          context: context,
-          delegate: YoutubeSearchDelegate(),
-        );
+    final MusicPlayer musicPlayer = MusicPlayer.instance;
 
-        if (video != null) {
-          MusicPlayer.instance.playVideo(video);
-        }
-      },
+    return OutlinedButton(
+      onPressed: musicPlayer.isLoading
+          ? null
+          : () async {
+              MusicPlayerState prevState = musicPlayer.state;
+              musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
+
+              YouTubeVideo? video = await showSearch<YouTubeVideo?>(
+                context: context,
+                delegate: YoutubeSearchDelegate(),
+              );
+
+              if (video != null) {
+                musicPlayer.playVideo(video);
+              } else {
+                // Restore state
+                musicPlayer.stateNotifier.value = prevState;
+              }
+            },
       child: const Icon(CustomIcons.youtube),
     );
   }
@@ -103,6 +114,8 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
 
   /// Result item, showing a [YouTubeVideo]'s title, channel and thumbnail.
   Widget listItem(BuildContext context, YouTubeVideo video) {
+    HtmlUnescape htmlUnescape = HtmlUnescape();
+
     return GestureDetector(
       onTap: () {
         close(context, video);
@@ -125,14 +138,14 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      video.title,
+                      htmlUnescape.convert(video.title),
                       softWrap: true,
                       style: Theme.of(context).textTheme.subtitle1,
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
                       child: Text(
-                        video.channelTitle,
+                        htmlUnescape.convert(video.channelTitle),
                         softWrap: true,
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),

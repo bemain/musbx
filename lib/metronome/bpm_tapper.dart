@@ -1,8 +1,9 @@
 import 'dart:math';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:musbx/metronome/metronome.dart';
+import 'package:soundpool/soundpool.dart';
 
 class BpmTapper extends StatelessWidget {
   /// Button that sets [Metronome.bpm] based on you tapping.
@@ -13,6 +14,14 @@ class BpmTapper extends StatelessWidget {
     this.resetDuration = const Duration(seconds: 60 ~/ Metronome.minBpm),
     this.tapsRemembered = 10,
   });
+
+  /// [Soundpool] used internally for playing sound.
+  static final Soundpool _pool = Soundpool.fromOptions(
+    options: const SoundpoolOptions(streamType: StreamType.music),
+  );
+
+  /// Id for the sound played when this button is pressed.
+  static int? soundId;
 
   /// How long between two taps for them to be considered seperate, and not
   /// part of the same tempo.
@@ -28,13 +37,19 @@ class BpmTapper extends StatelessWidget {
     final Stopwatch stopwatch = Stopwatch();
     List<int> tapBpms = [];
 
-    final AudioPlayer audioPlayer = AudioPlayer();
-    final AudioCache audioCache = AudioCache(
-      fixedPlayer: audioPlayer,
-    );
+    // Make sure sound has been loaded.
+    if (soundId == null) {
+      rootBundle.load("assets/bpm_tapper.mp3").then((ByteData soundData) =>
+          _pool.load(soundData).then((value) => soundId = value));
+    }
 
     return OutlinedButton(
-      onPressed: () {
+      onPressed: () async {
+        // Play sound
+        if (soundId != null) await _pool.play(soundId!);
+        // Vibrate
+        HapticFeedback.vibrate();
+
         if (!stopwatch.isRunning || stopwatch.elapsed > resetDuration) {
           // Complete reset
           stopwatch.stop();
@@ -45,19 +60,19 @@ class BpmTapper extends StatelessWidget {
         }
 
         // Stop metronome so it doesn't play sound while user is tapping
-        Metronome.stop();
+        Metronome.instance.stop();
 
-        // Play sound
-        audioCache.play("bpm_tapper.mp3", mode: PlayerMode.LOW_LATENCY);
-
-        tapBpms.add(60000 ~/ stopwatch.elapsedMilliseconds); // Add bpm
+        // Add bpm
+        tapBpms.add(60000 ~/ stopwatch.elapsedMilliseconds);
         // Only keep the last [tapsRemembered] taps
         tapBpms.removeRange(0, max(tapBpms.length - tapsRemembered, 0));
 
         // Calculate average
-        Metronome.bpm = tapBpms.reduce((a, b) => a + b) ~/ tapBpms.length;
+        Metronome.instance.bpm =
+            tapBpms.reduce((a, b) => a + b) ~/ tapBpms.length;
 
-        stopwatch.reset(); // Reset stopwatch
+        // Reset stopwatch
+        stopwatch.reset();
       },
       child: const Padding(
         padding: EdgeInsets.all(10.0),

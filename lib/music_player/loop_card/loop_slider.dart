@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/widgets.dart';
 
 class LoopSlider extends StatelessWidget {
   /// Range slider for selecting the section to loop.
-  const LoopSlider({super.key});
+  LoopSlider({super.key});
+
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
-    final MusicPlayer musicPlayer = MusicPlayer.instance;
-
     return ValueListenableBuilder(
       valueListenable: musicPlayer.durationNotifier,
       builder: (_, duration, __) => ValueListenableBuilder(
@@ -19,8 +18,8 @@ class LoopSlider extends StatelessWidget {
           builder: (context, loopSection, _) {
             return RangeSlider(
               labels: RangeLabels(
-                durationString(loopSection.start),
-                durationString(loopSection.end),
+                loopSection.start.toString().substring(2, 10),
+                loopSection.end.toString().substring(2, 10),
               ),
               min: 0,
               max: duration.inMilliseconds.toDouble(),

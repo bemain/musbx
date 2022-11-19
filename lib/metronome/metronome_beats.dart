@@ -1,14 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:musbx/metronome/beat_sound.dart';
+import 'package:soundpool/soundpool.dart';
+
+enum PlayingMode {
+  sound,
+  vibrate,
+  both,
+}
 
 class MetronomeBeats extends ChangeNotifier {
   MetronomeBeats() {
-    // Preload sounds to avoid latency when first sound is played.
-    List<String> beatPaths =
-        BeatSound.values.map((BeatSound sound) => sound.fileName).toList();
-    beatPaths.remove("");
-    BeatSound.audioCache.loadAll(beatPaths);
+    // Preload sounds
+    Future.wait(BeatSound.values
+            .map((beatSound) async => MapEntry(
+                beatSound,
+                (beatSound.fileName == "")
+                    ? null
+                    : await rootBundle
+                        .load("assets/metronome/${beatSound.fileName}")
+                        .then((ByteData soundData) => pool.load(soundData))))
+            .toList())
+        .then((entries) => soundIds = Map.fromEntries(entries));
   }
+
+  /// IDs for [BeatSound]s, used by [pool] for playing sound.
+  Map<BeatSound, int?>? soundIds;
+
+  /// The [Soundpool] used for playing sound.
+  final Soundpool pool = Soundpool.fromOptions(
+    options: const SoundpoolOptions(streamType: StreamType.music),
+  );
+
+  /// The [PlayingMode] used when playing the beats.
+  PlayingMode playingMode = PlayingMode.sound;
 
   /// Number of sounds.
   int get length => _sounds.length;
@@ -46,5 +71,33 @@ class MetronomeBeats extends ChangeNotifier {
     var res = _sounds.removeAt(index);
     notifyListeners();
     return res;
+  }
+
+  /// Play the sound at [count], using the current [playingMode].
+  void playBeat(int count) async {
+    if (playingMode == PlayingMode.sound || playingMode == PlayingMode.both) {
+      // Play sound
+      if (soundIds == null) {
+        debugPrint(
+            "playBeat($count) skipped; soundIDs haven't been loaded yet.");
+        return;
+      }
+      if (soundIds![sounds[count]] == null) return;
+
+      await pool.play(soundIds![sounds[count]]!);
+    }
+    if (playingMode == PlayingMode.vibrate || playingMode == PlayingMode.both) {
+      // Vibrate
+      switch (sounds[count]) {
+        case BeatSound.primary:
+          HapticFeedback.heavyImpact();
+          break;
+        case BeatSound.accented:
+          HapticFeedback.lightImpact();
+          break;
+        default:
+          return;
+      }
+    }
   }
 }
