@@ -14,19 +14,22 @@ class PitchSpeedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
-      Positioned.fill(
-        child: Align(
-          alignment: Alignment.topRight,
-          child: buildResetButton(),
+      Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: LayoutBuilder(
+          builder: (context, BoxConstraints constraints) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              buildPitchSlider(constraints.maxWidth / 4),
+              buildSpeedSlider(constraints.maxWidth / 4),
+            ],
+          ),
         ),
       ),
-      LayoutBuilder(
-        builder: (context, BoxConstraints constraints) => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            buildPitchSlider(constraints.maxWidth / 4),
-            buildSpeedSlider(constraints.maxWidth / 4),
-          ],
+      Positioned.fill(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: buildResetButton(),
         ),
       ),
     ]);
@@ -44,16 +47,19 @@ class PitchSpeedCard extends StatelessWidget {
           outerRadius: radius,
           label: Text(
             ((pitch >= 0) ? "+" : "") + pitch.toStringAsFixed(1),
-            style: const TextStyle(fontSize: 25),
+            style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
             musicPlayer.setPitchSemitones,
           ),
         ),
-        const Positioned.fill(
+        Positioned.fill(
           child: Align(
-            alignment: Alignment(0, 0.75),
-            child: Text("Pitch"),
+            alignment: const Alignment(0, 0.8),
+            child: Text(
+              "Pitch",
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
           ),
         ),
       ]),
@@ -72,16 +78,19 @@ class PitchSpeedCard extends StatelessWidget {
           outerRadius: radius,
           label: Text(
             speed.toStringAsFixed(2),
-            style: const TextStyle(fontSize: 25),
+            style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
             musicPlayer.setSpeed,
           ),
         ),
-        const Positioned.fill(
+        Positioned.fill(
           child: Align(
-            alignment: Alignment(0, 0.75),
-            child: Text("Speed"),
+            alignment: const Alignment(0, 0.8),
+            child: Text(
+              "Speed",
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
           ),
         ),
       ]),
