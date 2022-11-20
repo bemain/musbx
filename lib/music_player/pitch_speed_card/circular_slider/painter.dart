@@ -10,7 +10,8 @@ class CircularSliderPainter extends CustomPainter {
     required this.endAngle,
     required this.radius,
     this.thumbRadius = 10,
-    this.activeTrackWidth = 8,
+    this.activeTrackWidth = 6,
+    this.disabled = false,
     required this.theme,
   });
 
@@ -21,6 +22,7 @@ class CircularSliderPainter extends CustomPainter {
 
   final double activeFraction;
 
+  final bool disabled;
   final ThemeData theme;
   final double activeTrackWidth;
   final double thumbRadius;
@@ -32,13 +34,20 @@ class CircularSliderPainter extends CustomPainter {
     final Color inactiveColor = theme.sliderTheme.inactiveTrackColor ??
         theme.colorScheme.primary.withOpacity(0.24);
 
+    final Color disabledActiveColor =
+        theme.sliderTheme.disabledActiveTrackColor ??
+            theme.colorScheme.onSurface.withOpacity(0.32);
+    final Color disabledInactiveColor =
+        theme.sliderTheme.disabledInactiveTrackColor ??
+            theme.colorScheme.onSurface.withOpacity(0.12);
+
     Paint activePaint = Paint()
-      ..color = activeColor
+      ..color = disabled ? disabledActiveColor : activeColor
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
       ..strokeWidth = activeTrackWidth;
     Paint inactivePaint = Paint()
-      ..color = inactiveColor
+      ..color = disabled ? disabledInactiveColor : inactiveColor
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
       ..strokeWidth = activeTrackWidth / 2;
@@ -64,7 +73,7 @@ class CircularSliderPainter extends CustomPainter {
 
     // Draw thumb
     final Paint thumbPaint = Paint()
-      ..color = activeColor
+      ..color = disabled ? disabledActiveColor : activeColor
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.fill;
 

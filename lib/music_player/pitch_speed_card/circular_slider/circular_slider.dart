@@ -78,6 +78,7 @@ class CircularSliderState extends State<CircularSlider> {
           activeFraction: activeFraction,
           startAngle: widget.startAngle,
           endAngle: widget.endAngle,
+          disabled: widget.onChanged == null,
         ),
         child: SizedBox(
           width: size.width,
