@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/pitch_speed_card/circular_slider/painter.dart';
 import 'package:musbx/music_player/pitch_speed_card/circular_slider/utils.dart';
+import 'package:musbx/music_player/pitch_speed_card/circular_slider_theme.dart';
 import 'package:musbx/music_player/pitch_speed_card/custom_pan_gesture_recognizer.dart';
 
 enum DraggingMode {
@@ -32,6 +33,7 @@ class CircularSlider extends StatefulWidget {
   /// Widget displayed in the center of the slider.
   final Widget? label;
 
+  /// The radius of the slider, measured from the outside of the track touch area.
   final double outerRadius;
   final double startAngle;
   final double endAngle;
@@ -43,19 +45,16 @@ class CircularSlider extends StatefulWidget {
 class CircularSliderState extends State<CircularSlider> {
   DraggingMode dragging = DraggingMode.none;
 
-  ThemeData? theme;
-
   double get activeFraction =>
       (widget.value - widget.min) / (widget.max - widget.min);
 
-  double get trackRadius => theme?.sliderTheme.trackHeight ?? 16.0;
-  double get radius => widget.outerRadius - trackRadius;
+  double touchWidth = 32.0;
+  double get radius => widget.outerRadius - touchWidth / 2;
   Size get size => Size.square(widget.outerRadius * 2);
   Offset get center => size.center(Offset.zero);
 
   @override
   Widget build(BuildContext context) {
-    theme ??= Theme.of(context);
     return buildCustomPanGestureDetector(
       recognizer: CustomPanGestureRecognizer(
         onPanDown: onPanDown,
@@ -73,7 +72,10 @@ class CircularSliderState extends State<CircularSlider> {
       ),
       child: CustomPaint(
         painter: CircularSliderPainter(
-          theme: theme ?? Theme.of(context),
+          theme: CircularSliderTheme.fromThemes(
+            Theme.of(context),
+            SliderTheme.of(context),
+          ),
           radius: radius,
           activeFraction: activeFraction,
           startAngle: widget.startAngle,
@@ -99,7 +101,7 @@ class CircularSliderState extends State<CircularSlider> {
           globalToLocal(event.position),
           center,
           radius,
-          trackRadius,
+          touchWidth,
         ) ||
         isPointInsideCircle(globalToLocal(event.position), thumbOffset, 10)) {
       dragging = DraggingMode.along;

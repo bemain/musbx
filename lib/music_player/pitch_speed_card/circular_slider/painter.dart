@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/pitch_speed_card/circular_slider/utils.dart';
+import 'package:musbx/music_player/pitch_speed_card/circular_slider_theme.dart';
 
 class CircularSliderPainter extends CustomPainter {
   CircularSliderPainter({
@@ -9,8 +10,6 @@ class CircularSliderPainter extends CustomPainter {
     required this.startAngle,
     required this.endAngle,
     required this.radius,
-    this.thumbRadius = 10,
-    this.activeTrackWidth = 6,
     this.disabled = false,
     required this.theme,
   });
@@ -23,34 +22,22 @@ class CircularSliderPainter extends CustomPainter {
   final double activeFraction;
 
   final bool disabled;
-  final ThemeData theme;
-  final double activeTrackWidth;
-  final double thumbRadius;
+  final CircularSliderTheme theme;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Color activeColor =
-        theme.sliderTheme.activeTrackColor ?? theme.colorScheme.primary;
-    final Color inactiveColor = theme.sliderTheme.inactiveTrackColor ??
-        theme.colorScheme.primary.withOpacity(0.24);
-
-    final Color disabledActiveColor =
-        theme.sliderTheme.disabledActiveTrackColor ??
-            theme.colorScheme.onSurface.withOpacity(0.32);
-    final Color disabledInactiveColor =
-        theme.sliderTheme.disabledInactiveTrackColor ??
-            theme.colorScheme.onSurface.withOpacity(0.12);
-
     Paint activePaint = Paint()
-      ..color = disabled ? disabledActiveColor : activeColor
+      ..color =
+          disabled ? theme.disabledActiveTrackColor : theme.activeTrackColor
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
-      ..strokeWidth = activeTrackWidth;
+      ..strokeWidth = theme.trackHeight + theme.activeTrackAdditionalHeight;
     Paint inactivePaint = Paint()
-      ..color = disabled ? disabledInactiveColor : inactiveColor
+      ..color =
+          disabled ? theme.disabledInactiveTrackColor : theme.inactiveTrackColor
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
-      ..strokeWidth = activeTrackWidth / 2;
+      ..strokeWidth = theme.trackHeight;
 
     final Offset center = Offset(size.width / 2, size.height / 2);
 
@@ -73,14 +60,14 @@ class CircularSliderPainter extends CustomPainter {
 
     // Draw thumb
     final Paint thumbPaint = Paint()
-      ..color = disabled ? disabledActiveColor : activeColor
+      ..color = disabled ? theme.disabledThumbColor : theme.thumbColor
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.fill;
 
     final double thumbAngle =
         startAngle - pi / 2 + (endAngle - startAngle) * activeFraction;
     final Offset thumbOffset = angleToPoint(thumbAngle, center, radius);
-    canvas.drawCircle(thumbOffset, thumbRadius, thumbPaint);
+    canvas.drawCircle(thumbOffset, theme.thumbRadius, thumbPaint);
   }
 
   @override
@@ -88,6 +75,8 @@ class CircularSliderPainter extends CustomPainter {
     return activeFraction != oldDelegate.activeFraction ||
         startAngle != oldDelegate.startAngle ||
         endAngle != oldDelegate.endAngle ||
-        theme != oldDelegate.theme;
+        theme != oldDelegate.theme ||
+        disabled != oldDelegate.disabled ||
+        radius != oldDelegate.radius;
   }
 }

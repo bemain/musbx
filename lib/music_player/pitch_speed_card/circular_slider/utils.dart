@@ -23,5 +23,5 @@ bool isPointAlongCircle(
   var d1 = pow(point.dx - center.dx, 2);
   var d2 = pow(point.dy - center.dy, 2);
   var distance = sqrt(d1 + d2);
-  return (distance - radius).abs() < trackWidth;
+  return (distance - radius).abs() < trackWidth / 2;
 }
