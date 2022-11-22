@@ -12,6 +12,7 @@ class CircularSliderPainter extends CustomPainter {
     required this.radius,
     this.disabled = false,
     required this.theme,
+    this.divisions,
   });
 
   final double startAngle;
@@ -23,6 +24,8 @@ class CircularSliderPainter extends CustomPainter {
 
   final bool disabled;
   final CircularSliderTheme theme;
+
+  final int? divisions;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -58,14 +61,34 @@ class CircularSliderPainter extends CustomPainter {
       activePaint,
     );
 
-    // Draw thumb
+    final double thumbAngle =
+        startAngle - pi / 2 + (endAngle - startAngle) * activeFraction;
+
     final Paint thumbPaint = Paint()
       ..color = disabled ? theme.disabledThumbColor : theme.thumbColor
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.fill;
 
-    final double thumbAngle =
-        startAngle - pi / 2 + (endAngle - startAngle) * activeFraction;
+    // Draw tick marks
+    if (divisions != null) {
+      final Paint activeTickMarkPaint = Paint()
+        ..color = disabled
+            ? theme.disabledActiveTickMarkColor
+            : theme.activeTickMarkColor;
+      final Paint inactiveTickMarkPaint = Paint()
+        ..color = disabled
+            ? theme.disabledInactiveTickMarkColor
+            : theme.inactiveTickMarkColor;
+      for (int i = 0; i <= divisions!; i++) {
+        double angle =
+            startAngle - pi / 2 + (endAngle - startAngle) * (i / divisions!);
+        Offset offset = angleToPoint(angle, center, radius);
+        canvas.drawCircle(offset, theme.trackHeight / 4,
+            (angle < thumbAngle) ? activeTickMarkPaint : inactiveTickMarkPaint);
+      }
+    }
+
+    // Draw thumb
     final Offset thumbOffset = angleToPoint(thumbAngle, center, radius);
     canvas.drawCircle(thumbOffset, theme.thumbRadius, thumbPaint);
   }
@@ -77,6 +100,7 @@ class CircularSliderPainter extends CustomPainter {
         endAngle != oldDelegate.endAngle ||
         theme != oldDelegate.theme ||
         disabled != oldDelegate.disabled ||
-        radius != oldDelegate.radius;
+        radius != oldDelegate.radius ||
+        divisions != oldDelegate.divisions;
   }
 }

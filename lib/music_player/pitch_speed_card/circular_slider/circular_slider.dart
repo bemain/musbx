@@ -20,6 +20,7 @@ class CircularSlider extends StatefulWidget {
     this.label,
     this.min = 0.0,
     this.max = 1.0,
+    this.divisions,
     this.outerRadius = 50,
     this.startAngle = -2.0,
     this.endAngle = 2.0,
@@ -29,6 +30,8 @@ class CircularSlider extends StatefulWidget {
   final double min;
   final double max;
   final void Function(double value)? onChanged;
+
+  final int? divisions;
 
   /// Widget displayed in the center of the slider.
   final Widget? label;
@@ -80,6 +83,7 @@ class CircularSliderState extends State<CircularSlider> {
           activeFraction: activeFraction,
           startAngle: widget.startAngle,
           endAngle: widget.endAngle,
+          divisions: widget.divisions,
           disabled: widget.onChanged == null,
         ),
         child: SizedBox(
