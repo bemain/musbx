@@ -15,16 +15,25 @@ class CircularSliderPainter extends CustomPainter {
     this.divisions,
   });
 
+  /// The angle that the circle sector starts at.
   final double startAngle;
+
+  /// The angle that the circle sector ends at.
   final double endAngle;
 
+  /// The radius of the circle sector.
   final double radius;
 
+  /// The fraction of the circle sector that is active.
   final double activeFraction;
 
+  /// If true, the slider will be displayed as disabled.
   final bool disabled;
+
+  /// The theme specifying colors for the slider.
   final CircularSliderTheme theme;
 
+  /// The number of discrete divisions, if any.
   final int? divisions;
 
   @override
@@ -64,11 +73,6 @@ class CircularSliderPainter extends CustomPainter {
     final double thumbAngle =
         startAngle - pi / 2 + (endAngle - startAngle) * activeFraction;
 
-    final Paint thumbPaint = Paint()
-      ..color = disabled ? theme.disabledThumbColor : theme.thumbColor
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.fill;
-
     // Draw tick marks
     if (divisions != null) {
       final Paint activeTickMarkPaint = Paint()
@@ -89,6 +93,11 @@ class CircularSliderPainter extends CustomPainter {
     }
 
     // Draw thumb
+    final Paint thumbPaint = Paint()
+      ..color = disabled ? theme.disabledThumbColor : theme.thumbColor
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.fill;
+
     final Offset thumbOffset = angleToPoint(thumbAngle, center, radius);
     canvas.drawCircle(thumbOffset, theme.thumbRadius, thumbPaint);
   }

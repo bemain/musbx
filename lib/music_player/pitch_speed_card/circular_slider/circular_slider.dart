@@ -13,6 +13,7 @@ enum DraggingMode {
 }
 
 class CircularSlider extends StatefulWidget {
+  /// A circular slider. Similar to [Slider], but drawn as a circle sector.
   const CircularSlider({
     super.key,
     required this.value,
@@ -26,11 +27,34 @@ class CircularSlider extends StatefulWidget {
     this.endAngle = 2.0,
   });
 
+  /// The currently selected value for this slider.
+  ///
+  /// The slider's thumb is drawn at a position that corresponds to this value.
   final double value;
+
+  /// The minimum value the user can select.
+  ///
+  /// Defaults to 0.0. Must be less than or equal to [max].
   final double min;
+
+  /// The maximum value the user can select.
+  ///
+  /// Defaults to 1.0. Must be greater than or equal to [min].
   final double max;
+
+  /// Called during a drag when the user is selecting a new value for the slider
+  /// by dragging.
+  ///
+  /// The slider passes the new value to the callback but does not actually
+  /// change state until the parent widget rebuilds the slider with the new
+  /// value.
+  ///
+  /// If null, the slider will be displayed as disabled.
   final void Function(double value)? onChanged;
 
+  /// The number of discrete divisions.
+  ///
+  /// If null, the slider is continuous.
   final int? divisions;
 
   /// Widget displayed in the center of the slider.
@@ -38,7 +62,11 @@ class CircularSlider extends StatefulWidget {
 
   /// The radius of the slider, measured from the outside of the track touch area.
   final double outerRadius;
+
+  /// The angle that the circle sector starts at.
   final double startAngle;
+
+  /// The angle that the circle sector ends at.
   final double endAngle;
 
   @override
@@ -48,12 +76,21 @@ class CircularSlider extends StatefulWidget {
 class CircularSliderState extends State<CircularSlider> {
   DraggingMode dragging = DraggingMode.none;
 
+  /// The fraction of the circle sector that is active,
+  /// meaning it is between [min] and [value]
   double get activeFraction =>
       (widget.value - widget.min) / (widget.max - widget.min);
 
-  double touchWidth = 32.0;
+  /// Width of the touch area around the circle sector.
+  static const double touchWidth = 32.0;
+
+  /// The radius of the circle sector, measured from the center of the track.
   double get radius => widget.outerRadius - touchWidth / 2;
+
+  /// The size that the slider takes up.
   Size get size => Size.square(widget.outerRadius * 2);
+
+  /// The center of the slider.
   Offset get center => size.center(Offset.zero);
 
   @override
@@ -95,6 +132,8 @@ class CircularSliderState extends State<CircularSlider> {
     );
   }
 
+  /// If [event] is along the slider or inside the thumb, handle pan and return true.
+  /// Otherwise, return false,
   bool onPanDown(PointerEvent event) {
     final double thumbAngle = widget.startAngle -
         pi / 2 +
