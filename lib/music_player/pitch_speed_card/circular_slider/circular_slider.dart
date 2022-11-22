@@ -14,6 +14,10 @@ enum DraggingMode {
 
 class CircularSlider extends StatefulWidget {
   /// A circular slider. Similar to [Slider], but drawn as a circle sector.
+  ///
+  /// If the thumb is being dragged, and the distance between where the user is
+  /// touching the screen and the track is larger than [continuousSelectionDistance],
+  /// continuous selection is enabled, offering greater accuracy.
   const CircularSlider({
     super.key,
     required this.value,
@@ -25,6 +29,8 @@ class CircularSlider extends StatefulWidget {
     this.outerRadius = 50,
     this.startAngle = -2.0,
     this.endAngle = 2.0,
+    this.touchWidth = 32.0,
+    this.continuousSelectionDistance = 16.0,
   });
 
   /// The currently selected value for this slider.
@@ -49,8 +55,10 @@ class CircularSlider extends StatefulWidget {
   /// change state until the parent widget rebuilds the slider with the new
   /// value.
   ///
+  /// [continuous] is true if the value was selected during a continuous selection.
+  ///
   /// If null, the slider will be displayed as disabled.
-  final void Function(double value)? onChanged;
+  final void Function(double value, bool continuous)? onChanged;
 
   /// The number of discrete divisions.
   ///
@@ -69,25 +77,26 @@ class CircularSlider extends StatefulWidget {
   /// The angle that the circle sector ends at.
   final double endAngle;
 
+  /// Width of the touch area around the circle sector.
+  final double touchWidth;
+
+  /// The minimum distance from the where the user is dragging to the track that enables continuous selection.
+  final double continuousSelectionDistance;
+
   @override
   State<StatefulWidget> createState() => CircularSliderState();
 }
 
 class CircularSliderState extends State<CircularSlider> {
-  DraggingMode dragging = DraggingMode.none;
+  bool dragging = false;
 
   /// The fraction of the circle sector that is active,
   /// meaning it is between [min] and [value]
   double get activeFraction =>
       (widget.value - widget.min) / (widget.max - widget.min);
 
-  /// Width of the touch area around the circle sector.
-  static const double touchWidth = 32.0;
-
-  static const double continuousSelectionDistance = 10;
-
   /// The radius of the circle sector, measured from the center of the track.
-  double get radius => widget.outerRadius - touchWidth / 2;
+  double get radius => widget.outerRadius - widget.touchWidth / 2;
 
   /// The size that the slider takes up.
   Size get size => Size.square(widget.outerRadius * 2);
@@ -101,15 +110,15 @@ class CircularSliderState extends State<CircularSlider> {
       recognizer: CustomPanGestureRecognizer(
         onPanDown: onPanDown,
         onPanUpdate: (PointerMoveEvent event) {
-          if (dragging == DraggingMode.along) {
+          if (dragging) {
             onPan(event.position);
           }
         },
         onPanEnd: (PointerUpEvent event) {
-          dragging = DraggingMode.none;
+          dragging = false;
         },
         onPanCancel: (PointerCancelEvent event) {
-          dragging = DraggingMode.none;
+          dragging = false;
         },
       ),
       child: CustomPaint(
@@ -146,10 +155,10 @@ class CircularSliderState extends State<CircularSlider> {
           globalToLocal(event.position),
           center,
           radius,
-          touchWidth,
+          widget.touchWidth,
         ) ||
         isPointInsideCircle(globalToLocal(event.position), thumbOffset, 10)) {
-      dragging = DraggingMode.along;
+      dragging = true;
       onPan(event.position);
       return true;
     }
