@@ -6,7 +6,7 @@ class PitchSpeedCard extends StatelessWidget {
   /// Card with sliders for changing the pitch and speed of [MusicPlayer].
   ///
   /// Each slider is labeled with max and min value.
-  /// Also features a button for resetting pitch and speed to the deafault values.
+  /// Also features a button for resetting pitch and speed to the default values.
   PitchSpeedCard({super.key});
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
