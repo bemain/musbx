@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/card_list.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/pitch_speed_card.dart';
+import 'package:musbx/music_player/pitch_speed_card/pitch_speed_card.dart';
 import 'package:musbx/music_player/position_card/button_panel.dart';
 import 'package:musbx/music_player/current_song_card/current_song_panel.dart';
 import 'package:musbx/music_player/loop_card/loop_buttons.dart';
@@ -25,7 +25,7 @@ class MusicPlayerScreen extends StatelessWidget {
       valueListenable: MusicPlayer.instance.stateNotifier,
       builder: (context, state, _) => CardList(
         helpText: """Load song from device or YouTube.
-Adjust pitch and speed using the sliders.
+Adjust pitch and speed using the circular sliders. While selecting, greater accuracy can be obtained by dragging away from the center.
 If looping is enabled, change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.
 Long press rewind button to restart song.""",
         children: [
