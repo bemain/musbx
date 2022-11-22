@@ -115,10 +115,14 @@ class CircularSliderState extends State<CircularSlider> {
           }
         },
         onPanEnd: (PointerUpEvent event) {
-          dragging = false;
+          setState(() {
+            dragging = false;
+          });
         },
         onPanCancel: (PointerCancelEvent event) {
-          dragging = false;
+          setState(() {
+            dragging = false;
+          });
         },
       ),
       child: CustomPaint(
@@ -132,6 +136,7 @@ class CircularSliderState extends State<CircularSlider> {
           startAngle: widget.startAngle,
           endAngle: widget.endAngle,
           divisions: widget.divisions,
+          dragging: dragging,
           disabled: widget.onChanged == null,
         ),
         child: SizedBox(

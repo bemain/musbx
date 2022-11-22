@@ -10,6 +10,7 @@ class CircularSliderPainter extends CustomPainter {
     required this.startAngle,
     required this.endAngle,
     required this.radius,
+    required this.dragging,
     this.disabled = false,
     required this.theme,
     this.divisions,
@@ -26,6 +27,9 @@ class CircularSliderPainter extends CustomPainter {
 
   /// The fraction of the circle sector that is active.
   final double activeFraction;
+
+  /// If true, an overlay is painted over the thumb.
+  final bool dragging;
 
   /// If true, the slider will be displayed as disabled.
   final bool disabled;
@@ -100,6 +104,15 @@ class CircularSliderPainter extends CustomPainter {
 
     final Offset thumbOffset = angleToPoint(thumbAngle, center, radius);
     canvas.drawCircle(thumbOffset, theme.thumbRadius, thumbPaint);
+
+    // Draw overlay
+    if (dragging) {
+      canvas.drawCircle(
+        thumbOffset,
+        24,
+        Paint()..color = theme.overlayColor,
+      );
+    }
   }
 
   @override
@@ -110,6 +123,7 @@ class CircularSliderPainter extends CustomPainter {
         theme != oldDelegate.theme ||
         disabled != oldDelegate.disabled ||
         radius != oldDelegate.radius ||
+        dragging != oldDelegate.dragging ||
         divisions != oldDelegate.divisions;
   }
 }
