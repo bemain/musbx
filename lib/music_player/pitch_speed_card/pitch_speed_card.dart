@@ -41,16 +41,23 @@ class PitchSpeedCard extends StatelessWidget {
       builder: (context, pitch, _) => Stack(children: [
         CircularSlider(
           value: pitch,
-          min: -9,
-          max: 9,
-          // divisions: 18,
+          min: -12,
+          max: 12,
+          divisions: 24,
           outerRadius: radius,
           label: Text(
-            ((pitch >= 0) ? "+" : "") + pitch.toStringAsFixed(1),
+            ((pitch >= 0) ? "+" : "-") + pitch.abs().toStringAsFixed(1),
             style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
-            musicPlayer.setPitchSemitones,
+            (double value, bool continuous) {
+              if (continuous) {
+                value = value.roundToDouble();
+              } else {
+                value = (value * 10).roundToDouble() / 10;
+              }
+              musicPlayer.setPitchSemitones(value);
+            },
           ),
         ),
         Positioned.fill(
@@ -74,14 +81,19 @@ class PitchSpeedCard extends StatelessWidget {
           value: speed,
           min: 0.1,
           max: 1.9,
-          // divisions: 18,
+          divisions: 18,
           outerRadius: radius,
           label: Text(
             speed.toStringAsFixed(2),
             style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
-            musicPlayer.setSpeed,
+            (double value, bool continuous) {
+              if (continuous) {
+                value = (value * 10).roundToDouble() / 10;
+              }
+              musicPlayer.setSpeed(value);
+            },
           ),
         ),
         Positioned.fill(
@@ -104,7 +116,8 @@ class PitchSpeedCard extends StatelessWidget {
         valueListenable: musicPlayer.pitchSemitonesNotifier,
         builder: (context, pitch, _) => IconButton(
           iconSize: 20,
-          onPressed: (speed.toStringAsFixed(2) == "1.00" && pitch == 0)
+          onPressed: (speed.toStringAsFixed(2) == "1.00" &&
+                  pitch.abs().toStringAsFixed(1) == "0.0")
               ? null
               : () {
                   musicPlayer.setSpeed(1.0);
