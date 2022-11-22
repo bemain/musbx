@@ -84,6 +84,8 @@ class CircularSliderState extends State<CircularSlider> {
   /// Width of the touch area around the circle sector.
   static const double touchWidth = 32.0;
 
+  static const double continuousSelectionDistance = 10;
+
   /// The radius of the circle sector, measured from the center of the track.
   double get radius => widget.outerRadius - touchWidth / 2;
 
@@ -156,12 +158,17 @@ class CircularSliderState extends State<CircularSlider> {
 
   /// Calculate the new value and invoke [onChanged] callback.
   void onPan(Offset globalPosition) {
-    double angle = pointToAngle(globalToLocal(globalPosition), center);
-    angle = angle.clamp(widget.startAngle, widget.endAngle);
+    Offset localPosition = globalToLocal(globalPosition);
+    double angle = pointToAngle(localPosition, center)
+        .clamp(widget.startAngle, widget.endAngle);
     double fraction =
         (angle - widget.startAngle) / (widget.endAngle - widget.startAngle);
     double newValue = fraction * (widget.max - widget.min) + widget.min;
-    widget.onChanged?.call(newValue);
+
+    bool continuous = (localPosition - center).distance <
+        radius + widget.continuousSelectionDistance;
+
+    widget.onChanged?.call(newValue, continuous);
   }
 
   /// Convert global [position] to local coordinate space.
