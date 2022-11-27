@@ -60,7 +60,7 @@ class BpmTapper extends StatelessWidget {
         }
 
         // Stop metronome so it doesn't play sound while user is tapping
-        Metronome.stop();
+        Metronome.instance.stop();
 
         // Add bpm
         tapBpms.add(60000 ~/ stopwatch.elapsedMilliseconds);
@@ -68,7 +68,8 @@ class BpmTapper extends StatelessWidget {
         tapBpms.removeRange(0, max(tapBpms.length - tapsRemembered, 0));
 
         // Calculate average
-        Metronome.bpm = tapBpms.reduce((a, b) => a + b) ~/ tapBpms.length;
+        Metronome.instance.bpm =
+            tapBpms.reduce((a, b) => a + b) ~/ tapBpms.length;
 
         // Reset stopwatch
         stopwatch.reset();

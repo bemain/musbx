@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/editable_screen/card_list.dart';
+import 'package:musbx/card_list.dart';
 import 'package:musbx/metronome/beat_sound_viewer.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class CardList extends StatelessWidget {
+  /// Displays [children] as a list of cards,
+  /// with an app bar featuring a button to open an about dialog.
   const CardList({super.key, required this.children, this.helpText});
 
   /// The widgets to display as a list of cards.

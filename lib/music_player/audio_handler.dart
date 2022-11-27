@@ -4,17 +4,17 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/music_player.dart';
 
-class JustAudioHandler extends BaseAudioHandler {
+class MusicPlayerAudioHandler extends BaseAudioHandler {
   /// Interface to the audio notification.
   ///
-  /// Uses [MusicPlayer.instance._player] to handle playback.
-  JustAudioHandler() {
+  /// Uses [MusicPlayer]'s [AudioPlayer] to handle playback.
+  MusicPlayerAudioHandler() {
     // Listen to playback events from AudioPlayer.
     _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
   }
 
   /// The instance of this singleton.
-  static late final JustAudioHandler instance;
+  static late final MusicPlayerAudioHandler instance;
 
   /// The player used for playing audio.
   final AudioPlayer _player = MusicPlayer.instance.player;
@@ -31,7 +31,7 @@ class JustAudioHandler extends BaseAudioHandler {
     await super.stop();
   }
 
-  /// Transform an event from just_audio's AudioPlayer to audio_service's AudioHandler.
+  /// Transform an event from just_audio's [AudioPlayer] to audio_service's [AudioHandler].
   PlaybackState _transformEvent(PlaybackEvent event) {
     final isCompleted = (_player.processingState == ProcessingState.completed);
 
