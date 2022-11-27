@@ -31,7 +31,7 @@ class DroneControlsState extends State<DroneControls> {
   }
 
   Widget buildButton(int index) {
-    final double angle = 2 * pi * index / 12;
+    final double angle = 2 * pi * index / 12 - pi;
     return StreamBuilder(
         initialData: false,
         stream: drone.players[index].playingStream,
