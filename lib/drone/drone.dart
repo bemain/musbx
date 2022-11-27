@@ -14,7 +14,8 @@ class Drone {
   final List<AudioPlayer> players = List.generate(
     12,
     (semitonesShifted) => AudioPlayer()
-      ..setAsset("assets/drone_440Hz")
+      ..setAsset("assets/drone_440Hz.wav")
+      ..setLoopMode(LoopMode.all)
       ..setPitch(pow(2, semitonesShifted / 12).toDouble()),
   );
 
