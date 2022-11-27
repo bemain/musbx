@@ -25,14 +25,17 @@ class DroneControlsState extends State<DroneControls> {
     );
   }
 
-  Widget buildButton(int index) {
+  Widget buildButton(int index, {bool active = false}) {
     final double angle = 2 * pi * index / 12;
     return Transform(
         transform: Matrix4.identity()
           ..translate(widget.radius * cos(angle), widget.radius * sin(angle)),
         child: FloatingActionButton(
-          child: Icon(Icons.circle),
+          elevation: active ? 0 : 6,
+          backgroundColor:
+              active ? Theme.of(context).colorScheme.primary : null,
           onPressed: () {},
+          child: const Icon(Icons.circle),
         ));
   }
 }

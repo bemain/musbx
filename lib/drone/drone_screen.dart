@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone_controls.dart';
-import 'package:musbx/editable_screen/card_list.dart';
+import 'package:musbx/card_list.dart';
 
 class DroneScreen extends StatelessWidget {
   const DroneScreen({super.key});
