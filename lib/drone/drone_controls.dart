@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone.dart';
+import 'package:musbx/tuner/note.dart';
 import 'package:musbx/widgets.dart';
 
 class DroneControls extends StatefulWidget {
@@ -57,7 +58,7 @@ class DroneControlsState extends State<DroneControls> {
                   drone.players[index].play();
                 }
               },
-              child: const Icon(Icons.circle),
+              child: Text(Note.noteNames[index]),
             ),
           );
         });
