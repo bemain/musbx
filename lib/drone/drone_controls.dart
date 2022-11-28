@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/tuner/note.dart';
-import 'package:musbx/widgets.dart';
 
 class DroneControls extends StatefulWidget {
   const DroneControls({super.key, this.radius = 150});
@@ -32,17 +31,9 @@ class DroneControlsState extends State<DroneControls> {
 
   Widget buildButton(int index) {
     final double angle = 2 * pi * index / 12 - pi;
-    return StreamBuilder(
-        initialData: false,
-        stream: drone.players[index].playingStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) return ErrorScreen(text: "${snapshot.error}");
-          if (!snapshot.hasData) {
-            return const LoadingScreen(text: "Initializing drone");
-          }
-
-          final bool active = snapshot.data!;
-
+    return ValueListenableBuilder(
+        valueListenable: drone.players[index].isPlayingNotifier,
+        builder: (context, active, _) {
           return Transform(
             transform: Matrix4.identity()
               ..translate(

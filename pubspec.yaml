@@ -45,11 +45,15 @@ dependencies:
   youtube_api: ^1.0.4
   youtube_explode_dart: ^1.12.1
 
-  #Tuner
+  # Tuner
   pitch_detector_dart: ^0.0.2
   mic_stream: ^0.6.2
   gauges: ^1.0.0
   html_unescape: ^2.0.0
+
+  # Drone
+  drone_player:
+    path: ../drone_player
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
