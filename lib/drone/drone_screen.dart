@@ -7,6 +7,8 @@ class DroneScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CardList(children: [DroneControls()]);
+    return const CardList(children: [
+      DroneControls(),
+    ]);
   }
 }
