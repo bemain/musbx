@@ -8,18 +8,10 @@ import 'package:musbx/tuner/note.dart';
 class Drone {
   // Only way to access is through [instance].
   Drone._() {
-    // Update [isActive] when a player starts/stops playing
-    players = List.generate(12, (semitonesShifted) {
-      DronePlayer player = createPlayer(semitonesShifted);
-      player.isPlayingNotifier.addListener(() {
-        if (player.isPlaying) {
-          isActiveNotifier.value = true;
-        } else if (!players.any((player) => player.isPlaying)) {
-          isActiveNotifier.value = false;
-        }
-      });
-      return player;
-    });
+    players = List.generate(
+        12,
+        (semitonesShifted) => _createPlayer(semitonesShifted)
+          ..isPlayingNotifier.addListener(_updateIsActive));
   }
 
   /// The instance of this singleton.
@@ -39,16 +31,22 @@ class Drone {
     }
   }
 
-  DronePlayer createPlayer(int semitonesShifted) {
+  /// Update [isActive] when a player starts/stops playing
+  void _updateIsActive() {
+    isActiveNotifier.value = !players.any((player) => player.isPlaying);
+  }
+
+  /// Create a [DronePlayer].
+  DronePlayer _createPlayer(int semitonesShifted) {
     DronePlayer player = DronePlayer();
     player.initialize().then((_) {
-      player.setFrequency(semitoneToFrequency(semitonesShifted));
+      player.setFrequency(_semitoneToFrequency(semitonesShifted));
     });
     return player;
   }
 
-  double semitoneToFrequency(int semitonesFromA) {
-    double a = pow(2.0, 1 / 12).toDouble();
+  double _semitoneToFrequency(int semitonesFromA) {
+    double a = pow(2, 1 / 12).toDouble();
     return Note.a4().frequency * pow(a, semitonesFromA);
   }
 }
