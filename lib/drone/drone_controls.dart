@@ -53,16 +53,21 @@ class DroneControlsState extends State<DroneControls> {
     return ValueListenableBuilder(
         valueListenable: drone.players[index].isPlayingNotifier,
         builder: (context, active, _) {
+          bool isReference = (Note.fromFrequency(player.frequency).name ==
+              drone.referenceNote.name);
+          Color buttonColor = isReference
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.primaryContainer;
+          Color textColor = isReference
+              ? Theme.of(context).colorScheme.onPrimary
+              : Theme.of(context).colorScheme.onPrimaryContainer;
+
           return Transform.translate(
             offset: Offset(cos(angle), sin(angle)) * widget.radius,
             child: FloatingActionButton(
               elevation: active ? 0 : 6,
-              backgroundColor: active
-                  ? Theme.of(context)
-                      .colorScheme
-                      .primaryContainer
-                      .withOpacity(0.5)
-                  : null,
+              backgroundColor:
+                  active ? buttonColor.withOpacity(0.5) : buttonColor,
               onPressed: () {
                 if (active) {
                   player.pause();
@@ -70,7 +75,12 @@ class DroneControlsState extends State<DroneControls> {
                   player.play();
                 }
               },
-              child: Text(Note.fromFrequency(player.frequency).name),
+              child: Text(
+                Note.fromFrequency(player.frequency).name,
+                style: TextStyle(
+                  color: textColor,
+                ),
+              ),
             ),
           );
         });
