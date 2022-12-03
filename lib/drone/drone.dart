@@ -17,6 +17,10 @@ class Drone {
   /// The instance of this singleton.
   static final Drone instance = Drone._();
 
+  /// Whether the Drone has been initialized or not.
+  /// If true, [players] have been created.
+  bool initialized = false;
+
   /// AudioPlayers used for playing the drone tones.
   late final List<DronePlayer> players;
 
@@ -25,28 +29,35 @@ class Drone {
   ValueNotifier<bool> isActiveNotifier = ValueNotifier(false);
 
   /// Pause all the drone tones.
-  void pauseAll() {
+  void pauseAll() async {
     for (DronePlayer player in players) {
-      player.pause();
+      await player.pause();
     }
+  }
+
+  /// Generate [players].
+  Future<void> initialize() async {
+    if (initialized) return;
+    // Create players
+    players = [];
+    for (int semitonesShifted = 0; semitonesShifted < 12; semitonesShifted++) {
+      players.add(await _createPlayer(semitonesShifted)
+        ..isPlayingNotifier.addListener(_updateIsActive));
+    }
+
+    initialized = true;
   }
 
   /// Update [isActive] when a player starts/stops playing
   void _updateIsActive() {
-    isActiveNotifier.value = !players.any((player) => player.isPlaying);
+    isActiveNotifier.value = players.any((player) => player.isPlaying);
   }
 
   /// Create a [DronePlayer].
-  DronePlayer _createPlayer(int semitonesShifted) {
+  Future<DronePlayer> _createPlayer(int semitonesShifted) async {
     DronePlayer player = DronePlayer();
-    player.initialize().then((_) {
-      player.setFrequency(_semitoneToFrequency(semitonesShifted));
-    });
+    await player.initialize();
+    await player.setFrequency(Note.relativeToA4(semitonesShifted).frequency);
     return player;
-  }
-
-  double _semitoneToFrequency(int semitonesFromA) {
-    double a = pow(2, 1 / 12).toDouble();
-    return Note.a4().frequency * pow(a, semitonesFromA);
   }
 }

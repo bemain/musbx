@@ -48,6 +48,7 @@ class DroneControlsState extends State<DroneControls> {
 
   Widget buildDroneButton(int index) {
     final double angle = 2 * pi * index / 12 - pi;
+    DronePlayer player = drone.players[index];
     return ValueListenableBuilder(
         valueListenable: drone.players[index].isPlayingNotifier,
         builder: (context, active, _) {
@@ -63,12 +64,12 @@ class DroneControlsState extends State<DroneControls> {
                   : null,
               onPressed: () {
                 if (active) {
-                  drone.players[index].pause();
+                  player.pause();
                 } else {
-                  drone.players[index].play();
+                  player.play();
                 }
               },
-              child: Text(Note.noteNames[index]),
+              child: Text(Note.fromFrequency(player.frequency).name),
             ),
           );
         });

@@ -27,6 +27,10 @@ class Note {
   Note.fromFrequency(this.frequency)
       : assert(frequency > 0, "Frequency must be greater than 0");
 
+  Note.relativeToA4(int semitonesFromA4)
+      : frequency = a4frequency * pow(pow(2, 1 / 12), semitonesFromA4);
+
+  /// The note with [a4frequency], used as a reference for all other notes.
   factory Note.a4() => Note.fromFrequency(a4frequency);
 
   /// The frequency of this note, in Hz.
