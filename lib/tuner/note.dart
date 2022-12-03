@@ -38,8 +38,8 @@ class Note {
 
   double get _diffFromA4 => log(frequency / a4frequency) / log(2);
 
-  /// Number of whole octaves between this note and A4.
-  int get octavesFromA4 => _diffFromA4.round();
+  /// Number of whole octaves between this note and C4 (the note 3 semitones below A4).
+  int get octavesFromC4 => ((semitonesFromA4 - 3) / 12).floor();
 
   /// Number of whole semitones between this note and A4.
   int get semitonesFromA4 => (12 * _diffFromA4).round();
@@ -48,8 +48,7 @@ class Note {
   int get centsFromA4 => (1200 * _diffFromA4).round();
 
   /// The name of this note, e.g C3.
-  String get name =>
-      "${noteNames[(semitonesFromA4 - 12 * octavesFromA4) % 12]}${octavesFromA4 + 4}";
+  String get name => "${noteNames[(semitonesFromA4) % 12]}${octavesFromC4 + 5}";
 
   /// The number of cents between this [frequency] and the closest semitone.
   double get pitchOffset => centsFromA4 - semitonesFromA4 * 100;
