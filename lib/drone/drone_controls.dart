@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:drone_player/drone_player.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/tuner/note.dart';
@@ -47,7 +48,7 @@ class DroneControlsState extends State<DroneControls> {
   }
 
   Widget buildDroneButton(int index) {
-    final double angle = 2 * pi * index / 12 - pi;
+    final double angle = 2 * pi * index / 12 - pi / 2;
     DronePlayer player = drone.players[index];
     return ValueListenableBuilder(
         valueListenable: drone.players[index].isPlayingNotifier,

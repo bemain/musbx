@@ -53,4 +53,10 @@ class Note {
 
   /// The number of cents between this [frequency] and the closest semitone.
   double get pitchOffset => centsFromA4 - semitonesFromA4 * 100;
+
+  Note operator +(Note other) =>
+      Note.fromFrequency(frequency + other.frequency);
+
+  Note operator -(Note other) =>
+      Note.fromFrequency(frequency - other.frequency);
 }
