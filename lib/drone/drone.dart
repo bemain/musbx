@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:drone_player/drone_player.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/tuner/note.dart';
@@ -10,16 +12,13 @@ class Drone {
   /// The instance of this singleton.
   static final Drone instance = Drone._();
 
-  /// The octave that all the drone tones are played in.
-  static const int octave = 3;
+  /// Whether the Drone has been initialized or not.
+  /// If true, [players] have been created.
+  bool initialized = false;
 
   /// The [Note] used as a reference for all the drone tones.
   Note get referenceNote => referenceNoteNotifier.value;
   final ValueNotifier<Note> referenceNoteNotifier = ValueNotifier(Note.a4());
-
-  /// Whether the Drone has been initialized or not.
-  /// If true, [players] have been created.
-  bool initialized = false;
 
   /// AudioPlayers used for playing the drone tones.
   late final List<DronePlayer> players;
@@ -56,19 +55,19 @@ class Drone {
 
   Future<void> _updatePlayers() async {
     for (int index = 0; index < 12; index++) {
-      players[index]
-          .setFrequency(Note.relativeToA4(index + 12 * (octave - 4)).frequency);
+      players[index].setFrequency(Note.relativeToA4(index).frequency);
     }
   }
 
   /// Create a [DronePlayer].
   Future<DronePlayer> _createPlayer(int semitonesShifted) async {
     DronePlayer player = DronePlayer();
-    Note droneTone = Note.relativeToA4(
-        referenceNote.semitonesFromA4 + semitonesShifted + 12 * (octave - 4));
+
+    double toneFrequency = referenceNote.frequency *
+        pow(pow(2, 1 / 12), semitonesShifted).toDouble();
 
     await player.initialize();
-    await player.setFrequency(droneTone.frequency);
+    await player.setFrequency(toneFrequency);
     player.isPlayingNotifier.addListener(_updateIsActive);
 
     return player;
