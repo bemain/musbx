@@ -15,13 +15,21 @@ abstract class Temperament {
   int octavesFromC4(double frequency) =>
       ((semitonesFromA4(frequency) - 3) / 12).floor();
 
+  /// The frequency for the note [semitonesFromA4] semitones from A4.
+  double frequencyForNote(int semitonesFromA4) =>
+      throw UnimplementedError("No implementation for frequencyForNote()");
+
   /// The number of cents between this [frequency] and the closest semitone.
   double pitchOffset(double frequency) =>
-      throw UnimplementedError("No implementation found for pitchOffset()");
+      throw UnimplementedError("No implementation for pitchOffset()");
 }
 
 class EqualTemperament extends Temperament {
   EqualTemperament({required super.a4frequency});
+
+  @override
+  double frequencyForNote(int semitonesFromA4) =>
+      a4frequency * pow(pow(2, 1 / 12), semitonesFromA4);
 
   @override
   double pitchOffset(double frequency) {
