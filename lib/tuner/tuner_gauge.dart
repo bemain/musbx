@@ -1,7 +1,7 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:gauges/gauges.dart';
-import 'package:musbx/tuner/note.dart';
+import 'package:musbx/note/note.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class TunerGauge extends StatelessWidget {

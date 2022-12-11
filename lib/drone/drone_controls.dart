@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:drone_player/drone_player.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone.dart';
-import 'package:musbx/tuner/note.dart';
+import 'package:musbx/note/note.dart';
 
 class DroneControls extends StatefulWidget {
   const DroneControls({super.key, this.radius = 150});

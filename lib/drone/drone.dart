@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:drone_player/drone_player.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/tuner/note.dart';
+import 'package:musbx/note/note.dart';
 
 /// Singleton for playing drone tones.
 class Drone {

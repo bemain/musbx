@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:mic_stream/mic_stream.dart';
-import 'package:musbx/tuner/note.dart';
+import 'package:musbx/note/note.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitch_detector_dart/pitch_detector_result.dart';
 
