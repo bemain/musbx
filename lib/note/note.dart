@@ -1,8 +1,8 @@
-import 'dart:math';
-
+import 'package:flutter/material.dart';
 import 'package:musbx/note/temperament.dart';
 
 /// Representation of a musical note, with a given pitch.
+@immutable
 class Note {
   /// The frequency of A4, in Hz. Used as a reference for all other notes.
   /// Defaults to 440 Hz.
@@ -41,11 +41,11 @@ class Note {
   final double frequency;
 
   /// The name of this note, e.g C3.
-  String get name =>
+  late final String name =
       "${noteNames[(temperament.semitonesFromA4(frequency)) % 12]}${temperament.octavesFromC4(frequency) + 5}";
 
   /// The number of cents between this [frequency] and the closest semitone.
-  double get pitchOffset => temperament.pitchOffset(frequency);
+  late final double pitchOffset = temperament.pitchOffset(frequency);
 
   Note operator +(Note other) =>
       Note.fromFrequency(frequency + other.frequency);
