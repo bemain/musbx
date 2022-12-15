@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:drone_player/drone_player.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/note/note.dart';
@@ -63,8 +61,10 @@ class Drone {
   Future<DronePlayer> _createPlayer(int semitonesShifted) async {
     DronePlayer player = DronePlayer();
 
-    double toneFrequency = referenceNote.frequency *
-        pow(pow(2, 1 / 12), semitonesShifted).toDouble();
+    double toneFrequency = Note.inScale(
+      referenceNote,
+      semitonesShifted,
+    ).frequency;
 
     await player.initialize();
     await player.setFrequency(toneFrequency);
