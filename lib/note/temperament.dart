@@ -20,3 +20,28 @@ class EqualTemperament extends Temperament {
   double frequencyRatio(int scaleStep) =>
       pow(pow(2, 1 / 12), scaleStep).toDouble();
 }
+
+class PythagoreanTuning extends Temperament {
+  const PythagoreanTuning();
+
+  /// The list of ratios used to determine the frequencies for the notes.
+  static const List<double> _ratios = [
+    1,
+    256 / 243,
+    9 / 8,
+    32 / 27,
+    81 / 64,
+    4 / 3,
+    1024 / 729,
+    3 / 2,
+    128 / 81,
+    27 / 16,
+    16 / 9,
+    243 / 128,
+  ];
+
+  @override
+  double frequencyRatio(int scaleStep) {
+    return (scaleStep ~/ 12 + 1) * _ratios[(scaleStep % 12)];
+  }
+}
