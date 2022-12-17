@@ -1,5 +1,5 @@
-import 'package:drone_player/drone_player.dart';
 import 'package:flutter/material.dart';
+import 'package:musbx/drone/drone_audio_source.dart';
 import 'package:musbx/note/note.dart';
 import 'package:musbx/note/temperament.dart';
 
@@ -59,22 +59,24 @@ class Drone {
 
   Future<void> _updatePlayers() async {
     for (int index = 0; index < 12; index++) {
-      players[index].setFrequency(Note.relativeToA4(index).frequency);
+      players[index].frequency = Note.inScale(
+        root,
+        index,
+        temperament: temperament,
+      ).frequency;
     }
   }
 
   /// Create a [DronePlayer].
   Future<DronePlayer> _createPlayer(int semitonesShifted) async {
-    DronePlayer player = DronePlayer();
-
     double toneFrequency = Note.inScale(
       root,
       semitonesShifted,
       temperament: temperament,
     ).frequency;
 
-    await player.initialize();
-    await player.setFrequency(toneFrequency);
+    DronePlayer player = DronePlayer(toneFrequency);
+
     player.isPlayingNotifier.addListener(_updateIsActive);
 
     return player;
