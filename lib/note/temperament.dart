@@ -9,8 +9,7 @@ abstract class Temperament {
 
   /// The ratio between the note at [scaleStep] and the root of the scale.
   /// Multiply with the frequency of the root to get the frequency.
-  double frequencyRatio(int scaleStep) =>
-      throw UnimplementedError("No implementation for frequencyForNote()");
+  double frequencyRatio(int scaleStep);
 }
 
 class EqualTemperament extends Temperament {
