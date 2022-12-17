@@ -53,8 +53,8 @@ class DroneControlsState extends State<DroneControls> {
     return ValueListenableBuilder(
         valueListenable: drone.players[index].isPlayingNotifier,
         builder: (context, active, _) {
-          bool isReference = (Note.fromFrequency(player.frequency).name ==
-              drone.referenceNote.name);
+          bool isReference =
+              (Note.fromFrequency(player.frequency).name == drone.root.name);
           Color buttonColor = isReference
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.primaryContainer;

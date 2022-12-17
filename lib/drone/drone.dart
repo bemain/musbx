@@ -1,6 +1,7 @@
 import 'package:drone_player/drone_player.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/note/note.dart';
+import 'package:musbx/note/temperament.dart';
 
 /// Singleton for playing drone tones.
 class Drone {
@@ -15,8 +16,13 @@ class Drone {
   bool initialized = false;
 
   /// The [Note] used as a reference for all the drone tones.
-  Note get referenceNote => referenceNoteNotifier.value;
-  final ValueNotifier<Note> referenceNoteNotifier = ValueNotifier(Note.a4());
+  Note get root => rootNotifier.value;
+  final ValueNotifier<Note> rootNotifier = ValueNotifier(Note.a4());
+
+  /// The temperament used when generating notes
+  Temperament get temperament => temperamentNotifier.value;
+  final ValueNotifier<Temperament> temperamentNotifier =
+      ValueNotifier(const PythagoreanTuning());
 
   /// AudioPlayers used for playing the drone tones.
   late final List<DronePlayer> players;
@@ -41,7 +47,7 @@ class Drone {
       players.add(await _createPlayer(semitonesShifted));
     }
 
-    referenceNoteNotifier.addListener(_updatePlayers);
+    rootNotifier.addListener(_updatePlayers);
 
     initialized = true;
   }
@@ -62,8 +68,9 @@ class Drone {
     DronePlayer player = DronePlayer();
 
     double toneFrequency = Note.inScale(
-      referenceNote,
+      root,
       semitonesShifted,
+      temperament: temperament,
     ).frequency;
 
     await player.initialize();
