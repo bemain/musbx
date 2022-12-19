@@ -15,23 +15,24 @@ class Drone {
   /// If true, [players] have been created.
   bool initialized = false;
 
-  /// The [Note] used as a reference for all the drone tones.
+  /// The [Note] at the root of the scale.
+  /// Used as a reference for all the drone tones.
   Note get root => rootNotifier.value;
   final ValueNotifier<Note> rootNotifier = ValueNotifier(Note.a4());
 
-  /// The temperament used when generating notes
+  /// The temperament used for generating notes
   Temperament get temperament => temperamentNotifier.value;
   final ValueNotifier<Temperament> temperamentNotifier =
       ValueNotifier(const PythagoreanTuning());
 
-  /// AudioPlayers used for playing the drone tones.
+  /// The [DronePlayer]s used for playing drone tones.
   late final List<DronePlayer> players;
 
   /// Whether any of the [players] are playing.
   bool get isActive => isActiveNotifier.value;
   final ValueNotifier<bool> isActiveNotifier = ValueNotifier(false);
 
-  /// Pause all the drone tones.
+  /// Pause all the [players].
   void pauseAll() async {
     for (DronePlayer player in players) {
       await player.pause();
@@ -52,21 +53,6 @@ class Drone {
     initialized = true;
   }
 
-  /// Update [isActive] when a player starts/stops playing
-  void _updateIsActive() {
-    isActiveNotifier.value = players.any((player) => player.isPlaying);
-  }
-
-  Future<void> _updatePlayers() async {
-    for (int index = 0; index < 12; index++) {
-      players[index].frequency = Note.inScale(
-        root,
-        index,
-        temperament: temperament,
-      ).frequency;
-    }
-  }
-
   /// Create a [DronePlayer].
   Future<DronePlayer> _createPlayer(int semitonesShifted) async {
     double toneFrequency = Note.inScale(
@@ -80,5 +66,22 @@ class Drone {
     player.isPlayingNotifier.addListener(_updateIsActive);
 
     return player;
+  }
+
+  /// Update [isActive] when a [DronePlayer] starts/stops playing
+  void _updateIsActive() {
+    isActiveNotifier.value = players.any((player) => player.isPlaying);
+  }
+
+  /// Update the frequency of all the [players]
+  /// when the [root] or [temperament] changes.
+  Future<void> _updatePlayers() async {
+    for (int index = 0; index < 12; index++) {
+      players[index].frequency = Note.inScale(
+        root,
+        index,
+        temperament: temperament,
+      ).frequency;
+    }
   }
 }
