@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone.dart';
-import 'package:musbx/drone/drone_audio_source.dart';
+import 'package:musbx/drone/drone_player.dart';
 import 'package:musbx/note/note.dart';
 
 class DroneControls extends StatefulWidget {

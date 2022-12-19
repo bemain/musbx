@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/drone/drone_audio_source.dart';
+import 'package:musbx/drone/drone_player.dart';
 import 'package:musbx/note/note.dart';
 import 'package:musbx/note/temperament.dart';
 
