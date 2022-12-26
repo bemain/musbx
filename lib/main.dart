@@ -1,61 +1,55 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:musbx/navigation_screen.dart';
 import 'package:musbx/music_player/audio_handler.dart';
+import 'package:musbx/theme.dart';
 
 Future<void> main() async {
   // Create audio service
-  JustAudioHandler.instance = await AudioService.init(
-    builder: () => JustAudioHandler(),
+  MusicPlayerAudioHandler.instance = await AudioService.init(
+    builder: () => MusicPlayerAudioHandler(),
     config: const AudioServiceConfig(
-      androidNotificationChannelId: 'se.agardh.musbx.channel.audio',
-      androidNotificationChannelName: 'Musbx',
+      androidNotificationChannelId: 'se.agardh.musbx.channel.music_player',
+      androidNotificationChannelName: 'Music player',
     ),
   );
 
-  runApp(const MyApp());
+  // Lock screen orientation
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // Generate themes
+  await generateThemes(onThemesGenerated: (lightTheme, darkTheme) {
+    // Run app
+    runApp(MyApp(
+      lightTheme: lightTheme,
+      darkTheme: darkTheme,
+    ));
+  });
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.lightTheme, required this.darkTheme});
+
+  /// The light [ColorScheme] obtained from the device, if any.
+  final ThemeData lightTheme;
+
+  /// The dark [ColorScheme] obtained from the device, if any.
+  final ThemeData darkTheme;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         title: "Musician's Toolbox",
-        theme: ThemeData.light(useMaterial3: true).copyWith(
-          colorScheme: ThemeData.light(useMaterial3: true).colorScheme.copyWith(
-                primary: Colors.blue,
-                primaryContainer: Colors.blueAccent,
-                secondary: Colors.amber,
-                secondaryContainer: Colors.amberAccent,
-                tertiary: Colors.green,
-                tertiaryContainer: Colors.lightGreen,
-                background: Colors.grey,
-              ),
-          outlinedButtonTheme: OutlinedButtonThemeData(
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.grey),
-            ),
+        theme: lightTheme.copyWith(
+          sliderTheme: lightTheme.sliderTheme.copyWith(
+            showValueIndicator: ShowValueIndicator.always,
           ),
-          sliderTheme: ThemeData.light(useMaterial3: true).sliderTheme.copyWith(
-                showValueIndicator: ShowValueIndicator.always,
-              ),
         ),
-        darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
-          colorScheme: ThemeData.dark(useMaterial3: true).colorScheme.copyWith(
-                primary: Colors.blue,
-                primaryContainer: Colors.blueAccent,
-                secondary: Colors.amber,
-                secondaryContainer: Colors.amberAccent,
-                tertiary: Colors.green,
-                tertiaryContainer: Colors.lightGreen,
-                background: Colors.grey[700],
-              ),
-          sliderTheme: ThemeData.dark(useMaterial3: true).sliderTheme.copyWith(
-                valueIndicatorColor: Colors.grey[700],
-                showValueIndicator: ShowValueIndicator.always,
-              ),
+        darkTheme: darkTheme.copyWith(
+          sliderTheme: darkTheme.sliderTheme.copyWith(
+            showValueIndicator: ShowValueIndicator.always,
+          ),
         ),
         home: const NavigationScreen());
   }

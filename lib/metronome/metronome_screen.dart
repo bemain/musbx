@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/editable_screen/card_list.dart';
+import 'package:musbx/card_list.dart';
 import 'package:musbx/metronome/beat_sound_viewer.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
@@ -19,7 +19,7 @@ class MetronomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardList(
-      screenHelp:
+      helpText:
           """Set bpm using slider or hit the drum. Make fine adjustments using the arrows.
 Change the sound of beats by tapping them. Long press to remove and plus to add.""",
       children: [

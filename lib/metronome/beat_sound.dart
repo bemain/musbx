@@ -17,7 +17,7 @@ Color beatSoundColor(BuildContext context, BeatSound beatSound) {
     case BeatSound.primary:
       return Theme.of(context).colorScheme.primary;
     case BeatSound.accented:
-      return Theme.of(context).colorScheme.secondary;
+      return Theme.of(context).colorScheme.inversePrimary;
     case BeatSound.none:
       return Theme.of(context).colorScheme.background;
   }
