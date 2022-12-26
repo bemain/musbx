@@ -34,11 +34,7 @@ class DroneControlsState extends State<DroneControls> {
     return ValueListenableBuilder(
       valueListenable: drone.isActiveNotifier,
       builder: (context, isActive, _) => TextButton(
-        onPressed: !isActive
-            ? null
-            : () {
-                drone.pauseAll();
-              },
+        onPressed: !isActive ? null : drone.pauseAll,
         child: const Icon(
           Icons.pause_circle_rounded,
           size: 75,

@@ -40,12 +40,6 @@ class Note {
     Temperament temperament = const EqualTemperament(),
   }) : frequency = root.frequency * temperament.frequencyRatio(scaleStep);
 
-  factory Note.relativeToA4(
-    int semitonesFromA4, {
-    Temperament temperament = const EqualTemperament(),
-  }) =>
-      Note.inScale(Note.a4(), semitonesFromA4);
-
   /// The frequency of this note, in Hz.
   final double frequency;
 
