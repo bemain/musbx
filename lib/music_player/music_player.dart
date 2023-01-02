@@ -48,6 +48,10 @@ class MusicPlayer {
   /// bands of [player]'s audio.
   final AndroidEqualizer equalizer = AndroidEqualizer();
 
+  /// Whether the [equalizer] is enabled or not.
+  bool get equalizerEnabled => equalizerEnabledNotifier.value;
+  final ValueNotifier<bool> equalizerEnabledNotifier = ValueNotifier(false);
+
   /// Used internally to get audio from YouTube.
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
 
@@ -247,6 +251,11 @@ class MusicPlayer {
       if (position < loopSection.start || position > loopSection.end) {
         await seek(position);
       }
+    });
+
+    // Equalizer enabled
+    equalizer.enabledStream.listen((value) {
+      equalizerEnabledNotifier.value = value;
     });
   }
 }
