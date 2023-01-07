@@ -6,7 +6,6 @@ import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/youtube_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/widgets.dart';
-import 'package:youtube_api/youtube_api.dart';
 
 class YoutubeButton extends StatelessWidget {
   /// Button for searching for a song from Youtube and loading it to [MusicPlayer].
