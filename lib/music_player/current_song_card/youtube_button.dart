@@ -99,7 +99,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
     if (query != "") searchHistory.add(query.trim());
 
     return FutureBuilder(
-      future: youtubeApi.search(query, type: "video", maxResults: 50),
+      future: _getVideosFromQuery(query),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const LoadingScreen(text: "Searching...");
         if (snapshot.hasError) return const ErrorScreen(text: "Search failed");
@@ -112,6 +112,27 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
         );
       },
     );
+  }
+
+  Future<List<YoutubeVideo>> _getVideosFromQuery(String query) async {
+    // Try using the [query] as a video url
+    if (query.startsWith("https://")) {
+      List<String> urlSegments = query.substring(8).split("/");
+      if (urlSegments[1].startsWith("watch")) {
+        // Full video url, with channel id
+        query = urlSegments[1].split("&")[0].substring(8);
+      } else {
+        // Short video url
+        query = urlSegments[1];
+      }
+    }
+
+    // Try using the [query] as a video id
+    final YoutubeVideo? videoById =
+        await youtubeApi.getVideoById(query.replaceAll(' ', ''));
+    if (videoById != null) return [videoById];
+
+    return await youtubeApi.search(query, type: "video", maxResults: 50);
   }
 
   /// Result item, showing a [YouTubeVideo]'s title, channel and thumbnail.

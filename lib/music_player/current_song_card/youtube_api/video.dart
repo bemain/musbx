@@ -17,12 +17,11 @@ class YoutubeVideo {
 
   final YoutubeVideoThumbnails thumbnails;
 
-  YoutubeVideo.fromJson(dynamic data)
+  YoutubeVideo.fromJson(dynamic data, {String? id})
       : thumbnails =
             YoutubeVideoThumbnails.fromMap(data['snippet']['thumbnails']),
-        id = data['id'][data['id'].keys.elementAt(1)],
-        url =
-            "https://www.youtube.com/watch?v=${data['id'][data['id'].keys.elementAt(1)]}",
+        id = id ?? data['id'],
+        url = "https://www.youtube.com/watch?v=${id ?? data['id']}",
         publishedAt = DateTime.parse(data['snippet']['publishedAt']),
         channelId = data['snippet']['channelId'],
         channelUrl =

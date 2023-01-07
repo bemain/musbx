@@ -1,47 +1,24 @@
-import 'dart:convert';
-
 class YoutubeVideoThumbnails {
-  final YoutubeVideoThumbnail small;
-  final YoutubeVideoThumbnail medium;
-  final YoutubeVideoThumbnail high;
+  /// Thumbnail images associated with a [YoutubeVideo].
   YoutubeVideoThumbnails({
     required this.small,
     required this.medium,
     required this.high,
   });
 
-  YoutubeVideoThumbnails copyWith({
-    YoutubeVideoThumbnail? small,
-    YoutubeVideoThumbnail? medium,
-    YoutubeVideoThumbnail? high,
-  }) {
-    return YoutubeVideoThumbnails(
-      small: small ?? this.small,
-      medium: medium ?? this.medium,
-      high: high ?? this.high,
-    );
-  }
+  /// The default thumbnail image.
+  final YoutubeVideoThumbnail small;
 
-  Map<String, dynamic> toMap() {
-    return {
-      'default': small.toMap(),
-      'medium': medium.toMap(),
-      'high': high.toMap(),
-    };
-  }
+  /// A higher resolution version of the thumbnail image.
+  final YoutubeVideoThumbnail medium;
 
-  factory YoutubeVideoThumbnails.fromMap(Map<String, dynamic> map) {
-    return YoutubeVideoThumbnails(
-      small: YoutubeVideoThumbnail.fromMap(map['default']),
-      medium: YoutubeVideoThumbnail.fromMap(map['medium']),
-      high: YoutubeVideoThumbnail.fromMap(map['high']),
-    );
-  }
+  /// A high resolution version of the thumbnail image.
+  final YoutubeVideoThumbnail high;
 
-  String toJson() => json.encode(toMap());
-
-  factory YoutubeVideoThumbnails.fromJson(String source) =>
-      YoutubeVideoThumbnails.fromMap(json.decode(source));
+  YoutubeVideoThumbnails.fromMap(Map<String, dynamic> map)
+      : small = YoutubeVideoThumbnail.fromMap(map['default']),
+        medium = YoutubeVideoThumbnail.fromMap(map['medium']),
+        high = YoutubeVideoThumbnail.fromMap(map['high']);
 
   @override
   String toString() =>
@@ -62,15 +39,20 @@ class YoutubeVideoThumbnails {
 }
 
 class YoutubeVideoThumbnail {
+  /// A thumbnail image of a specific size, associated with a [YoutubeVideo].
   const YoutubeVideoThumbnail({
     required this.url,
     required this.width,
     required this.height,
   });
 
+  /// The thumbnail's url.
   final String url;
 
+  /// The width of the thumbnail.
   final int width;
+
+  /// The height of the thumbnail.
   final int height;
 
   Map<String, dynamic> toMap() {
@@ -88,9 +70,4 @@ class YoutubeVideoThumbnail {
       height: map['height'],
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory YoutubeVideoThumbnail.fromJson(String source) =>
-      YoutubeVideoThumbnail.fromMap(json.decode(source));
 }
