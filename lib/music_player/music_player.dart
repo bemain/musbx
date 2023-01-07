@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
+import 'package:musbx/music_player/current_song_card/youtube_api/youtube_api.dart';
 import 'package:youtube_api/youtube_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -155,7 +156,7 @@ class MusicPlayer {
     stateNotifier.value = MusicPlayerState.ready;
   }
 
-  Future<void> playVideo(YouTubeVideo video) async {
+  Future<void> playVideo(YoutubeVideo video) async {
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 
@@ -176,11 +177,11 @@ class MusicPlayer {
 
     // Inform notification
     MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
-      id: video.id ?? "",
+      id: video.id,
       title: htmlUnescape.convert(video.title),
       duration: duration,
       artist: htmlUnescape.convert(video.channelTitle),
-      artUri: Uri.tryParse(video.thumbnail.high.url ?? ""),
+      artUri: Uri.tryParse(video.thumbnails.high.url),
     ));
 
     stateNotifier.value = MusicPlayerState.ready;

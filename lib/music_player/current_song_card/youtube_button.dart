@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/api_key.dart';
+import 'package:musbx/music_player/current_song_card/youtube_api/youtube_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/widgets.dart';
 import 'package:youtube_api/youtube_api.dart';
@@ -21,7 +22,7 @@ class YoutubeButton extends StatelessWidget {
               MusicPlayerState prevState = musicPlayer.state;
               musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
 
-              YouTubeVideo? video = await showSearch<YouTubeVideo?>(
+              YoutubeVideo? video = await showSearch<YoutubeVideo?>(
                 context: context,
                 delegate: YoutubeSearchDelegate(),
               );
@@ -48,12 +49,12 @@ class YoutubeButton extends StatelessWidget {
 }
 
 /// [SearchDelegate] for searching for a song on Youtube.
-class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
+class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   /// Previous search queries.
   static Set<String> searchHistory = {};
 
   /// The API key used to access Youtube.
-  final YoutubeAPI youtubeApi = YoutubeAPI(apiKey);
+  final YoutubeApi youtubeApi = YoutubeApi(key: apiKey);
 
   @override
   Widget? buildLeading(BuildContext context) {
@@ -97,14 +98,14 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
     if (query != "") searchHistory.add(query.trim());
 
     return FutureBuilder(
-      future: youtubeApi.search(query, type: "video"),
+      future: youtubeApi.search(query, type: "video", maxResults: 50),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const LoadingScreen(text: "Searching...");
         if (snapshot.hasError) return const ErrorScreen(text: "Search failed");
 
-        List<YouTubeVideo> results = snapshot.data!;
+        List<YoutubeVideo> results = snapshot.data!;
         return ListView(
-          children: results.map((YouTubeVideo video) {
+          children: results.map((YoutubeVideo video) {
             return listItem(context, video);
           }).toList(),
         );
@@ -113,7 +114,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
   }
 
   /// Result item, showing a [YouTubeVideo]'s title, channel and thumbnail.
-  Widget listItem(BuildContext context, YouTubeVideo video) {
+  Widget listItem(BuildContext context, YoutubeVideo video) {
     HtmlUnescape htmlUnescape = HtmlUnescape();
 
     return GestureDetector(
@@ -129,7 +130,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YouTubeVideo?> {
               Padding(
                 padding: const EdgeInsets.only(right: 20.0),
                 child: Image.network(
-                  video.thumbnail.small.url ?? '',
+                  video.thumbnails.small.url,
                   width: 100,
                 ),
               ),
