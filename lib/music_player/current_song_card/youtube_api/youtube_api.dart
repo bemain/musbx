@@ -5,14 +5,17 @@ import 'package:http/http.dart' as http;
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
 
 class YoutubeApi {
-  static Map<String, String> headers = {"Accept": "application/json"};
-
+  /// Helper class for interacting with the Youtube Data API (https://developers.google.com/youtube/v3).
   YoutubeApi({required this.key});
+
+  /// Headers used when performing a http request.
+  static Map<String, String> httpHeaders = {"Accept": "application/json"};
 
   /// The api key used to access Youtube.
   String key;
 
-  Future<YoutubeVideo?> getVideoById(String id) async {
+  /// Get the video with [id] from Youtube, or null if no video with that [id].
+  Future<YoutubeVideo?> getVideoById(YoutubeVideoId id) async {
     // Generate search query
     final Map<String, dynamic> options = {
       "id": [id],
@@ -23,7 +26,7 @@ class YoutubeApi {
     Uri url = Uri.https('www.googleapis.com', "youtube/v3/videos", options);
 
     // Do http get request
-    final res = await http.get(url, headers: headers);
+    final res = await http.get(url, headers: httpHeaders);
     var jsonData = json.decode(res.body);
     if (jsonData['error'] != null) {
       debugPrint("YotubeApi ERROR: ${jsonData['error']['message']}");
@@ -35,6 +38,7 @@ class YoutubeApi {
     return YoutubeVideo.fromJson(jsonData["items"][0]);
   }
 
+  /// Search Youtube for a given [query].
   Future<List<YoutubeVideo>> search(
     String query, {
     String type = 'video,channel,playlist',
@@ -55,7 +59,7 @@ class YoutubeApi {
     Uri url = Uri.https('www.googleapis.com', "youtube/v3/search", options);
 
     // Do http get request
-    final res = await http.get(url, headers: headers);
+    final res = await http.get(url, headers: httpHeaders);
     var jsonData = json.decode(res.body);
     if (jsonData['error'] != null) {
       debugPrint("YotubeApi ERROR: ${jsonData['error']['message']}");
