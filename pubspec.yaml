@@ -42,7 +42,7 @@ dependencies:
   just_audio: ^0.9.24
   audio_service: ^0.18.7
   file_picker: ^5.2.1
-  youtube_api: ^1.0.4
+  http: ^0.13.5
   youtube_explode_dart: ^1.12.1
 
   #Tuner
