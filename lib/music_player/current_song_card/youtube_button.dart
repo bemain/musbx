@@ -50,6 +50,8 @@ class YoutubeButton extends StatelessWidget {
 
 /// [SearchDelegate] for searching for a song on Youtube.
 class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
+  YoutubeSearchDelegate() : super(searchFieldLabel: "Search YouTube");
+
   /// Previous search queries.
   static Set<String> searchHistory = {};
 
@@ -80,6 +82,22 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    if (searchHistory.isEmpty) {
+      // Help text
+      return Container(
+        constraints: const BoxConstraints.expand(),
+        padding: const EdgeInsets.all(15),
+        child: Text(
+          "Enter a search phrase or paste a URL to a video on YouTube.",
+          style: Theme.of(context)
+              .textTheme
+              .bodyLarge
+              ?.copyWith(color: Theme.of(context).textTheme.caption?.color),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
     return ListView(
       children: searchHistory
           .map((query) => ListTile(
