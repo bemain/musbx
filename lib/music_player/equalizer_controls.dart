@@ -5,22 +5,17 @@ import 'package:musbx/music_player/music_player.dart';
 class EqualizerControls extends StatelessWidget {
   EqualizerControls({super.key});
 
-  static List<AndroidEqualizerBand>? defaultBands;
-
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
     AndroidEqualizerParameters? parameters;
-
-    musicPlayer.equalizer.parameters.then(
-      (value) {
-        parameters = value;
-        defaultBands ??= value.bands;
-
-        musicPlayer.equalizer.setEnabled(true);
-      },
-    );
+    () async {
+      await musicPlayer.equalizer.setEnabled(false);
+      parameters = await musicPlayer.equalizer.parameters;
+      resetGain(parameters!);
+      await musicPlayer.equalizer.setEnabled(true);
+    }();
 
     return ValueListenableBuilder(
       valueListenable: musicPlayer.equalizerEnabledNotifier,
@@ -45,23 +40,30 @@ class EqualizerControls extends StatelessWidget {
                 IconButton(
                   iconSize: 20,
                   onPressed: musicPlayer.nullIfNoSongElse(() {
-                    for (var band in parameters!.bands) {
-                      band.setGain(
-                          defaultBands![parameters!.bands.indexOf(band)].gain);
-                    }
+                    if (parameters != null) resetGain(parameters!);
                   }),
                   icon: const Icon(Icons.refresh_rounded),
                 )
               ],
             ),
-            buildEqualizerSliders(parameters: parameters),
+            buildEqualizerSliders(equalizerEnabled, parameters: parameters),
           ],
         );
       },
     );
   }
 
-  Widget buildEqualizerSliders({AndroidEqualizerParameters? parameters}) {
+  /// Reset the gain on all bands in [parameters]
+  void resetGain(AndroidEqualizerParameters parameters) {
+    for (var band in parameters.bands) {
+      band.setGain((parameters.maxDecibels + parameters.minDecibels) / 2);
+    }
+  }
+
+  Widget buildEqualizerSliders(
+    bool equalizerEnabled, {
+    AndroidEqualizerParameters? parameters,
+  }) {
     return SizedBox(
       height: 250,
       child: Row(
@@ -81,8 +83,11 @@ class EqualizerControls extends StatelessWidget {
                             min: parameters?.minDecibels ?? 0,
                             max: parameters?.maxDecibels ?? 1,
                             value: band?.gain ?? 0.5,
-                            onChanged:
-                                (parameters == null) ? null : band?.setGain,
+                            onChanged: (!equalizerEnabled)
+                                ? null
+                                : (parameters == null)
+                                    ? null
+                                    : band?.setGain,
                           ),
                         );
                       },
