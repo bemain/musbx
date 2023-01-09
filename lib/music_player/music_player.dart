@@ -8,6 +8,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
+import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// The state of [MusicPlayer].
@@ -53,17 +54,7 @@ class MusicPlayer {
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {
-    // Clamp position
-    position = Duration(
-      milliseconds: position.inMilliseconds.clamp(
-        (loopEnabled) ? loopSection.start.inMilliseconds : 0,
-        (loopEnabled)
-            ? loopSection.end.inMilliseconds
-            : duration.inMilliseconds,
-      ),
-    );
-
-    await player.seek(position);
+    await player.seek(looper.clampPosition(position, duration: duration));
     await MusicPlayerAudioHandler.instance.seek(position);
   }
 
@@ -112,17 +103,6 @@ class MusicPlayer {
   final ValueNotifier<Duration> durationNotifier =
       ValueNotifier(const Duration(seconds: 1));
 
-  /// Whether we are currently looping a section of the song or not.
-  bool get loopEnabled => loopEnabledNotifier.value;
-  set loopEnabled(bool value) => loopEnabledNotifier.value = value;
-  final ValueNotifier<bool> loopEnabledNotifier = ValueNotifier(true);
-
-  /// The section being looped.
-  LoopSection get loopSection => loopSectionNotifier.value;
-  set loopSection(LoopSection section) => loopSectionNotifier.value = section;
-  final ValueNotifier<LoopSection> loopSectionNotifier =
-      ValueNotifier(LoopSection());
-
   /// Whether the player is playing.
   bool get isPlaying => isPlayingNotifier.value;
   set isPlaying(bool value) => value ? play() : pause();
@@ -131,6 +111,9 @@ class MusicPlayer {
   /// Whether the player is buffering audio.
   bool get isBuffering => isBufferingNotifier.value;
   final ValueNotifier<bool> isBufferingNotifier = ValueNotifier(false);
+
+  /// Component for looping a section of the song.
+  final Looper looper = Looper();
 
   /// Play a [PlatformFile].
   Future<void> playFile(PlatformFile file) async {
@@ -143,7 +126,7 @@ class MusicPlayer {
     // Update songTitle
     songTitleNotifier.value = file.name;
     // Reset loopSection
-    loopSection = LoopSection(end: duration);
+    looper.section = LoopSection(end: duration);
 
     // Inform notification
     MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
@@ -172,7 +155,7 @@ class MusicPlayer {
     // Update songTitle
     songTitleNotifier.value = htmlUnescape.convert(video.title);
     // Reset loopSection
-    loopSection = LoopSection(end: duration);
+    looper.section = LoopSection(end: duration);
 
     // Inform notification
     MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
@@ -196,13 +179,13 @@ class MusicPlayer {
     // position
     player.positionStream.listen((position) async {
       // If we have reached the end of the loop section while looping, seek to the start.
-      if ((isPlaying && loopEnabled && position >= loopSection.end)) {
+      if ((isPlaying && looper.enabled && position >= looper.section.end)) {
         await seek(Duration.zero);
         return;
       }
 
       // If we have reached the end of the song, pause.
-      if (isPlaying && !loopEnabled && position >= duration) {
+      if (isPlaying && !looper.enabled && position >= duration) {
         await player.pause();
         await seek(duration);
         return;
@@ -229,33 +212,18 @@ class MusicPlayer {
     });
 
     // When loopSection changes, clamp position
-    loopSectionNotifier.addListener(() async {
-      if (!loopEnabled) return;
-      if (position < loopSection.start || position > loopSection.end) {
+    looper.sectionNotifier.addListener(() async {
+      if (!looper.enabled) return;
+      if (position < looper.section.start || position > looper.section.end) {
         await seek(position);
       }
     });
 
     // When loopEnabled changes, clamp position
-    loopEnabledNotifier.addListener(() async {
-      if (position < loopSection.start || position > loopSection.end) {
+    looper.enabledNotifier.addListener(() async {
+      if (position < looper.section.start || position > looper.section.end) {
         await seek(position);
       }
     });
   }
-}
-
-class LoopSection {
-  LoopSection({
-    this.start = Duration.zero,
-    this.end = const Duration(seconds: 1),
-  }) {
-    assert(start <= end);
-  }
-
-  final Duration start;
-  final Duration end;
-
-  /// Duration between [start] and [end].
-  Duration get length => end - start;
 }

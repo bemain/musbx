@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class LoopSlider extends StatelessWidget {
@@ -12,9 +13,9 @@ class LoopSlider extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.durationNotifier,
       builder: (_, duration, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.loopEnabledNotifier,
+        valueListenable: musicPlayer.looper.enabledNotifier,
         builder: (_, loopEnabled, __) => ValueListenableBuilder(
-          valueListenable: musicPlayer.loopSectionNotifier,
+          valueListenable: musicPlayer.looper.sectionNotifier,
           builder: (context, loopSection, _) {
             return RangeSlider(
               labels: RangeLabels(
@@ -30,7 +31,7 @@ class LoopSlider extends StatelessWidget {
               onChanged: !loopEnabled
                   ? null
                   : musicPlayer.nullIfNoSongElse((RangeValues values) {
-                      musicPlayer.loopSection = LoopSection(
+                      musicPlayer.looper.section = LoopSection(
                         start: Duration(milliseconds: values.start.toInt()),
                         end: Duration(milliseconds: values.end.toInt()),
                       );

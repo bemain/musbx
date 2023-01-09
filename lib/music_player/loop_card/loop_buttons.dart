@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
+import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class LoopButtons extends StatelessWidget {
@@ -21,24 +22,24 @@ class LoopButtons extends StatelessWidget {
         // Set the loopSection's start to position
         IconButton(
           onPressed: musicPlayer.nullIfNoSongElse(() {
-            musicPlayer.loopSection = LoopSection(
+            musicPlayer.looper.section = LoopSection(
               start: Duration(
                 milliseconds: min(
-                  musicPlayer.loopSection.end.inMilliseconds - 1000,
+                  musicPlayer.looper.section.end.inMilliseconds - 1000,
                   musicPlayer.position.inMilliseconds,
                 ),
               ),
-              end: musicPlayer.loopSection.end,
+              end: musicPlayer.looper.section.end,
             );
           }),
           icon: const Icon(Icons.arrow_circle_right_outlined),
         ),
         // Toggle loopEnabled
         ValueListenableBuilder(
-          valueListenable: musicPlayer.loopEnabledNotifier,
+          valueListenable: musicPlayer.looper.enabledNotifier,
           builder: (context, loopEnabled, _) => TextButton(
             onPressed: musicPlayer.nullIfNoSongElse(() {
-              musicPlayer.loopEnabled = !loopEnabled;
+              musicPlayer.looper.enabled = !loopEnabled;
             }),
             child: Icon(
               loopEnabled ? CustomIcons.repeat_off : CustomIcons.repeat,
@@ -49,12 +50,12 @@ class LoopButtons extends StatelessWidget {
         // Set the loopSection's end to position
         IconButton(
           onPressed: musicPlayer.nullIfNoSongElse(() {
-            musicPlayer.loopSection = LoopSection(
-              start: musicPlayer.loopSection.start,
+            musicPlayer.looper.section = LoopSection(
+              start: musicPlayer.looper.section.start,
               end: Duration(
                 milliseconds: max(
                   musicPlayer.position.inMilliseconds,
-                  musicPlayer.loopSection.start.inMilliseconds + 1000,
+                  musicPlayer.looper.section.start.inMilliseconds + 1000,
                 ),
               ),
             );
