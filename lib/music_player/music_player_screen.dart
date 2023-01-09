@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/card_list.dart';
+import 'package:musbx/music_player/loop_card/loop_card.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/pitch_speed_card/pitch_speed_card.dart';
 import 'package:musbx/music_player/position_card/button_panel.dart';
@@ -31,10 +32,7 @@ Long press rewind button to restart song.""",
         children: [
           CurrentSongPanel(),
           PitchSpeedCard(),
-          Column(children: [
-            LoopButtons(),
-            LoopSlider(),
-          ]),
+          LoopCard(),
           Column(
             children: [
               PositionSlider(),

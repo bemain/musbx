@@ -34,4 +34,11 @@ class LoopSection {
 
   /// Duration between [start] and [end].
   Duration get length => end - start;
+
+  @override
+  bool operator ==(Object other) =>
+      other is LoopSection && start == other.start && end == other.end;
+
+  @override
+  int get hashCode => Object.hash(start, end);
 }
