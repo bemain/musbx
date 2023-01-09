@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/pitch_speed_card/circular_slider/circular_slider.dart';
@@ -43,20 +45,15 @@ class PitchSpeedCard extends StatelessWidget {
           value: pitch,
           min: -12,
           max: 12,
-          divisions: 24,
+          divisionValues: List.generate(25, (i) => i - 12.0),
           outerRadius: radius,
           label: Text(
             ((pitch >= 0) ? "+" : "-") + pitch.abs().toStringAsFixed(1),
             style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
-            (double value, bool continuous) {
-              if (continuous) {
-                value = value.roundToDouble();
-              } else {
-                value = (value * 10).roundToDouble() / 10;
-              }
-              musicPlayer.setPitchSemitones(value);
+            (double value) {
+              musicPlayer.setPitchSemitones((value * 10).roundToDouble() / 10);
             },
           ),
         ),
@@ -78,21 +75,21 @@ class PitchSpeedCard extends StatelessWidget {
       valueListenable: musicPlayer.speedNotifier,
       builder: (context, speed, _) => Stack(children: [
         CircularSlider(
-          value: speed,
-          min: 0.1,
-          max: 1.9,
-          divisions: 18,
+          value: sqrt(speed - 7 / 16) - 0.25,
+          min: 0,
+          max: 1,
+          divisionValues: List.generate(
+                  21, (i) => (i <= 10) ? 0.5 + i / 20 : 0.5 - 10 / 20 + i / 10)
+              .map((speedValue) => sqrt(speedValue - 7 / 16) - 0.25)
+              .toList(),
           outerRadius: radius,
           label: Text(
             speed.toStringAsFixed(2),
             style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
-            (double value, bool continuous) {
-              if (continuous) {
-                value = (value * 10).roundToDouble() / 10;
-              }
-              musicPlayer.setSpeed(value);
+            (double value) {
+              musicPlayer.setSpeed(pow(value, 2) + value / 2 + 0.5);
             },
           ),
         ),
