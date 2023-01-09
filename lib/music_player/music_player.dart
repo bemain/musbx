@@ -64,7 +64,7 @@ class MusicPlayer {
   final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
 
   /// Returns `null` if no song loaded, value otherwise.
-  T? nullIfNoSongElse<T>(T value) =>
+  T? nullIfNoSongElse<T>(T? value) =>
       (isLoading || state == MusicPlayerState.idle) ? null : value;
 
   /// If true, the player is currently in a loading state.

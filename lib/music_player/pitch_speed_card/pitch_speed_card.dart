@@ -15,26 +15,73 @@ class PitchSpeedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child: LayoutBuilder(
-          builder: (context, BoxConstraints constraints) => Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              buildPitchSlider(constraints.maxWidth / 4),
-              buildSpeedSlider(constraints.maxWidth / 4),
-            ],
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.slowdowner.enabledNotifier,
+      builder: (context, loopEnabled, _) => Stack(children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 40),
+          child: LayoutBuilder(
+            builder: (context, BoxConstraints constraints) => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                buildPitchSlider(constraints.maxWidth / 4),
+                buildSpeedSlider(constraints.maxWidth / 4),
+              ],
+            ),
           ),
         ),
-      ),
-      Positioned.fill(
-        child: Align(
-          alignment: Alignment.topCenter,
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Switch(
+            value: loopEnabled,
+            onChanged: musicPlayer.nullIfNoSongElse(
+              (value) => musicPlayer.slowdowner.enabled = value,
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
           child: buildResetButton(),
         ),
-      ),
-    ]);
+      ]),
+    );
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ValueListenableBuilder(
+                valueListenable: musicPlayer.slowdowner.enabledNotifier,
+                builder: (context, loopEnabled, _) => Switch(
+                  value: loopEnabled,
+                  onChanged: musicPlayer.nullIfNoSongElse(
+                    (value) => musicPlayer.slowdowner.enabled = value,
+                  ),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: buildResetButton(),
+            ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 0),
+          child: LayoutBuilder(
+            builder: (context, BoxConstraints constraints) => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                buildPitchSlider(constraints.maxWidth / 4),
+                buildSpeedSlider(constraints.maxWidth / 4),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget buildPitchSlider(double radius) {
@@ -52,10 +99,12 @@ class PitchSpeedCard extends StatelessWidget {
             style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
-            (double value) {
-              musicPlayer.slowdowner
-                  .setPitchSemitones((value * 10).roundToDouble() / 10);
-            },
+            (!musicPlayer.slowdowner.enabled)
+                ? null
+                : (double value) {
+                    musicPlayer.slowdowner
+                        .setPitchSemitones((value * 10).roundToDouble() / 10);
+                  },
           ),
         ),
         Positioned.fill(
@@ -89,9 +138,12 @@ class PitchSpeedCard extends StatelessWidget {
             style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
-            (double value) {
-              musicPlayer.slowdowner.setSpeed(pow(value, 2) + value / 2 + 0.5);
-            },
+            (!musicPlayer.slowdowner.enabled)
+                ? null
+                : (double value) {
+                    musicPlayer.slowdowner
+                        .setSpeed(pow(value, 2) + value / 2 + 0.5);
+                  },
           ),
         ),
         Positioned.fill(
