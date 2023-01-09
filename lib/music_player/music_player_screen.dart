@@ -31,14 +31,14 @@ If looping is enabled, change what section to loop using the range slider. Use t
 Long press rewind button to restart song.""",
         children: [
           CurrentSongPanel(),
-          PitchSpeedCard(),
-          LoopCard(),
           Column(
             children: [
               PositionSlider(),
               ButtonPanel(),
             ],
           ),
+          PitchSpeedCard(),
+          LoopCard(),
         ],
       ),
     );
