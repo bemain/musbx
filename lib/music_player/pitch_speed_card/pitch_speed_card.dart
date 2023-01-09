@@ -39,7 +39,7 @@ class PitchSpeedCard extends StatelessWidget {
 
   Widget buildPitchSlider(double radius) {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.pitchSemitonesNotifier,
+      valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
       builder: (context, pitch, _) => Stack(children: [
         CircularSlider(
           value: pitch,
@@ -53,7 +53,8 @@ class PitchSpeedCard extends StatelessWidget {
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
             (double value) {
-              musicPlayer.setPitchSemitones((value * 10).roundToDouble() / 10);
+              musicPlayer.slowdowner
+                  .setPitchSemitones((value * 10).roundToDouble() / 10);
             },
           ),
         ),
@@ -72,7 +73,7 @@ class PitchSpeedCard extends StatelessWidget {
 
   Widget buildSpeedSlider(double radius) {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.speedNotifier,
+      valueListenable: musicPlayer.slowdowner.speedNotifier,
       builder: (context, speed, _) => Stack(children: [
         CircularSlider(
           value: sqrt(speed - 7 / 16) - 0.25,
@@ -89,7 +90,7 @@ class PitchSpeedCard extends StatelessWidget {
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
             (double value) {
-              musicPlayer.setSpeed(pow(value, 2) + value / 2 + 0.5);
+              musicPlayer.slowdowner.setSpeed(pow(value, 2) + value / 2 + 0.5);
             },
           ),
         ),
@@ -108,17 +109,17 @@ class PitchSpeedCard extends StatelessWidget {
 
   Widget buildResetButton() {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.speedNotifier,
+      valueListenable: musicPlayer.slowdowner.speedNotifier,
       builder: (_, speed, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.pitchSemitonesNotifier,
+        valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
         builder: (context, pitch, _) => IconButton(
           iconSize: 20,
           onPressed: (speed.toStringAsFixed(2) == "1.00" &&
                   pitch.abs().toStringAsFixed(1) == "0.0")
               ? null
               : () {
-                  musicPlayer.setSpeed(1.0);
-                  musicPlayer.setPitchSemitones(0);
+                  musicPlayer.slowdowner.setSpeed(1.0);
+                  musicPlayer.slowdowner.setPitchSemitones(0);
                 },
           icon: const Icon(Icons.refresh_rounded),
         ),

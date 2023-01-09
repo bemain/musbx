@@ -9,6 +9,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
+import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// The state of [MusicPlayer].
@@ -58,19 +59,6 @@ class MusicPlayer {
     await MusicPlayerAudioHandler.instance.seek(position);
   }
 
-  /// Set the playback speed.
-  Future<void> setSpeed(double speed) async {
-    await player.setSpeed(speed);
-    await MusicPlayerAudioHandler.instance.setSpeed(speed);
-    speedNotifier.value = speed;
-  }
-
-  /// Set how much the pitch will be shifted, in semitones.
-  Future<void> setPitchSemitones(double pitch) async {
-    await player.setPitch(pow(2, pitch / 12).toDouble());
-    pitchSemitonesNotifier.value = pitch;
-  }
-
   /// Title of the current song, or `null` if no song loaded.
   String? get songTitle => songTitleNotifier.value;
   final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
@@ -83,16 +71,6 @@ class MusicPlayer {
   /// If false, the player is either idle or have loaded audio.
   bool get isLoading => (state == MusicPlayerState.loadingAudio ||
       state == MusicPlayerState.pickingAudio);
-
-  /// How much the pitch will be shifted, in semitones.
-  double get pitchSemitones => pitchSemitonesNotifier.value;
-  set pitchSemitones(double value) => setPitchSemitones(value);
-  final ValueNotifier<double> pitchSemitonesNotifier = ValueNotifier(0);
-
-  /// The playback speed.
-  double get speed => speedNotifier.value;
-  set speed(double value) => setSpeed(value);
-  final ValueNotifier<double> speedNotifier = ValueNotifier(1);
 
   /// The current position of the player.
   Duration get position => positionNotifier.value;
@@ -111,6 +89,9 @@ class MusicPlayer {
   /// Whether the player is buffering audio.
   bool get isBuffering => isBufferingNotifier.value;
   final ValueNotifier<bool> isBufferingNotifier = ValueNotifier(false);
+
+  /// Component for changing the pitch and speed of the song.
+  final Slowdowner slowdowner = Slowdowner();
 
   /// Component for looping a section of the song.
   final Looper looper = Looper();
@@ -211,6 +192,7 @@ class MusicPlayer {
       }
     });
 
+    slowdowner.initialize(this);
     looper.initialize(this);
   }
 }
