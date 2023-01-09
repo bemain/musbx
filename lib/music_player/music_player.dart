@@ -211,19 +211,6 @@ class MusicPlayer {
       }
     });
 
-    // When loopSection changes, clamp position
-    looper.sectionNotifier.addListener(() async {
-      if (!looper.enabled) return;
-      if (position < looper.section.start || position > looper.section.end) {
-        await seek(position);
-      }
-    });
-
-    // When loopEnabled changes, clamp position
-    looper.enabledNotifier.addListener(() async {
-      if (position < looper.section.start || position > looper.section.end) {
-        await seek(position);
-      }
-    });
+    looper.initialize(this);
   }
 }
