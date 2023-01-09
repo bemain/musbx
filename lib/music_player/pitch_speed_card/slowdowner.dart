@@ -15,14 +15,18 @@ class Slowdowner extends MusicPlayerComponent {
 
   /// Set how much the pitch will be shifted, in semitones.
   Future<void> setPitchSemitones(double pitch) async {
-    await musicPlayerSetPitch(pow(2, pitch / 12).toDouble());
+    if (enabled) {
+      await musicPlayerSetPitch(pow(2, pitch / 12).toDouble());
+    }
     pitchSemitonesNotifier.value = pitch;
   }
 
   /// Set the playback speed.
   Future<void> setSpeed(double speed) async {
-    await musicPlayerSetSpeed(speed);
-    await MusicPlayerAudioHandler.instance.setSpeed(speed);
+    if (enabled) {
+      await musicPlayerSetSpeed(speed);
+      await MusicPlayerAudioHandler.instance.setSpeed(speed);
+    }
     speedNotifier.value = speed;
   }
 
@@ -44,8 +48,9 @@ class Slowdowner extends MusicPlayerComponent {
     enabledNotifier.addListener(() {
       if (!enabled) {
         // Silently reset [MusicPlayer]'s pitch and speed
-        setPitchSemitones(0);
-        setSpeed(1.0);
+        musicPlayerSetPitch(1.0);
+        musicPlayerSetSpeed(1.0);
+        MusicPlayerAudioHandler.instance.setSpeed(1.0);
       } else {
         // Restore pitch and speed
         setPitchSemitones(pitchSemitones);
