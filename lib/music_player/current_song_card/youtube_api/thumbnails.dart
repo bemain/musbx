@@ -55,14 +55,6 @@ class YoutubeVideoThumbnail {
   /// The height of the thumbnail.
   final int height;
 
-  Map<String, dynamic> toMap() {
-    return {
-      'url': url,
-      'width': width,
-      'height': height,
-    };
-  }
-
   factory YoutubeVideoThumbnail.fromMap(Map<String, dynamic> map) {
     return YoutubeVideoThumbnail(
       url: map['url'],

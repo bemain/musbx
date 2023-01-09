@@ -37,8 +37,8 @@ class CircularSliderPainter extends CustomPainter {
   /// The theme specifying colors for the slider.
   final CircularSliderTheme theme;
 
-  /// The number of discrete divisions, if any.
-  final int? divisions;
+  /// The values on the slider where divisions are placed, if any.
+  final List<double>? divisions;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -87,9 +87,9 @@ class CircularSliderPainter extends CustomPainter {
         ..color = disabled
             ? theme.disabledInactiveTickMarkColor
             : theme.inactiveTickMarkColor;
-      for (int i = 0; i <= divisions!; i++) {
-        double angle =
-            startAngle - pi / 2 + (endAngle - startAngle) * (i / divisions!);
+
+      for (double value in divisions!) {
+        double angle = startAngle - pi / 2 + (endAngle - startAngle) * value;
         Offset offset = angleToPoint(angle, center, radius);
         canvas.drawCircle(offset, theme.trackHeight / 4,
             (angle < thumbAngle) ? activeTickMarkPaint : inactiveTickMarkPaint);
