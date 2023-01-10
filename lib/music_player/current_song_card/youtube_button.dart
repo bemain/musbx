@@ -92,7 +92,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
           style: Theme.of(context)
               .textTheme
               .bodyLarge
-              ?.copyWith(color: Theme.of(context).textTheme.caption?.color),
+              ?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color),
           textAlign: TextAlign.center,
         ),
       );
@@ -180,7 +180,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
                     Text(
                       htmlUnescape.convert(video.title),
                       softWrap: true,
-                      style: Theme.of(context).textTheme.subtitle1,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),

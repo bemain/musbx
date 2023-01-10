@@ -88,7 +88,7 @@ class PositionSlider extends StatelessWidget {
   Widget _buildDurationText(BuildContext context, Duration duration) {
     return Text(
       (musicPlayer.songTitle == null) ? "-- : --" : durationString(duration),
-      style: Theme.of(context).textTheme.caption,
+      style: Theme.of(context).textTheme.bodySmall,
     );
   }
 

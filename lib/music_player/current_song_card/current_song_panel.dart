@@ -20,7 +20,7 @@ class CurrentSongPanel extends StatelessWidget {
             children: [
               Text(
                 "Currently playing:",
-                style: Theme.of(context).textTheme.caption,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               Padding(
                 padding: const EdgeInsets.all(5),

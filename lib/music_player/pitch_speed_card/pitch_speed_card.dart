@@ -45,43 +45,6 @@ class PitchSpeedCard extends StatelessWidget {
         ),
       ]),
     );
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: ValueListenableBuilder(
-                valueListenable: musicPlayer.slowdowner.enabledNotifier,
-                builder: (context, loopEnabled, _) => Switch(
-                  value: loopEnabled,
-                  onChanged: musicPlayer.nullIfNoSongElse(
-                    (value) => musicPlayer.slowdowner.enabled = value,
-                  ),
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: buildResetButton(),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 0),
-          child: LayoutBuilder(
-            builder: (context, BoxConstraints constraints) => Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                buildPitchSlider(constraints.maxWidth / 4),
-                buildSpeedSlider(constraints.maxWidth / 4),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
   }
 
   Widget buildPitchSlider(double radius) {
