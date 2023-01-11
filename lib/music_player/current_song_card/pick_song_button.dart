@@ -1,3 +1,4 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
@@ -92,14 +93,20 @@ class PickSongButton extends StatelessWidget {
     );
   }
 
-  void pushPermissionBuilder(BuildContext context) {
+  void pushPermissionBuilder(BuildContext context) async {
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+
     Navigator.of(context).push(MaterialPageRoute(
       builder: (newContext) => Scaffold(
         body: PermissionBuilder(
-          permission: Permission.storage,
-          permissionName: "external storage",
+          permission: (androidInfo.version.sdkInt <= 32)
+              ? Permission.storage
+              : Permission.audio,
+          permissionName: (androidInfo.version.sdkInt <= 32)
+              ? "external storage"
+              : "audio files",
           permissionText:
-              "To load audio from the device, give the app permission to access external storage.",
+              "To load audio from the device, give the app permission to access ${(androidInfo.version.sdkInt <= 32) ? "external storage" : "audio files"}.",
           permissionDeniedIcon: const Icon(Icons.storage_rounded, size: 128),
           permissionGrantedIcon: const Icon(Icons.storage_rounded, size: 128),
           onPermissionGranted: () {
