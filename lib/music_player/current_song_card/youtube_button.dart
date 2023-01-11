@@ -19,8 +19,7 @@ class YoutubeButton extends StatelessWidget {
       onPressed: musicPlayer.isLoading
           ? null
           : () async {
-              MusicPlayerState prevState = musicPlayer.state;
-              musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
+              // When picking a song from YouTube, [musicPlayer.state] is not set to [MusicPlayerState.pickingAudio] as it should, to avoid [LoopSlider] crashing.
 
               YoutubeVideo? video = await showSearch<YoutubeVideo?>(
                 context: context,
@@ -29,9 +28,6 @@ class YoutubeButton extends StatelessWidget {
 
               if (video != null) {
                 musicPlayer.playVideo(video);
-              } else {
-                // Restore state
-                musicPlayer.stateNotifier.value = prevState;
               }
             },
       child: const Icon(CustomIcons.youtube),
@@ -64,7 +60,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
       onPressed: () {
         close(context, null);
       },
-      icon: const Icon(Icons.arrow_back_rounded),
+      icon: const BackButtonIcon(),
     );
   }
 
@@ -92,7 +88,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
           style: Theme.of(context)
               .textTheme
               .bodyLarge
-              ?.copyWith(color: Theme.of(context).textTheme.caption?.color),
+              ?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color),
           textAlign: TextAlign.center,
         ),
       );
@@ -180,7 +176,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
                     Text(
                       htmlUnescape.convert(video.title),
                       softWrap: true,
-                      style: Theme.of(context).textTheme.subtitle1,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/card_list.dart';
+import 'package:musbx/music_player/loop_card/loop_card.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/pitch_speed_card/pitch_speed_card.dart';
 import 'package:musbx/music_player/position_card/button_panel.dart';
 import 'package:musbx/music_player/current_song_card/current_song_panel.dart';
-import 'package:musbx/music_player/loop_card/loop_buttons.dart';
-import 'package:musbx/music_player/loop_card/loop_slider.dart';
 import 'package:musbx/music_player/position_card/position_slider.dart';
 
 class MusicPlayerScreen extends StatelessWidget {
@@ -30,17 +29,14 @@ If looping is enabled, change what section to loop using the range slider. Use t
 Long press rewind button to restart song.""",
         children: [
           CurrentSongPanel(),
-          PitchSpeedCard(),
-          Column(children: [
-            LoopButtons(),
-            LoopSlider(),
-          ]),
           Column(
             children: [
               PositionSlider(),
               ButtonPanel(),
             ],
           ),
+          PitchSpeedCard(),
+          LoopCard(),
         ],
       ),
     );
