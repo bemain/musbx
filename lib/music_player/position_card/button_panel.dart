@@ -16,10 +16,13 @@ class ButtonPanel extends StatelessWidget {
       children: [
         TextButton(
           onPressed: musicPlayer.nullIfNoSongElse(() {
-            musicPlayer.seek(musicPlayer.position - const Duration(seconds: 1));
-          }),
-          onLongPress: musicPlayer.nullIfNoSongElse(() {
             musicPlayer.seek(Duration.zero);
+          }),
+          child: const Icon(Icons.skip_previous_rounded, size: 40),
+        ),
+        TextButton(
+          onPressed: musicPlayer.nullIfNoSongElse(() {
+            musicPlayer.seek(musicPlayer.position - const Duration(seconds: 1));
           }),
           child: const Icon(Icons.fast_rewind_rounded, size: 40),
         ),
@@ -56,6 +59,8 @@ class ButtonPanel extends StatelessWidget {
           }),
           child: const Icon(Icons.fast_forward_rounded, size: 40),
         ),
+        // Placeholder, only there to take space so the play button is centered
+        const TextButton(onPressed: null, child: Icon(null, size: 40)),
       ],
     );
   }
