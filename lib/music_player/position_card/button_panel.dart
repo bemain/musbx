@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/widgets.dart';
 
 class ButtonPanel extends StatelessWidget {
   /// Panel including play/pause, forward and rewind buttons for controlling [MusicPlayer].
@@ -20,7 +21,7 @@ class ButtonPanel extends StatelessWidget {
           }),
           child: const Icon(Icons.skip_previous_rounded, size: 40),
         ),
-        TextButton(
+        ContinuousTextButton(
           onPressed: musicPlayer.nullIfNoSongElse(() {
             musicPlayer.seek(musicPlayer.position - const Duration(seconds: 1));
           }),
@@ -53,7 +54,7 @@ class ButtonPanel extends StatelessWidget {
             },
           ),
         ),
-        TextButton(
+        ContinuousTextButton(
           onPressed: musicPlayer.nullIfNoSongElse(() {
             musicPlayer.seek(musicPlayer.position + const Duration(seconds: 1));
           }),
