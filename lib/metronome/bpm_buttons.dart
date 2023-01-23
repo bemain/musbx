@@ -18,7 +18,7 @@ class BpmButtons extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ContinuousButton(
+        ContinuousTextButton(
           onPressed: () {
             Metronome.instance.bpm--;
           },
@@ -31,7 +31,7 @@ class BpmButtons extends StatelessWidget {
           width: fontSize * 2,
           child: buildBpmText(),
         ),
-        ContinuousButton(
+        ContinuousTextButton(
           onPressed: () {
             Metronome.instance.bpm++;
           },
