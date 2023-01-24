@@ -11,14 +11,13 @@ class EqualizerControls extends StatelessWidget {
   Widget build(BuildContext context) {
     AndroidEqualizerParameters? parameters;
     () async {
-      await musicPlayer.equalizer.setEnabled(false);
+      musicPlayer.equalizer.enabled = false;
       parameters = await musicPlayer.equalizer.parameters;
-      resetGain(parameters!);
-      await musicPlayer.equalizer.setEnabled(true);
+      musicPlayer.equalizer.enabled = true;
     }();
 
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.equalizerEnabledNotifier,
+      valueListenable: musicPlayer.equalizer.enabledNotifier,
       builder: (context, equalizerEnabled, child) {
         return Column(
           children: [
@@ -28,7 +27,7 @@ class EqualizerControls extends StatelessWidget {
                 Switch(
                   value: equalizerEnabled,
                   onChanged: musicPlayer.nullIfNoSongElse(
-                    musicPlayer.equalizer.setEnabled,
+                    (value) => musicPlayer.equalizer.enabled = value,
                   ),
                 ),
                 Expanded(

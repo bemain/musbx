@@ -6,6 +6,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
+import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -41,16 +42,9 @@ class MusicPlayer {
 
   /// The [AudioPlayer] used for playback.
   late final AudioPlayer player = AudioPlayer(
-    audioPipeline: AudioPipeline(androidAudioEffects: [equalizer]),
+    audioPipeline:
+        AudioPipeline(androidAudioEffects: [equalizer.androidEqualizer]),
   );
-
-  /// The [AndroidEqualizer] used to adjust the gain for different frequency
-  /// bands of [player]'s audio.
-  final AndroidEqualizer equalizer = AndroidEqualizer();
-
-  /// Whether the [equalizer] is enabled or not.
-  bool get equalizerEnabled => equalizerEnabledNotifier.value;
-  final ValueNotifier<bool> equalizerEnabledNotifier = ValueNotifier(false);
 
   /// Used internally to get audio from YouTube.
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
@@ -103,6 +97,9 @@ class MusicPlayer {
 
   /// Component for looping a section of the song.
   final Looper looper = Looper();
+
+  /// Component for adjusting the gain for different frequency bands of the song.
+  final Equalizer equalizer = Equalizer();
 
   /// Play a [PlatformFile].
   Future<void> playFile(PlatformFile file) async {
@@ -200,12 +197,8 @@ class MusicPlayer {
       }
     });
 
-    // Equalizer enabled
-    equalizer.enabledStream.listen((value) {
-      equalizerEnabledNotifier.value = value;
-    });
-
     slowdowner.initialize(this);
     looper.initialize(this);
+    equalizer.initialize(this);
   }
 }
