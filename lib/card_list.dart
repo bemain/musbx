@@ -56,17 +56,29 @@ class CardList extends StatelessWidget {
         ],
       ),
       body: ListView(
-        children: children
-            .map((Widget widget) => Card(
-                  key: ValueKey(widget),
-                  child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 15,
-                        vertical: 10,
-                      ),
-                      child: widget),
-                ))
-            .toList(),
+        children: children.map((widget) => WidgetCard(child: widget)).toList(),
+      ),
+    );
+  }
+}
+
+class WidgetCard extends StatelessWidget {
+  /// Wraps [child] in a card.
+  const WidgetCard({super.key, required this.child});
+
+  /// The widget to wrap in a card.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      key: ValueKey(child),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 10,
+        ),
+        child: child,
       ),
     );
   }
