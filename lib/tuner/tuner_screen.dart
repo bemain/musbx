@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/card_list.dart';
+import 'package:musbx/card_screen.dart';
 import 'package:musbx/permission_builder.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
@@ -38,7 +38,7 @@ class TunerScreenState extends State<TunerScreen> {
     }
     return StreamBuilder(
       stream: tuner.noteStream,
-      builder: (context, snapshot) => CardList(
+      builder: (context, snapshot) => CardScreen(
         children: [
           TunerGauge(
               note: (tuner.noteHistory.isNotEmpty)

@@ -35,10 +35,10 @@ class InfoButton extends StatelessWidget {
   }
 }
 
-class CardList extends StatelessWidget {
+class CardScreen extends StatelessWidget {
   /// Displays [children] as a list of cards,
   /// with an app bar featuring a button to open an about dialog.
-  const CardList({super.key, required this.children, this.helpText});
+  const CardScreen({super.key, required this.children, this.helpText});
 
   /// The widgets to display as a list of cards.
   final List<Widget> children;
