@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-class ContinuousButton extends StatelessWidget {
+class ContinuousTextButton extends StatelessWidget {
   /// Button that can be held down to yield continuous presses.
-  const ContinuousButton({
+  const ContinuousTextButton({
     super.key,
     required this.onPressed,
     this.interval = const Duration(milliseconds: 100),
@@ -12,7 +12,7 @@ class ContinuousButton extends StatelessWidget {
   });
 
   /// Callback for when this button is pressed.
-  final void Function() onPressed;
+  final void Function()? onPressed;
 
   /// Interval between callbacks if the button is held pressed.
   final Duration interval;
@@ -23,9 +23,8 @@ class ContinuousButton extends StatelessWidget {
   Widget build(BuildContext context) {
     Timer timer = Timer(const Duration(), () {});
     return GestureDetector(
-      onTap: onPressed,
       onLongPressStart: (LongPressStartDetails details) {
-        timer = Timer.periodic(interval, (timer) => onPressed());
+        timer = Timer.periodic(interval, (timer) => onPressed?.call());
       },
       onLongPressUp: () {
         timer.cancel();
@@ -33,7 +32,10 @@ class ContinuousButton extends StatelessWidget {
       onLongPressCancel: () {
         timer.cancel();
       },
-      child: child,
+      child: TextButton(
+        onPressed: onPressed,
+        child: child,
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/position_card/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/music_player/music_player.dart';
 
@@ -16,9 +17,9 @@ class PositionSlider extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.durationNotifier,
       builder: (_, duration, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.loopEnabledNotifier,
+        valueListenable: musicPlayer.looper.enabledNotifier,
         builder: (_, loopEnabled, __) => ValueListenableBuilder(
-          valueListenable: musicPlayer.loopSectionNotifier,
+          valueListenable: musicPlayer.looper.sectionNotifier,
           builder: (_, loopSection, __) => ValueListenableBuilder(
             valueListenable: musicPlayer.positionNotifier,
             builder: (context, position, _) => _buildSlider(
@@ -87,7 +88,7 @@ class PositionSlider extends StatelessWidget {
   Widget _buildDurationText(BuildContext context, Duration duration) {
     return Text(
       (musicPlayer.songTitle == null) ? "-- : --" : durationString(duration),
-      style: Theme.of(context).textTheme.caption,
+      style: Theme.of(context).textTheme.bodySmall,
     );
   }
 
