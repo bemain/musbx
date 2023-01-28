@@ -38,7 +38,21 @@ class InfoButton extends StatelessWidget {
 class CardScreen extends StatelessWidget {
   /// Displays [children] as a list of cards,
   /// with an app bar featuring a button to open an about dialog.
-  const CardScreen({super.key, required this.children, this.helpText});
+  const CardScreen({
+    super.key,
+    required this.children,
+    this.header,
+    this.headerHeight,
+    this.helpText,
+    this.tabs,
+  });
+
+  /// Widget show above
+  final Widget? header;
+
+  final double? headerHeight;
+
+  final List<Tab>? tabs;
 
   /// The widgets to display as a list of cards.
   final List<Widget> children;
@@ -48,15 +62,63 @@ class CardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (header != null) assert(headerHeight != null);
+
+    if (tabs == null) return buildCardListView();
+
+    return buildTabView();
+  }
+
+  Widget buildCardListView() {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Musician's toolbox"),
         actions: [
           InfoButton(child: (helpText == null) ? null : Text(helpText!))
         ],
+        bottom: header == null
+            ? null
+            : PreferredSize(
+                preferredSize: Size.fromHeight(headerHeight!),
+                child: WidgetCard(child: header!),
+              ),
       ),
       body: ListView(
         children: children.map((widget) => WidgetCard(child: widget)).toList(),
+      ),
+    );
+  }
+
+  Widget buildTabView() {
+    TabBar tabBar = TabBar(tabs: tabs!);
+
+    return DefaultTabController(
+      length: tabs!.length,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Musician's toolbox"),
+          actions: [
+            InfoButton(child: (helpText == null) ? null : Text(helpText!))
+          ],
+          bottom: header == null
+              ? tabBar
+              : PreferredSize(
+                  preferredSize:
+                      tabBar.preferredSize + Offset(0, headerHeight!),
+                  child: Column(
+                    children: [
+                      tabBar,
+                      WidgetCard(child: header!),
+                    ],
+                  ),
+                ),
+        ),
+        body: TabBarView(
+          children: children
+              .map(
+                  (widget) => SizedBox.shrink(child: WidgetCard(child: widget)))
+              .toList(),
+        ),
       ),
     );
   }
