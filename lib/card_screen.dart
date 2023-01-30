@@ -42,15 +42,12 @@ class CardScreen extends StatelessWidget {
     super.key,
     required this.children,
     this.header,
-    this.headerHeight,
     this.helpText,
     this.tabs,
   });
 
   /// Widget show above
   final Widget? header;
-
-  final double? headerHeight;
 
   final List<Tab>? tabs;
 
@@ -62,8 +59,6 @@ class CardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (header != null) assert(headerHeight != null);
-
     if (tabs == null) return buildCardListView();
 
     return buildTabView();
@@ -71,19 +66,19 @@ class CardScreen extends StatelessWidget {
 
   Widget buildCardListView() {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Musician's toolbox"),
-          actions: [
-            InfoButton(child: (helpText == null) ? null : Text(helpText!))
-          ],
-          bottom: header == null
-              ? null
-              : PreferredSize(
-                  preferredSize: Size.fromHeight(headerHeight!),
-                  child: WidgetCard(child: header!),
-                ),
-        ),
-        body: CardList(children: children));
+      appBar: AppBar(
+        title: const Text("Musician's toolbox"),
+        actions: [
+          InfoButton(child: (helpText == null) ? null : Text(helpText!))
+        ],
+      ),
+      body: Column(
+        children: [
+          if (header != null) WidgetCard(child: header!),
+          Expanded(child: CardList(children: children)),
+        ],
+      ),
+    );
   }
 
   Widget buildTabView() {

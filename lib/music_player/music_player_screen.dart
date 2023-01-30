@@ -33,8 +33,7 @@ If looping is enabled, change what section to loop using the range slider. Use t
             ButtonPanel(),
           ],
         ),
-        headerHeight: 220,
-        tabs: [Tab(text: "Slowdowner"), Tab(text: "Loop")],
+        tabs: [Tab(child: Container()), Tab(child: Container())],
         children: [
           CardList(
             children: [
