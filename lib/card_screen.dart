@@ -71,22 +71,19 @@ class CardScreen extends StatelessWidget {
 
   Widget buildCardListView() {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Musician's toolbox"),
-        actions: [
-          InfoButton(child: (helpText == null) ? null : Text(helpText!))
-        ],
-        bottom: header == null
-            ? null
-            : PreferredSize(
-                preferredSize: Size.fromHeight(headerHeight!),
-                child: WidgetCard(child: header!),
-              ),
-      ),
-      body: ListView(
-        children: children.map((widget) => WidgetCard(child: widget)).toList(),
-      ),
-    );
+        appBar: AppBar(
+          title: const Text("Musician's toolbox"),
+          actions: [
+            InfoButton(child: (helpText == null) ? null : Text(helpText!))
+          ],
+          bottom: header == null
+              ? null
+              : PreferredSize(
+                  preferredSize: Size.fromHeight(headerHeight!),
+                  child: WidgetCard(child: header!),
+                ),
+        ),
+        body: CardList(children: children));
   }
 
   Widget buildTabView() {
@@ -100,24 +97,15 @@ class CardScreen extends StatelessWidget {
           actions: [
             InfoButton(child: (helpText == null) ? null : Text(helpText!))
           ],
-          bottom: header == null
-              ? tabBar
-              : PreferredSize(
-                  preferredSize:
-                      tabBar.preferredSize + Offset(0, headerHeight!),
-                  child: Column(
-                    children: [
-                      tabBar,
-                      WidgetCard(child: header!),
-                    ],
-                  ),
-                ),
+          bottom: tabBar,
         ),
-        body: TabBarView(
-          children: children
-              .map(
-                  (widget) => SizedBox.shrink(child: WidgetCard(child: widget)))
-              .toList(),
+        body: Column(
+          children: [
+            WidgetCard(child: header!),
+            Expanded(
+              child: TabBarView(children: children),
+            ),
+          ],
         ),
       ),
     );
@@ -142,6 +130,19 @@ class WidgetCard extends StatelessWidget {
         ),
         child: child,
       ),
+    );
+  }
+}
+
+class CardList extends StatelessWidget {
+  const CardList({super.key, required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: children.map((widget) => WidgetCard(child: widget)).toList(),
     );
   }
 }
