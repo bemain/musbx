@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/card_screen.dart';
 import 'package:musbx/metronome/beat_sound_viewer.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';
 import 'package:musbx/metronome/play_button.dart';
 import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/screen/card_list.dart';
+import 'package:musbx/screen/default_app_bar.dart';
 
 class MetronomeScreen extends StatelessWidget {
   /// Screen for controlling [Metronome], including:
