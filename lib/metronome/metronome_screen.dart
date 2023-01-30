@@ -18,33 +18,37 @@ class MetronomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CardScreen(
-      helpText:
-          """Set bpm using slider or hit the drum. Make fine adjustments using the arrows.
+    return Scaffold(
+      appBar: const DefaultAppBar(
+        helpText:
+            """Set bpm using slider or hit the drum. Make fine adjustments using the arrows.
 Change the sound of beats by tapping them. Long press to remove and plus to add.""",
-      children: [
-        Column(children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: const [
-              BpmButtons(
-                iconSize: 50,
-                fontSize: 45,
-              ),
-              BpmTapper()
-            ],
-          ),
-          const BpmSlider(),
-        ]),
-        Column(children: const [
-          Center(
-            child: PlayButton(
-              size: 150,
+      ),
+      body: CardList(
+        children: [
+          Column(children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: const [
+                BpmButtons(
+                  iconSize: 50,
+                  fontSize: 45,
+                ),
+                BpmTapper()
+              ],
             ),
-          ),
-          BeatSoundViewer(),
-        ]),
-      ],
+            const BpmSlider(),
+          ]),
+          Column(children: const [
+            Center(
+              child: PlayButton(
+                size: 150,
+              ),
+            ),
+            BeatSoundViewer(),
+          ]),
+        ],
+      ),
     );
   }
 }

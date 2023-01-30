@@ -35,74 +35,46 @@ class InfoButton extends StatelessWidget {
   }
 }
 
-class CardScreen extends StatelessWidget {
-  /// Displays [children] as a list of cards,
-  /// with an app bar featuring a button to open an about dialog.
-  const CardScreen({
-    super.key,
-    required this.children,
-    this.header,
-    this.helpText,
-    this.tabs,
-  });
+class EmptyTabBar extends StatelessWidget {
+  /// A [TabBar] with tabs that are all empty (have no label or icon).
+  ///
+  /// Uses [DefaultTabController.of] to determine the number of tabs.
+  const EmptyTabBar({super.key, this.height = 20});
 
-  /// Widget show above
-  final Widget? header;
+  /// The height of the TabBar.
+  ///
+  /// Defaults to 20.
+  final double height;
 
-  final List<Tab>? tabs;
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: TabBar(
+        tabs: List.filled(
+          DefaultTabController.of(context).length,
+          Tab(child: Container()),
+        ),
+      ),
+    );
+  }
+}
 
-  /// The widgets to display as a list of cards.
-  final List<Widget> children;
+class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const DefaultAppBar({super.key, this.helpText})
+      : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   /// A short text explaining how to use the screen. Displayed in the about dialog.
   final String? helpText;
 
   @override
+  final Size preferredSize; // default is 56.0
+
+  @override
   Widget build(BuildContext context) {
-    if (tabs == null) return buildCardListView();
-
-    return buildTabView();
-  }
-
-  Widget buildCardListView() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Musician's toolbox"),
-        actions: [
-          InfoButton(child: (helpText == null) ? null : Text(helpText!))
-        ],
-      ),
-      body: Column(
-        children: [
-          if (header != null) WidgetCard(child: header!),
-          Expanded(child: CardList(children: children)),
-        ],
-      ),
-    );
-  }
-
-  Widget buildTabView() {
-    TabBar tabBar = TabBar(tabs: tabs!);
-
-    return DefaultTabController(
-      length: tabs!.length,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Musician's toolbox"),
-          actions: [
-            InfoButton(child: (helpText == null) ? null : Text(helpText!))
-          ],
-          bottom: tabBar,
-        ),
-        body: Column(
-          children: [
-            WidgetCard(child: header!),
-            Expanded(
-              child: TabBarView(children: children),
-            ),
-          ],
-        ),
-      ),
+    return AppBar(
+      title: const Text("Musician's toolbox"),
+      actions: [InfoButton(child: (helpText == null) ? null : Text(helpText!))],
     );
   }
 }

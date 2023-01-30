@@ -38,7 +38,7 @@ class TunerScreenState extends State<TunerScreen> {
     }
     return StreamBuilder(
       stream: tuner.noteStream,
-      builder: (context, snapshot) => CardScreen(
+      builder: (context, snapshot) => CardList(
         children: [
           TunerGauge(
               note: (tuner.noteHistory.isNotEmpty)
