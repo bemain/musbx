@@ -105,10 +105,11 @@ class PickSongButton extends StatelessWidget {
         body: PermissionBuilder(
           permission:
               (useGranularPermissions) ? Permission.audio : Permission.storage,
-          permissionName:
-              (useGranularPermissions) ? "audio files" : "external storage",
+          permissionName: (useGranularPermissions || Platform.isIOS)
+              ? "audio files"
+              : "external storage",
           permissionText:
-              "To load audio from the device, give the app permission to access ${useGranularPermissions ? "external storage" : "audio files"}.",
+              "To load audio from the device, give the app permission to access ${(useGranularPermissions || Platform.isIOS) ? "external storage" : "audio files"}.",
           permissionDeniedIcon: const Icon(Icons.storage_rounded, size: 128),
           permissionGrantedIcon: const Icon(Icons.storage_rounded, size: 128),
           onPermissionGranted: () {
