@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/permission_builder.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:io' show Platform;
 
 const List<String> allowedExtensions = [
   "mp3",
@@ -94,19 +95,20 @@ class PickSongButton extends StatelessWidget {
   }
 
   void pushPermissionBuilder(BuildContext context) async {
-    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    // On Android sdk 33 or greater, use of granular permissionss is required
+    final bool useGranularPermissions = !Platform.isAndroid
+        ? false
+        : (await DeviceInfoPlugin().androidInfo).version.sdkInt > 32;
 
     Navigator.of(context).push(MaterialPageRoute(
       builder: (newContext) => Scaffold(
         body: PermissionBuilder(
-          permission: (androidInfo.version.sdkInt <= 32)
-              ? Permission.storage
-              : Permission.audio,
-          permissionName: (androidInfo.version.sdkInt <= 32)
-              ? "external storage"
-              : "audio files",
+          permission:
+              (useGranularPermissions) ? Permission.audio : Permission.storage,
+          permissionName:
+              (useGranularPermissions) ? "audio files" : "external storage",
           permissionText:
-              "To load audio from the device, give the app permission to access ${(androidInfo.version.sdkInt <= 32) ? "external storage" : "audio files"}.",
+              "To load audio from the device, give the app permission to access ${useGranularPermissions ? "external storage" : "audio files"}.",
           permissionDeniedIcon: const Icon(Icons.storage_rounded, size: 128),
           permissionGrantedIcon: const Icon(Icons.storage_rounded, size: 128),
           onPermissionGranted: () {
