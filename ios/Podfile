@@ -29,8 +29,7 @@ flutter_ios_podfile_setup
 
 # Added by file_picker package
 # Removes access to media and documents
-Pod::PICKER_MEDIA = false
-Pod::PICKER_DOCUMENT = false
+# Pod::PICKER_MEDIA = false, resp. Pod::PICKER_DOCUMENT = false
 
 target 'Runner' do
   use_frameworks!
