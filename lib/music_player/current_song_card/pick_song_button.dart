@@ -48,8 +48,9 @@ class PickSongButton extends StatelessWidget {
     MusicPlayerState prevState = musicPlayer.state;
     musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
 
+    // By some reason, setting type to FileType.audio causes the file picker to not show up on iOS.
     FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.audio,
+      type: Platform.isIOS ? FileType.any : FileType.audio,
     );
 
     if (result == null || result.files.single.path == null) {
@@ -101,7 +102,7 @@ class PickSongButton extends StatelessWidget {
         : (await DeviceInfoPlugin().androidInfo).version.sdkInt > 32;
 
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (newContext) => Scaffold(
+      builder: (context) => Scaffold(
         body: PermissionBuilder(
           permission:
               (useGranularPermissions) ? Permission.audio : Permission.storage,
@@ -115,7 +116,7 @@ class PickSongButton extends StatelessWidget {
           onPermissionGranted: () {
             permissionGranted = true;
 
-            Navigator.of(newContext).pop();
+            Navigator.of(context).pop();
             pickFile(context);
           },
         ),
