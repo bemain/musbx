@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/music_player.dart';
 
-class EqualizerControls extends StatelessWidget {
-  EqualizerControls({super.key});
+class EqualizerCard extends StatelessWidget {
+  EqualizerCard({super.key});
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
