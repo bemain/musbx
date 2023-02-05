@@ -9,54 +9,43 @@ class EqualizerControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AndroidEqualizerParameters? parameters;
-    () async {
-      musicPlayer.equalizer.enabled = false;
-      parameters = await musicPlayer.equalizer.parameters;
-      musicPlayer.equalizer.enabled = true;
-    }();
-
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.equalizer.enabledNotifier,
-      builder: (context, equalizerEnabled, child) {
-        return Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Switch(
-                  value: equalizerEnabled,
-                  onChanged: musicPlayer.nullIfNoSongElse(
-                    (value) => musicPlayer.equalizer.enabled = value,
+      valueListenable: musicPlayer.equalizer.parametersNotifier,
+      builder: (context, parameters, child) => ValueListenableBuilder(
+        valueListenable: musicPlayer.equalizer.enabledNotifier,
+        builder: (context, equalizerEnabled, child) {
+          return Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Switch(
+                    value: equalizerEnabled,
+                    onChanged: musicPlayer.nullIfNoSongElse(
+                      (value) => musicPlayer.equalizer.enabled = value,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: Text(
-                    "Equalizer",
-                    style: Theme.of(context).textTheme.titleMedium,
+                  Expanded(
+                    child: Text(
+                      "Equalizer",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ),
-                ),
-                IconButton(
-                  iconSize: 20,
-                  onPressed: musicPlayer.nullIfNoSongElse(() {
-                    if (parameters != null) resetGain(parameters!);
-                  }),
-                  icon: const Icon(Icons.refresh_rounded),
-                )
-              ],
-            ),
-            buildEqualizerSliders(equalizerEnabled, parameters: parameters),
-          ],
-        );
-      },
+                  IconButton(
+                    iconSize: 20,
+                    onPressed: musicPlayer.nullIfNoSongElse(() {
+                      if (parameters != null) musicPlayer.equalizer.resetGain();
+                    }),
+                    icon: const Icon(Icons.refresh_rounded),
+                  )
+                ],
+              ),
+              buildEqualizerSliders(equalizerEnabled, parameters: parameters),
+            ],
+          );
+        },
+      ),
     );
-  }
-
-  /// Reset the gain on all bands in [parameters]
-  void resetGain(AndroidEqualizerParameters parameters) {
-    for (var band in parameters.bands) {
-      band.setGain((parameters.maxDecibels + parameters.minDecibels) / 2);
-    }
   }
 
   Widget buildEqualizerSliders(
