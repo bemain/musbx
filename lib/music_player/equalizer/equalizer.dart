@@ -31,7 +31,10 @@ class Equalizer extends MusicPlayerComponent {
     });
 
     androidEqualizer.parameters.then(
-      (value) => parametersNotifier.value = value,
+      (value) {
+        parametersNotifier.value = value;
+        resetGain();
+      },
     );
   }
 }
