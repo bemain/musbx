@@ -31,8 +31,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
@@ -63,16 +61,18 @@
 	<!--Permission added by mic_stream package-->
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Access to the microphone is required to use the tuner</string>
-	<!--Permission added by file_picker package-->
+	<!--Permissions added by file_picker package-->
 	<key>NSAppleMusicUsageDescription</key>
 	<string>To load audio from the device, access to music files is required</string>
-	<key>UISupportsDocumentBrowser</key>
-	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>To load audio from the device, file access is required</string>
+	<key>NSCameraUsageDescription</key>
+	<string>To load audio from the device, file access is required</string>
+	<!--Added by file_picker package-->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
-
 </dict>
 </plist>
