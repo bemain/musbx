@@ -14,6 +14,7 @@ class EqualizerCard extends StatelessWidget {
       builder: (context, parameters, child) => ValueListenableBuilder(
         valueListenable: musicPlayer.equalizer.enabledNotifier,
         builder: (context, equalizerEnabled, child) {
+          print("build");
           return Column(children: [
             Stack(
               alignment: Alignment.center,
