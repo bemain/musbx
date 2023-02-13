@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/equalizer/equalizer_overlay.dart';
+import 'package:musbx/music_player/equalizer/inactive_slider_track_shape.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class EqualizerCard extends StatelessWidget {
@@ -95,7 +96,9 @@ class EqualizerCard extends StatelessWidget {
     return SizedBox(
       height: 250,
       child: SliderTheme(
-        data: Theme.of(context).sliderTheme.copyWith(),
+        data: Theme.of(context)
+            .sliderTheme
+            .copyWith(trackShape: InactiveSliderTrackShape()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           children: [
