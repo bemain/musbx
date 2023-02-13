@@ -16,28 +16,39 @@ class EqualizerCard extends StatelessWidget {
         builder: (context, equalizerEnabled, child) {
           return Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Stack(
+                alignment: Alignment.center,
                 children: [
-                  Switch(
-                    value: equalizerEnabled,
-                    onChanged: musicPlayer.nullIfNoSongElse(
-                      (value) => musicPlayer.equalizer.enabled = value,
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Switch(
+                      value: equalizerEnabled,
+                      onChanged: musicPlayer.nullIfNoSongElse(
+                        (value) => musicPlayer.equalizer.enabled = value,
+                      ),
                     ),
                   ),
-                  Expanded(
-                    child: Text(
-                      "Equalizer",
-                      style: Theme.of(context).textTheme.titleMedium,
+                  Align(
+                    alignment: Alignment.center,
+                    child: Center(
+                      child: Text(
+                        "Equalizer",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                   ),
-                  IconButton(
-                    iconSize: 20,
-                    onPressed: musicPlayer.nullIfNoSongElse(() {
-                      if (parameters != null) musicPlayer.equalizer.resetGain();
-                    }),
-                    icon: const Icon(Icons.refresh_rounded),
-                  )
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      iconSize: 20,
+                      onPressed: musicPlayer.nullIfNoSongElse(() {
+                        if (parameters != null) {
+                          musicPlayer.equalizer.resetGain();
+                        }
+                      }),
+                      icon: const Icon(Icons.refresh_rounded),
+                    ),
+                  ),
                 ],
               ),
               buildEqualizerSliders(equalizerEnabled, parameters: parameters),
