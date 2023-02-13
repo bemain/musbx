@@ -1,6 +1,6 @@
 # Musician's Toolbox
 
-Musician's Toolbox offers a set of tools to aid musicians of all skill levels and interests in practicing, performing and composing.
+Musician's Toolbox offers everything a musician needs for transcribing, practicing and performing. 
 
 ## Current features
 - Metronome
@@ -10,5 +10,13 @@ Musician's Toolbox offers a set of tools to aid musicians of all skill levels an
 ## Planned features
 - Equalizer
 - Drone
-- Settings
-- and enhancements to the current features
+- Source separation (extracting specific instruments from a song)
+
+## Privacy policy
+Privacy policy can be found [here](https://github.com/BeMain/musbx/blob/master/PRIVACY_POLICY.md)
+
+## Contact information
+If you have any questions, feedback or issues with the app, please reach out:
+
+Benjamin Agardh \
+bemain.dev@gmail.com
