@@ -14,7 +14,6 @@ class EqualizerCard extends StatelessWidget {
       builder: (context, parameters, child) => ValueListenableBuilder(
         valueListenable: musicPlayer.equalizer.enabledNotifier,
         builder: (context, equalizerEnabled, child) {
-          print("build");
           return Column(children: [
             Stack(
               alignment: Alignment.center,
@@ -50,13 +49,18 @@ class EqualizerCard extends StatelessWidget {
               ],
             ),
             EqualizerSliders(),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                for (var band in parameters?.bands ?? List.filled(5, null))
-                  Expanded(
-                    child: Text('${band?.centerFrequency.round() ?? "--"} Hz'),
-                  ),
+            Stack(
+              alignment: Alignment.center,
+              children: const [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("Bass"),
+                ),
+                Text("Mid-range"),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text("Treble"),
+                ),
               ],
             ),
           ]);
