@@ -13,28 +13,31 @@ class EqualizerSliders extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: EqualizerOverlayPainter(
-        parameters: equalizer.parameters,
-        lineColor: (equalizer.parameters != null && equalizer.enabled)
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
-        fillEnabled:
-            (equalizer.parameters != null && equalizer.enabled) ? true : false,
-      ),
-      child: AspectRatio(
-        aspectRatio: 16 / 11,
-        child: SliderTheme(
-          data: Theme.of(context)
-              .sliderTheme
-              .copyWith(trackShape: InactiveSliderTrackShape()),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              for (var band
-                  in equalizer.parameters?.bands ?? List.filled(5, null))
-                Expanded(child: buildSlider(band: band)),
-            ],
+    return RepaintBoundary(
+      child: CustomPaint(
+        painter: EqualizerOverlayPainter(
+          parameters: equalizer.parameters,
+          lineColor: (equalizer.parameters != null && equalizer.enabled)
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
+          fillColor: (equalizer.parameters != null && equalizer.enabled)
+              ? Theme.of(context).colorScheme.inversePrimary
+              : null,
+        ),
+        child: AspectRatio(
+          aspectRatio: 16 / 11,
+          child: SliderTheme(
+            data: Theme.of(context)
+                .sliderTheme
+                .copyWith(trackShape: InactiveSliderTrackShape()),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                for (var band
+                    in equalizer.parameters?.bands ?? List.filled(5, null))
+                  Expanded(child: buildSlider(band: band)),
+              ],
+            ),
           ),
         ),
       ),

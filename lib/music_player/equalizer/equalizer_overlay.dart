@@ -11,9 +11,8 @@ class EqualizerOverlayPainter extends CustomPainter {
     required this.parameters,
     required this.lineColor,
     this.lineWidth = 6.0,
-    this.fillEnabled = true,
-    Color? fillColor,
-  }) : fillColor = fillColor ?? lineColor;
+    this.fillColor,
+  });
 
   /// The Equalizer's parameters.
   final AndroidEqualizerParameters? parameters;
@@ -24,13 +23,11 @@ class EqualizerOverlayPainter extends CustomPainter {
   /// The width of the line connecting the thumbs.
   final double lineWidth;
 
-  final bool fillEnabled;
-
   /// The color used to generate the gradient that is applied to the fill between
   /// the line connecting the thumbs and the center.
   ///
-  /// Default to [lineColor].
-  final Color fillColor;
+  /// If null, no fill is rendered.
+  final Color? fillColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -79,16 +76,16 @@ class EqualizerOverlayPainter extends CustomPainter {
         spline.generateSamples(tolerance: 1).map((e) => e.value).toList();
     final Path splinePath = Path()..addPolygon(splinePoints, false);
 
-    if (fillEnabled) {
+    if (fillColor != null) {
       // Fill
       Shader fillShader({Alignment? start, Alignment? end}) => LinearGradient(
             begin: start ?? Alignment.center,
             end: end ?? Alignment.bottomCenter,
             stops: const [0, 0.2, 1],
             colors: [
-              fillColor.withOpacity(0),
-              fillColor.withOpacity(0.3),
-              fillColor.withOpacity(1),
+              fillColor!.withOpacity(0),
+              fillColor!.withOpacity(0.3),
+              fillColor!.withOpacity(1),
             ],
           ).createShader(Offset.zero & size);
 
@@ -114,7 +111,6 @@ class EqualizerOverlayPainter extends CustomPainter {
     return parameters != oldDelegate.parameters ||
         lineColor != oldDelegate.lineColor ||
         lineWidth != oldDelegate.lineWidth ||
-        fillEnabled != oldDelegate.fillEnabled ||
         fillColor != oldDelegate.fillColor;
   }
 }
