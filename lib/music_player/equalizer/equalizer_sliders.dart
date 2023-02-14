@@ -22,8 +22,8 @@ class EqualizerSliders extends StatelessWidget {
         fillEnabled:
             (equalizer.parameters != null && equalizer.enabled) ? true : false,
       ),
-      child: SizedBox(
-        height: 250,
+      child: AspectRatio(
+        aspectRatio: 16 / 11,
         child: SliderTheme(
           data: Theme.of(context)
               .sliderTheme
