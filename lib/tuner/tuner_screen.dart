@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/card_list.dart';
 import 'package:musbx/permission_builder.dart';
+import 'package:musbx/screen/card_list.dart';
+import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/tuner/tuning_graph.dart';
@@ -38,14 +39,17 @@ class TunerScreenState extends State<TunerScreen> {
     }
     return StreamBuilder(
       stream: tuner.noteStream,
-      builder: (context, snapshot) => CardList(
-        children: [
-          TunerGauge(
-              note: (tuner.noteHistory.isNotEmpty)
-                  ? tuner.noteHistory.last
-                  : null),
-          TuningGraph(noteHistory: tuner.noteHistory),
-        ],
+      builder: (context, snapshot) => Scaffold(
+        appBar: const DefaultAppBar(),
+        body: CardList(
+          children: [
+            TunerGauge(
+                note: (tuner.noteHistory.isNotEmpty)
+                    ? tuner.noteHistory.last
+                    : null),
+            TuningGraph(noteHistory: tuner.noteHistory),
+          ],
+        ),
       ),
     );
   }
