@@ -5,10 +5,11 @@ Musician's Toolbox offers everything a musician needs for transcribing, practici
 ## Current features
 - Metronome
 - Tuner
-- Music player for changing the pitch and speed of audio
+- Music player featuring:
+    - Slowdowner for changing the pitch and speed of audio
+    - Equalizer
 
 ## Planned features
-- Equalizer
 - Drone
 - Source separation (extracting specific instruments from a song)
 
