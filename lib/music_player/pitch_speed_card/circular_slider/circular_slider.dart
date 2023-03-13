@@ -151,6 +151,8 @@ class CircularSliderState extends State<CircularSlider> {
   /// If [event] is along the slider or inside the thumb, handle pan and return true.
   /// Otherwise, return false,
   bool onPanDown(PointerEvent event) {
+    if (widget.onChanged == null) return false;
+
     final double thumbAngle = widget.startAngle -
         pi / 2 +
         (widget.endAngle - widget.startAngle) * activeFraction;

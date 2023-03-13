@@ -6,6 +6,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
+import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -40,7 +41,10 @@ class MusicPlayer {
       ValueNotifier(MusicPlayerState.idle);
 
   /// The [AudioPlayer] used for playback.
-  final AudioPlayer player = AudioPlayer();
+  late final AudioPlayer player = AudioPlayer(
+    audioPipeline:
+        AudioPipeline(androidAudioEffects: [equalizer.androidEqualizer]),
+  );
 
   /// Used internally to get audio from YouTube.
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
@@ -93,6 +97,9 @@ class MusicPlayer {
 
   /// Component for looping a section of the song.
   final Looper looper = Looper();
+
+  /// Component for adjusting the gain for different frequency bands of the song.
+  final Equalizer equalizer = Equalizer();
 
   /// Play a [PlatformFile].
   Future<void> playFile(PlatformFile file) async {
@@ -192,5 +199,6 @@ class MusicPlayer {
 
     slowdowner.initialize(this);
     looper.initialize(this);
+    equalizer.initialize(this);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/equalizer/equalizer_card.dart';
 import 'package:musbx/music_player/loop_card/loop_card.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/pitch_speed_card/pitch_speed_card.dart';
@@ -54,7 +55,9 @@ If looping is enabled, change what section to loop using the range slider. Use t
                         LoopCard(),
                       ],
                     ),
-                    LoopCard(),
+                    CardList(
+                      children: [EqualizerCard()],
+                    ),
                   ],
                 ),
               ),
