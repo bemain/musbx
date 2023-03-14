@@ -25,7 +25,7 @@ class CircularSlider extends StatefulWidget {
     this.label,
     this.min = 0.0,
     this.max = 1.0,
-    this.divisions,
+    this.divisionValues,
     this.outerRadius = 50,
     this.startAngle = -2.0,
     this.endAngle = 2.0,
@@ -55,15 +55,13 @@ class CircularSlider extends StatefulWidget {
   /// change state until the parent widget rebuilds the slider with the new
   /// value.
   ///
-  /// [continuous] is true if the value was selected during a continuous selection.
-  ///
   /// If null, the slider will be displayed as disabled.
-  final void Function(double value, bool continuous)? onChanged;
+  final void Function(double value)? onChanged;
 
-  /// The number of discrete divisions.
+  /// The values on the slider where divisions are placed.
   ///
   /// If null, the slider is continuous.
-  final int? divisions;
+  final List<double>? divisionValues;
 
   /// Widget displayed in the center of the slider.
   final Widget? label;
@@ -135,7 +133,9 @@ class CircularSliderState extends State<CircularSlider> {
           activeFraction: activeFraction,
           startAngle: widget.startAngle,
           endAngle: widget.endAngle,
-          divisions: widget.divisions,
+          divisions: widget.divisionValues
+              ?.map((value) => (value - widget.min) / (widget.max - widget.min))
+              .toList(),
           dragging: dragging,
           disabled: widget.onChanged == null,
         ),
@@ -151,6 +151,8 @@ class CircularSliderState extends State<CircularSlider> {
   /// If [event] is along the slider or inside the thumb, handle pan and return true.
   /// Otherwise, return false,
   bool onPanDown(PointerEvent event) {
+    if (widget.onChanged == null) return false;
+
     final double thumbAngle = widget.startAngle -
         pi / 2 +
         (widget.endAngle - widget.startAngle) * activeFraction;
@@ -179,10 +181,21 @@ class CircularSliderState extends State<CircularSlider> {
         (angle - widget.startAngle) / (widget.endAngle - widget.startAngle);
     double newValue = fraction * (widget.max - widget.min) + widget.min;
 
-    bool continuous = (localPosition - center).distance <
-        radius + widget.continuousSelectionDistance;
+    if (widget.divisionValues != null &&
+        (localPosition - center).distance <
+            radius + widget.continuousSelectionDistance) {
+      // Snap value to nearest division
+      double nearestDivisionValue = widget.divisionValues![0];
+      for (double divisionValue in widget.divisionValues!) {
+        if ((newValue - divisionValue).abs() <
+            (newValue - nearestDivisionValue).abs()) {
+          nearestDivisionValue = divisionValue;
+        }
+      }
+      newValue = nearestDivisionValue;
+    }
 
-    widget.onChanged?.call(newValue, continuous);
+    widget.onChanged?.call(newValue);
   }
 
   /// Convert global [position] to local coordinate space.

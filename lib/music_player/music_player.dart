@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:audio_service/audio_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -7,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
-import 'package:youtube_api/youtube_api.dart';
+import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
+import 'package:musbx/music_player/equalizer/equalizer.dart';
+import 'package:musbx/music_player/loop_card/looper.dart';
+import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// The state of [MusicPlayer].
@@ -40,7 +41,10 @@ class MusicPlayer {
       ValueNotifier(MusicPlayerState.idle);
 
   /// The [AudioPlayer] used for playback.
-  final AudioPlayer player = AudioPlayer();
+  late final AudioPlayer player = AudioPlayer(
+    audioPipeline:
+        AudioPipeline(androidAudioEffects: [equalizer.androidEqualizer]),
+  );
 
   /// Used internally to get audio from YouTube.
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
@@ -53,31 +57,8 @@ class MusicPlayer {
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {
-    // Clamp position
-    position = Duration(
-      milliseconds: position.inMilliseconds.clamp(
-        (loopEnabled) ? loopSection.start.inMilliseconds : 0,
-        (loopEnabled)
-            ? loopSection.end.inMilliseconds
-            : duration.inMilliseconds,
-      ),
-    );
-
-    await player.seek(position);
+    await player.seek(looper.clampPosition(position, duration: duration));
     await MusicPlayerAudioHandler.instance.seek(position);
-  }
-
-  /// Set the playback speed.
-  Future<void> setSpeed(double speed) async {
-    await player.setSpeed(speed);
-    await MusicPlayerAudioHandler.instance.setSpeed(speed);
-    speedNotifier.value = speed;
-  }
-
-  /// Set how much the pitch will be shifted, in semitones.
-  Future<void> setPitchSemitones(double pitch) async {
-    await player.setPitch(pow(2, pitch / 12).toDouble());
-    pitchSemitonesNotifier.value = pitch;
   }
 
   /// Title of the current song, or `null` if no song loaded.
@@ -85,23 +66,13 @@ class MusicPlayer {
   final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
 
   /// Returns `null` if no song loaded, value otherwise.
-  T? nullIfNoSongElse<T>(T value) =>
+  T? nullIfNoSongElse<T>(T? value) =>
       (isLoading || state == MusicPlayerState.idle) ? null : value;
 
   /// If true, the player is currently in a loading state.
   /// If false, the player is either idle or have loaded audio.
   bool get isLoading => (state == MusicPlayerState.loadingAudio ||
       state == MusicPlayerState.pickingAudio);
-
-  /// How much the pitch will be shifted, in semitones.
-  double get pitchSemitones => pitchSemitonesNotifier.value;
-  set pitchSemitones(double value) => setPitchSemitones(value);
-  final ValueNotifier<double> pitchSemitonesNotifier = ValueNotifier(0);
-
-  /// The playback speed.
-  double get speed => speedNotifier.value;
-  set speed(double value) => setSpeed(value);
-  final ValueNotifier<double> speedNotifier = ValueNotifier(1);
 
   /// The current position of the player.
   Duration get position => positionNotifier.value;
@@ -112,17 +83,6 @@ class MusicPlayer {
   final ValueNotifier<Duration> durationNotifier =
       ValueNotifier(const Duration(seconds: 1));
 
-  /// Whether we are currently looping a section of the song or not.
-  bool get loopEnabled => loopEnabledNotifier.value;
-  set loopEnabled(bool value) => loopEnabledNotifier.value = value;
-  final ValueNotifier<bool> loopEnabledNotifier = ValueNotifier(true);
-
-  /// The section being looped.
-  LoopSection get loopSection => loopSectionNotifier.value;
-  set loopSection(LoopSection section) => loopSectionNotifier.value = section;
-  final ValueNotifier<LoopSection> loopSectionNotifier =
-      ValueNotifier(LoopSection());
-
   /// Whether the player is playing.
   bool get isPlaying => isPlayingNotifier.value;
   set isPlaying(bool value) => value ? play() : pause();
@@ -131,6 +91,15 @@ class MusicPlayer {
   /// Whether the player is buffering audio.
   bool get isBuffering => isBufferingNotifier.value;
   final ValueNotifier<bool> isBufferingNotifier = ValueNotifier(false);
+
+  /// Component for changing the pitch and speed of the song.
+  final Slowdowner slowdowner = Slowdowner();
+
+  /// Component for looping a section of the song.
+  final Looper looper = Looper();
+
+  /// Component for adjusting the gain for different frequency bands of the song.
+  final Equalizer equalizer = Equalizer();
 
   /// Play a [PlatformFile].
   Future<void> playFile(PlatformFile file) async {
@@ -143,7 +112,7 @@ class MusicPlayer {
     // Update songTitle
     songTitleNotifier.value = file.name;
     // Reset loopSection
-    loopSection = LoopSection(end: duration);
+    looper.section = LoopSection(end: duration);
 
     // Inform notification
     MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
@@ -155,7 +124,7 @@ class MusicPlayer {
     stateNotifier.value = MusicPlayerState.ready;
   }
 
-  Future<void> playVideo(YouTubeVideo video) async {
+  Future<void> playVideo(YoutubeVideo video) async {
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 
@@ -172,15 +141,15 @@ class MusicPlayer {
     // Update songTitle
     songTitleNotifier.value = htmlUnescape.convert(video.title);
     // Reset loopSection
-    loopSection = LoopSection(end: duration);
+    looper.section = LoopSection(end: duration);
 
     // Inform notification
     MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
-      id: video.id ?? "",
+      id: video.id,
       title: htmlUnescape.convert(video.title),
       duration: duration,
       artist: htmlUnescape.convert(video.channelTitle),
-      artUri: Uri.tryParse(video.thumbnail.high.url ?? ""),
+      artUri: Uri.tryParse(video.thumbnails.high.url),
     ));
 
     stateNotifier.value = MusicPlayerState.ready;
@@ -196,13 +165,13 @@ class MusicPlayer {
     // position
     player.positionStream.listen((position) async {
       // If we have reached the end of the loop section while looping, seek to the start.
-      if ((isPlaying && loopEnabled && position >= loopSection.end)) {
+      if ((isPlaying && looper.enabled && position >= looper.section.end)) {
         await seek(Duration.zero);
         return;
       }
 
       // If we have reached the end of the song, pause.
-      if (isPlaying && !loopEnabled && position >= duration) {
+      if (isPlaying && !looper.enabled && position >= duration) {
         await player.pause();
         await seek(duration);
         return;
@@ -228,34 +197,8 @@ class MusicPlayer {
       }
     });
 
-    // When loopSection changes, clamp position
-    loopSectionNotifier.addListener(() async {
-      if (!loopEnabled) return;
-      if (position < loopSection.start || position > loopSection.end) {
-        await seek(position);
-      }
-    });
-
-    // When loopEnabled changes, clamp position
-    loopEnabledNotifier.addListener(() async {
-      if (position < loopSection.start || position > loopSection.end) {
-        await seek(position);
-      }
-    });
+    slowdowner.initialize(this);
+    looper.initialize(this);
+    equalizer.initialize(this);
   }
-}
-
-class LoopSection {
-  LoopSection({
-    this.start = Duration.zero,
-    this.end = const Duration(seconds: 1),
-  }) {
-    assert(start <= end);
-  }
-
-  final Duration start;
-  final Duration end;
-
-  /// Duration between [start] and [end].
-  Duration get length => end - start;
 }

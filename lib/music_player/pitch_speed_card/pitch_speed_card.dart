@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/pitch_speed_card/circular_slider/circular_slider.dart';
@@ -13,51 +15,59 @@ class PitchSpeedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child: LayoutBuilder(
-          builder: (context, BoxConstraints constraints) => Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              buildPitchSlider(constraints.maxWidth / 4),
-              buildSpeedSlider(constraints.maxWidth / 4),
-            ],
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.slowdowner.enabledNotifier,
+      builder: (context, loopEnabled, _) => Stack(children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 40),
+          child: LayoutBuilder(
+            builder: (context, BoxConstraints constraints) => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                buildPitchSlider(constraints.maxWidth / 4),
+                buildSpeedSlider(constraints.maxWidth / 4),
+              ],
+            ),
           ),
         ),
-      ),
-      Positioned.fill(
-        child: Align(
-          alignment: Alignment.topCenter,
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Switch(
+            value: loopEnabled,
+            onChanged: musicPlayer.nullIfNoSongElse(
+              (value) => musicPlayer.slowdowner.enabled = value,
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
           child: buildResetButton(),
         ),
-      ),
-    ]);
+      ]),
+    );
   }
 
   Widget buildPitchSlider(double radius) {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.pitchSemitonesNotifier,
+      valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
       builder: (context, pitch, _) => Stack(children: [
         CircularSlider(
           value: pitch,
           min: -12,
           max: 12,
-          divisions: 24,
+          divisionValues: List.generate(25, (i) => i - 12.0),
           outerRadius: radius,
           label: Text(
             ((pitch >= 0) ? "+" : "-") + pitch.abs().toStringAsFixed(1),
             style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
-            (double value, bool continuous) {
-              if (continuous) {
-                value = value.roundToDouble();
-              } else {
-                value = (value * 10).roundToDouble() / 10;
-              }
-              musicPlayer.setPitchSemitones(value);
-            },
+            (!musicPlayer.slowdowner.enabled)
+                ? null
+                : (double value) {
+                    musicPlayer.slowdowner
+                        .setPitchSemitones((value * 10).roundToDouble() / 10);
+                  },
           ),
         ),
         Positioned.fill(
@@ -75,25 +85,28 @@ class PitchSpeedCard extends StatelessWidget {
 
   Widget buildSpeedSlider(double radius) {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.speedNotifier,
+      valueListenable: musicPlayer.slowdowner.speedNotifier,
       builder: (context, speed, _) => Stack(children: [
         CircularSlider(
-          value: speed,
-          min: 0.1,
-          max: 1.9,
-          divisions: 18,
+          value: sqrt(speed - 7 / 16) - 0.25,
+          min: 0,
+          max: 1,
+          divisionValues: List.generate(
+                  21, (i) => (i <= 10) ? 0.5 + i / 20 : 0.5 - 10 / 20 + i / 10)
+              .map((speedValue) => sqrt(speedValue - 7 / 16) - 0.25)
+              .toList(),
           outerRadius: radius,
           label: Text(
             speed.toStringAsFixed(2),
             style: Theme.of(context).textTheme.displaySmall,
           ),
           onChanged: musicPlayer.nullIfNoSongElse(
-            (double value, bool continuous) {
-              if (continuous) {
-                value = (value * 10).roundToDouble() / 10;
-              }
-              musicPlayer.setSpeed(value);
-            },
+            (!musicPlayer.slowdowner.enabled)
+                ? null
+                : (double value) {
+                    musicPlayer.slowdowner
+                        .setSpeed(pow(value, 2) + value / 2 + 0.5);
+                  },
           ),
         ),
         Positioned.fill(
@@ -111,17 +124,17 @@ class PitchSpeedCard extends StatelessWidget {
 
   Widget buildResetButton() {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.speedNotifier,
+      valueListenable: musicPlayer.slowdowner.speedNotifier,
       builder: (_, speed, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.pitchSemitonesNotifier,
+        valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
         builder: (context, pitch, _) => IconButton(
           iconSize: 20,
           onPressed: (speed.toStringAsFixed(2) == "1.00" &&
                   pitch.abs().toStringAsFixed(1) == "0.0")
               ? null
               : () {
-                  musicPlayer.setSpeed(1.0);
-                  musicPlayer.setPitchSemitones(0);
+                  musicPlayer.slowdowner.setSpeed(1.0);
+                  musicPlayer.slowdowner.setPitchSemitones(0);
                 },
           icon: const Icon(Icons.refresh_rounded),
         ),
