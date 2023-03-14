@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/drone/drone_controls.dart';
-import 'package:musbx/card_list.dart';
+import 'package:musbx/screen/card_list.dart';
+import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/widgets.dart';
 
 class DroneScreen extends StatefulWidget {
@@ -20,7 +21,8 @@ class DroneScreenState extends State<DroneScreen> {
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return ErrorScreen(
-                text: "Unable to initialize Drone\n${snapshot.error}");
+              text: "Unable to initialize Drone\n${snapshot.error}",
+            );
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -36,8 +38,11 @@ class DroneScreenState extends State<DroneScreen> {
       );
     }
 
-    return const CardList(children: [
-      DroneControls(),
-    ]);
+    return const Scaffold(
+      appBar: DefaultAppBar(),
+      body: CardList(children: [
+        DroneControls(),
+      ]),
+    );
   }
 }
