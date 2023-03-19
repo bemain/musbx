@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -92,10 +91,6 @@ class Tuner {
         }
       }
       return null;
-    });
-
-    pitchStream.listen((event) {
-      if (event.pitch != -1) print(event.pitch);
     });
 
     initialized = true;

@@ -11,7 +11,7 @@ import device_info_plus
 import dynamic_color
 import just_audio
 import package_info_plus
-import path_provider_macos
+import path_provider_foundation
 import soundpool_macos
 import sqflite
 
