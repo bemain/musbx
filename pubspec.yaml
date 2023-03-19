@@ -48,7 +48,7 @@ dependencies:
 
   #Tuner
   pitch_detector_dart: ^0.0.2
-  mic_stream: ^0.6.2
+  flutter_audio_capture: ^1.1.4
   gauges: ^1.0.0
   html_unescape: ^2.0.0
 
