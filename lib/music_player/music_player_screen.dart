@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/equalizer/equalizer_card.dart';
 import 'package:musbx/music_player/loop_card/loop_card.dart';
@@ -24,6 +26,19 @@ class MusicPlayerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> tabs = [
+      CardList(
+        children: [
+          PitchSpeedCard(),
+          LoopCard(),
+        ],
+      ),
+      if (!Platform.isIOS)
+        CardList(
+          children: [EqualizerCard()],
+        ),
+    ];
+
     return ValueListenableBuilder(
       valueListenable: MusicPlayer.instance.stateNotifier,
       builder: (context, state, _) => Scaffold(
@@ -33,10 +48,10 @@ Adjust pitch and speed using the circular sliders. While selecting, greater accu
 If looping is enabled, change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.""",
         ),
         body: DefaultTabController(
-          length: 2,
+          length: tabs.length,
           child: Column(
             children: [
-              const EmptyTabBar(),
+              if (tabs.length > 1) const EmptyTabBar(),
               WidgetCard(
                 child: Column(
                   children: [
@@ -47,19 +62,7 @@ If looping is enabled, change what section to loop using the range slider. Use t
                 ),
               ),
               Expanded(
-                child: TabBarView(
-                  children: [
-                    CardList(
-                      children: [
-                        PitchSpeedCard(),
-                        LoopCard(),
-                      ],
-                    ),
-                    CardList(
-                      children: [EqualizerCard()],
-                    ),
-                  ],
-                ),
+                child: TabBarView(children: tabs),
               ),
             ],
           ),
