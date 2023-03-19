@@ -427,11 +427,12 @@ packages:
   mic_stream:
     dependency: "direct main"
     description:
-      name: mic_stream
-      sha256: a64a233c4e9aa651e88384f5b68227901d09d670150fbf8be10add70ea979ca3
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.2"
+      path: "."
+      ref: main
+      resolved-ref: e6a56702174b4ec33bedb26408c26eb592e9e4c0
+      url: "https://github.com/yama-yeah/mic_stream"
+    source: git
+    version: "0.6.4"
   mime:
     dependency: transitive
     description:

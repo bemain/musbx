@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/tuner/note.dart';
@@ -43,17 +45,36 @@ class Tuner {
   ///
   /// Assumes permission to access the microphone has already been given.
   Future<void> initialize() async {
-    final Stream<List<int>>? audioStream = await MicStream.microphone();
+    final Stream<Uint8List>? audioStream = await MicStream.microphone(
+      sampleRate: 16000,
+      audioFormat: Platform.isIOS
+          ? AudioFormat.ENCODING_PCM_16BIT
+          : AudioFormat.ENCODING_PCM_8BIT,
+    );
     if (audioStream == null) {
       throw "TUNER: Unable to capture audio from microphone";
     }
+    int bitDepth = await MicStream.bitDepth!;
     sampleRate = await MicStream.sampleRate!;
     bufferSize = await MicStream.bufferSize!;
 
-    final PitchDetector pitchDetector = PitchDetector(sampleRate, bufferSize);
-    final Stream<PitchDetectorResult> pitchStream = audioStream.map((audio) =>
-        pitchDetector
-            .getPitch(audio.map((int val) => val.toDouble()).toList()));
+    print("Sample rate: $sampleRate");
+    print("Buffer size: $bufferSize");
+    print("bitDepth: $bitDepth");
+
+    final Stream<PitchDetectorResult> pitchStream = audioStream.map((audio) {
+      List<double> formattedAudio =
+          (bitDepth == 16 ? audio.buffer.asUint16List(0, bufferSize) : audio)
+              .map((int val) => val.toDouble())
+              .toList();
+
+      // print("audio: ${audio.length}");
+      // print("formattedAudio: ${formattedAudio.length}");
+
+      final PitchDetector pitchDetector = PitchDetector(sampleRate, bufferSize);
+
+      return pitchDetector.getPitch(formattedAudio);
+    });
 
     noteStream = pitchStream.map((result) {
       if (result.pitched) {
@@ -67,11 +88,14 @@ class Tuner {
       return null;
     });
 
+    pitchStream.listen((event) {
+      if (event.pitch != -1) print(event.pitch);
+    });
+
     initialized = true;
   }
 
-  /// Calculate the average of the last [averageNotesN] frequencies and add a
-  /// [Note] with that frequency to [noteHistory].
+  /// Calculate the average of the last [averageNotesN] frequencies.
   Note? _getAverageNote() {
     List<double> previousFrequencies = _frequencyHistory
         // Only the [averageNotesN] last entries
