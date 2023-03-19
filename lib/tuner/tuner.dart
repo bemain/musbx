@@ -15,8 +15,6 @@ class Tuner {
   static final Tuner instance = Tuner._();
 
   final FlutterAudioCapture _audioCapture = FlutterAudioCapture();
-  final PitchDetector _pitchDetector =
-      PitchDetector(defaultSampleRate, bufferSize);
 
   /// The number of notes to take average of.
   static const int averageNotesN = 15;
@@ -52,6 +50,8 @@ class Tuner {
   /// Assumes permission to access the microphone has already been given.
   Future<void> initialize() async {
     late final StreamController<List<double>> audioStreamController;
+    final PitchDetector pitchDetector =
+        PitchDetector(defaultSampleRate, bufferSize);
 
     void startRecording() async {
       await _audioCapture.start(
@@ -67,10 +67,8 @@ class Tuner {
       );
     }
 
-    audioStreamController = StreamController<List<double>>(
+    audioStreamController = StreamController<List<double>>.broadcast(
       onListen: startRecording,
-      onPause: _audioCapture.stop,
-      onResume: startRecording,
       onCancel: _audioCapture.stop,
     );
 
@@ -78,7 +76,7 @@ class Tuner {
         audioStreamController.stream.map((List<double> audio) {
       List<double> formattedAudio =
           audio.map((value) => (value / 2 + 0.5) * 255).toList();
-      return _pitchDetector.getPitch(formattedAudio);
+      return pitchDetector.getPitch(formattedAudio);
     });
 
     noteStream = pitchStream.map((result) {
