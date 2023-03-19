@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:mic_stream/mic_stream.dart';
+import 'package:flutter_audio_capture/flutter_audio_capture.dart';
 import 'package:musbx/tuner/note.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitch_detector_dart/pitch_detector_result.dart';
@@ -15,17 +15,24 @@ class Tuner {
   /// The instance of this singleton.
   static final Tuner instance = Tuner._();
 
+  final FlutterAudioCapture _audioCapture = FlutterAudioCapture();
+  final PitchDetector _pitchDetector =
+      PitchDetector(defaultSampleRate, bufferSize);
+
   /// The number of notes to take average of.
   static const int averageNotesN = 15;
 
   /// How many cents off a Note can be to be considered in tune.
   static const double inTuneThreshold = 10;
 
-  /// Sample rate of the recording.
-  late final double sampleRate;
+  /// The desired sample rate of the recording.
+  static const double defaultSampleRate = 44100;
 
   /// The amount of recorded data per sample, in bytes.
-  late final int bufferSize;
+  static const int bufferSize = 2048;
+
+  /// The actual sample rate of the recording.
+  double get sampleRate => _audioCapture.actualSampleRate ?? defaultSampleRate;
 
   /// Whether the Tuner has been initialized or not.
   /// If true, [noteStream] has been created.
@@ -45,35 +52,34 @@ class Tuner {
   ///
   /// Assumes permission to access the microphone has already been given.
   Future<void> initialize() async {
-    final Stream<Uint8List>? audioStream = await MicStream.microphone(
-      sampleRate: 16000,
-      audioFormat: Platform.isIOS
-          ? AudioFormat.ENCODING_PCM_16BIT
-          : AudioFormat.ENCODING_PCM_8BIT,
-    );
-    if (audioStream == null) {
-      throw "TUNER: Unable to capture audio from microphone";
+    late final StreamController<List<double>> audioStreamController;
+
+    void startRecording() async {
+      await _audioCapture.start(
+        (dynamic obj) {
+          Float64List buffer = Float64List.fromList(obj.cast<double>());
+          audioStreamController.add(buffer.toList());
+        },
+        (Object error, StackTrace stackTrace) {
+          throw "TUNER: Unable to capture audio from microphone";
+        },
+        sampleRate: defaultSampleRate.toInt(),
+        bufferSize: bufferSize,
+      );
     }
-    int bitDepth = await MicStream.bitDepth!;
-    sampleRate = await MicStream.sampleRate!;
-    bufferSize = await MicStream.bufferSize!;
 
-    print("Sample rate: $sampleRate");
-    print("Buffer size: $bufferSize");
-    print("bitDepth: $bitDepth");
+    audioStreamController = StreamController<List<double>>(
+      onListen: startRecording,
+      onPause: _audioCapture.stop,
+      onResume: startRecording,
+      onCancel: _audioCapture.stop,
+    );
 
-    final Stream<PitchDetectorResult> pitchStream = audioStream.map((audio) {
+    final Stream<PitchDetectorResult> pitchStream =
+        audioStreamController.stream.map((List<double> audio) {
       List<double> formattedAudio =
-          (bitDepth == 16 ? audio.buffer.asUint16List(0, bufferSize) : audio)
-              .map((int val) => val.toDouble())
-              .toList();
-
-      // print("audio: ${audio.length}");
-      // print("formattedAudio: ${formattedAudio.length}");
-
-      final PitchDetector pitchDetector = PitchDetector(sampleRate, bufferSize);
-
-      return pitchDetector.getPitch(formattedAudio);
+          audio.map((value) => (value / 2 + 0.5) * 255).toList();
+      return _pitchDetector.getPitch(formattedAudio);
     });
 
     noteStream = pitchStream.map((result) {
