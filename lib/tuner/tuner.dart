@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 
-import 'package:mic_stream/mic_stream.dart';
+import 'package:flutter_audio_capture/flutter_audio_capture.dart';
 import 'package:musbx/tuner/note.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitch_detector_dart/pitch_detector_result.dart';
@@ -13,17 +14,22 @@ class Tuner {
   /// The instance of this singleton.
   static final Tuner instance = Tuner._();
 
+  final FlutterAudioCapture _audioCapture = FlutterAudioCapture();
+
   /// The number of notes to take average of.
   static const int averageNotesN = 15;
 
   /// How many cents off a Note can be to be considered in tune.
   static const double inTuneThreshold = 10;
 
-  /// Sample rate of the recording.
-  late final double sampleRate;
+  /// The desired sample rate of the recording.
+  static const double defaultSampleRate = 44100;
 
   /// The amount of recorded data per sample, in bytes.
-  late final int bufferSize;
+  static const int bufferSize = 2048;
+
+  /// The actual sample rate of the recording.
+  double get sampleRate => _audioCapture.actualSampleRate ?? defaultSampleRate;
 
   /// Whether the Tuner has been initialized or not.
   /// If true, [noteStream] has been created.
@@ -43,17 +49,35 @@ class Tuner {
   ///
   /// Assumes permission to access the microphone has already been given.
   Future<void> initialize() async {
-    final Stream<List<int>>? audioStream = await MicStream.microphone();
-    if (audioStream == null) {
-      throw "TUNER: Unable to capture audio from microphone";
-    }
-    sampleRate = await MicStream.sampleRate!;
-    bufferSize = await MicStream.bufferSize!;
+    late final StreamController<List<double>> audioStreamController;
+    final PitchDetector pitchDetector =
+        PitchDetector(defaultSampleRate, bufferSize);
 
-    final PitchDetector pitchDetector = PitchDetector(sampleRate, bufferSize);
-    final Stream<PitchDetectorResult> pitchStream = audioStream.map((audio) =>
-        pitchDetector
-            .getPitch(audio.map((int val) => val.toDouble()).toList()));
+    void startRecording() async {
+      await _audioCapture.start(
+        (dynamic obj) {
+          Float64List buffer = Float64List.fromList(obj.cast<double>());
+          audioStreamController.add(buffer.toList());
+        },
+        (Object error, StackTrace stackTrace) {
+          throw "TUNER: Unable to capture audio from microphone";
+        },
+        sampleRate: defaultSampleRate.toInt(),
+        bufferSize: bufferSize,
+      );
+    }
+
+    audioStreamController = StreamController<List<double>>.broadcast(
+      onListen: startRecording,
+      onCancel: _audioCapture.stop,
+    );
+
+    final Stream<PitchDetectorResult> pitchStream =
+        audioStreamController.stream.map((List<double> audio) {
+      List<double> formattedAudio =
+          audio.map((value) => (value / 2 + 0.5) * 255).toList();
+      return pitchDetector.getPitch(formattedAudio);
+    });
 
     noteStream = pitchStream.map((result) {
       if (result.pitched) {
@@ -70,8 +94,7 @@ class Tuner {
     initialized = true;
   }
 
-  /// Calculate the average of the last [averageNotesN] frequencies and add a
-  /// [Note] with that frequency to [noteHistory].
+  /// Calculate the average of the last [averageNotesN] frequencies.
   Note? _getAverageNote() {
     List<double> previousFrequencies = _frequencyHistory
         // Only the [averageNotesN] last entries

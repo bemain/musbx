@@ -48,7 +48,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-    <!-- Required by mic_stream package. -->
+    <!-- Required by flutter_audio_capture package. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <!-- Required by audio_service package. -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
