@@ -71,10 +71,12 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 # To apply changes to the icon configuration, run:
-# `flutter pub run flutter_launcher_icons:main`
+# `flutter pub run flutter_launcher_icons`
 flutter_icons:
   android: true
+  min_sdk_android: 16
   ios: true
+  image_path_ios: "assets/icon/musbx_ios.png"
   remove_alpha_ios: true
   image_path: "assets/icon/musbx.png"
   adaptive_icon_background: "assets/icon/musbx_background.png"

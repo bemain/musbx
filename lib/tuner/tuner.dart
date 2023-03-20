@@ -96,10 +96,8 @@ class Tuner {
       );
     }
 
-    audioStreamController = StreamController<List<double>>(
+    audioStreamController = StreamController<List<double>>.broadcast(
       onListen: startRecording,
-      onPause: _audioCapture.stop,
-      onResume: startRecording,
       onCancel: _audioCapture.stop,
     );
 
@@ -123,8 +121,7 @@ class Tuner {
         audioSample.map((value) => value.toDouble()).toList());
   }
 
-  /// Calculate the average of the last [averageNotesN] frequencies and add a
-  /// [Note] with that frequency to [noteHistory].
+  /// Calculate the average of the last [averageNotesN] frequencies.
   Note? _getAverageNote() {
     List<double> previousFrequencies = _frequencyHistory
         // Only the [averageNotesN] last entries

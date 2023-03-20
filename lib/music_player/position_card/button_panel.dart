@@ -13,56 +13,90 @@ class ButtonPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        TextButton(
-          onPressed: musicPlayer.nullIfNoSongElse(() {
-            musicPlayer.seek(Duration.zero);
-          }),
-          child: const Icon(Icons.skip_previous_rounded, size: 40),
-        ),
-        ContinuousTextButton(
-          onPressed: musicPlayer.nullIfNoSongElse(() {
-            musicPlayer.seek(musicPlayer.position - const Duration(seconds: 1));
-          }),
-          child: const Icon(Icons.fast_rewind_rounded, size: 40),
-        ),
-        ValueListenableBuilder<bool>(
-          valueListenable: musicPlayer.isPlayingNotifier,
-          builder: (_, isPlaying, __) => ValueListenableBuilder<bool>(
-            valueListenable: musicPlayer.isBufferingNotifier,
-            builder: (context, isBuffering, _) {
-              return TextButton(
-                onPressed: musicPlayer.nullIfNoSongElse(() {
-                  if (isPlaying) {
-                    musicPlayer.pause();
-                  } else {
-                    musicPlayer.play();
-                  }
-                }),
-                child: (musicPlayer.isLoading || isBuffering)
-                    ? const Padding(
-                        padding: EdgeInsets.all(19.5),
-                        child: CircularProgressIndicator())
-                    : Icon(
-                        isPlaying
-                            ? Icons.stop_rounded
-                            : Icons.play_arrow_rounded,
-                        size: 75,
-                      ),
-              );
-            },
+        Flexible(
+          flex: 2,
+          child: TextButton(
+            onPressed: musicPlayer.nullIfNoSongElse(() {
+              musicPlayer.seek(Duration.zero);
+            }),
+            child: expandedIcon(Icons.skip_previous_rounded),
           ),
         ),
-        ContinuousTextButton(
-          onPressed: musicPlayer.nullIfNoSongElse(() {
-            musicPlayer.seek(musicPlayer.position + const Duration(seconds: 1));
-          }),
-          child: const Icon(Icons.fast_forward_rounded, size: 40),
+        Flexible(
+          flex: 2,
+          child: ContinuousTextButton(
+            onPressed: musicPlayer.nullIfNoSongElse(() {
+              musicPlayer
+                  .seek(musicPlayer.position - const Duration(seconds: 1));
+            }),
+            child: expandedIcon(Icons.fast_rewind_rounded),
+          ),
+        ),
+        Flexible(
+          fit: FlexFit.tight,
+          flex: 3,
+          child: ValueListenableBuilder<bool>(
+            valueListenable: musicPlayer.isPlayingNotifier,
+            builder: (_, isPlaying, __) => ValueListenableBuilder<bool>(
+              valueListenable: musicPlayer.isBufferingNotifier,
+              builder: (context, isBuffering, _) {
+                return TextButton(
+                  onPressed: musicPlayer.nullIfNoSongElse(() {
+                    if (isPlaying) {
+                      musicPlayer.pause();
+                    } else {
+                      musicPlayer.play();
+                    }
+                  }),
+                  child: (musicPlayer.isLoading || isBuffering)
+                      ? LayoutBuilder(
+                          builder: (context, constraint) => SizedBox.square(
+                            dimension: constraint.biggest.width,
+                            child: const Padding(
+                              padding: EdgeInsets.all(10),
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                        )
+                      : expandedIcon(
+                          isPlaying
+                              ? Icons.stop_rounded
+                              : Icons.play_arrow_rounded,
+                        ),
+                );
+              },
+            ),
+          ),
+        ),
+        Flexible(
+          flex: 2,
+          child: ContinuousTextButton(
+            onPressed: musicPlayer.nullIfNoSongElse(() {
+              musicPlayer
+                  .seek(musicPlayer.position + const Duration(seconds: 1));
+            }),
+            child: expandedIcon(Icons.fast_forward_rounded),
+          ),
         ),
         // Placeholder, only there to take space so the play button is centered
-        const TextButton(onPressed: null, child: Icon(null, size: 40)),
+        Flexible(
+          flex: 2,
+          child: TextButton(onPressed: null, child: expandedIcon(null)),
+        ),
       ],
+    );
+  }
+
+  /// Makes [icon] fill the available space.
+  Widget expandedIcon(IconData? icon) {
+    return LayoutBuilder(
+      builder: (context, constraint) => Icon(
+        icon,
+        size: constraint.biggest.width,
+      ),
     );
   }
 }
