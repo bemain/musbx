@@ -25,10 +25,10 @@ class Tuner {
   static const double inTuneThreshold = 10;
 
   /// The amount of recorded data per sample, in bytes.
-  int bufferSize = 2048;
+  late final int bufferSize;
 
   /// The sample rate of the recording.
-  double sampleRate = 44100;
+  late final double sampleRate;
 
   /// Whether the Tuner has been initialized or not.
   /// If true, [noteStream] has been created.
@@ -53,13 +53,8 @@ class Tuner {
         : audioStreamUsingMicStream());
 
     final PitchDetector pitchDetector = PitchDetector(sampleRate, bufferSize);
-
     final Stream<PitchDetectorResult> pitchStream =
-        audioStream.map((List<double> audio) {
-      List<double> formattedAudio =
-          audio.map((value) => (value / 2 + 0.5) * 255).toList();
-      return pitchDetector.getPitch(formattedAudio);
-    });
+        audioStream.map(pitchDetector.getPitch);
 
     noteStream = pitchStream.map((result) {
       if (result.pitched) {
@@ -80,6 +75,9 @@ class Tuner {
   ///
   /// The returned list contains [double]s between 0 and 255.
   Future<Stream<List<double>>> audioStreamUsingFlutterAudioCapture() async {
+    const int defaultSampleRate = 16000;
+    const int defaultBufferSize = 640;
+
     late final StreamController<List<double>> audioStreamController;
 
     void startRecording() async {
@@ -91,8 +89,9 @@ class Tuner {
         (Object error, StackTrace stackTrace) {
           throw "TUNER: Unable to capture audio from microphone";
         },
-        sampleRate: sampleRate.toInt(),
-        bufferSize: bufferSize,
+        waitForFirstDataOnAndroid: false,
+        sampleRate: defaultSampleRate,
+        bufferSize: defaultBufferSize,
       );
     }
 
@@ -101,9 +100,11 @@ class Tuner {
       onCancel: _audioCapture.stop,
     );
 
-    sampleRate = _audioCapture.actualSampleRate ?? sampleRate;
+    sampleRate = _audioCapture.actualSampleRate ?? defaultSampleRate.toDouble();
+    bufferSize = defaultBufferSize;
 
-    return audioStreamController.stream;
+    return audioStreamController.stream.map((List<double> audioSample) =>
+        audioSample.map((value) => (value / 2 + 0.5) * 255).toList());
   }
 
   /// Uses the package mic_stream to record audio to a stream.
