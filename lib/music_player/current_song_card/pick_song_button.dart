@@ -64,7 +64,7 @@ class PickSongButton extends StatelessWidget {
       return;
     }
 
-    await musicPlayer.playFile(result.files.single);
+    await musicPlayer.loadFile(result.files.single);
   }
 
   Future<void> showUnsupportedFileExtensionDialog(String extension) async {

@@ -101,33 +101,45 @@ class MusicPlayer {
   /// Component for adjusting the gain for different frequency bands of the song.
   final Equalizer equalizer = Equalizer();
 
-  /// Play a [PlatformFile].
-  Future<void> playFile(PlatformFile file) async {
+  /// Load a song to play from [audioSource].
+  ///
+  /// Prepares for playing the audio provided by the source, and updates the media player notification.
+  /// The song title is determined using the values offered by [mediaItem].
+  Future<void> loadAudioSource(
+    AudioSource audioSource,
+    MediaItem mediaItem,
+  ) async {
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 
-    // Load file
-    await player.setFilePath(file.path!);
+    // Load audio
+    await player.setAudioSource(audioSource);
 
     // Update songTitle
-    songTitleNotifier.value = file.name;
+    songTitleNotifier.value = mediaItem.title;
     // Reset loopSection
     looper.section = LoopSection(end: duration);
 
-    // Inform notification
-    MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
-      id: file.path!,
-      title: file.name,
-      duration: player.duration,
-    ));
+    // Update the media player notification
+    MusicPlayerAudioHandler.instance.mediaItem.add(mediaItem);
 
     stateNotifier.value = MusicPlayerState.ready;
   }
 
-  Future<void> playVideo(YoutubeVideo video) async {
-    await pause();
-    stateNotifier.value = MusicPlayerState.loadingAudio;
+  /// Load a song to play from a [PlatformFile].
+  Future<void> loadFile(PlatformFile file) async {
+    await loadAudioSource(
+      AudioSource.uri(Uri.file(file.path!)),
+      MediaItem(
+        id: file.path!,
+        title: file.name,
+        duration: player.duration,
+      ),
+    );
+  }
 
+  /// Load a song to play from a [YoutubeVideo].
+  Future<void> loadVideo(YoutubeVideo video) async {
     // Get stream info
     StreamManifest manifest =
         await _youtubeExplode.videos.streams.getManifest(video.id);
@@ -135,24 +147,16 @@ class MusicPlayer {
 
     HtmlUnescape htmlUnescape = HtmlUnescape();
 
-    // Set URL
-    await player.setUrl(streamInfo.url.toString());
-
-    // Update songTitle
-    songTitleNotifier.value = htmlUnescape.convert(video.title);
-    // Reset loopSection
-    looper.section = LoopSection(end: duration);
-
-    // Inform notification
-    MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
-      id: video.id,
-      title: htmlUnescape.convert(video.title),
-      duration: duration,
-      artist: htmlUnescape.convert(video.channelTitle),
-      artUri: Uri.tryParse(video.thumbnails.high.url),
-    ));
-
-    stateNotifier.value = MusicPlayerState.ready;
+    await loadAudioSource(
+      AudioSource.uri(Uri.parse(streamInfo.url.toString())),
+      MediaItem(
+        id: video.id,
+        title: htmlUnescape.convert(video.title),
+        duration: duration,
+        artist: htmlUnescape.convert(video.channelTitle),
+        artUri: Uri.tryParse(video.thumbnails.high.url),
+      ),
+    );
   }
 
   /// Listen for changes from [player].

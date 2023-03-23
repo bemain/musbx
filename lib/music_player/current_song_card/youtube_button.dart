@@ -27,7 +27,7 @@ class YoutubeButton extends StatelessWidget {
               );
 
               if (video != null) {
-                musicPlayer.playVideo(video);
+                musicPlayer.loadVideo(video);
               }
             },
       child: const Icon(CustomIcons.youtube),
