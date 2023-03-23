@@ -9,6 +9,7 @@ import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
+import 'package:musbx/widgets.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// The state of [MusicPlayer].
@@ -78,7 +79,8 @@ class MusicPlayer {
   Duration get position => positionNotifier.value;
   final ValueNotifier<Duration> positionNotifier = ValueNotifier(Duration.zero);
 
-  /// The duration of the current audio, or null if no audio has been loaded.
+  /// The duration of the current audio.
+  /// Only valid if a song has been loaded.
   Duration get duration => durationNotifier.value;
   final ValueNotifier<Duration> durationNotifier =
       ValueNotifier(const Duration(seconds: 1));
@@ -157,6 +159,31 @@ class MusicPlayer {
         artUri: Uri.tryParse(video.thumbnails.high.url),
       ),
     );
+  }
+
+  /// Load settings for a song from a [json] map.
+  ///
+  /// Called when a song that has preferences saved is loaded.
+  void loadSettingsFromJson(Map<String, dynamic> json) {
+    int? position = tryCast<int>(json["position"]);
+    if (position != null && position < duration.inMilliseconds) {
+      seek(Duration(milliseconds: position));
+    }
+
+    var slowdownerSettings = tryCast<Map<String, dynamic>>(json["slowdowner"]);
+    if (slowdownerSettings != null) {
+      slowdowner.loadSettingsFromJson(slowdownerSettings);
+    }
+
+    var looperSettings = tryCast<Map<String, dynamic>>(json["looper"]);
+    if (looperSettings != null) {
+      looper.loadSettingsFromJson(looperSettings);
+    }
+
+    var equalizerSettings = tryCast<Map<String, dynamic>>(json["equalizer"]);
+    if (equalizerSettings != null) {
+      equalizer.loadSettingsFromJson(equalizerSettings);
+    }
   }
 
   /// Listen for changes from [player].
