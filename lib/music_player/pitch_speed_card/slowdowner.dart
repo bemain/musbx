@@ -68,7 +68,10 @@ class Slowdowner extends MusicPlayerComponent {
   void loadSettingsFromJson(Map<String, dynamic> json) {
     super.loadSettingsFromJson(json);
 
-    pitchSemitones = json["pitchSemitones"] as double? ?? pitchSemitones;
-    speed = json["speed"] as double? ?? speed;
+    double? newPitch = json["pitchSemitones"] as double?;
+    double? newSpeed = json["speed"] as double?;
+
+    pitchSemitones = newPitch?.clamp(-12, 12) ?? pitchSemitones;
+    speed = newSpeed?.clamp(0.5, 2) ?? speed;
   }
 }
