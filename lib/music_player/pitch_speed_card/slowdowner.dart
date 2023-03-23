@@ -58,4 +58,17 @@ class Slowdowner extends MusicPlayerComponent {
       }
     });
   }
+
+  /// Load settings from a [json] map.
+  ///
+  /// [json] can contain the following key-value pairs (beyond "enabled"):
+  ///   "pitchSemitones": [double] How much the pitch will be shifted, in semitones..
+  ///   "speed": [double] The playback speed of the audio, as a fraction.
+  @override
+  void loadSettingsFromJson(Map<String, dynamic> json) {
+    super.loadSettingsFromJson(json);
+
+    pitchSemitones = json["pitchSemitones"] as double? ?? pitchSemitones;
+    speed = json["speed"] as double? ?? speed;
+  }
 }

@@ -17,4 +17,18 @@ abstract class MusicPlayerComponent {
   /// This includes listening to any of [MusicPlayer]'s ValueNotifiers that the
   /// component needs to respond to, and adding triggers for updating values on [MusicPlayer].
   void initialize(MusicPlayer musicPlayer);
+
+  /// Load settings from a [json] map.
+  ///
+  /// Called when a song that has preferences saved is loaded.
+  ///
+  /// By default, handles the following key-value pair:
+  ///   "enabled": [bool] Whether this component is enabled or not.
+  ///
+  /// Implementations should be able to handle a value being null,
+  /// and never expect a specific key to exist in [json].
+  @mustCallSuper
+  void loadSettingsFromJson(Map<String, dynamic> json) {
+    enabled = json["enabled"] as bool? ?? enabled;
+  }
 }

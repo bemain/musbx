@@ -39,6 +39,21 @@ class Looper extends MusicPlayerComponent {
       ),
     );
   }
+
+  /// Load settings from a [json] map.
+  ///
+  /// [json] can contain the following key-value pairs (beyond "enabled"):
+  ///   "start": [int] The start position of the section being looped, in milliseconds.
+  ///   "end": [int] The end position of the section being looped, in milliseconds.
+  @override
+  void loadSettingsFromJson(Map<String, dynamic> json) {
+    super.loadSettingsFromJson(json);
+
+    section = LoopSection(
+      start: Duration(milliseconds: (json["start"] as int?) ?? 0),
+      end: Duration(milliseconds: (json["end"] as int?) ?? 0),
+    );
+  }
 }
 
 /// Representation of a sect by [Looper] to select what section of the song to loop.
