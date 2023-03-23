@@ -44,8 +44,8 @@ class Looper extends MusicPlayerComponent {
   /// Load settings from a [json] map.
   ///
   /// [json] can contain the following key-value pairs (beyond "enabled"):
-  ///   "start": [int] The start position of the section being looped, in milliseconds.
-  ///   "end": [int] The end position of the section being looped, in milliseconds.
+  ///  - "start": [int] The start position of the section being looped, in milliseconds.
+  ///  - "end": [int] The end position of the section being looped, in milliseconds.
   ///
   /// If start and end don't make a valid LoopSection (e.g. if start > end) the looped [section] is not set.
   @override
@@ -74,6 +74,20 @@ class Looper extends MusicPlayerComponent {
       start: (start == null) ? section.start : Duration(milliseconds: start),
       end: (end == null) ? section.end : Duration(milliseconds: end),
     );
+  }
+
+  /// Save settings for a song to a json map.
+  ///
+  /// Saves the following key-value pairs (beyond "enabled"):
+  ///  - "start": [int] The start position of the section being looped, in milliseconds.
+  ///  - "end": [int] The end position of the section being looped, in milliseconds.
+  @override
+  Map<String, dynamic> saveSettingsToJson() {
+    return {
+      ...super.saveSettingsToJson(),
+      "start": section.start.inMilliseconds,
+      "end": section.end.inMilliseconds,
+    };
   }
 }
 

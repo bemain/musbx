@@ -186,6 +186,16 @@ class MusicPlayer {
     }
   }
 
+  /// Save preferences for a song to a json map.
+  Map<String, dynamic> saveSettingsToJson() {
+    return {
+      "position": position.inMilliseconds,
+      "slowdowner": slowdowner.saveSettingsToJson(),
+      "looper": looper.saveSettingsToJson(),
+      "equalizer": equalizer.saveSettingsToJson(),
+    };
+  }
+
   /// Listen for changes from [player].
   void _init() {
     // isPlaying

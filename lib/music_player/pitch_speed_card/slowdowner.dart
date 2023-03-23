@@ -63,8 +63,8 @@ class Slowdowner extends MusicPlayerComponent {
   /// Load settings from a [json] map.
   ///
   /// [json] can contain the following key-value pairs (beyond "enabled"):
-  ///   "pitchSemitones": [double] How much the pitch will be shifted, in semitones..
-  ///   "speed": [double] The playback speed of the audio, as a fraction.
+  ///  - "pitchSemitones": [double] How much the pitch will be shifted, in semitones..
+  ///  - "speed": [double] The playback speed of the audio, as a fraction.
   @override
   void loadSettingsFromJson(Map<String, dynamic> json) {
     super.loadSettingsFromJson(json);
@@ -74,5 +74,19 @@ class Slowdowner extends MusicPlayerComponent {
 
     pitchSemitones = newPitch?.clamp(-12, 12) ?? pitchSemitones;
     speed = newSpeed?.clamp(0.5, 2) ?? speed;
+  }
+
+  /// Save settings for a song to a json map.
+  ///
+  /// Saves the following key-value pairs (beyond "enabled"):
+  ///  - "pitchSemitones": [double] How much the pitch will be shifted, in semitones..
+  ///  - "speed": [double] The playback speed of the audio, as a fraction.
+  @override
+  Map<String, dynamic> saveSettingsToJson() {
+    return {
+      ...super.saveSettingsToJson(),
+      "pitchSemitones": pitchSemitones,
+      "speed": speed,
+    };
   }
 }
