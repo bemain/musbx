@@ -47,7 +47,12 @@ class Equalizer extends MusicPlayerComponent {
     super.loadSettingsFromJson(json);
 
     (json["gain"] as Map<int, double>?)?.forEach((int index, double gain) {
-      parameters!.bands[index].setGain(gain);
+      if (parameters!.bands.length > index) {
+        parameters!.bands[index].setGain(gain.clamp(
+          parameters!.minDecibels,
+          parameters!.maxDecibels,
+        ));
+      }
     });
   }
 }
