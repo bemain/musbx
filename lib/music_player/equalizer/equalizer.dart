@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
+import 'package:musbx/widgets.dart';
 
 class Equalizer extends MusicPlayerComponent {
   /// The [AndroidEqualizer] used internally to adjust the gain for different frequency bands.
@@ -46,7 +47,7 @@ class Equalizer extends MusicPlayerComponent {
   void loadSettingsFromJson(Map<String, dynamic> json) async {
     super.loadSettingsFromJson(json);
 
-    (json["gain"] as Map<int, double>?)?.forEach((int index, double gain) {
+    tryCast<Map<int, double>>(json["gain"])?.forEach((int index, double gain) {
       if (parameters!.bands.length > index) {
         parameters!.bands[index].setGain(gain.clamp(
           parameters!.minDecibels,

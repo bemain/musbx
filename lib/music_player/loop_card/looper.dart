@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
+import 'package:musbx/widgets.dart';
 
 /// A component for [MusicPlayer] that is used to loop a section of a song.
 class Looper extends MusicPlayerComponent {
@@ -51,19 +52,17 @@ class Looper extends MusicPlayerComponent {
   void loadSettingsFromJson(Map<String, dynamic> json) {
     super.loadSettingsFromJson(json);
 
-    int? start = json["start"] as int?;
-    int? end = json["end"] as int?;
+    int? start = tryCast<int>(json["start"]);
+    int? end = tryCast<int>(json["end"]);
 
     if (end != null && end < (start ?? 0)) {
       debugPrint("Invalid LoopSection, start (${start ?? 0}) > end ($end)");
       return;
     }
-
     if (start != null && start < 0) {
       debugPrint("Invalid LoopSection, start ($start) < 0");
       return;
     }
-
     if (end != null && end > section.end.inMilliseconds) {
       debugPrint(
         "Invalid LoopSection, end ($end) > duration (${section.end.inMilliseconds})",

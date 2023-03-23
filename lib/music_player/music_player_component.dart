@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/widgets.dart';
 
 /// Base class for all components that alter the audio being played by [MusicPlayer].
 ///
@@ -29,6 +30,6 @@ abstract class MusicPlayerComponent {
   /// and never expect a specific key to exist in [json].
   @mustCallSuper
   void loadSettingsFromJson(Map<String, dynamic> json) {
-    enabled = json["enabled"] as bool? ?? enabled;
+    enabled = tryCast<bool>(json["enabled"]) ?? enabled;
   }
 }

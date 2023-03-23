@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
+import 'package:musbx/widgets.dart';
 
 /// A component for [MusicPlayer] that is used to change the speed and pitch of a song.
 class Slowdowner extends MusicPlayerComponent {
@@ -68,8 +69,8 @@ class Slowdowner extends MusicPlayerComponent {
   void loadSettingsFromJson(Map<String, dynamic> json) {
     super.loadSettingsFromJson(json);
 
-    double? newPitch = json["pitchSemitones"] as double?;
-    double? newSpeed = json["speed"] as double?;
+    double? newPitch = tryCast<double>(json["pitchSemitones"]);
+    double? newSpeed = tryCast<double>(json["speed"]);
 
     pitchSemitones = newPitch?.clamp(-12, 12) ?? pitchSemitones;
     speed = newSpeed?.clamp(0.5, 2) ?? speed;
