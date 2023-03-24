@@ -9,6 +9,7 @@ import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
+import 'package:musbx/music_player/song_preferences.dart';
 import 'package:musbx/widgets.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -49,6 +50,9 @@ class MusicPlayer {
 
   /// Used internally to get audio from YouTube.
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
+
+  /// Used internally to load and save preferences for songs.
+  final SongPreferences songPreferences = SongPreferences();
 
   /// Start or resume playback.
   Future<void> play() async => await player.play();
@@ -114,6 +118,11 @@ class MusicPlayer {
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 
+    if (songTitle != null) {
+      // Save preferences for previous song
+      await songPreferences.savePreferencesForSong(saveSettingsToJson());
+    }
+
     // Load audio
     await player.setAudioSource(audioSource);
 
@@ -124,6 +133,9 @@ class MusicPlayer {
 
     // Update the media player notification
     MusicPlayerAudioHandler.instance.mediaItem.add(mediaItem);
+
+    // Load new preferences
+    loadSettingsFromJson(await songPreferences.loadPreferencesForSong());
 
     stateNotifier.value = MusicPlayerState.ready;
   }
@@ -198,6 +210,8 @@ class MusicPlayer {
 
   /// Listen for changes from [player].
   void _init() {
+    songPreferences.clearPreferences();
+
     // isPlaying
     player.playingStream.listen((playing) {
       isPlayingNotifier.value = playing;

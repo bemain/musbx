@@ -12,7 +12,7 @@ import dynamic_color
 import just_audio
 import mic_stream
 import package_info_plus
-import path_provider_macos
+import path_provider_foundation
 import soundpool_macos
 import sqflite
 
