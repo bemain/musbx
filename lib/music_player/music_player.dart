@@ -118,9 +118,12 @@ class MusicPlayer {
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 
-    if (songTitle != null) {
+    if (MusicPlayerAudioHandler.instance.mediaItem.value != null) {
       // Save preferences for previous song
-      await songPreferences.savePreferencesForSong(saveSettingsToJson());
+      await songPreferences.save(
+        MusicPlayerAudioHandler.instance.mediaItem.value!.id,
+        saveSettingsToJson(),
+      );
     }
 
     // Load audio
@@ -135,7 +138,9 @@ class MusicPlayer {
     MusicPlayerAudioHandler.instance.mediaItem.add(mediaItem);
 
     // Load new preferences
-    loadSettingsFromJson(await songPreferences.loadPreferencesForSong());
+    loadSettingsFromJson(
+      await songPreferences.load(mediaItem.id),
+    );
 
     stateNotifier.value = MusicPlayerState.ready;
   }
@@ -145,7 +150,7 @@ class MusicPlayer {
     await loadAudioSource(
       AudioSource.uri(Uri.file(file.path!)),
       MediaItem(
-        id: file.path!,
+        id: file.path!.hashCode.toString(),
         title: file.name,
         duration: player.duration,
       ),
@@ -210,8 +215,6 @@ class MusicPlayer {
 
   /// Listen for changes from [player].
   void _init() {
-    songPreferences.clearPreferences();
-
     // isPlaying
     player.playingStream.listen((playing) {
       isPlayingNotifier.value = playing;
