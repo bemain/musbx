@@ -47,9 +47,10 @@ class Equalizer extends MusicPlayerComponent {
   void loadSettingsFromJson(Map<String, dynamic> json) async {
     super.loadSettingsFromJson(json);
 
-    tryCast<Map<String, double>>(json["gain"])?.forEach((str, double gain) {
-      int? index = int.tryParse(str);
-      if (index != null && parameters!.bands.length > index) {
+    tryCast<Map>(json["gain"])?.forEach((index_, gain_) {
+      int? index = int.tryParse(tryCast<String>(index_) ?? "");
+      double? gain = tryCast<double>(gain_);
+      if (index != null && gain != null && index < parameters!.bands.length) {
         parameters!.bands[index].setGain(gain.clamp(
           parameters!.minDecibels,
           parameters!.maxDecibels,
