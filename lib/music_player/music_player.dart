@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,14 @@ class MusicPlayer {
         AudioPipeline(androidAudioEffects: [equalizer.androidEqualizer]),
   );
 
+  late final MusicPlayerAudioHandler audioHandler = MusicPlayerAudioHandler(
+    onPlay: play,
+    onPause: pause,
+    playbackStateStream: player.playbackEventStream.map(
+      (event) => MusicPlayerAudioHandler.transformEvent(event, player),
+    ),
+  );
+
   /// Used internally to get audio from YouTube.
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
 
@@ -64,7 +73,7 @@ class MusicPlayer {
   /// Seek to [position].
   Future<void> seek(Duration position) async {
     await player.seek(looper.clampPosition(position, duration: duration));
-    await MusicPlayerAudioHandler.instance.seek(position);
+    await audioHandler.seek(position);
   }
 
   /// Title of the current song, or `null` if no song loaded.
@@ -127,7 +136,7 @@ class MusicPlayer {
     looper.section = LoopSection(end: duration);
 
     // Update the media player notification
-    MusicPlayerAudioHandler.instance.mediaItem.add(
+    audioHandler.mediaItem.add(
       song.mediaItem.copyWith(duration: duration),
     );
 
@@ -251,5 +260,15 @@ class MusicPlayer {
     slowdowner.initialize(this);
     looper.initialize(this);
     equalizer.initialize(this);
+  }
+
+  Future<void> initAudioService() async {
+    await AudioService.init(
+      builder: () => audioHandler,
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'se.agardh.musbx.channel.music_player',
+        androidNotificationChannelName: 'Music player',
+      ),
+    );
   }
 }

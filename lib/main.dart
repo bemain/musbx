@@ -1,19 +1,15 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/navigation_screen.dart';
-import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/theme.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Create audio service
-  MusicPlayerAudioHandler.instance = await AudioService.init(
-    builder: () => MusicPlayerAudioHandler(),
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'se.agardh.musbx.channel.music_player',
-      androidNotificationChannelName: 'Music player',
-    ),
-  );
+  await MusicPlayer.instance.initAudioService();
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

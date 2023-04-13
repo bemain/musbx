@@ -2,42 +2,47 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musbx/music_player/music_player.dart';
 
 class MusicPlayerAudioHandler extends BaseAudioHandler {
   /// Interface to the audio notification.
-  ///
-  /// Uses [MusicPlayer]'s [AudioPlayer] to handle playback.
-  MusicPlayerAudioHandler() {
+  MusicPlayerAudioHandler({
+    required this.onPlay,
+    required this.onPause,
+    this.onStop,
+    required Stream<PlaybackState> playbackStateStream,
+  }) {
     // Listen to playback events from AudioPlayer.
-    _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
+    playbackStateStream.pipe(playbackState);
   }
 
-  /// The instance of this singleton.
-  static late final MusicPlayerAudioHandler instance;
+  /// Called when the play action is triggered.
+  final Future<void> Function() onPlay;
 
-  /// The player used for playing audio.
-  final AudioPlayer _player = MusicPlayer.instance.player;
+  /// Called when the pause action is triggered.
+  final Future<void> Function() onPause;
+
+  /// Called when the stop action is triggered.
+  final Future<void> Function()? onStop;
 
   @override
-  Future<void> play() async => await _player.play();
+  Future<void> play() async => await onPlay();
 
   @override
-  Future<void> pause() async => await _player.pause();
+  Future<void> pause() async => await onPause();
 
   @override
   Future<void> stop() async {
-    await _player.stop();
+    await onStop?.call();
     await super.stop();
   }
 
   /// Transform an event from just_audio's [AudioPlayer] to audio_service's [AudioHandler].
-  PlaybackState _transformEvent(PlaybackEvent event) {
-    final isCompleted = (_player.processingState == ProcessingState.completed);
+  static PlaybackState transformEvent(PlaybackEvent event, AudioPlayer player) {
+    final isCompleted = (player.processingState == ProcessingState.completed);
 
     return PlaybackState(
       controls: [
-        if (_player.playing) MediaControl.pause else MediaControl.play,
+        if (player.playing) MediaControl.pause else MediaControl.play,
       ],
       androidCompactActionIndices: const [0],
       processingState: const {
@@ -46,11 +51,11 @@ class MusicPlayerAudioHandler extends BaseAudioHandler {
         ProcessingState.buffering: AudioProcessingState.buffering,
         ProcessingState.ready: AudioProcessingState.ready,
         ProcessingState.completed: AudioProcessingState.ready,
-      }[_player.processingState]!,
-      playing: _player.playing && !isCompleted,
-      updatePosition: _player.position,
-      bufferedPosition: _player.bufferedPosition,
-      speed: _player.speed,
+      }[player.processingState]!,
+      playing: player.playing && !isCompleted,
+      updatePosition: player.position,
+      bufferedPosition: player.bufferedPosition,
+      speed: player.speed,
     );
   }
 }

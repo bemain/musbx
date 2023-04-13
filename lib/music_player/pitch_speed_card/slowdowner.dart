@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
@@ -8,16 +9,16 @@ import 'package:musbx/widgets.dart';
 
 /// A component for [MusicPlayer] that is used to change the speed and pitch of a song.
 class Slowdowner extends MusicPlayerComponent {
-  /// [MusicPlayer.player]'s method for setting pitch, set during [initialize].
-  late final Future<void> Function(double) musicPlayerSetPitch;
+  /// The audio player used by [MusicPlayer], set during [initialize].
+  late final AudioPlayer audioPlayer;
 
-  /// [MusicPlayer.player]'s method for setting speed, set during [initialize].
-  late final Future<void> Function(double) musicPlayerSetSpeed;
+  /// The audio handler used by [MusicPlayer], set during [initialize].
+  late final MusicPlayerAudioHandler audioHandler;
 
   /// Set how much the pitch will be shifted, in semitones.
   Future<void> setPitchSemitones(double pitch) async {
     if (enabled) {
-      await musicPlayerSetPitch(pow(2, pitch / 12).toDouble());
+      await audioPlayer.setPitch(pow(2, pitch / 12).toDouble());
     }
     pitchSemitonesNotifier.value = pitch;
   }
@@ -25,8 +26,8 @@ class Slowdowner extends MusicPlayerComponent {
   /// Set the playback speed.
   Future<void> setSpeed(double speed) async {
     if (enabled) {
-      await musicPlayerSetSpeed(speed);
-      await MusicPlayerAudioHandler.instance.setSpeed(speed);
+      await audioPlayer.setSpeed(speed);
+      await audioHandler.setSpeed(speed);
     }
     speedNotifier.value = speed;
   }
@@ -43,15 +44,15 @@ class Slowdowner extends MusicPlayerComponent {
 
   @override
   void initialize(MusicPlayer musicPlayer) {
-    musicPlayerSetPitch = musicPlayer.player.setPitch;
-    musicPlayerSetSpeed = musicPlayer.player.setSpeed;
+    audioPlayer = musicPlayer.player;
+    audioHandler = musicPlayer.audioHandler;
 
     enabledNotifier.addListener(() {
       if (!enabled) {
         // Silently reset [MusicPlayer]'s pitch and speed
-        musicPlayerSetPitch(1.0);
-        musicPlayerSetSpeed(1.0);
-        MusicPlayerAudioHandler.instance.setSpeed(1.0);
+        audioPlayer.setPitch(1.0);
+        audioPlayer.setSpeed(1.0);
+        musicPlayer.audioHandler.setSpeed(1.0);
       } else {
         // Restore pitch and speed
         setPitchSemitones(pitchSemitones);
