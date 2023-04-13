@@ -1,4 +1,3 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
+import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_preferences.dart';
 import 'package:musbx/widgets.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -38,6 +38,7 @@ class MusicPlayer {
   /// The instance of this singleton.
   static final MusicPlayer instance = MusicPlayer._();
 
+  /// The state of the player.
   MusicPlayerState get state => stateNotifier.value;
   final ValueNotifier<MusicPlayerState> stateNotifier =
       ValueNotifier(MusicPlayerState.idle);
@@ -67,15 +68,15 @@ class MusicPlayer {
   }
 
   /// Title of the current song, or `null` if no song loaded.
-  String? get songTitle => songTitleNotifier.value;
-  final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
+  Song? get song => songNotifier.value;
+  final ValueNotifier<Song?> songNotifier = ValueNotifier<Song?>(null);
 
   /// Returns `null` if no song loaded, value otherwise.
   T? nullIfNoSongElse<T>(T? value) =>
       (isLoading || state == MusicPlayerState.idle) ? null : value;
 
   /// If true, the player is currently in a loading state.
-  /// If false, the player is either idle or have loaded audio.
+  /// If false, the player is either idle or has loaded audio.
   bool get isLoading => (state == MusicPlayerState.loadingAudio ||
       state == MusicPlayerState.pickingAudio);
 
@@ -107,14 +108,10 @@ class MusicPlayer {
   /// Component for adjusting the gain for different frequency bands of the song.
   final Equalizer equalizer = Equalizer();
 
-  /// Load a song to play from [audioSource].
+  /// Load a [song].
   ///
-  /// Prepares for playing the audio provided by the source, and updates the media player notification.
-  /// The song title is determined using the values offered by [mediaItem].
-  Future<void> loadAudioSource(
-    AudioSource audioSource,
-    MediaItem mediaItem,
-  ) async {
+  /// Prepares for playing the audio provided by [Song.audioSource], and updates the media player notification.
+  Future<void> loadSong(Song song) async {
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 
@@ -122,32 +119,31 @@ class MusicPlayer {
     await saveSongPreferences();
 
     // Load audio
-    await player.setAudioSource(audioSource);
+    await player.setAudioSource(song.audioSource);
 
     // Update songTitle
-    songTitleNotifier.value = mediaItem.title;
+    songNotifier.value = song;
     // Reset loopSection
     looper.section = LoopSection(end: duration);
 
     // Update the media player notification
-    MusicPlayerAudioHandler.instance.mediaItem.add(mediaItem);
+    MusicPlayerAudioHandler.instance.mediaItem.add(
+      song.mediaItem.copyWith(duration: duration),
+    );
 
     // Load new preferences
-    await loadSongPreferences(mediaItem.id);
+    await loadSongPreferences(song.id);
 
     stateNotifier.value = MusicPlayerState.ready;
   }
 
   /// Load a song to play from a [PlatformFile].
   Future<void> loadFile(PlatformFile file) async {
-    await loadAudioSource(
-      AudioSource.uri(Uri.file(file.path!)),
-      MediaItem(
-        id: file.path!.hashCode.toString(),
-        title: file.name,
-        duration: player.duration,
-      ),
-    );
+    await loadSong(Song(
+      id: file.path!.hashCode.toString(),
+      title: file.name,
+      audioSource: AudioSource.uri(Uri.file(file.path!)),
+    ));
   }
 
   /// Load a song to play from a [YoutubeVideo].
@@ -159,16 +155,13 @@ class MusicPlayer {
 
     HtmlUnescape htmlUnescape = HtmlUnescape();
 
-    await loadAudioSource(
-      AudioSource.uri(Uri.parse(streamInfo.url.toString())),
-      MediaItem(
-        id: video.id,
-        title: htmlUnescape.convert(video.title),
-        duration: duration,
-        artist: htmlUnescape.convert(video.channelTitle),
-        artUri: Uri.tryParse(video.thumbnails.high.url),
-      ),
-    );
+    await loadSong(Song(
+      id: video.id,
+      title: htmlUnescape.convert(video.title),
+      artist: htmlUnescape.convert(video.channelTitle),
+      artUri: Uri.tryParse(video.thumbnails.high.url),
+      audioSource: AudioSource.uri(Uri.parse(streamInfo.url.toString())),
+    ));
   }
 
   /// Load preferences for the song with [songId].
@@ -203,17 +196,14 @@ class MusicPlayer {
   ///
   /// If no song is currently loaded, do nothing
   Future<void> saveSongPreferences() async {
-    if (MusicPlayerAudioHandler.instance.mediaItem.value == null) return;
+    if (song == null) return;
 
-    await _songPreferences.save(
-      MusicPlayerAudioHandler.instance.mediaItem.value!.id,
-      {
-        "position": position.inMilliseconds,
-        "slowdowner": slowdowner.saveSettingsToJson(),
-        "looper": looper.saveSettingsToJson(),
-        "equalizer": equalizer.saveSettingsToJson(),
-      },
-    );
+    await _songPreferences.save(song!.id, {
+      "position": position.inMilliseconds,
+      "slowdowner": slowdowner.saveSettingsToJson(),
+      "looper": looper.saveSettingsToJson(),
+      "equalizer": equalizer.saveSettingsToJson(),
+    });
   }
 
   /// Listen for changes from [player].
