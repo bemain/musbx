@@ -11,7 +11,7 @@ import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/screen/empty_tab_bar.dart';
 import 'package:musbx/screen/widget_card.dart';
 
-class MusicPlayerScreen extends StatelessWidget {
+class MusicPlayerScreen extends StatefulWidget {
   /// Screen that allows the user to select and play a song.
   ///
   /// Includes:
@@ -21,6 +21,34 @@ class MusicPlayerScreen extends StatelessWidget {
   ///  - Label showing current song, and button to load a song from device.
   ///  - Slider and buttons for looping a section of the song.
   const MusicPlayerScreen({super.key});
+
+  @override
+  State<StatefulWidget> createState() => MusicPlayerScreenState();
+}
+
+class MusicPlayerScreenState extends State<MusicPlayerScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    MusicPlayer.instance.saveSongPreferences();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Save preferences for the current song
+    if (state == AppLifecycleState.paused) {
+      MusicPlayer.instance.saveSongPreferences();
+    }
+    super.didChangeAppLifecycleState(state);
+  }
 
   @override
   Widget build(BuildContext context) {

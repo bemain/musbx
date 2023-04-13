@@ -21,10 +21,10 @@ class SongPreferences {
   }
 
   /// Load preferences for the song with [songId].
-  Future<Map<String, dynamic>> load(String songId) async {
+  Future<Map<String, dynamic>?> load(String songId) async {
     File preferencesFile = await _getFileForSong(songId);
 
-    if (!await preferencesFile.exists()) return {};
+    if (!await preferencesFile.exists()) return null;
 
     return jsonDecode(await preferencesFile.readAsString());
   }

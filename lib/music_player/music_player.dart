@@ -52,7 +52,7 @@ class MusicPlayer {
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
 
   /// Used internally to load and save preferences for songs.
-  final SongPreferences songPreferences = SongPreferences();
+  final SongPreferences _songPreferences = SongPreferences();
 
   /// Start or resume playback.
   Future<void> play() async => await player.play();
@@ -118,13 +118,8 @@ class MusicPlayer {
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 
-    if (MusicPlayerAudioHandler.instance.mediaItem.value != null) {
-      // Save preferences for previous song
-      await songPreferences.save(
-        MusicPlayerAudioHandler.instance.mediaItem.value!.id,
-        saveSettingsToJson(),
-      );
-    }
+    // Save preferences for previous song
+    await saveSongPreferences();
 
     // Load audio
     await player.setAudioSource(audioSource);
@@ -138,9 +133,7 @@ class MusicPlayer {
     MusicPlayerAudioHandler.instance.mediaItem.add(mediaItem);
 
     // Load new preferences
-    loadSettingsFromJson(
-      await songPreferences.load(mediaItem.id),
-    );
+    await loadSongPreferences(mediaItem.id);
 
     stateNotifier.value = MusicPlayerState.ready;
   }
@@ -178,10 +171,13 @@ class MusicPlayer {
     );
   }
 
-  /// Load settings for a song from a [json] map.
+  /// Load preferences for the song with [songId].
   ///
-  /// Called when a song that has preferences saved is loaded.
-  void loadSettingsFromJson(Map<String, dynamic> json) {
+  /// If no preferences could be found for the song, do nothing.
+  Future<void> loadSongPreferences(String songId) async {
+    var json = await _songPreferences.load(songId);
+    if (json == null) return;
+
     int? position = tryCast<int>(json["position"]);
     if (position != null && position < duration.inMilliseconds) {
       seek(Duration(milliseconds: position));
@@ -203,14 +199,21 @@ class MusicPlayer {
     }
   }
 
-  /// Save preferences for a song to a json map.
-  Map<String, dynamic> saveSettingsToJson() {
-    return {
-      "position": position.inMilliseconds,
-      "slowdowner": slowdowner.saveSettingsToJson(),
-      "looper": looper.saveSettingsToJson(),
-      "equalizer": equalizer.saveSettingsToJson(),
-    };
+  /// Save preferences for the current song.
+  ///
+  /// If no song is currently loaded, do nothing
+  Future<void> saveSongPreferences() async {
+    if (MusicPlayerAudioHandler.instance.mediaItem.value == null) return;
+
+    await _songPreferences.save(
+      MusicPlayerAudioHandler.instance.mediaItem.value!.id,
+      {
+        "position": position.inMilliseconds,
+        "slowdowner": slowdowner.saveSettingsToJson(),
+        "looper": looper.saveSettingsToJson(),
+        "equalizer": equalizer.saveSettingsToJson(),
+      },
+    );
   }
 
   /// Listen for changes from [player].
