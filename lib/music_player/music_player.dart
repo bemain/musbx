@@ -10,6 +10,7 @@ import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
 import 'package:musbx/music_player/song.dart';
+import 'package:musbx/music_player/song_history.dart';
 import 'package:musbx/music_player/song_preferences.dart';
 import 'package:musbx/widgets.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -63,6 +64,8 @@ class MusicPlayer {
 
   /// Used internally to load and save preferences for songs.
   final SongPreferences _songPreferences = SongPreferences();
+
+  final SongHistory _songHistory = SongHistory();
 
   /// Start or resume playback.
   Future<void> play() async => await player.play();
@@ -141,7 +144,10 @@ class MusicPlayer {
     );
 
     // Load new preferences
-    await loadSongPreferences(song.id);
+    await loadSongPreferences(song);
+
+    // Add to song history.
+    await _songHistory.add(song);
 
     stateNotifier.value = MusicPlayerState.ready;
   }
@@ -176,8 +182,8 @@ class MusicPlayer {
   /// Load preferences for the song with [songId].
   ///
   /// If no preferences could be found for the song, do nothing.
-  Future<void> loadSongPreferences(String songId) async {
-    var json = await _songPreferences.load(songId);
+  Future<void> loadSongPreferences(Song song) async {
+    var json = await _songPreferences.load(song.id);
     if (json == null) return;
 
     int? position = tryCast<int>(json["position"]);

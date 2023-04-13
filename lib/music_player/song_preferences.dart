@@ -11,7 +11,8 @@ class SongPreferences {
   /// The [Directory] where song preferences are located.
   Future<Directory> get preferencesDirectory async {
     _preferencesDirectory ??= Directory(
-        "${(await getApplicationDocumentsDirectory()).path}/song_preferences");
+      "${(await getApplicationDocumentsDirectory()).path}/song_preferences",
+    );
     return await _preferencesDirectory!.create(recursive: true);
   }
 
@@ -30,10 +31,7 @@ class SongPreferences {
   }
 
   /// Save preferences for the song with [songId].
-  Future<void> save(
-    String songId,
-    Map<String, dynamic> preferences,
-  ) async {
+  Future<void> save(String songId, Map<String, dynamic> preferences) async {
     File preferencesFile = await _getFileForSong(songId);
 
     await preferencesFile.writeAsString(jsonEncode(preferences));
