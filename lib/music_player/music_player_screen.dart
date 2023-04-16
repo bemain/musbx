@@ -6,6 +6,7 @@ import 'package:musbx/music_player/pitch_speed_card/pitch_speed_card.dart';
 import 'package:musbx/music_player/position_card/button_panel.dart';
 import 'package:musbx/music_player/current_song_card/current_song_panel.dart';
 import 'package:musbx/music_player/position_card/position_slider.dart';
+import 'package:musbx/music_player/position_card/song_history_list.dart';
 import 'package:musbx/screen/card_list.dart';
 import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/screen/empty_tab_bar.dart';
@@ -69,6 +70,7 @@ If looping is enabled, change what section to loop using the range slider. Use t
                 child: Column(
                   children: [
                     CurrentSongPanel(),
+                    SongHistoryList(),
                     PositionSlider(),
                     ButtonPanel(),
                   ],

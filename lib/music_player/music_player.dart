@@ -65,7 +65,7 @@ class MusicPlayer {
   /// Used internally to load and save preferences for songs.
   final SongPreferences _songPreferences = SongPreferences();
 
-  final SongHistory _songHistory = SongHistory();
+  final SongHistory songHistory = SongHistory();
 
   /// Start or resume playback.
   Future<void> play() async => await player.play();
@@ -147,7 +147,7 @@ class MusicPlayer {
     await loadSongPreferences(song);
 
     // Add to song history.
-    await _songHistory.add(song);
+    await songHistory.add(song);
 
     stateNotifier.value = MusicPlayerState.ready;
   }

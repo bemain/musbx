@@ -8,13 +8,23 @@ import 'package:path_provider/path_provider.dart';
 /// Helper class for saving the history of previously played songs to disk.
 class SongHistory extends ChangeNotifier {
   /// The maximum number of songs saved in history.
-  final int historyLength = 2;
-
-  final Map<DateTime, Song> history = {};
+  static const int historyLength = 5;
 
   /// The file where song history is saved.
   Future<File> get _historyFile async => File(
       "${(await getApplicationDocumentsDirectory()).path}/song_history.json");
+
+  /// The history entries, with the previously loaded songs and the time they were loaded.
+  final Map<DateTime, Song> history = {};
+
+  /// The previously played songs, sorted by date.
+  List<Song> sorted({ascending = false}) {
+    List<Song> sorted = (history.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key)))
+        .map((entry) => entry.value)
+        .toList();
+    return ascending ? sorted : sorted.reversed.toList();
+  }
 
   /// Fetch the history from disk.
   ///
@@ -62,7 +72,7 @@ class SongHistory extends ChangeNotifier {
 
   /// Save history entries to disk.
   Future<void> save() async {
-    // Only save the [historyLength] newest entries
+    // Only keep the [historyLength] newest entries
     while (history.length > historyLength) {
       history.remove(history.entries
           .reduce((oldest, element) =>
