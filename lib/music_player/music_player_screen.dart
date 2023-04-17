@@ -67,14 +67,16 @@ If looping is enabled, change what section to loop using the range slider. Use t
             children: [
               const EmptyTabBar(),
               WidgetCard(
-                child: Column(
-                  children: [
-                    CurrentSongPanel(),
-                    const SongHistoryList(),
-                    PositionSlider(),
-                    ButtonPanel(),
-                  ],
-                ),
+                child: Column(children: [
+                  CurrentSongPanel(),
+                  const SongHistoryList(),
+                ]),
+              ),
+              WidgetCard(
+                child: Column(children: [
+                  PositionSlider(),
+                  ButtonPanel(),
+                ]),
               ),
               Expanded(
                 child: TabBarView(
