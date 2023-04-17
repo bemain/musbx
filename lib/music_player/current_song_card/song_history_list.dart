@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/song.dart';
 
@@ -50,14 +51,26 @@ class SongHistoryListState extends State<SongHistoryList> {
   Widget _buildSongButton(Song song) {
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
-      child: OutlinedButton(
+      child: ActionChip(
         onPressed: musicPlayer.isLoading
             ? null
             : () {
                 musicPlayer.loadSong(song);
               },
-        child: Text(song.title),
+        avatar: _buildSongSourceAvatar(song),
+        label: Text(song.title),
       ),
     );
+  }
+
+  Widget? _buildSongSourceAvatar(Song song) {
+    switch (song.source) {
+      case SongSource.file:
+        return const Icon(Icons.file_present);
+      case SongSource.youtube:
+        return const Icon(CustomIcons.youtube);
+      default:
+        return null;
+    }
   }
 }

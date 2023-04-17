@@ -160,6 +160,7 @@ class MusicPlayer {
     await loadSong(Song(
       id: file.path!.hashCode.toString(),
       title: file.name,
+      source: SongSource.file,
       audioSource: AudioSource.uri(Uri.file(file.path!)),
     ));
   }
@@ -178,6 +179,7 @@ class MusicPlayer {
       title: htmlUnescape.convert(video.title),
       artist: htmlUnescape.convert(video.channelTitle),
       artUri: Uri.tryParse(video.thumbnails.high.url),
+      source: SongSource.youtube,
       audioSource: AudioSource.uri(Uri.parse(streamInfo.url.toString())),
     ));
   }

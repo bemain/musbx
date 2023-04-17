@@ -2,6 +2,15 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/widgets.dart';
 
+/// Where a song was loaded from.
+enum SongSource {
+  /// From searching or entering a url for a video on YouTube.
+  youtube,
+
+  /// From a local file selected by the user.
+  file,
+}
+
 class Song {
   /// Representation of a song, to be played by [MusicPlayer].
   Song({
@@ -11,6 +20,7 @@ class Song {
     this.artist,
     this.genre,
     this.artUri,
+    required this.source,
     required this.audioSource,
   }) : mediaItem = MediaItem(
           id: id,
@@ -26,6 +36,8 @@ class Song {
 
   /// The title of this song.
   final String title;
+
+  final SongSource? source;
 
   /// The album this song belongs to.
   final String? album;
@@ -56,6 +68,7 @@ class Song {
       if (artist != null) "artist": artist,
       if (genre != null) "genre": genre,
       if (artUri != null) "artUri": artUri.toString(),
+      if (source != null) "source": source.toString().split(".").last,
       if (audioSource is UriAudioSource)
         "sourceUri": (audioSource as UriAudioSource).uri.toString(),
     };
@@ -74,5 +87,16 @@ class Song {
       artist: tryCast<String>(json["artist"]),
       genre: tryCast<String>(json["genre"]),
       artUri: Uri.tryParse(tryCast<String>(json["artUri"]) ?? ""),
+      source: _tryParseSongSource(tryCast<String>(json["source"])),
       audioSource: AudioSource.uri(Uri.parse(json["sourceUri"])));
+}
+
+SongSource? _tryParseSongSource(String? source) {
+  switch (source) {
+    case "youtube":
+      return SongSource.youtube;
+    case "file":
+      return SongSource.file;
+  }
+  return null;
 }
