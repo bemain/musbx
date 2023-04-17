@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/music_player.dart';
@@ -26,6 +28,8 @@ class Equalizer extends MusicPlayerComponent {
 
   @override
   void initialize(MusicPlayer musicPlayer) {
+    if (Platform.isIOS) return; // TODO: Implement Equalizer on iOS
+
     enabled = false;
     enabledNotifier.addListener(() {
       androidEqualizer.setEnabled(enabled);

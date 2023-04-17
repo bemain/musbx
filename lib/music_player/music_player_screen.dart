@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/equalizer/equalizer_card.dart';
 import 'package:musbx/music_player/loop_card/loop_card.dart';
@@ -54,49 +56,51 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: MusicPlayer.instance.stateNotifier,
-      builder: (context, state, _) => Scaffold(
-        appBar: const DefaultAppBar(
-          helpText: """Load song from device or YouTube.
+        valueListenable: MusicPlayer.instance.stateNotifier,
+        builder: (context, state, _) {
+          List<Widget> tabs = [
+            CardList(
+              children: [
+                PitchSpeedCard(),
+                LoopCard(),
+              ],
+            ),
+            if (!Platform.isIOS)
+              CardList(
+                children: [EqualizerCard()],
+              ),
+          ];
+
+          return Scaffold(
+            appBar: const DefaultAppBar(
+              helpText: """Load song from device or YouTube.
 Adjust pitch and speed using the circular sliders. While selecting, greater accuracy can be obtained by dragging away from the center.
 If looping is enabled, change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.""",
-        ),
-        body: DefaultTabController(
-          length: 2,
-          child: Column(
-            children: [
-              const EmptyTabBar(),
-              WidgetCard(
-                child: Column(children: [
-                  CurrentSongPanel(),
-                  const SongHistoryList(),
-                ]),
+            ),
+            body: DefaultTabController(
+              length: tabs.length,
+              child: Column(
+                children: [
+                  if (tabs.length > 1) const EmptyTabBar(),
+                  WidgetCard(
+                    child: Column(children: [
+                      CurrentSongPanel(),
+                      const SongHistoryList(),
+                    ]),
+                  ),
+                  WidgetCard(
+                    child: Column(children: [
+                      PositionSlider(),
+                      ButtonPanel(),
+                    ]),
+                  ),
+                  Expanded(
+                    child: TabBarView(children: tabs),
+                  ),
+                ],
               ),
-              WidgetCard(
-                child: Column(children: [
-                  PositionSlider(),
-                  ButtonPanel(),
-                ]),
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    CardList(
-                      children: [
-                        PitchSpeedCard(),
-                        LoopCard(),
-                      ],
-                    ),
-                    CardList(
-                      children: [EqualizerCard()],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          );
+        });
   }
 }

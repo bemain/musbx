@@ -49,7 +49,8 @@ dependencies:
 
   #Tuner
   pitch_detector_dart: ^0.0.2
-  mic_stream: ^0.6.2
+  flutter_audio_capture: ^1.1.4
+  mic_stream: ^0.6.4
   gauges: ^1.0.0
   html_unescape: ^2.0.0
 
@@ -71,10 +72,12 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 # To apply changes to the icon configuration, run:
-# `flutter pub run flutter_launcher_icons:main`
+# `flutter pub run flutter_launcher_icons`
 flutter_icons:
   android: true
+  min_sdk_android: 16
   ios: true
+  image_path_ios: "assets/icon/musbx_ios.png"
   remove_alpha_ios: true
   image_path: "assets/icon/musbx.png"
   adaptive_icon_background: "assets/icon/musbx_background.png"

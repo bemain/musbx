@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -24,7 +25,8 @@ class PitchSpeedCard extends StatelessWidget {
             builder: (context, BoxConstraints constraints) => Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                buildPitchSlider(constraints.maxWidth / 4),
+                // Don't show pitch slider on iOS since setPitch() method is not implemented.
+                if (!Platform.isIOS) buildPitchSlider(constraints.maxWidth / 4),
                 buildSpeedSlider(constraints.maxWidth / 4),
               ],
             ),

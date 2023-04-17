@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/current_song_card/pick_song_button.dart';
 import 'package:musbx/music_player/music_player.dart';
@@ -36,7 +38,7 @@ class CurrentSongPanel extends StatelessWidget {
         ),
         PickSongButton(),
         Container(width: 10),
-        const YoutubeButton(),
+        if (!Platform.isIOS) const YoutubeButton(),
       ],
     );
   }
