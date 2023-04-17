@@ -15,7 +15,7 @@ class YoutubeButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final MusicPlayer musicPlayer = MusicPlayer.instance;
 
-    return OutlinedButton(
+    return FilledButton(
       onPressed: musicPlayer.isLoading
           ? null
           : () async {

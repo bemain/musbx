@@ -29,7 +29,7 @@ class PickSongButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _navigatorContext = Navigator.of(context).context;
-    return OutlinedButton(
+    return FilledButton(
       onPressed: musicPlayer.isLoading
           ? null
           : () {
