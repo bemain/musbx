@@ -66,7 +66,7 @@ class SongHistoryListState extends State<SongHistoryList> {
   Widget? _buildSongSourceAvatar(Song song) {
     switch (song.source) {
       case SongSource.file:
-        return const Icon(Icons.file_present);
+        return const Icon(Icons.file_present_rounded);
       case SongSource.youtube:
         return const Icon(CustomIcons.youtube);
       default:

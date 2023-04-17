@@ -43,7 +43,7 @@ class SongHistory extends ChangeNotifier {
           value is! Map<String, dynamic> ||
           !value.containsKey("id") ||
           !value.containsKey("title") ||
-          !value.containsKey("sourceUri")) {
+          !value.containsKey("audioSource")) {
         debugPrint(
             "Incorrectly formatted entry in history file: ($key, $value)");
         return;

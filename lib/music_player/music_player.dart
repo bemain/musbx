@@ -275,6 +275,8 @@ class MusicPlayer {
     equalizer.initialize(this);
   }
 
+  /// Initialize the audio service for [audioHandler], to enable interaction
+  /// with the phone's media player.
   Future<void> initAudioService() async {
     await AudioService.init(
       builder: () => audioHandler,

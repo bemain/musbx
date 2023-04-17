@@ -37,8 +37,6 @@ class Song {
   /// The title of this song.
   final String title;
 
-  final SongSource? source;
-
   /// The album this song belongs to.
   final String? album;
 
@@ -52,6 +50,9 @@ class Song {
   ///
   /// See [MediaItem.artUri]
   final Uri? artUri;
+
+  /// Where this song was loaded from, e.g. a YouTube video or a local file.
+  final SongSource? source;
 
   /// The audio source for this song, playable by [AudioPlayer].
   final AudioSource audioSource;
@@ -70,7 +71,7 @@ class Song {
       if (artUri != null) "artUri": artUri.toString(),
       if (source != null) "source": source.toString().split(".").last,
       if (audioSource is UriAudioSource)
-        "sourceUri": (audioSource as UriAudioSource).uri.toString(),
+        "audioSource": (audioSource as UriAudioSource).uri.toString(),
     };
   }
 
@@ -79,7 +80,7 @@ class Song {
   /// The map must contain the following keys:
   ///  - id
   ///  - title
-  ///  - sourceUri
+  ///  - audioSource
   factory Song.fromJson(Map<String, dynamic> json) => Song(
       id: json["id"] as String,
       title: json["title"] as String,
@@ -88,7 +89,7 @@ class Song {
       genre: tryCast<String>(json["genre"]),
       artUri: Uri.tryParse(tryCast<String>(json["artUri"]) ?? ""),
       source: _tryParseSongSource(tryCast<String>(json["source"])),
-      audioSource: AudioSource.uri(Uri.parse(json["sourceUri"])));
+      audioSource: AudioSource.uri(Uri.parse(json["audioSource"])));
 }
 
 SongSource? _tryParseSongSource(String? source) {

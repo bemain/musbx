@@ -19,8 +19,8 @@ class MetronomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const DefaultAppBar(
+    return const Scaffold(
+      appBar: DefaultAppBar(
         helpText:
             """Set bpm using slider or hit the drum. Make fine adjustments using the arrows.
 Change the sound of beats by tapping them. Long press to remove and plus to add.""",
@@ -30,7 +30,7 @@ Change the sound of beats by tapping them. Long press to remove and plus to add.
           Column(children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
+              children: [
                 BpmButtons(
                   iconSize: 50,
                   fontSize: 45,
@@ -38,9 +38,9 @@ Change the sound of beats by tapping them. Long press to remove and plus to add.
                 BpmTapper()
               ],
             ),
-            const BpmSlider(),
+            BpmSlider(),
           ]),
-          Column(children: const [
+          Column(children: [
             Center(
               child: PlayButton(
                 size: 150,
