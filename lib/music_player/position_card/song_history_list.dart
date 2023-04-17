@@ -2,13 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/song.dart';
 
-class SongHistoryList extends StatelessWidget {
+class SongHistoryList extends StatefulWidget {
   /// Widget displaying the previously played songs as buttons.
   ///
   /// Pressing a song button tells [MusicPlayer] to load that song.
-  SongHistoryList({super.key});
+  const SongHistoryList({super.key});
 
+  @override
+  State<StatefulWidget> createState() => SongHistoryListState();
+}
+
+class SongHistoryListState extends State<SongHistoryList> {
   final MusicPlayer musicPlayer = MusicPlayer.instance;
+
+  @override
+  void initState() {
+    musicPlayer.songHistory.addListener(_setState);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    musicPlayer.songHistory.removeListener(_setState);
+    super.dispose();
+  }
+
+  void _setState() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {

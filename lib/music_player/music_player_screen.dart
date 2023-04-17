@@ -70,7 +70,7 @@ If looping is enabled, change what section to loop using the range slider. Use t
                 child: Column(
                   children: [
                     CurrentSongPanel(),
-                    SongHistoryList(),
+                    const SongHistoryList(),
                     PositionSlider(),
                     ButtonPanel(),
                   ],

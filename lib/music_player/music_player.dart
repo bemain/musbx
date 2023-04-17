@@ -223,6 +223,8 @@ class MusicPlayer {
 
   /// Listen for changes from [player].
   void _init() {
+    songHistory.fetch();
+
     // isPlaying
     player.playingStream.listen((playing) {
       isPlayingNotifier.value = playing;
