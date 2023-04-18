@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
+import 'package:musbx/widgets.dart';
 
 /// A component for [MusicPlayer] that is used to loop a section of a song.
 class Looper extends MusicPlayerComponent {
@@ -38,6 +39,55 @@ class Looper extends MusicPlayerComponent {
         (enabled) ? section.end.inMilliseconds : duration.inMilliseconds,
       ),
     );
+  }
+
+  /// Load settings from a [json] map.
+  ///
+  /// [json] can contain the following key-value pairs (beyond "enabled"):
+  ///  - "start": [int] The start position of the section being looped, in milliseconds.
+  ///  - "end": [int] The end position of the section being looped, in milliseconds.
+  ///
+  /// If start and end don't make a valid LoopSection (e.g. if start > end) the looped [section] is not set.
+  @override
+  void loadSettingsFromJson(Map<String, dynamic> json) {
+    super.loadSettingsFromJson(json);
+
+    int? start = tryCast<int>(json["start"]);
+    int? end = tryCast<int>(json["end"]);
+
+    if (end != null && end < (start ?? 0)) {
+      debugPrint("Invalid LoopSection, start (${start ?? 0}) > end ($end)");
+      return;
+    }
+    if (start != null && start < 0) {
+      debugPrint("Invalid LoopSection, start ($start) < 0");
+      return;
+    }
+    if (end != null && end > section.end.inMilliseconds) {
+      debugPrint(
+        "Invalid LoopSection, end ($end) > duration (${section.end.inMilliseconds})",
+      );
+      return;
+    }
+
+    section = LoopSection(
+      start: (start == null) ? section.start : Duration(milliseconds: start),
+      end: (end == null) ? section.end : Duration(milliseconds: end),
+    );
+  }
+
+  /// Save settings for a song to a json map.
+  ///
+  /// Saves the following key-value pairs (beyond "enabled"):
+  ///  - "start": [int] The start position of the section being looped, in milliseconds.
+  ///  - "end": [int] The end position of the section being looped, in milliseconds.
+  @override
+  Map<String, dynamic> saveSettingsToJson() {
+    return {
+      ...super.saveSettingsToJson(),
+      "start": section.start.inMilliseconds,
+      "end": section.end.inMilliseconds,
+    };
   }
 }
 

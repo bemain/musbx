@@ -52,7 +52,7 @@ class CurrentSongPanel extends StatelessWidget {
       case MusicPlayerState.loadingAudio:
         return "(Loading song...)";
       case MusicPlayerState.ready:
-        return musicPlayer.songTitle!;
+        return musicPlayer.song!.title;
     }
   }
 }

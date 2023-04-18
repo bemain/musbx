@@ -49,9 +49,9 @@ class EqualizerCard extends StatelessWidget {
               ],
             ),
             EqualizerSliders(),
-            Stack(
+            const Stack(
               alignment: Alignment.center,
-              children: const [
+              children: [
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text("Bass"),

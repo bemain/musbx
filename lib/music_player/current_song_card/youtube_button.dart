@@ -15,11 +15,12 @@ class YoutubeButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final MusicPlayer musicPlayer = MusicPlayer.instance;
 
-    return OutlinedButton(
+    return FilledButton(
       onPressed: musicPlayer.isLoading
           ? null
           : () async {
-              // When picking a song from YouTube, [musicPlayer.state] is not set to [MusicPlayerState.pickingAudio] as it should, to avoid [LoopSlider] crashing.
+              MusicPlayerState prevState = musicPlayer.state;
+              musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
 
               YoutubeVideo? video = await showSearch<YoutubeVideo?>(
                 context: context,
@@ -27,7 +28,10 @@ class YoutubeButton extends StatelessWidget {
               );
 
               if (video != null) {
-                musicPlayer.playVideo(video);
+                musicPlayer.loadVideo(video);
+              } else {
+                // Restore state
+                musicPlayer.stateNotifier.value = prevState;
               }
             },
       child: const Icon(CustomIcons.youtube),

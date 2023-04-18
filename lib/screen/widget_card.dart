@@ -13,8 +13,8 @@ class WidgetCard extends StatelessWidget {
       key: ValueKey(child),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: 15,
-          vertical: 10,
+          horizontal: 12,
+          vertical: 8,
         ),
         child: child,
       ),

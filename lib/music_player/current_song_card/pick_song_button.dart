@@ -30,7 +30,7 @@ class PickSongButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _navigatorContext = Navigator.of(context).context;
-    return OutlinedButton(
+    return FilledButton(
       onPressed: musicPlayer.isLoading
           ? null
           : () {
@@ -66,7 +66,7 @@ class PickSongButton extends StatelessWidget {
       return;
     }
 
-    await musicPlayer.playFile(result.files.single);
+    await musicPlayer.loadFile(result.files.single);
   }
 
   Future<void> showUnsupportedFileExtensionDialog(String extension) async {

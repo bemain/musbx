@@ -22,7 +22,7 @@ class MetronomeBottomBar extends StatefulWidget {
 class MetronomeBottomBarState extends State<MetronomeBottomBar> {
   @override
   Widget build(BuildContext context) {
-    return BottomAppBar(
+    return const BottomAppBar(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -30,14 +30,14 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
             height: 100,
             child: Row(
               children: <Widget>[
-                const PlayButton(),
+                PlayButton(),
                 Expanded(
                   child: Column(
                     children: [
-                      const BpmSlider(),
+                      BpmSlider(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
+                        children: [
                           BpmButtons(),
                           BpmTapper(),
                         ],
@@ -48,7 +48,7 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
               ],
             ),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
             child: BeatSoundViewer(),
           )

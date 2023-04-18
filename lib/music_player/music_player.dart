@@ -11,6 +11,10 @@ import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
+import 'package:musbx/music_player/song.dart';
+import 'package:musbx/music_player/song_history.dart';
+import 'package:musbx/music_player/song_preferences.dart';
+import 'package:musbx/widgets.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// The state of [MusicPlayer].
@@ -38,6 +42,7 @@ class MusicPlayer {
   /// The instance of this singleton.
   static final MusicPlayer instance = MusicPlayer._();
 
+  /// The state of the player.
   MusicPlayerState get state => stateNotifier.value;
   final ValueNotifier<MusicPlayerState> stateNotifier =
       ValueNotifier(MusicPlayerState.idle);
@@ -49,8 +54,21 @@ class MusicPlayer {
     ]),
   );
 
+  late final MusicPlayerAudioHandler audioHandler = MusicPlayerAudioHandler(
+    onPlay: play,
+    onPause: pause,
+    playbackStateStream: player.playbackEventStream.map(
+      (event) => MusicPlayerAudioHandler.transformEvent(event, player),
+    ),
+  );
+
   /// Used internally to get audio from YouTube.
   final YoutubeExplode _youtubeExplode = YoutubeExplode();
+
+  /// Used internally to load and save preferences for songs.
+  final SongPreferences _songPreferences = SongPreferences();
+
+  final SongHistory songHistory = SongHistory();
 
   /// Start or resume playback.
   Future<void> play() async => await player.play();
@@ -61,19 +79,19 @@ class MusicPlayer {
   /// Seek to [position].
   Future<void> seek(Duration position) async {
     await player.seek(looper.clampPosition(position, duration: duration));
-    await MusicPlayerAudioHandler.instance.seek(position);
+    await audioHandler.seek(position);
   }
 
   /// Title of the current song, or `null` if no song loaded.
-  String? get songTitle => songTitleNotifier.value;
-  final ValueNotifier<String?> songTitleNotifier = ValueNotifier<String?>(null);
+  Song? get song => songNotifier.value;
+  final ValueNotifier<Song?> songNotifier = ValueNotifier<Song?>(null);
 
   /// Returns `null` if no song loaded, value otherwise.
   T? nullIfNoSongElse<T>(T? value) =>
       (isLoading || state == MusicPlayerState.idle) ? null : value;
 
   /// If true, the player is currently in a loading state.
-  /// If false, the player is either idle or have loaded audio.
+  /// If false, the player is either idle or has loaded audio.
   bool get isLoading => (state == MusicPlayerState.loadingAudio ||
       state == MusicPlayerState.pickingAudio);
 
@@ -81,7 +99,8 @@ class MusicPlayer {
   Duration get position => positionNotifier.value;
   final ValueNotifier<Duration> positionNotifier = ValueNotifier(Duration.zero);
 
-  /// The duration of the current audio, or null if no audio has been loaded.
+  /// The duration of the current audio.
+  /// Only valid if a song has been loaded.
   Duration get duration => durationNotifier.value;
   final ValueNotifier<Duration> durationNotifier =
       ValueNotifier(const Duration(seconds: 1));
@@ -104,33 +123,50 @@ class MusicPlayer {
   /// Component for adjusting the gain for different frequency bands of the song.
   final Equalizer equalizer = Equalizer();
 
-  /// Play a [PlatformFile].
-  Future<void> playFile(PlatformFile file) async {
+  /// Load a [song].
+  ///
+  /// Prepares for playing the audio provided by [Song.audioSource], and updates the media player notification.
+  Future<void> loadSong(Song song) async {
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 
-    // Load file
-    await player.setFilePath(file.path!);
+    // Save preferences for previous song
+    await saveSongPreferences();
+
+    // Load audio
+    await player.setAudioSource(song.audioSource);
 
     // Update songTitle
-    songTitleNotifier.value = file.name;
+    songNotifier.value = song;
     // Reset loopSection
     looper.section = LoopSection(end: duration);
 
-    // Inform notification
-    MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
-      id: file.path!,
-      title: file.name,
-      duration: player.duration,
-    ));
+    // Update the media player notification
+    audioHandler.mediaItem.add(
+      song.mediaItem.copyWith(duration: duration),
+    );
+
+    // Load new preferences
+    await loadSongPreferences(song);
+
+    // Add to song history.
+    await songHistory.add(song);
 
     stateNotifier.value = MusicPlayerState.ready;
   }
 
-  Future<void> playVideo(YoutubeVideo video) async {
-    await pause();
-    stateNotifier.value = MusicPlayerState.loadingAudio;
+  /// Load a song to play from a [PlatformFile].
+  Future<void> loadFile(PlatformFile file) async {
+    await loadSong(Song(
+      id: file.path!.hashCode.toString(),
+      title: file.name,
+      source: SongSource.file,
+      audioSource: AudioSource.uri(Uri.file(file.path!)),
+    ));
+  }
 
+  /// Load a song to play from a [YoutubeVideo].
+  Future<void> loadVideo(YoutubeVideo video) async {
     // Get stream info
     StreamManifest manifest =
         await _youtubeExplode.videos.streams.getManifest(video.id);
@@ -138,28 +174,62 @@ class MusicPlayer {
 
     HtmlUnescape htmlUnescape = HtmlUnescape();
 
-    // Set URL
-    await player.setUrl(streamInfo.url.toString());
-
-    // Update songTitle
-    songTitleNotifier.value = htmlUnescape.convert(video.title);
-    // Reset loopSection
-    looper.section = LoopSection(end: duration);
-
-    // Inform notification
-    MusicPlayerAudioHandler.instance.mediaItem.add(MediaItem(
+    await loadSong(Song(
       id: video.id,
       title: htmlUnescape.convert(video.title),
-      duration: duration,
       artist: htmlUnescape.convert(video.channelTitle),
       artUri: Uri.tryParse(video.thumbnails.high.url),
+      source: SongSource.youtube,
+      audioSource: AudioSource.uri(Uri.parse(streamInfo.url.toString())),
     ));
+  }
 
-    stateNotifier.value = MusicPlayerState.ready;
+  /// Load preferences for the song with [songId].
+  ///
+  /// If no preferences could be found for the song, do nothing.
+  Future<void> loadSongPreferences(Song song) async {
+    var json = await _songPreferences.load(song.id);
+    if (json == null) return;
+
+    int? position = tryCast<int>(json["position"]);
+    if (position != null && position < duration.inMilliseconds) {
+      seek(Duration(milliseconds: position));
+    }
+
+    var slowdownerSettings = tryCast<Map<String, dynamic>>(json["slowdowner"]);
+    if (slowdownerSettings != null) {
+      slowdowner.loadSettingsFromJson(slowdownerSettings);
+    }
+
+    var looperSettings = tryCast<Map<String, dynamic>>(json["looper"]);
+    if (looperSettings != null) {
+      looper.loadSettingsFromJson(looperSettings);
+    }
+
+    var equalizerSettings = tryCast<Map<String, dynamic>>(json["equalizer"]);
+    if (equalizerSettings != null) {
+      equalizer.loadSettingsFromJson(equalizerSettings);
+    }
+  }
+
+  /// Save preferences for the current song.
+  ///
+  /// If no song is currently loaded, do nothing
+  Future<void> saveSongPreferences() async {
+    if (song == null) return;
+
+    await _songPreferences.save(song!.id, {
+      "position": position.inMilliseconds,
+      "slowdowner": slowdowner.saveSettingsToJson(),
+      "looper": looper.saveSettingsToJson(),
+      "equalizer": equalizer.saveSettingsToJson(),
+    });
   }
 
   /// Listen for changes from [player].
   void _init() {
+    songHistory.fetch();
+
     // isPlaying
     player.playingStream.listen((playing) {
       isPlayingNotifier.value = playing;
@@ -203,5 +273,17 @@ class MusicPlayer {
     slowdowner.initialize(this);
     looper.initialize(this);
     equalizer.initialize(this);
+  }
+
+  /// Initialize the audio service for [audioHandler], to enable interaction
+  /// with the phone's media player.
+  Future<void> initAudioService() async {
+    await AudioService.init(
+      builder: () => audioHandler,
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'se.agardh.musbx.channel.music_player',
+        androidNotificationChannelName: 'Music player',
+      ),
+    );
   }
 }

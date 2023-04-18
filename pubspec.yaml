@@ -35,6 +35,7 @@ dependencies:
   dynamic_color: ^1.5.4
   permission_handler: ^10.2.0
   device_info_plus: ^8.0.0
+  path_provider: ^2.0.14
 
   # Metronome
   soundpool: ^2.3.0

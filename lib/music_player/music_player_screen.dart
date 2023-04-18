@@ -8,12 +8,13 @@ import 'package:musbx/music_player/pitch_speed_card/pitch_speed_card.dart';
 import 'package:musbx/music_player/position_card/button_panel.dart';
 import 'package:musbx/music_player/current_song_card/current_song_panel.dart';
 import 'package:musbx/music_player/position_card/position_slider.dart';
+import 'package:musbx/music_player/current_song_card/song_history_list.dart';
 import 'package:musbx/screen/card_list.dart';
 import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/screen/empty_tab_bar.dart';
 import 'package:musbx/screen/widget_card.dart';
 
-class MusicPlayerScreen extends StatelessWidget {
+class MusicPlayerScreen extends StatefulWidget {
   /// Screen that allows the user to select and play a song.
   ///
   /// Includes:
@@ -23,6 +24,34 @@ class MusicPlayerScreen extends StatelessWidget {
   ///  - Label showing current song, and button to load a song from device.
   ///  - Slider and buttons for looping a section of the song.
   const MusicPlayerScreen({super.key});
+
+  @override
+  State<StatefulWidget> createState() => MusicPlayerScreenState();
+}
+
+class MusicPlayerScreenState extends State<MusicPlayerScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    MusicPlayer.instance.saveSongPreferences();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Save preferences for the current song
+    if (state == AppLifecycleState.paused) {
+      MusicPlayer.instance.saveSongPreferences();
+    }
+    super.didChangeAppLifecycleState(state);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,13 +83,16 @@ If looping is enabled, change what section to loop using the range slider. Use t
                 children: [
                   if (tabs.length > 1) const EmptyTabBar(),
                   WidgetCard(
-                    child: Column(
-                      children: [
-                        CurrentSongPanel(),
-                        PositionSlider(),
-                        ButtonPanel(),
-                      ],
-                    ),
+                    child: Column(children: [
+                      CurrentSongPanel(),
+                      const SongHistoryList(),
+                    ]),
+                  ),
+                  WidgetCard(
+                    child: Column(children: [
+                      PositionSlider(),
+                      ButtonPanel(),
+                    ]),
                   ),
                   Expanded(
                     child: TabBarView(children: tabs),

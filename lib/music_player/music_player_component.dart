@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/widgets.dart';
 
 /// Base class for all components that alter the audio being played by [MusicPlayer].
 ///
@@ -17,4 +18,27 @@ abstract class MusicPlayerComponent {
   /// This includes listening to any of [MusicPlayer]'s ValueNotifiers that the
   /// component needs to respond to, and adding triggers for updating values on [MusicPlayer].
   void initialize(MusicPlayer musicPlayer);
+
+  /// Load settings for a song from a [json] map.
+  ///
+  /// Called when a song that has preferences saved is loaded.
+  ///
+  /// By default, handles the following key-value pair:
+  ///  - "enabled": [bool] Whether this component is enabled or not.
+  ///
+  /// Implementations should be able to handle a value being null,
+  /// and never expect a specific key to exist in [json].
+  @mustCallSuper
+  void loadSettingsFromJson(Map<String, dynamic> json) {
+    enabled = tryCast<bool>(json["enabled"]) ?? enabled;
+  }
+
+  /// Save settings for a song to a json map.
+  ///
+  /// By default, saves the following key-value pair:
+  ///  - "enabled": [bool] Whether this component is enabled or not.
+  @mustCallSuper
+  Map<String, dynamic> saveSettingsToJson() {
+    return {"enabled": enabled};
+  }
 }
