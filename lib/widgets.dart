@@ -24,7 +24,7 @@ class ContinuousTextButton extends StatelessWidget {
     Timer timer = Timer(const Duration(), () {});
     return GestureDetector(
       onLongPressStart: (LongPressStartDetails details) {
-        timer = Timer.periodic(interval, (timer) => onPressed?.call());
+        timer = Timer.periodic(interval, (_) => onPressed?.call());
       },
       onLongPressUp: () {
         timer.cancel();
