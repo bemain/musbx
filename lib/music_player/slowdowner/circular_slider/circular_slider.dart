@@ -158,12 +158,17 @@ class CircularSliderState extends State<CircularSlider> {
         (widget.endAngle - widget.startAngle) * activeFraction;
     final Offset thumbOffset = angleToPoint(thumbAngle, center, radius);
 
-    if (isPointAlongCircle(
-          globalToLocal(event.position),
-          center,
-          radius,
-          widget.touchWidth,
-        ) ||
+    final double eventAngle =
+        pointToAngle(globalToLocal(event.position), center);
+
+    if ((isPointAlongCircle(
+              globalToLocal(event.position),
+              center,
+              radius,
+              widget.touchWidth,
+            ) &&
+            eventAngle > widget.startAngle &&
+            eventAngle < widget.endAngle) ||
         isPointInsideCircle(globalToLocal(event.position), thumbOffset, 10)) {
       dragging = true;
       onPan(event.position);
