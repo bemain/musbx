@@ -58,7 +58,10 @@ class SongHistoryListState extends State<SongHistoryList> {
                 musicPlayer.loadSong(song);
               },
         avatar: _buildSongSourceAvatar(song),
-        label: Text(song.title),
+        label: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 128),
+          child: Text(song.title),
+        ),
       ),
     );
   }
