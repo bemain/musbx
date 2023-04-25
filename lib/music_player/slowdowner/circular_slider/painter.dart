@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/pitch_speed_card/circular_slider/utils.dart';
-import 'package:musbx/music_player/pitch_speed_card/circular_slider/theme.dart';
+import 'package:musbx/music_player/slowdowner/circular_slider/utils.dart';
+import 'package:musbx/music_player/slowdowner/circular_slider/theme.dart';
 
 class CircularSliderPainter extends CustomPainter {
   CircularSliderPainter({

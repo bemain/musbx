@@ -10,7 +10,7 @@ import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
-import 'package:musbx/music_player/pitch_speed_card/slowdowner.dart';
+import 'package:musbx/music_player/slowdowner/slowdowner.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_history.dart';
 import 'package:musbx/music_player/song_preferences.dart';

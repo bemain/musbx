@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/music_player/equalizer/equalizer_card.dart';
 import 'package:musbx/music_player/loop_card/loop_card.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/pitch_speed_card/pitch_speed_card.dart';
+import 'package:musbx/music_player/slowdowner/slowdowner_card.dart';
 import 'package:musbx/music_player/position_card/button_panel.dart';
 import 'package:musbx/music_player/current_song_card/current_song_panel.dart';
 import 'package:musbx/music_player/position_card/position_slider.dart';
@@ -61,7 +61,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           List<Widget> tabs = [
             CardList(
               children: [
-                PitchSpeedCard(),
+                SlowdownerCard(),
                 LoopCard(),
               ],
             ),

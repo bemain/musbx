@@ -3,14 +3,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/pitch_speed_card/circular_slider/circular_slider.dart';
+import 'package:musbx/music_player/slowdowner/circular_slider/circular_slider.dart';
 
-class PitchSpeedCard extends StatelessWidget {
+class SlowdownerCard extends StatelessWidget {
   /// Card with sliders for changing the pitch and speed of [MusicPlayer].
   ///
   /// Each slider is labeled with max and min value.
   /// Also features a button for resetting pitch and speed to the default values.
-  PitchSpeedCard({super.key});
+  SlowdownerCard({super.key});
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
