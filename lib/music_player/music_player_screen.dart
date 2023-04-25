@@ -72,10 +72,12 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           ];
 
           return Scaffold(
-            appBar: const DefaultAppBar(
-              helpText: """Load song from device or YouTube.
+            appBar: DefaultAppBar(
+              helpText:
+                  """Load song from device ${Platform.isIOS ? "or YouTube" : ""}.
 Adjust pitch and speed using the circular sliders. While selecting, greater accuracy can be obtained by dragging away from the center.
-If looping is enabled, change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.""",
+If looping is enabled, change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.
+${Platform.isAndroid ? "Swipe right for Equalizer." : ""}""",
             ),
             body: DefaultTabController(
               length: tabs.length,
