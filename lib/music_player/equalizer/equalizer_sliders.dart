@@ -9,20 +9,25 @@ class EqualizerSliders extends StatelessWidget {
   /// A widget used to control the gain on Equalizer's bands.
   EqualizerSliders({super.key});
 
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
   final Equalizer equalizer = MusicPlayer.instance.equalizer;
 
   @override
   Widget build(BuildContext context) {
+    final bool enabled = equalizer.parameters != null &&
+        equalizer.enabled &&
+        !musicPlayer.isLoading &&
+        musicPlayer.state != MusicPlayerState.idle;
+
     return RepaintBoundary(
       child: CustomPaint(
         painter: EqualizerOverlayPainter(
           parameters: equalizer.parameters,
-          lineColor: (equalizer.parameters != null && equalizer.enabled)
+          lineColor: enabled
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
-          fillColor: (equalizer.parameters != null && equalizer.enabled)
-              ? Theme.of(context).colorScheme.inversePrimary
-              : null,
+          fillColor:
+              enabled ? Theme.of(context).colorScheme.inversePrimary : null,
         ),
         child: AspectRatio(
           aspectRatio: 16 / 11,
@@ -35,7 +40,7 @@ class EqualizerSliders extends StatelessWidget {
               children: [
                 for (var band
                     in equalizer.parameters?.bands ?? List.filled(5, null))
-                  Expanded(child: buildSlider(band: band)),
+                  Expanded(child: buildSlider(band: band, enabled: enabled)),
               ],
             ),
           ),
@@ -45,7 +50,7 @@ class EqualizerSliders extends StatelessWidget {
   }
 
   /// Build a [Slider] for controlling the gain on [band].
-  Widget buildSlider({AndroidEqualizerBand? band}) {
+  Widget buildSlider({AndroidEqualizerBand? band, bool enabled = true}) {
     return StreamBuilder<double>(
       stream: band?.gainStream,
       builder: (context, snapshot) {
@@ -55,11 +60,7 @@ class EqualizerSliders extends StatelessWidget {
             min: equalizer.parameters?.minDecibels ?? 0,
             max: equalizer.parameters?.maxDecibels ?? 1,
             value: band?.gain ?? 0.5,
-            onChanged: (!equalizer.enabled)
-                ? null
-                : (equalizer.parameters == null)
-                    ? null
-                    : band?.setGain,
+            onChanged: !enabled ? null : band?.setGain,
           ),
         );
       },
