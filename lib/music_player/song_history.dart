@@ -50,7 +50,6 @@ class SongHistory extends ChangeNotifier {
             "History entry (${entry.key}, ${entry.value}) is missing required fields");
         return;
       }
-      print(song);
 
       history[date] = song;
     });
