@@ -1,3 +1,4 @@
+import 'package:advanced_in_app_review/advanced_in_app_review.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome_screen.dart';
 import 'package:musbx/music_player/music_player_screen.dart';
@@ -13,6 +14,19 @@ class NavigationScreen extends StatefulWidget {
 
 class NavigationScreenState extends State<NavigationScreen> {
   int selectedIndex = 1;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Setup in-app review
+    AdvancedInAppReview()
+        .setMinDaysBeforeRemind(7)
+        .setMinDaysAfterInstall(7)
+        .setMinLaunchTimes(5)
+        .setMinSecondsBeforeShowDialog(4)
+        .monitor();
+  }
 
   @override
   Widget build(BuildContext context) {

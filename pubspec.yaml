@@ -36,6 +36,7 @@ dependencies:
   permission_handler: ^10.2.0
   device_info_plus: ^8.0.0
   path_provider: ^2.0.14
+  advanced_in_app_review: ^1.1.3
 
   # Metronome
   soundpool: ^2.3.0
