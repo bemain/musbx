@@ -14,8 +14,8 @@ import 'package:musbx/music_player/slowdowner/slowdowner.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_history.dart';
 import 'package:musbx/music_player/song_preferences.dart';
+import 'package:musbx/music_player/youtube_audio_streams.dart';
 import 'package:musbx/widgets.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// The state of [MusicPlayer].
 enum MusicPlayerState {
@@ -61,9 +61,6 @@ class MusicPlayer {
       (event) => MusicPlayerAudioHandler.transformEvent(event, player),
     ),
   );
-
-  /// Used internally to get audio from YouTube.
-  final YoutubeExplode _youtubeExplode = YoutubeExplode();
 
   /// Used internally to load and save preferences for songs.
   final SongPreferences _songPreferences = SongPreferences();
@@ -168,9 +165,6 @@ class MusicPlayer {
   /// Load a song to play from a [YoutubeVideo].
   Future<void> loadVideo(YoutubeVideo video) async {
     // Get stream info
-    StreamManifest manifest =
-        await _youtubeExplode.videos.streams.getManifest(video.id);
-    AudioOnlyStreamInfo streamInfo = manifest.audioOnly.withHighestBitrate();
 
     HtmlUnescape htmlUnescape = HtmlUnescape();
 
@@ -180,7 +174,7 @@ class MusicPlayer {
       artist: htmlUnescape.convert(video.channelTitle),
       artUri: Uri.tryParse(video.thumbnails.high.url),
       source: SongSource.youtube,
-      audioSource: AudioSource.uri(Uri.parse(streamInfo.url.toString())),
+      audioSource: AudioSource.uri(await getAudioStream(video.id)),
     ));
   }
 

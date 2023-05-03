@@ -36,20 +36,21 @@ class SongHistory extends ChangeNotifier {
 
     history.clear();
 
-    json.forEach((key, value) {
-      DateTime? date = DateTime.tryParse(key);
+    await Future.forEach(json.entries, (entry) async {
+      DateTime? date = DateTime.tryParse(entry.key);
 
-      if (date == null ||
-          value is! Map<String, dynamic> ||
-          !value.containsKey("id") ||
-          !value.containsKey("title") ||
-          !value.containsKey("audioSource")) {
+      if (date == null || entry.value is! Map<String, dynamic>) {
         debugPrint(
-            "Incorrectly formatted entry in history file: ($key, $value)");
+            "Incorrectly formatted entry in history file: (${entry.key}, ${entry.value})");
         return;
       }
-
-      Song song = Song.fromJson(value);
+      Song? song = await Song.fromJson(entry.value);
+      if (song == null) {
+        debugPrint(
+            "History entry (${entry.key}, ${entry.value}) is missing required fields");
+        return;
+      }
+      print(song);
 
       history[date] = song;
     });
