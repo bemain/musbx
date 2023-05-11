@@ -15,7 +15,6 @@ I hereby state, to the best of my knowledge and belief, that I have not programm
 
 If you find any security vulnerability that has been inadvertently caused by me, or have any question regarding how the app protectes your privacy, please send me an email at bemain.dev@gmail.com.
 
-Yours sincerly,
-Benjamin Agardh
+Yours sincerly,\
+Benjamin Agardh \
 Rydebäck, Sweden
-
