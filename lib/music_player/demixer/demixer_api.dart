@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 /// A response from a source separation stream.
 ///
@@ -18,7 +19,7 @@ class SeparationResponse {
   final int? progress;
 }
 
-enum StemName {
+enum StemType {
   drums,
   bass,
   vocals,
@@ -28,8 +29,13 @@ enum StemName {
 class DemixerApi {
   final String host = "127.0.0.1:5000";
 
+  Directory? _stemDirectory;
+
   /// Separate a Youtube song with the specified [youtubeId].
-  Stream<SeparationResponse> separateYoutubeSong(String youtubeId) async* {
+  Stream<SeparationResponse> separateYoutubeSong(
+    String youtubeId, {
+    Duration checkProgressInterval = const Duration(seconds: 5),
+  }) async* {
     Uri url = Uri.http(host, "/upload/$youtubeId");
     var response = await http.post(url);
 
@@ -56,16 +62,19 @@ class DemixerApi {
       print("Progress: $progress%");
       yield SeparationResponse.active(progress);
 
-      await Future.delayed(const Duration(seconds: 10));
+      await Future.delayed(checkProgressInterval);
     }
   }
 
   /// Download a [stem] for a [song].
-  Future<File?> downloadStem(String song, StemName stem) async {
+  Future<File?> downloadStem(String song, StemType stem) async {
     Uri url = Uri.http(host, "/stem/$song/${stem.name}");
     var response = await http.get(url);
     if (response.statusCode != 200) return null;
-    File file = File("$stem.mp3");
+
+    _stemDirectory ??=
+        Directory("${(await getTemporaryDirectory()).path}/demixer/")..create();
+    File file = File("$_stemDirectory/${stem.name}.mp3");
 
     await file.writeAsBytes(response.bodyBytes);
     return file;
