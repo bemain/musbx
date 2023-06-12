@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
+/// A response from a source separation stream.
+///
+/// If [complete] is `true`, [stemFolderName] is not `null`. Otherwise, progress is not `null`.
 class SeparationResponse {
   SeparationResponse.complete(this.stemFolderName)
       : complete = true,
@@ -15,9 +18,19 @@ class SeparationResponse {
   final int? progress;
 }
 
+enum StemName {
+  drums,
+  bass,
+  vocals,
+  other,
+}
+
 class DemixerApi {
+  final String host = "127.0.0.1:5000";
+
+  /// Separate a Youtube song with the specified [youtubeId].
   Stream<SeparationResponse> separateYoutubeSong(String youtubeId) async* {
-    Uri url = Uri.parse("http://127.0.0.1:5000/upload/$youtubeId");
+    Uri url = Uri.http(host, "/upload/$youtubeId");
     var response = await http.post(url);
 
     print('Response status: ${response.statusCode}');
@@ -28,7 +41,7 @@ class DemixerApi {
     assert(response.statusCode == 201);
 
     final int jobId = int.parse(response.body);
-    url = Uri.parse("http://127.0.0.1:5000/job/$jobId");
+    url = Uri.http(host, "/job/$jobId");
     int progress = 0;
 
     while (true) {
@@ -47,11 +60,12 @@ class DemixerApi {
     }
   }
 
-  Future<File?> downloadStem(String songName, String stemName) async {
-    Uri url = Uri.parse("http://127.0.0.1:5000/stem/$songName/$stemName");
+  /// Download a [stem] for a [song].
+  Future<File?> downloadStem(String song, StemName stem) async {
+    Uri url = Uri.http(host, "/stem/$song/${stem.name}");
     var response = await http.get(url);
     if (response.statusCode != 200) return null;
-    File file = File("$stemName.mp3");
+    File file = File("$stem.mp3");
 
     await file.writeAsBytes(response.bodyBytes);
     return file;
