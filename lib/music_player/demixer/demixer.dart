@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -30,6 +31,23 @@ class Stem {
   Future<File?> getStemFile(String song) => _api.downloadStem(song, type);
 }
 
+enum LoadingState {
+  /// Loading hasn't started. E.g. the user hasn't selected a song yet.
+  inactive,
+
+  /// The song is being uploaded to the server.
+  uploading,
+
+  /// The server has begun separating the song into stems.
+  separating,
+
+  /// The stems are being mixed into a single file.
+  mixing,
+
+  /// The song has been separated and mixed and is ready to be played.
+  done,
+}
+
 class Demixer extends MusicPlayerComponent {
   final Stem drums = Stem(StemType.drums);
   final Stem bass = Stem(StemType.bass);
@@ -38,39 +56,20 @@ class Demixer extends MusicPlayerComponent {
 
   late final List<Stem> stems = [drums, bass, vocals, other];
 
+  LoadingState get loadingState => loadingStateNotifier.value;
+  final ValueNotifier<LoadingState> loadingStateNotifier =
+      ValueNotifier(LoadingState.done);
+
   /// Whether the Demixer is ready to play the current song.
   ///
   /// If `true`, the current song has been separated and mixed, and the Demixer is ready to use.
-  bool get loaded => loadedNotifier.value;
-  ValueNotifier<bool> loadedNotifier = ValueNotifier(false);
-
-  /// The Future that prepares the current song for playing.
-  ///
-  /// Separates and mixes the current song. When complete, the Demixer is ready to use and [loaded] is set to `true`.
-  Future<void>? get loadingFuture => loadingFutureNotifier.value;
-  final ValueNotifier<Future<void>?> loadingFutureNotifier =
-      ValueNotifier(null);
+  bool get isLoaded => loadingState == LoadingState.done;
 
   /// The progress of the loading action.
   ///
-  /// This is `null` if [loaded] is `true`.
+  /// This is `null` if [loadingState] is not [LoadingState.separating].
   int? get loadingProgress => loadingProgressNotifier.value;
   ValueNotifier<int?> loadingProgressNotifier = ValueNotifier(null);
-
-  /// Separate a Youtube song with the specified [youtubeId].
-  /// Return the name of the song, to be used when retrieving stem files.
-  Future<String?> separateYoutubeSong(String youtubeId) async {
-    print("DEMIXER: Separating $youtubeId");
-    String? songName;
-    var subscription = _api.separateYoutubeSong(youtubeId).listen(
-      (event) {
-        loadingProgressNotifier.value = event.progress;
-        if (event.complete) songName = event.stemFolderName;
-      },
-    );
-    await subscription.asFuture();
-    return songName;
-  }
 
   Directory? _outDirectory;
 
@@ -117,23 +116,29 @@ class Demixer extends MusicPlayerComponent {
       return; // TODO: Implement separating files
     }
 
-    loadedNotifier.value = false;
-    loadingProgressNotifier.value = 0;
+    loadingStateNotifier.value = LoadingState.uploading;
 
-    String? songName = await separateYoutubeSong(song.id);
-    if (songName == null) return;
+    UploadResponse response = await _api.uploadYoutubeSong(song.id);
+    String songName = response.songName;
+
+    if (response.jobId != null) {
+      loadingStateNotifier.value = LoadingState.separating;
+      var subscription = _api.jobProgress(response.jobId!).listen((response) {
+        loadingProgressNotifier.value = response.progress;
+      });
+
+      await subscription.asFuture();
+      loadingProgressNotifier.value = null;
+    }
+
+    loadingStateNotifier.value = LoadingState.mixing;
 
     File? mix = await mixStemFiles(songName);
     if (mix == null) return;
 
-    print("DEMIXER: Loading song to player");
-
     await MusicPlayer.instance.player.setFilePath(mix.path);
 
-    print("DEMIXER: Song loaded");
-
-    loadingProgressNotifier.value = null;
-    loadedNotifier.value = true;
+    loadingStateNotifier.value = LoadingState.done;
   }
 
   @override
@@ -141,10 +146,10 @@ class Demixer extends MusicPlayerComponent {
     musicPlayer.songNotifier.addListener(onMusicPlayerSongLoaded);
   }
 
-  void onMusicPlayerSongLoaded() {
+  Future<void> onMusicPlayerSongLoaded() async {
     Song? song = MusicPlayer.instance.song;
     if (song == null) return;
 
-    loadingFutureNotifier.value = loadSong(song);
+    await loadSong(song);
   }
 }

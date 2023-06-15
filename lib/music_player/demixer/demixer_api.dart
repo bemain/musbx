@@ -1,22 +1,26 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
-/// A response from a source separation stream.
-///
-/// If [complete] is `true`, [stemFolderName] is not `null`. Otherwise, progress is not `null`.
-class SeparationResponse {
-  SeparationResponse.complete(this.stemFolderName)
-      : complete = true,
-        progress = null;
-  SeparationResponse.active(this.progress)
-      : complete = false,
-        stemFolderName = null;
+class UploadResponse {
+  const UploadResponse(this.songName, {this.jobId});
 
-  final bool complete;
-  final String? stemFolderName;
-  final int? progress;
+  /// The name of the folder where the stems are saved. Used to download the stems.
+  final String songName;
+
+  /// The name of the job that separates the song into stems,
+  /// if the stems were not found in the cache.
+  final String? jobId;
+}
+
+/// A response from a source separation stream.
+class SeparationResponse {
+  const SeparationResponse(this.progress);
+
+  /// The current progress of the separation.
+  final int progress;
 }
 
 enum StemType {
@@ -27,40 +31,47 @@ enum StemType {
 }
 
 class DemixerApi {
-  final String host = "90.224.55.38:8080";
+  final String host = "192.168.1.174:8080";
 
   Directory? stemDirectory;
 
-  /// Separate a Youtube song with the specified [youtubeId].
-  Stream<SeparationResponse> separateYoutubeSong(
-    String youtubeId, {
-    Duration checkProgressInterval = const Duration(seconds: 5),
-  }) async* {
+  Future<UploadResponse> uploadYoutubeSong(String youtubeId) async {
     Uri url = Uri.http(host, "/upload/$youtubeId");
     var response = await http.post(url);
+    Map<String, dynamic> json = jsonDecode(response.body);
+
+    assert(json.containsKey("song_name"));
+    String songName = json["song_name"];
 
     if (response.statusCode == 200) {
-      yield SeparationResponse.complete(response.body);
-      return;
+      return UploadResponse(songName);
     }
+
     assert(response.statusCode == 201);
 
-    final int jobId = int.parse(response.body);
-    url = Uri.http(host, "/job/$jobId");
+    assert(json.containsKey("job"));
+    return UploadResponse(songName, jobId: json["job"]);
+  }
+
+  /// Check the progress of a separation job.
+  Stream<SeparationResponse> jobProgress(
+    String jobId, {
+    Duration checkEvery = const Duration(seconds: 5),
+  }) async* {
+    Uri url = Uri.http(host, "/job/$jobId");
     int progress = 0;
 
     while (true) {
+      // Check job status
       var response = await http.get(url);
-      if (response.statusCode == 200) {
-        yield SeparationResponse.complete(response.body);
-        return;
-      }
+      if (response.statusCode == 489) return;
 
-      assert(response.statusCode == 289);
+      assert(response.statusCode == 200);
+
       progress = int.tryParse(response.body) ?? progress;
-      yield SeparationResponse.active(progress);
+      yield SeparationResponse(progress);
 
-      await Future.delayed(checkProgressInterval);
+      await Future.delayed(checkEvery);
     }
   }
 
