@@ -11,17 +11,26 @@ import 'package:musbx/music_player/song.dart';
 final DemixerApi _api = DemixerApi();
 
 class Stem {
-  Stem(this.type);
+  Stem(this.type) {
+    player.volumeStream.listen((value) => volumeNotifier.value = value);
+  }
 
   final StemType type;
 
   /// Whether this stem is enabled and should be played.
-  set enabled(bool value) => enabledNotifier.value = value;
+  set enabled(bool value) {
+    if (value == false) player.pause();
+    if (value == true &&
+        MusicPlayer.instance.demixer.enabled &&
+        MusicPlayer.instance.isPlaying) player.play();
+    enabledNotifier.value = value;
+  }
+
   bool get enabled => enabledNotifier.value;
-  final ValueNotifier<bool> enabledNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> enabledNotifier = ValueNotifier(true);
 
   /// The volume this stem is played at. Must be between 0 and 1.
-  set volume(double value) => volumeNotifier.value = value.clamp(0, 1);
+  set volume(double value) => player.setVolume(value.clamp(0, 1));
   double get volume => volumeNotifier.value;
   final ValueNotifier<double> volumeNotifier = ValueNotifier(1.0);
 
@@ -145,7 +154,7 @@ class Demixer extends MusicPlayerComponent {
 
     for (Stem stem in stems) {
       if (musicPlayer.isPlaying) {
-        stem.player.play();
+        if (stem.enabled) stem.player.play();
       } else {
         stem.player.pause();
       }
@@ -159,8 +168,9 @@ class Demixer extends MusicPlayerComponent {
     MusicPlayer musicPlayer = MusicPlayer.instance;
 
     for (Stem stem in stems) {
-      if ((musicPlayer.position - stem.player.position).abs() >
-          minAllowedPositionError) {
+      if (stem.enabled &&
+          (musicPlayer.position - stem.player.position).abs() >
+              minAllowedPositionError) {
         print(
             "DEMIXER: Correcting position for stem ${stem.type.name}. Error: ${(musicPlayer.position - stem.player.position).abs().inMilliseconds}ms");
         stem.player.seek(musicPlayer.position);

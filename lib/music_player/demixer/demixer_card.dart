@@ -89,6 +89,15 @@ class DemixerCardState extends State<DemixerCard> {
   Widget buildVolumeSlider(Stem stem) {
     return Row(
       children: [
+        ValueListenableBuilder(
+          valueListenable: stem.enabledNotifier,
+          builder: (context, stemEnabled, child) => Checkbox(
+            value: stemEnabled,
+            onChanged: (bool? value) {
+              if (value != null) stem.enabled = value;
+            },
+          ),
+        ),
         Text(stem.type.name),
         ValueListenableBuilder(
           valueListenable: stem.volumeNotifier,
