@@ -29,7 +29,9 @@ class DemixerCardState extends State<DemixerCard> {
                       child: Switch(
                         value: demixerEnabled,
                         onChanged: musicPlayer.nullIfNoSongElse(
-                          (value) => musicPlayer.demixer.enabled = value,
+                          !musicPlayer.demixer.isLoaded
+                              ? null
+                              : (value) => musicPlayer.demixer.enabled = value,
                         ),
                       ),
                     ),
@@ -87,26 +89,36 @@ class DemixerCardState extends State<DemixerCard> {
   }
 
   Widget buildVolumeSlider(Stem stem) {
-    return Row(
-      children: [
-        ValueListenableBuilder(
-          valueListenable: stem.enabledNotifier,
-          builder: (context, stemEnabled, child) => Checkbox(
+    return ValueListenableBuilder(
+      valueListenable: stem.enabledNotifier,
+      builder: (context, stemEnabled, child) => Row(
+        children: [
+          Checkbox(
             value: stemEnabled,
-            onChanged: (bool? value) {
-              if (value != null) stem.enabled = value;
-            },
+            onChanged: musicPlayer.nullIfNoSongElse(
+              (!musicPlayer.demixer.enabled)
+                  ? null
+                  : (bool? value) {
+                      if (value != null) stem.enabled = value;
+                    },
+            ),
           ),
-        ),
-        Text(stem.type.name),
-        ValueListenableBuilder(
-          valueListenable: stem.volumeNotifier,
-          builder: (context, volume, child) => Slider(
-            value: volume,
-            onChanged: (double value) => stem.volume = value,
+          Text(stem.type.name),
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: stem.volumeNotifier,
+              builder: (context, volume, child) => Slider(
+                value: volume,
+                onChanged: musicPlayer.nullIfNoSongElse(
+                  (!musicPlayer.demixer.enabled || !stemEnabled)
+                      ? null
+                      : (double value) => stem.volume = value,
+                ),
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
