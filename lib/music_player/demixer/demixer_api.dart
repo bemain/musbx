@@ -27,9 +27,9 @@ enum StemType {
 }
 
 class DemixerApi {
-  final String host = "127.0.0.1:5000";
+  final String host = "90.224.55.38:8080";
 
-  Directory? _stemDirectory;
+  Directory? stemDirectory;
 
   /// Separate a Youtube song with the specified [youtubeId].
   Stream<SeparationResponse> separateYoutubeSong(
@@ -39,7 +39,6 @@ class DemixerApi {
     Uri url = Uri.http(host, "/upload/$youtubeId");
     var response = await http.post(url);
 
-    print('Response status: ${response.statusCode}');
     if (response.statusCode == 200) {
       yield SeparationResponse.complete(response.body);
       return;
@@ -59,7 +58,6 @@ class DemixerApi {
 
       assert(response.statusCode == 289);
       progress = int.tryParse(response.body) ?? progress;
-      print("Progress: $progress%");
       yield SeparationResponse.active(progress);
 
       await Future.delayed(checkProgressInterval);
@@ -72,9 +70,9 @@ class DemixerApi {
     var response = await http.get(url);
     if (response.statusCode != 200) return null;
 
-    _stemDirectory ??=
+    stemDirectory ??=
         Directory("${(await getTemporaryDirectory()).path}/demixer/")..create();
-    File file = File("$_stemDirectory/${stem.name}.mp3");
+    File file = File("${stemDirectory!.path}/${stem.name}.wav");
 
     await file.writeAsBytes(response.bodyBytes);
     return file;
