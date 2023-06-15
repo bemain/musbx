@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/demixer/demixer_card.dart';
 import 'package:musbx/music_player/equalizer/equalizer_card.dart';
 import 'package:musbx/music_player/loop_card/loop_card.dart';
 import 'package:musbx/music_player/music_player.dart';
@@ -69,6 +70,9 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
               CardList(
                 children: [EqualizerCard()],
               ),
+            CardList(
+              children: [DemixerCard()],
+            )
           ];
 
           return Scaffold(

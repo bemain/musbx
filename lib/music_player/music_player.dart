@@ -8,6 +8,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
+import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/loop_card/looper.dart';
 import 'package:musbx/music_player/slowdowner/slowdowner.dart';
@@ -57,6 +58,7 @@ class MusicPlayer {
   late final MusicPlayerAudioHandler audioHandler = MusicPlayerAudioHandler(
     onPlay: play,
     onPause: pause,
+    // TODO: Implement onStop
     playbackStateStream: player.playbackEventStream.map(
       (event) => MusicPlayerAudioHandler.transformEvent(event, player),
     ),
@@ -119,6 +121,8 @@ class MusicPlayer {
 
   /// Component for adjusting the gain for different frequency bands of the song.
   final Equalizer equalizer = Equalizer();
+
+  final Demixer demixer = Demixer();
 
   /// Load a [song].
   ///
@@ -267,6 +271,7 @@ class MusicPlayer {
     slowdowner.initialize(this);
     looper.initialize(this);
     equalizer.initialize(this);
+    demixer.initialize(this);
   }
 
   /// Initialize the audio service for [audioHandler], to enable interaction
