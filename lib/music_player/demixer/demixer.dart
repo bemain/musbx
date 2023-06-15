@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/music_player/song.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:wav/wav.dart';
 
 final DemixerApi _api = DemixerApi();
 
@@ -27,8 +25,18 @@ class Stem {
   double get volume => volumeNotifier.value;
   final ValueNotifier<double> volumeNotifier = ValueNotifier(1.0);
 
-  /// Download and return the file for this stem.
-  Future<File?> getStemFile(String song) => _api.downloadStem(song, type);
+  late final AudioPlayer player = AudioPlayer(
+      // audioPipeline: AudioPipeline(androidAudioEffects: [
+      //   if (Platform.isAndroid) MusicPlayer.instance.equalizer.androidEqualizer
+      // ]),
+      );
+
+  /// Download and prepare [player] for playing this stem of [song].
+  Future<void> loadStemFile(String song) async {
+    File? file = await _api.downloadStem(song, type);
+    if (file == null) return;
+    await player.setAudioSource(AudioSource.file(file.path));
+  }
 }
 
 enum LoadingState {
@@ -41,8 +49,8 @@ enum LoadingState {
   /// The server has begun separating the song into stems.
   separating,
 
-  /// The stems are being mixed into a single file.
-  mixing,
+  /// The stem files are being loaded to the AudioPlayers.
+  preparingPlayback,
 
   /// The song has been separated and mixed and is ready to be played.
   done,
@@ -71,48 +79,10 @@ class Demixer extends MusicPlayerComponent {
   int? get loadingProgress => loadingProgressNotifier.value;
   ValueNotifier<int?> loadingProgressNotifier = ValueNotifier(null);
 
-  Directory? _outDirectory;
-
-  /// Mix the stem files for [song] into a single file.
-  Future<File?> mixStemFiles(String song) async {
-    List<Wav> wavs = [];
-    for (Stem stem in stems) {
-      File? file = await stem.getStemFile(song);
-      if (file != null) wavs.add(await Wav.readFile(file.path));
-    }
-
-    // Make sure all [wavs] are uniform.
-    if (!wavs.every((wav) => wav.duration == wavs.first.duration) ||
-        !wavs.every(
-            (wav) => wav.samplesPerSecond == wavs.first.samplesPerSecond) ||
-        !wavs.every((wav) => wav.format == wavs.first.format)) {
-      debugPrint("ERROR: The stem files are not uniform.");
-      return null;
-    }
-
-    List<Float64List> monos = wavs.map((wav) => wav.toMono()).toList();
-    Float64List mix = Float64List(monos.first.length);
-
-    // Mix all stems.
-    for (int i = 0; i < mix.length; i++) {
-      mix[i] = List.generate(stems.length, (j) => j).fold(
-              0.0, (previous, j) => previous + monos[j][i] * stems[j].volume) /
-          stems.fold(0.0, (previous, stem) => previous + stem.volume);
-    }
-
-    _outDirectory ??=
-        Directory("${(await getTemporaryDirectory()).path}/demixer/")..create();
-    File outFile = File("${_outDirectory!.path}/mix.wav");
-
-    await Wav([mix], wavs.first.samplesPerSecond, wavs.first.format)
-        .writeFile(outFile.path);
-    return outFile;
-  }
-
   /// Separate, mix and load a [song] for [MusicPlayer] to play.
-  Future<void> loadSong(Song song) async {
+  Future<String?> separateSong(Song song) async {
     if (song.source != SongSource.youtube) {
-      return; // TODO: Implement separating files
+      return null; // TODO: Implement separating files
     }
 
     loadingStateNotifier.value = LoadingState.uploading;
@@ -130,25 +100,102 @@ class Demixer extends MusicPlayerComponent {
       loadingProgressNotifier.value = null;
     }
 
-    loadingStateNotifier.value = LoadingState.mixing;
-
-    File? mix = await mixStemFiles(songName);
-    if (mix == null) return;
-
-    await MusicPlayer.instance.player.setFilePath(mix.path);
-
-    loadingStateNotifier.value = LoadingState.done;
+    return songName;
   }
 
   @override
   void initialize(MusicPlayer musicPlayer) {
-    musicPlayer.songNotifier.addListener(onMusicPlayerSongLoaded);
+    musicPlayer.songNotifier.addListener(onSongLoaded);
+    musicPlayer.isPlayingNotifier.addListener(onIsPlayingChanged);
+    musicPlayer.positionNotifier.addListener(onPositionChanged);
+    enabledNotifier.addListener(onEnabledToggle);
   }
 
-  Future<void> onMusicPlayerSongLoaded() async {
-    Song? song = MusicPlayer.instance.song;
+  AudioSource? originalAudioSource;
+
+  Future<void> onSongLoaded() async {
+    MusicPlayer musicPlayer = MusicPlayer.instance;
+    Song? song = musicPlayer.song;
     if (song == null) return;
 
-    await loadSong(song);
+    originalAudioSource = song.audioSource;
+
+    String? songName = await separateSong(song);
+    if (songName == null) return;
+
+    loadingStateNotifier.value = LoadingState.preparingPlayback;
+
+    for (Stem stem in stems) {
+      await stem.loadStemFile(songName);
+    }
+
+    // Make sure all players have the same duration
+    assert(stems
+        .every((stem) => stem.player.duration == stems.first.player.duration));
+
+    // Trigger enable
+    await onEnabledToggle();
+
+    loadingStateNotifier.value = LoadingState.done;
+  }
+
+  void onIsPlayingChanged() {
+    if (!isLoaded || !enabled) return;
+    MusicPlayer musicPlayer = MusicPlayer.instance;
+
+    for (Stem stem in stems) {
+      if (musicPlayer.isPlaying) {
+        stem.player.play();
+      } else {
+        stem.player.pause();
+      }
+    }
+  }
+
+  void onPositionChanged() {
+    if (!isLoaded || !enabled) return;
+
+    const Duration minAllowedPositionError = Duration(milliseconds: 20);
+    MusicPlayer musicPlayer = MusicPlayer.instance;
+
+    for (Stem stem in stems) {
+      if ((musicPlayer.position - stem.player.position).abs() >
+          minAllowedPositionError) {
+        print(
+            "DEMIXER: Correcting position for stem ${stem.type.name}. Error: ${(musicPlayer.position - stem.player.position).abs().inMilliseconds}ms");
+        stem.player.seek(musicPlayer.position);
+      }
+    }
+  }
+
+  Future<void> onEnabledToggle() async {
+    MusicPlayer musicPlayer = MusicPlayer.instance;
+    Song? song = musicPlayer.song;
+    if (song == null) return;
+
+    Duration position = musicPlayer.position;
+    bool wasPlaying = musicPlayer.isPlaying;
+
+    for (Stem stem in stems) {
+      await stem.player.pause();
+    }
+    await musicPlayer.pause();
+
+    if (enabled) {
+      // Disable "normal" audio
+      await musicPlayer.player.setAudioSource(
+        SilenceAudioSource(duration: stems.first.player.duration!),
+        initialPosition: position,
+      );
+    } else {
+      // Restore "normal" audio
+      if (originalAudioSource == null) return;
+      await musicPlayer.player.setAudioSource(
+        originalAudioSource!,
+        initialPosition: position,
+      );
+    }
+    await musicPlayer.seek(position);
+    if (wasPlaying) musicPlayer.play();
   }
 }
