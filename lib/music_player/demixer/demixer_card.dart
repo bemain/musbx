@@ -49,7 +49,10 @@ class DemixerCardState extends State<DemixerCard> {
                       child: IconButton(
                         iconSize: 20,
                         onPressed: musicPlayer.nullIfNoSongElse(() {
-                          // TODO: Implement reset
+                          for (Stem stem in musicPlayer.demixer.stems) {
+                            stem.volume = 1.0;
+                            stem.enabled = true;
+                          }
                         }),
                         icon: const Icon(Icons.refresh_rounded),
                       ),
