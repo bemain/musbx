@@ -31,7 +31,8 @@ enum StemType {
 }
 
 class DemixerApi {
-  final String host = "192.168.1.174:8080";
+  /// The server hosting the Demixer API.
+  final String host = "musbx.agardh.se:8080";
 
   Directory? stemDirectory;
 

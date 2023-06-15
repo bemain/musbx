@@ -75,7 +75,6 @@ class Demixer extends MusicPlayerComponent {
 
   /// Mix the stem files for [song] into a single file.
   Future<File?> mixStemFiles(String song) async {
-    print("DEMIXER: Mixing stems for $song");
     List<Wav> wavs = [];
     for (Stem stem in stems) {
       File? file = await stem.getStemFile(song);

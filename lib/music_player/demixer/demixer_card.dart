@@ -3,7 +3,7 @@ import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class DemixerCard extends StatefulWidget {
-  DemixerCard({super.key});
+  const DemixerCard({super.key});
 
   @override
   State<StatefulWidget> createState() => DemixerCardState();
