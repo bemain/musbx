@@ -4,6 +4,33 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+class StemNotFoundException implements Exception {
+  final String? msg;
+
+  const StemNotFoundException([this.msg]);
+
+  @override
+  String toString() => msg ?? 'StemNotFoundException';
+}
+
+class JobNotFoundException implements Exception {
+  final String? msg;
+
+  const JobNotFoundException([this.msg]);
+
+  @override
+  String toString() => msg ?? 'JobNotFoundException';
+}
+
+class ServerException implements Exception {
+  final String? msg;
+
+  const ServerException([this.msg]);
+
+  @override
+  String toString() => msg ?? 'ServerException';
+}
+
 class UploadResponse {
   const UploadResponse(this.songName, {this.jobId});
 
@@ -41,16 +68,14 @@ class DemixerApi {
     var response = await http.post(url);
     Map<String, dynamic> json = jsonDecode(response.body);
 
-    assert(json.containsKey("song_name"));
     String songName = json["song_name"];
 
     if (response.statusCode == 200) {
       return UploadResponse(songName);
     }
 
-    assert(response.statusCode == 201);
+    if (response.statusCode != 201) throw const ServerException();
 
-    assert(json.containsKey("job"));
     return UploadResponse(songName, jobId: json["job"]);
   }
 
@@ -65,9 +90,12 @@ class DemixerApi {
     while (true) {
       // Check job status
       var response = await http.get(url);
-      if (response.statusCode == 489) return;
+      if (response.statusCode == 489) {
+        yield* Stream.error(JobNotFoundException("Job '$jobId' was not found"));
+        return;
+      }
 
-      assert(response.statusCode == 200);
+      if (response.statusCode != 200) throw const ServerException();
 
       progress = int.tryParse(response.body) ?? progress;
       yield SeparationResponse(progress);
@@ -80,7 +108,9 @@ class DemixerApi {
   Future<File?> downloadStem(String song, StemType stem) async {
     Uri url = Uri.http(host, "/stem/$song/${stem.name}");
     var response = await http.get(url);
-    if (response.statusCode != 200) return null;
+    if (response.statusCode != 200) {
+      throw StemNotFoundException("Stem '$stem' not found for song '$song'");
+    }
 
     stemDirectory ??=
         Directory("${(await getTemporaryDirectory()).path}/demixer/")..create();

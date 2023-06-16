@@ -50,7 +50,7 @@ class Stem {
   }
 }
 
-enum LoadingState {
+enum DemixerState {
   /// Loading hasn't started. E.g. the user hasn't selected a song yet.
   inactive,
 
@@ -60,11 +60,14 @@ enum LoadingState {
   /// The server has begun separating the song into stems.
   separating,
 
-  /// The stem files are being loaded to the AudioPlayers.
-  preparingPlayback,
+  /// The stem files are being downloaded..
+  downloading,
 
-  /// The song has been separated and mixed and is ready to be played.
+  /// The song has been separated and is ready to be played.
   done,
+
+  /// Something went wrong while loading the song.
+  error,
 }
 
 class Demixer extends MusicPlayerComponent {
@@ -75,18 +78,24 @@ class Demixer extends MusicPlayerComponent {
 
   late final List<Stem> stems = [drums, bass, vocals, other];
 
-  LoadingState get loadingState => loadingStateNotifier.value;
-  final ValueNotifier<LoadingState> loadingStateNotifier =
-      ValueNotifier(LoadingState.done);
+  DemixerState get state => loadingStateNotifier.value;
+  final ValueNotifier<DemixerState> loadingStateNotifier =
+      ValueNotifier(DemixerState.inactive);
 
   /// Whether the Demixer is ready to play the current song.
   ///
   /// If `true`, the current song has been separated and mixed, and the Demixer is ready to use.
-  bool get isLoaded => loadingState == LoadingState.done;
+  bool get isReady => state == DemixerState.done;
+
+  bool get isLoading => [
+        DemixerState.uploading,
+        DemixerState.separating,
+        DemixerState.downloading,
+      ].contains(state);
 
   /// The progress of the loading action.
   ///
-  /// This is `null` if [loadingState] is not [LoadingState.separating].
+  /// This is `null` if [state] is not [DemixerState.separating].
   int? get loadingProgress => loadingProgressNotifier.value;
   ValueNotifier<int?> loadingProgressNotifier = ValueNotifier(null);
 
@@ -96,16 +105,18 @@ class Demixer extends MusicPlayerComponent {
       return null; // TODO: Implement separating files
     }
 
-    loadingStateNotifier.value = LoadingState.uploading;
+    loadingStateNotifier.value = DemixerState.uploading;
 
     UploadResponse response = await _api.uploadYoutubeSong(song.id);
     String songName = response.songName;
 
     if (response.jobId != null) {
-      loadingStateNotifier.value = LoadingState.separating;
-      var subscription = _api.jobProgress(response.jobId!).listen((response) {
+      loadingStateNotifier.value = DemixerState.separating;
+      var subscription = _api.jobProgress(response.jobId!).handleError((error) {
+        if (error is! JobNotFoundException) throw error;
+      }).listen((response) {
         loadingProgressNotifier.value = response.progress;
-      });
+      }, cancelOnError: true);
 
       await subscription.asFuture();
       loadingProgressNotifier.value = null;
@@ -116,7 +127,7 @@ class Demixer extends MusicPlayerComponent {
 
   @override
   void initialize(MusicPlayer musicPlayer) {
-    musicPlayer.songNotifier.addListener(onSongLoaded);
+    musicPlayer.songNotifier.addListener(onNewSongLoaded);
     musicPlayer.isPlayingNotifier.addListener(onIsPlayingChanged);
     musicPlayer.positionNotifier.addListener(onPositionChanged);
     musicPlayer.player.speedStream.listen(onSpeedChanged);
@@ -133,34 +144,40 @@ class Demixer extends MusicPlayerComponent {
 
   AudioSource? originalAudioSource;
 
-  Future<void> onSongLoaded() async {
+  Future<void> onNewSongLoaded() async {
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
     if (song == null) return;
 
     originalAudioSource = song.audioSource;
 
-    String? songName = await separateSong(song);
-    if (songName == null) return;
+    try {
+      String? songName = await separateSong(song);
 
-    loadingStateNotifier.value = LoadingState.preparingPlayback;
+      if (songName == null) return;
 
-    for (Stem stem in stems) {
-      await stem.loadStemFile(songName);
+      loadingStateNotifier.value = DemixerState.downloading;
+
+      for (Stem stem in stems) {
+        await stem.loadStemFile(songName);
+      }
+
+      // Make sure all players have the same duration
+      assert(stems.every(
+          (stem) => stem.player.duration == stems.first.player.duration));
+    } catch (error) {
+      loadingStateNotifier.value = DemixerState.error;
+      return;
     }
-
-    // Make sure all players have the same duration
-    assert(stems
-        .every((stem) => stem.player.duration == stems.first.player.duration));
 
     // Trigger enable
     await onEnabledToggle();
 
-    loadingStateNotifier.value = LoadingState.done;
+    loadingStateNotifier.value = DemixerState.done;
   }
 
   void onIsPlayingChanged() {
-    if (!isLoaded || !enabled) return;
+    if (!isReady || !enabled) return;
     MusicPlayer musicPlayer = MusicPlayer.instance;
 
     for (Stem stem in stems) {
@@ -173,7 +190,7 @@ class Demixer extends MusicPlayerComponent {
   }
 
   void onPositionChanged() {
-    if (!isLoaded || !enabled) return;
+    if (!isReady || !enabled) return;
     MusicPlayer musicPlayer = MusicPlayer.instance;
 
     final Duration minAllowedPositionError = const Duration(milliseconds: 20) *
