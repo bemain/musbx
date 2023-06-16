@@ -48,12 +48,13 @@ class MusicPlayer {
   final ValueNotifier<MusicPlayerState> stateNotifier =
       ValueNotifier(MusicPlayerState.idle);
 
+  /// The audio pipeline used by [player].
+  late final AudioPipeline audioPipeline = AudioPipeline(androidAudioEffects: [
+    if (Platform.isAndroid) equalizer.androidEqualizer
+  ]);
+
   /// The [AudioPlayer] used for playback.
-  late final AudioPlayer player = AudioPlayer(
-    audioPipeline: AudioPipeline(androidAudioEffects: [
-      if (Platform.isAndroid) equalizer.androidEqualizer
-    ]),
-  );
+  late final AudioPlayer player = AudioPlayer(audioPipeline: audioPipeline);
 
   late final MusicPlayerAudioHandler audioHandler = MusicPlayerAudioHandler(
     onPlay: play,

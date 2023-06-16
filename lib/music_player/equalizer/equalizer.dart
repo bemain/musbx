@@ -41,6 +41,12 @@ class Equalizer extends MusicPlayerComponent {
         resetGain();
       },
     );
+
+    musicPlayer.demixer.enabledNotifier.addListener(() {
+      // For now, disable when demixer is enabled since they don't work together.
+      // TODO: Get the Demixer to work with the Equalizer.
+      if (musicPlayer.demixer.enabled) enabled = false;
+    });
   }
 
   /// Load settings from a [json] map.

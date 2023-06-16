@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -35,11 +34,12 @@ class Stem {
   double get volume => volumeNotifier.value;
   final ValueNotifier<double> volumeNotifier = ValueNotifier(1.0);
 
+  final AndroidEqualizer equalizer = AndroidEqualizer();
   late final AudioPlayer player = AudioPlayer(
-      // audioPipeline: AudioPipeline(androidAudioEffects: [
-      //   if (Platform.isAndroid) MusicPlayer.instance.equalizer.androidEqualizer
-      // ]),
-      );
+    audioPipeline: AudioPipeline(androidAudioEffects: [
+      if (Platform.isAndroid) equalizer,
+    ]),
+  );
 
   /// Download and prepare [player] for playing this stem of [song].
   Future<void> loadStemFile(String song) async {
@@ -120,7 +120,14 @@ class Demixer extends MusicPlayerComponent {
     musicPlayer.positionNotifier.addListener(onPositionChanged);
     musicPlayer.player.speedStream.listen(onSpeedChanged);
     musicPlayer.player.pitchStream.listen(onPitchChanged);
+    musicPlayer.equalizer.parametersNotifier.addListener(onEqualizerChanged);
     enabledNotifier.addListener(onEnabledToggle);
+
+    musicPlayer.equalizer.enabledNotifier.addListener(() {
+      // For now, disable when demixer is enabled since they don't work together.
+      // TODO: Get the Demixer to work with the Equalizer.
+      if (musicPlayer.equalizer.enabled) enabled = false;
+    });
   }
 
   AudioSource? originalAudioSource;
@@ -168,8 +175,8 @@ class Demixer extends MusicPlayerComponent {
     if (!isLoaded || !enabled) return;
     MusicPlayer musicPlayer = MusicPlayer.instance;
 
-    final Duration minAllowedPositionError =
-        const Duration(milliseconds: 20) * musicPlayer.slowdowner.speed;
+    final Duration minAllowedPositionError = const Duration(milliseconds: 20) *
+        (musicPlayer.slowdowner.enabled ? musicPlayer.slowdowner.speed : 1);
 
     for (Stem stem in stems) {
       if (stem.enabled &&
@@ -191,6 +198,20 @@ class Demixer extends MusicPlayerComponent {
   void onPitchChanged(double pitch) async {
     for (Stem stem in stems) {
       stem.player.setPitch(pitch);
+    }
+  }
+
+  Future<void> onEqualizerChanged() async {
+    // TODO: Get this to work. Currently, there is no trigger for when the Equalizer's parameters changes.
+    print("Equalizer changed");
+    var musicPlayerBands = MusicPlayer.instance.equalizer.parameters?.bands;
+    if (musicPlayerBands == null) return;
+
+    for (Stem stem in stems) {
+      var bands = (await stem.equalizer.parameters).bands;
+      for (int i = 0; i < bands.length; i++) {
+        await bands[i].setGain(musicPlayerBands[i].gain);
+      }
     }
   }
 

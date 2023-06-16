@@ -73,7 +73,7 @@ class DemixerCardState extends State<DemixerCard> {
         valueListenable: musicPlayer.demixer.loadingProgressNotifier,
         builder: (context, progress, child) {
           return SizedBox(
-            height: 200,
+            height: 192,
             child: Stack(
               alignment: Alignment.center,
               children: [
