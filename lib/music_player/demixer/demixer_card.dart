@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
+import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class DemixerCard extends StatelessWidget {
