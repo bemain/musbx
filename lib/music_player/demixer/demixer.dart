@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -117,6 +118,8 @@ class Demixer extends MusicPlayerComponent {
     musicPlayer.songNotifier.addListener(onSongLoaded);
     musicPlayer.isPlayingNotifier.addListener(onIsPlayingChanged);
     musicPlayer.positionNotifier.addListener(onPositionChanged);
+    musicPlayer.player.speedStream.listen(onSpeedChanged);
+    musicPlayer.player.pitchStream.listen(onPitchChanged);
     enabledNotifier.addListener(onEnabledToggle);
   }
 
@@ -163,9 +166,10 @@ class Demixer extends MusicPlayerComponent {
 
   void onPositionChanged() {
     if (!isLoaded || !enabled) return;
-
-    const Duration minAllowedPositionError = Duration(milliseconds: 20);
     MusicPlayer musicPlayer = MusicPlayer.instance;
+
+    final Duration minAllowedPositionError =
+        const Duration(milliseconds: 20) * musicPlayer.slowdowner.speed;
 
     for (Stem stem in stems) {
       if (stem.enabled &&
@@ -175,6 +179,18 @@ class Demixer extends MusicPlayerComponent {
             "DEMIXER: Correcting position for stem ${stem.type.name}. Error: ${(musicPlayer.position - stem.player.position).abs().inMilliseconds}ms");
         stem.player.seek(musicPlayer.position);
       }
+    }
+  }
+
+  void onSpeedChanged(double speed) {
+    for (Stem stem in stems) {
+      stem.player.setSpeed(speed);
+    }
+  }
+
+  void onPitchChanged(double pitch) async {
+    for (Stem stem in stems) {
+      stem.player.setPitch(pitch);
     }
   }
 
