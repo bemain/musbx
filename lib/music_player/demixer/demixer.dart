@@ -50,6 +50,15 @@ class Stem {
   }
 }
 
+class StemsNotifier extends ValueNotifier<List<Stem>> {
+  StemsNotifier(super.value) {
+    for (Stem stem in value) {
+      stem.enabledNotifier.addListener(notifyListeners);
+      stem.volumeNotifier.addListener(notifyListeners);
+    }
+  }
+}
+
 enum DemixerState {
   /// Loading hasn't started. E.g. the user hasn't selected a song yet.
   inactive,
@@ -76,7 +85,9 @@ class Demixer extends MusicPlayerComponent {
   final Stem vocals = Stem(StemType.vocals);
   final Stem other = Stem(StemType.other);
 
-  late final List<Stem> stems = [drums, bass, vocals, other];
+  List<Stem> get stems => stemsNotifier.value;
+  late final StemsNotifier stemsNotifier =
+      StemsNotifier([drums, bass, vocals, other]);
 
   DemixerState get state => loadingStateNotifier.value;
   final ValueNotifier<DemixerState> loadingStateNotifier =

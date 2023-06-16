@@ -41,15 +41,22 @@ class DemixerCard extends StatelessWidget {
                     ),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: IconButton(
-                        iconSize: 20,
-                        onPressed: musicPlayer.nullIfNoSongElse(() {
-                          for (Stem stem in musicPlayer.demixer.stems) {
-                            stem.volume = 1.0;
-                            stem.enabled = true;
-                          }
-                        }),
-                        icon: const Icon(Icons.refresh_rounded),
+                      child: ValueListenableBuilder(
+                        valueListenable: musicPlayer.demixer.stemsNotifier,
+                        builder: (context, stems, child) => IconButton(
+                          iconSize: 20,
+                          onPressed: musicPlayer.nullIfNoSongElse(stems.every(
+                                  (Stem stem) =>
+                                      stem.enabled && stem.volume == 1.0)
+                              ? null
+                              : () {
+                                  for (Stem stem in stems) {
+                                    stem.volume = 1.0;
+                                    stem.enabled = true;
+                                  }
+                                }),
+                          icon: const Icon(Icons.refresh_rounded),
+                        ),
                       ),
                     ),
                   ],
