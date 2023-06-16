@@ -70,7 +70,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
               CardList(
                 children: [EqualizerCard()],
               ),
-            const CardList(
+            CardList(
               children: [DemixerCard()],
             )
           ];

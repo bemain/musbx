@@ -2,15 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/music_player.dart';
 
-class DemixerCard extends StatefulWidget {
-  const DemixerCard({super.key});
+class DemixerCard extends StatelessWidget {
+  DemixerCard({super.key});
 
-  @override
-  State<StatefulWidget> createState() => DemixerCardState();
-}
-
-class DemixerCardState extends State<DemixerCard> {
-  MusicPlayer musicPlayer = MusicPlayer.instance;
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +14,7 @@ class DemixerCardState extends State<DemixerCard> {
         builder: (context, demixerEnabled, child) {
           return ValueListenableBuilder(
             valueListenable: musicPlayer.demixer.loadingStateNotifier,
-            builder: (context, loadingState, child) {
+            builder: (context, state, child) {
               return Column(children: [
                 Stack(
                   alignment: Alignment.center,
@@ -29,7 +24,7 @@ class DemixerCardState extends State<DemixerCard> {
                       child: Switch(
                         value: demixerEnabled,
                         onChanged: musicPlayer.nullIfNoSongElse(
-                          !musicPlayer.demixer.isLoaded
+                          !musicPlayer.demixer.isReady
                               ? null
                               : (value) => musicPlayer.demixer.enabled = value,
                         ),
@@ -59,36 +54,110 @@ class DemixerCardState extends State<DemixerCard> {
                     ),
                   ],
                 ),
-                (!musicPlayer.demixer.isLoaded)
-                    ? buildLoading()
-                    : buildSliders(),
+                (musicPlayer.demixer.isLoading)
+                    ? buildLoading(context)
+                    : musicPlayer.demixer.state == DemixerState.error
+                        ? buildError()
+                        : Column(children: [
+                            for (Stem stem in musicPlayer.demixer.stems)
+                              buildVolumeSlider(stem),
+                          ]),
               ]);
             },
           );
         });
   }
 
-  Widget buildLoading() {
-    return ValueListenableBuilder(
-        valueListenable: musicPlayer.demixer.loadingProgressNotifier,
-        builder: (context, progress, child) {
-          return SizedBox(
-            height: 192,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                const CircularProgressIndicator(),
-                if (progress != null) Text("$progress%"),
-              ],
+  Widget buildLoading(BuildContext context) {
+    return SizedBox(
+      height: 192,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          const AspectRatio(
+            aspectRatio: 1,
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
             ),
-          );
-        });
+          ),
+          buildLoadingText(context),
+          if (musicPlayer.demixer.state == DemixerState.separating)
+            Align(
+              alignment: const Alignment(0, 0.3),
+              child: ValueListenableBuilder(
+                valueListenable: musicPlayer.demixer.loadingProgressNotifier,
+                builder: (context, progress, child) =>
+                    Text((progress == null) ? "" : "$progress%"),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
-  Widget buildSliders() {
-    return Column(
-      children: musicPlayer.demixer.stems.map(buildVolumeSlider).toList(),
+  Widget buildError() {
+    return const SizedBox(
+      height: 192,
+      child: Center(
+        child: Icon(Icons.cloud_off_rounded),
+      ),
     );
+  }
+
+  Widget buildLoadingTextWithInfoButton(
+    BuildContext context,
+    String title,
+    String description,
+  ) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 96),
+          child: Text(title),
+        ),
+        IconButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text(title),
+                  content: Text(description),
+                );
+              },
+            );
+          },
+          icon: const Icon(Icons.info_outline_rounded),
+        )
+      ],
+    );
+  }
+
+  Widget buildLoadingText(BuildContext context) {
+    switch (musicPlayer.demixer.state) {
+      case DemixerState.uploading:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Uploading...",
+          "The song is being uploaded to the server, and will soon be queued for demixing.",
+        );
+      case DemixerState.separating:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Demixing...",
+          "The server is demixing the song. \nAudio source separation is a complex process, and might take a while.",
+        );
+      case DemixerState.downloading:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Downloading...",
+          "The song has been demixed and is being downloaded to your device.",
+        );
+      default:
+        return const Text("Loading...");
+    }
   }
 
   Widget buildVolumeSlider(Stem stem) {
