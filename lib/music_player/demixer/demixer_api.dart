@@ -108,9 +108,11 @@ class DemixerApi {
   Future<File?> downloadStem(String song, StemType stem) async {
     Uri url = Uri.http(host, "/stem/$song/${stem.name}");
     var response = await http.get(url);
-    if (response.statusCode != 200) {
+    if (response.statusCode == 479) {
       throw StemNotFoundException("Stem '$stem' not found for song '$song'");
     }
+
+    if (response.statusCode != 200) throw const ServerException();
 
     stemDirectory ??=
         Directory("${(await getTemporaryDirectory()).path}/demixer/")..create();

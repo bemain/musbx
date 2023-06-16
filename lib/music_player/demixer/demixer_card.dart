@@ -100,7 +100,7 @@ class DemixerCard extends StatelessWidget {
     return const SizedBox(
       height: 192,
       child: Center(
-        child: Icon(Icons.cloud_off_rounded),
+        child: Icon(Icons.cloud_off_rounded, size: 128),
       ),
     );
   }

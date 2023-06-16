@@ -113,6 +113,7 @@ class Demixer extends MusicPlayerComponent {
     if (response.jobId != null) {
       loadingStateNotifier.value = DemixerState.separating;
       var subscription = _api.jobProgress(response.jobId!).handleError((error) {
+        print("ERROR: $error");
         if (error is! JobNotFoundException) throw error;
       }).listen((response) {
         loadingProgressNotifier.value = response.progress;
@@ -221,7 +222,6 @@ class Demixer extends MusicPlayerComponent {
 
   Future<void> onEqualizerChanged() async {
     // TODO: Get this to work. Currently, there is no trigger for when the Equalizer's parameters changes.
-    print("Equalizer changed");
     var musicPlayerBands = MusicPlayer.instance.equalizer.parameters?.bands;
     if (musicPlayerBands == null) return;
 
