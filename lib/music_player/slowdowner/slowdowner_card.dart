@@ -49,6 +49,8 @@ class SlowdownerCard extends StatelessWidget {
     );
   }
 
+  bool wasPlayingBeforeChange = false;
+
   Widget buildPitchSlider(double radius) {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
@@ -71,6 +73,13 @@ class SlowdownerCard extends StatelessWidget {
                         .setPitchSemitones((value * 10).roundToDouble() / 10);
                   },
           ),
+          onChangeStart: () {
+            wasPlayingBeforeChange = musicPlayer.isPlaying;
+            musicPlayer.pause();
+          },
+          onChangeEnd: () {
+            if (wasPlayingBeforeChange) musicPlayer.play();
+          },
         ),
         Positioned.fill(
           child: Align(
@@ -110,6 +119,13 @@ class SlowdownerCard extends StatelessWidget {
                         .setSpeed(pow(value, 2) + value / 2 + 0.5);
                   },
           ),
+          onChangeStart: () {
+            wasPlayingBeforeChange = musicPlayer.isPlaying;
+            musicPlayer.pause();
+          },
+          onChangeEnd: () {
+            if (wasPlayingBeforeChange) musicPlayer.play();
+          },
         ),
         Positioned.fill(
           child: Align(
