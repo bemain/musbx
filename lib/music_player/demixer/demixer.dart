@@ -7,6 +7,7 @@ import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/music_player/song.dart';
+import 'package:musbx/widgets.dart';
 
 final DemixerApi _api = DemixerApi();
 
@@ -244,5 +245,47 @@ class Demixer extends MusicPlayerComponent {
     }
     await musicPlayer.seek(position);
     if (wasPlaying) musicPlayer.play();
+  }
+
+  /// Load settings from a [json] map.
+  ///
+  /// [json] can contain the following stems (beyond "enabled"):
+  ///  - "drums"
+  ///  - "bass"
+  ///  - "vocals"
+  ///  - "other"
+  ///
+  /// Each stem can contain the following key-value pairs:
+  ///  - "enabled": [bool] Whether this stem is enabled and should be played.
+  ///  - "volume": [double] The volume this stem is played back at. Must be between 0 and 1.
+  @override
+  void loadSettingsFromJson(Map<String, dynamic> json) {
+    super.loadSettingsFromJson(json);
+
+    for (Stem stem in stems) {
+      Map<String, dynamic> stemData = json[stem.type.name];
+      bool? enabled = tryCast<bool>(stemData["enabled"]);
+
+      if (enabled != null) stem.enabled = enabled;
+      double? volume = tryCast<double>(stemData["volume"]);
+      if (volume != null) stem.volume = volume;
+    }
+  }
+
+  /// Save settings for a song to a json map.
+  ///
+  /// Saves the following key-value pairs (beyond "enabled"):
+  ///  - "pitchSemitones": [double] How much the pitch will be shifted, in semitones..
+  ///  - "speed": [double] The playback speed of the audio, as a fraction.
+  @override
+  Map<String, dynamic> saveSettingsToJson() {
+    return {
+      ...super.saveSettingsToJson(),
+      for (Stem stem in stems)
+        stem.type.name: {
+          "enabled": stem.enabled,
+          "volume": stem.volume,
+        }
+    };
   }
 }

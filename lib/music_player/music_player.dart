@@ -209,6 +209,11 @@ class MusicPlayer {
     if (equalizerSettings != null) {
       equalizer.loadSettingsFromJson(equalizerSettings);
     }
+
+    var demixerSetttings = tryCast<Map<String, dynamic>>(json["demixer"]);
+    if (demixerSetttings != null) {
+      demixer.loadSettingsFromJson(demixerSetttings);
+    }
   }
 
   /// Save preferences for the current song.
@@ -222,6 +227,7 @@ class MusicPlayer {
       "slowdowner": slowdowner.saveSettingsToJson(),
       "looper": looper.saveSettingsToJson(),
       "equalizer": equalizer.saveSettingsToJson(),
+      "demixer": demixer.saveSettingsToJson(),
     });
   }
 
