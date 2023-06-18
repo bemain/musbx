@@ -95,7 +95,7 @@ class Demixer extends MusicPlayerComponent {
       assert(stems.every(
           (stem) => stem.player.duration == stems.first.player.duration));
     } catch (error) {
-      print("DEMIXER: Error demixing song: $error");
+      debugPrint("DEMIXER: Error demixing song: $error");
       stateNotifier.value = DemixerState.error;
       return;
     }

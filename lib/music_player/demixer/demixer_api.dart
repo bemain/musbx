@@ -84,7 +84,6 @@ class DemixerApi {
 
       progress = int.tryParse(response.body) ?? progress;
       yield SeparationResponse(progress);
-      print("DEMIXER: Progress $progress%");
 
       await Future.delayed(checkEvery);
     }

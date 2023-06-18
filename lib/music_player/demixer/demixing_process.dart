@@ -49,11 +49,10 @@ class DemixingProcess {
   /// Upload, separate and download stem files for [song].
   Future<Map<StemType, File>?> demixSong(Song song) async {
     if (song.source != SongSource.youtube) {
-      return null; // TODO: Implement separating files
+      throw "Only YouTube songs can be demixed."; // TODO: Implement separating files
     }
 
     stepNotifier.value = DemixingStep.uploading;
-    print("DEMIXING: Uploading");
 
     UploadResponse response = await api.uploadYoutubeSong(song.id);
     String songName = response.songName;
@@ -62,14 +61,12 @@ class DemixingProcess {
 
     if (response.jobId != null) {
       stepNotifier.value = DemixingStep.separating;
-      print("DEMIXING: Separating");
 
       var subscription = api.jobProgress(response.jobId!).handleError((error) {
         if (error is! JobNotFoundException) throw error;
       }).listen(null, cancelOnError: true);
       subscription.onData((response) {
         if (_cancelled) {
-          print("DEMIXER: Cancelling subscription");
           subscription.cancel();
         }
         separationProgressNotifier.value = response.progress;
@@ -82,7 +79,6 @@ class DemixingProcess {
     if (_cancelled) return null;
 
     stepNotifier.value = DemixingStep.downloading;
-    print("DEMIXING: Downloading");
 
     Map<StemType, File> stemFiles = {};
     for (StemType stem in StemType.values) {
@@ -95,8 +91,6 @@ class DemixingProcess {
     }
 
     if (_cancelled) return null;
-
-    print("DEMIXING: Done");
 
     return stemFiles;
   }
