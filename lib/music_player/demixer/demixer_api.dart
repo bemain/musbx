@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:musbx/keys.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -39,7 +40,11 @@ enum StemType {
 
 class DemixerApi {
   /// The server hosting the Demixer API.
-  final String host = "musbx.agardh.se:8080";
+  static const String host = "musbx.agardh.se:8080";
+
+  static const Map<String, String> httpHeaders = {
+    "Authorization": demixerApiKey
+  };
 
   /// The directory where stems are saved.
   static Directory? stemDirectory;
@@ -47,7 +52,7 @@ class DemixerApi {
   /// Upload a YouTube song to the server.
   Future<UploadResponse> uploadYoutubeSong(String youtubeId) async {
     Uri url = Uri.http(host, "/upload/$youtubeId");
-    var response = await http.post(url);
+    var response = await http.post(url, headers: httpHeaders);
     Map<String, dynamic> json = jsonDecode(response.body);
 
     String songName = json["song_name"];
@@ -74,7 +79,7 @@ class DemixerApi {
 
     while (true) {
       // Check job status
-      var response = await http.get(url);
+      var response = await http.get(url, headers: httpHeaders);
       if (response.statusCode == 489) {
         yield* Stream.error(JobNotFoundException("Job '$jobId' was not found"));
         return;
@@ -92,7 +97,7 @@ class DemixerApi {
   /// Download a [stem] for a [song] to the [stemDirectory].
   Future<File?> downloadStem(String song, StemType stem) async {
     Uri url = Uri.http(host, "/stem/$song/${stem.name}");
-    var response = await http.get(url);
+    var response = await http.get(url, headers: httpHeaders);
     if (response.statusCode == 479) {
       throw StemNotFoundException("Stem '$stem' not found for song '$song'");
     }
