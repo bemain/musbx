@@ -40,7 +40,7 @@ enum StemType {
 
 class DemixerApi {
   /// The server hosting the Demixer API.
-  static const String host = "musbx.agardh.se:8080";
+  static const String host = "musbx.agardh.se:4242";
 
   static const Map<String, String> httpHeaders = {
     "Authorization": demixerApiKey
