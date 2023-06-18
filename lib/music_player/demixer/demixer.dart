@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -94,6 +95,13 @@ class Demixer extends MusicPlayerComponent {
     return songName;
   }
 
+  /// Download and prepare [stem] for playing [song].
+  Future<File?> getStemFile(String song, Stem stem) async {
+    File? file =
+        await MusicPlayer.instance.demixer.api.downloadStem(song, stem.type);
+    return file;
+  }
+
   @override
   void initialize(MusicPlayer musicPlayer) {
     musicPlayer.songNotifier.addListener(onNewSongLoaded);
@@ -128,7 +136,10 @@ class Demixer extends MusicPlayerComponent {
       loadingStateNotifier.value = DemixerState.downloading;
 
       for (Stem stem in stems) {
-        await stem.loadStemFile(songName);
+        File? file = await getStemFile(songName, stem);
+        if (file != null) {
+          await stem.player.setAudioSource(AudioSource.file(file.path));
+        }
       }
 
       // Make sure all players have the same duration

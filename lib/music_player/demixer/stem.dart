@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
@@ -35,14 +33,6 @@ class Stem {
 
   /// The player used internally for playback.
   late final AudioPlayer player = AudioPlayer();
-
-  /// Download and prepare [player] for playing this stem of [song].
-  Future<void> loadStemFile(String song) async {
-    File? file =
-        await MusicPlayer.instance.demixer.api.downloadStem(song, type);
-    if (file == null) return;
-    await player.setAudioSource(AudioSource.file(file.path));
-  }
 }
 
 class StemsNotifier extends ValueNotifier<List<Stem>> {
