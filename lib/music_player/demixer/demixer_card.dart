@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
+import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
 
@@ -14,7 +15,7 @@ class DemixerCard extends StatelessWidget {
         valueListenable: musicPlayer.demixer.enabledNotifier,
         builder: (context, demixerEnabled, child) {
           return ValueListenableBuilder(
-            valueListenable: musicPlayer.demixer.loadingStateNotifier,
+            valueListenable: musicPlayer.demixer.stateNotifier,
             builder: (context, state, child) {
               return Column(children: [
                 Stack(
@@ -62,7 +63,7 @@ class DemixerCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                (musicPlayer.demixer.isLoading)
+                (musicPlayer.demixer.state == DemixerState.demixing)
                     ? buildLoading(context)
                     : musicPlayer.demixer.state == DemixerState.error
                         ? buildError()
@@ -89,12 +90,17 @@ class DemixerCard extends StatelessWidget {
               child: CircularProgressIndicator(),
             ),
           ),
-          buildLoadingText(context),
-          if (musicPlayer.demixer.state == DemixerState.separating)
+          if (musicPlayer.demixer.process != null)
+            ValueListenableBuilder(
+              valueListenable: musicPlayer.demixer.process!.stepNotifier,
+              builder: (context, step, child) => buildLoadingText(context),
+            ),
+          if (musicPlayer.demixer.process != null)
             Align(
               alignment: const Alignment(0, 0.3),
               child: ValueListenableBuilder(
-                valueListenable: musicPlayer.demixer.loadingProgressNotifier,
+                valueListenable:
+                    musicPlayer.demixer.process!.separationProgressNotifier,
                 builder: (context, progress, child) =>
                     Text((progress == null) ? "" : "$progress%"),
               ),
@@ -144,20 +150,20 @@ class DemixerCard extends StatelessWidget {
   }
 
   Widget buildLoadingText(BuildContext context) {
-    switch (musicPlayer.demixer.state) {
-      case DemixerState.uploading:
+    switch (musicPlayer.demixer.process?.step) {
+      case DemixingStep.uploading:
         return buildLoadingTextWithInfoButton(
           context,
           "Uploading...",
           "The song is being uploaded to the server, and will soon be queued for demixing.",
         );
-      case DemixerState.separating:
+      case DemixingStep.separating:
         return buildLoadingTextWithInfoButton(
           context,
           "Demixing...",
           "The server is demixing the song. \nAudio source separation is a complex process, and might take a while.",
         );
-      case DemixerState.downloading:
+      case DemixingStep.downloading:
         return buildLoadingTextWithInfoButton(
           context,
           "Downloading...",

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
-import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
+import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
@@ -12,30 +12,21 @@ import 'package:musbx/music_player/song.dart';
 import 'package:musbx/widgets.dart';
 
 enum DemixerState {
-  /// Loading hasn't started. E.g. the user hasn't selected a song yet.
+  /// Demixing hasn't started. E.g. the user hasn't selected a song yet.
   inactive,
 
-  /// The song is being uploaded to the server.
-  uploading,
+  /// The song is being demixed.
+  demixing,
 
-  /// The server has begun separating the song into stems.
-  separating,
-
-  /// The stem files are being downloaded..
-  downloading,
-
-  /// The song has been separated and is ready to be played.
+  /// The song has been demixed and is ready to be played.
   done,
 
-  /// Something went wrong while loading the song.
+  /// Something went wrong while demixing the song.
   error,
 }
 
 /// A component for [MusicPlayer] that is used to separate a song into stems and change the volume of those individually.
 class Demixer extends MusicPlayerComponent {
-  /// The Demixer API used internally.
-  final DemixerApi api = DemixerApi();
-
   /// The stems that songs are being separated into.
   List<Stem> get stems => stemsNotifier.value;
   late final StemsNotifier stemsNotifier = StemsNotifier([
@@ -46,8 +37,8 @@ class Demixer extends MusicPlayerComponent {
   ]);
 
   /// The state of the Demixer.
-  DemixerState get state => loadingStateNotifier.value;
-  final ValueNotifier<DemixerState> loadingStateNotifier =
+  DemixerState get state => stateNotifier.value;
+  final ValueNotifier<DemixerState> stateNotifier =
       ValueNotifier(DemixerState.inactive);
 
   /// Whether the Demixer is ready to play the current song.
@@ -55,52 +46,8 @@ class Demixer extends MusicPlayerComponent {
   /// If `true`, the current song has been separated and mixed, and the Demixer is ready to use.
   bool get isReady => state == DemixerState.done;
 
-  /// Whether the Demixer is loading.
-  bool get isLoading => [
-        DemixerState.uploading,
-        DemixerState.separating,
-        DemixerState.downloading,
-      ].contains(state);
-
-  /// The progress of the loading action.
-  ///
-  /// This is `null` if [state] is not [DemixerState.separating].
-  int? get loadingProgress => loadingProgressNotifier.value;
-  ValueNotifier<int?> loadingProgressNotifier = ValueNotifier(null);
-
-  /// Separate, mix and load a [song] for [MusicPlayer] to play.
-  Future<String?> separateSong(Song song) async {
-    if (song.source != SongSource.youtube) {
-      return null; // TODO: Implement separating files
-    }
-
-    loadingStateNotifier.value = DemixerState.uploading;
-
-    UploadResponse response = await api.uploadYoutubeSong(song.id);
-    String songName = response.songName;
-
-    if (response.jobId != null) {
-      loadingStateNotifier.value = DemixerState.separating;
-      var subscription = api.jobProgress(response.jobId!).handleError((error) {
-        print("ERROR: $error");
-        if (error is! JobNotFoundException) throw error;
-      }).listen((response) {
-        loadingProgressNotifier.value = response.progress;
-      }, cancelOnError: true);
-
-      await subscription.asFuture();
-      loadingProgressNotifier.value = null;
-    }
-
-    return songName;
-  }
-
-  /// Download and prepare [stem] for playing [song].
-  Future<File?> getStemFile(String song, Stem stem) async {
-    File? file =
-        await MusicPlayer.instance.demixer.api.downloadStem(song, stem.type);
-    return file;
-  }
+  /// The process demxing the current song, if a song has been selected.
+  DemixingProcess? process;
 
   @override
   void initialize(MusicPlayer musicPlayer) {
@@ -128,17 +75,19 @@ class Demixer extends MusicPlayerComponent {
 
     originalAudioSource = song.audioSource;
 
+    stateNotifier.value = DemixerState.demixing;
+
     try {
-      String? songName = await separateSong(song);
+      process?.cancel();
+      process = DemixingProcess(song);
 
-      if (songName == null) return;
-
-      loadingStateNotifier.value = DemixerState.downloading;
+      Map<StemType, File>? stemFiles = await process?.future;
+      if (stemFiles == null) return;
 
       for (Stem stem in stems) {
-        File? file = await getStemFile(songName, stem);
-        if (file != null) {
-          await stem.player.setAudioSource(AudioSource.file(file.path));
+        if (stemFiles.containsKey(stem.type) && stemFiles[stem.type] != null) {
+          await stem.player
+              .setAudioSource(AudioSource.file(stemFiles[stem.type]!.path));
         }
       }
 
@@ -146,14 +95,15 @@ class Demixer extends MusicPlayerComponent {
       assert(stems.every(
           (stem) => stem.player.duration == stems.first.player.duration));
     } catch (error) {
-      loadingStateNotifier.value = DemixerState.error;
+      print("DEMIXER: Error demixing song: $error");
+      stateNotifier.value = DemixerState.error;
       return;
     }
 
     // Trigger enable
     await onEnabledToggle();
 
-    loadingStateNotifier.value = DemixerState.done;
+    stateNotifier.value = DemixerState.done;
   }
 
   void onIsPlayingChanged() {

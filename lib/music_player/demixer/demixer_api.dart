@@ -42,7 +42,7 @@ class DemixerApi {
   final String host = "musbx.agardh.se:8080";
 
   /// The directory where stems are saved.
-  Directory? stemDirectory;
+  static Directory? stemDirectory;
 
   /// Upload a YouTube song to the server.
   Future<UploadResponse> uploadYoutubeSong(String youtubeId) async {
@@ -84,6 +84,7 @@ class DemixerApi {
 
       progress = int.tryParse(response.body) ?? progress;
       yield SeparationResponse(progress);
+      print("DEMIXER: Progress $progress%");
 
       await Future.delayed(checkEvery);
     }
