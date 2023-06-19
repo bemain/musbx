@@ -235,6 +235,8 @@ class MusicPlayer {
   void _init() {
     songHistory.fetch();
 
+    player.setVolume(0.5);
+
     // isPlaying
     player.playingStream.listen((playing) {
       isPlayingNotifier.value = playing;

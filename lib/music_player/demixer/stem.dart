@@ -29,10 +29,10 @@ class Stem {
   /// The volume this stem is played at. Must be between 0 and 1.
   set volume(double value) => player.setVolume(value.clamp(0, 1));
   double get volume => volumeNotifier.value;
-  final ValueNotifier<double> volumeNotifier = ValueNotifier(1.0);
+  final ValueNotifier<double> volumeNotifier = ValueNotifier(0.5);
 
   /// The player used internally for playback.
-  late final AudioPlayer player = AudioPlayer();
+  late final AudioPlayer player = AudioPlayer()..setVolume(volume);
 }
 
 class StemsNotifier extends ValueNotifier<List<Stem>> {

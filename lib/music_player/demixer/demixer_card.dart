@@ -50,11 +50,11 @@ class DemixerCard extends StatelessWidget {
                           iconSize: 20,
                           onPressed: musicPlayer.nullIfNoSongElse(stems.every(
                                   (Stem stem) =>
-                                      stem.enabled && stem.volume == 1.0)
+                                      stem.enabled && stem.volume == 0.5)
                               ? null
                               : () {
                                   for (Stem stem in stems) {
-                                    stem.volume = 1.0;
+                                    stem.volume = 0.5;
                                     stem.enabled = true;
                                   }
                                 }),
