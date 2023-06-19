@@ -3,6 +3,7 @@ import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/widgets.dart';
 
 class DemixerCard extends StatelessWidget {
   DemixerCard({super.key});
@@ -114,7 +115,7 @@ class DemixerCard extends StatelessWidget {
     return const SizedBox(
       height: 192,
       child: Center(
-        child: Icon(Icons.cloud_off_rounded, size: 128),
+        child: Icon(Icons.cloud_off_rounded, size: 96),
       ),
     );
   }
@@ -189,7 +190,10 @@ class DemixerCard extends StatelessWidget {
                     },
             ),
           ),
-          Text(stem.type.name),
+          SizedBox(
+            width: 46,
+            child: Text(stem.type.name.toCapitalized()),
+          ),
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: stem.volumeNotifier,
