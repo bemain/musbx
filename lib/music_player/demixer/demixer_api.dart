@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:musbx/keys.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:path_provider/path_provider.dart';
