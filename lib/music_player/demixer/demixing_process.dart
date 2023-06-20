@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:musbx/music_player/song.dart';
@@ -48,13 +49,19 @@ class DemixingProcess {
 
   /// Upload, separate and download stem files for [song].
   Future<Map<StemType, File>?> demixSong(Song song) async {
-    if (song.source != SongSource.youtube) {
-      throw "Only YouTube songs can be demixed."; // TODO: Implement separating files
-    }
-
     stepNotifier.value = DemixingStep.uploading;
 
-    UploadResponse response = await api.uploadYoutubeSong(song.id);
+    UploadResponse response;
+    switch (song.source) {
+      case SongSource.file:
+        response = await api
+            .uploadFile(File((song.audioSource as UriAudioSource).uri.path));
+        break;
+      case SongSource.youtube:
+        response = await api.uploadYoutubeSong(song.id);
+        break;
+    }
+
     String songName = response.songName;
 
     if (_cancelled) return null;

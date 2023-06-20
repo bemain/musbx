@@ -49,6 +49,32 @@ class DemixerApi {
   /// The directory where stems are saved.
   static Directory? stemDirectory;
 
+  /// Upload a local [file] to the server.
+  Future<UploadResponse> uploadFile(File file) async {
+    Uri url = Uri.http(host, "/upload");
+    var request = http.MultipartRequest("POST", url);
+    request.headers.addAll(httpHeaders);
+    request.files.add(await http.MultipartFile.fromPath(
+      "file",
+      file.path,
+      contentType: MediaType("audio", file.path.split('.').last),
+    ));
+
+    var response = await request.send();
+    Map<String, dynamic> json =
+        jsonDecode(await response.stream.bytesToString());
+
+    String songName = json["song_name"];
+
+    if (response.statusCode == 200) {
+      return UploadResponse(songName);
+    }
+
+    if (response.statusCode != 201) throw const ServerException();
+
+    return UploadResponse(songName, jobId: json["job"]);
+  }
+
   /// Upload a YouTube song to the server.
   Future<UploadResponse> uploadYoutubeSong(String youtubeId) async {
     Uri url = Uri.http(host, "/upload/$youtubeId");
