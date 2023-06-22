@@ -51,6 +51,10 @@ class DemixerApi {
   static final Future<Directory> stemDirectory =
       _createTempDirectory("demixer");
 
+  /// The directory where Youtube files are saved.
+  static final Future<Directory> youtubeDirectory =
+      _createTempDirectory("youtube");
+
   static Future<Directory> _createTempDirectory(String dirName) async {
     var dir = Directory("${(await getTemporaryDirectory()).path}/$dirName/");
     await dir.create();
@@ -65,7 +69,7 @@ class DemixerApi {
     if (response.statusCode == 499) throw const YoutubeVideoNotFoundException();
     if (response.statusCode != 200) throw const ServerException();
 
-    File file = File("${(await stemDirectory).path}/youtube.mp3");
+    File file = File("${(await youtubeDirectory).path}/$youtubeId.mp3");
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }
