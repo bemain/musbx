@@ -91,10 +91,7 @@ class DemixingProcess {
     for (StemType stem in StemType.values) {
       if (_cancelled) return null;
 
-      File? file = await api.downloadStem(songName, stem);
-      if (file != null) {
-        stemFiles[stem] = file;
-      }
+      stemFiles[stem] = await api.downloadStem(songName, stem);
     }
 
     if (_cancelled) return null;

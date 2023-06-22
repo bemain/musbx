@@ -48,7 +48,27 @@ class DemixerApi {
   };
 
   /// The directory where stems are saved.
-  static Directory? stemDirectory;
+  static final Future<Directory> stemDirectory =
+      _createTempDirectory("demixer");
+
+  static Future<Directory> _createTempDirectory(String dirName) async {
+    var dir = Directory("${(await getTemporaryDirectory()).path}/$dirName/");
+    await dir.create();
+    return dir;
+  }
+
+  /// Download the audio to a Youtube file via the server.
+  Future<File> downloadYoutubeSong(String youtubeId) async {
+    Uri url = Uri.http(host, "/download/$youtubeId");
+    var response = await http.get(url, headers: httpHeaders);
+
+    if (response.statusCode == 499) throw const YoutubeVideoNotFoundException();
+    if (response.statusCode != 200) throw const ServerException();
+
+    File file = File("${(await stemDirectory).path}/youtube.mp3");
+    await file.writeAsBytes(response.bodyBytes);
+    return file;
+  }
 
   /// Upload a local [file] to the server.
   Future<UploadResponse> uploadFile(File file) async {
@@ -122,7 +142,7 @@ class DemixerApi {
   }
 
   /// Download a [stem] for a [song] to the [stemDirectory].
-  Future<File?> downloadStem(String song, StemType stem) async {
+  Future<File> downloadStem(String song, StemType stem) async {
     Uri url = Uri.http(host, "/stem/$song/${stem.name}");
     var response = await http.get(url, headers: httpHeaders);
     if (response.statusCode == 479) {
@@ -131,10 +151,7 @@ class DemixerApi {
 
     if (response.statusCode != 200) throw const ServerException();
 
-    stemDirectory ??=
-        Directory("${(await getTemporaryDirectory()).path}/demixer/")..create();
-    File file = File("${stemDirectory!.path}/${stem.name}.wav");
-
+    File file = File("${(await stemDirectory).path}/${stem.name}.mp3");
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }

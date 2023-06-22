@@ -16,6 +16,15 @@ class JobNotFoundException implements Exception {
   String toString() => msg ?? 'JobNotFoundException';
 }
 
+class YoutubeVideoNotFoundException implements Exception {
+  final String? msg;
+
+  const YoutubeVideoNotFoundException([this.msg]);
+
+  @override
+  String toString() => msg ?? 'YoutubeVideoNotFoundException';
+}
+
 class ServerException implements Exception {
   final String? msg;
 

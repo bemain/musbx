@@ -130,7 +130,7 @@ class Demixer extends MusicPlayerComponent {
       if (stem.enabled &&
           (musicPlayer.position - stem.player.position).abs() >
               minAllowedPositionError) {
-        print(
+        debugPrint(
             "DEMIXER: Correcting position for stem ${stem.type.name}. Error: ${(musicPlayer.position - stem.player.position).abs().inMilliseconds}ms");
         stem.player.seek(musicPlayer.position);
       }
