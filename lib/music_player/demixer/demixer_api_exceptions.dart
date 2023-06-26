@@ -4,7 +4,7 @@ class StemNotFoundException implements Exception {
   const StemNotFoundException([this.msg]);
 
   @override
-  String toString() => msg ?? 'StemNotFoundException';
+  String toString() => msg ?? 'The requested stem was not found';
 }
 
 class JobNotFoundException implements Exception {
@@ -13,7 +13,7 @@ class JobNotFoundException implements Exception {
   const JobNotFoundException([this.msg]);
 
   @override
-  String toString() => msg ?? 'JobNotFoundException';
+  String toString() => msg ?? 'The requested job was not found';
 }
 
 class YoutubeVideoNotFoundException implements Exception {
@@ -22,7 +22,7 @@ class YoutubeVideoNotFoundException implements Exception {
   const YoutubeVideoNotFoundException([this.msg]);
 
   @override
-  String toString() => msg ?? 'YoutubeVideoNotFoundException';
+  String toString() => msg ?? 'The requested video was not found';
 }
 
 class ServerException implements Exception {
@@ -31,5 +31,5 @@ class ServerException implements Exception {
   const ServerException([this.msg]);
 
   @override
-  String toString() => msg ?? 'ServerException';
+  String toString() => msg ?? 'The server encountered an internal error';
 }

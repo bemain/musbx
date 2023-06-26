@@ -64,18 +64,53 @@ class DemixerCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                (musicPlayer.demixer.state == DemixerState.demixing)
-                    ? buildLoading(context)
-                    : musicPlayer.demixer.state == DemixerState.error
-                        ? buildError()
-                        : Column(children: [
-                            for (Stem stem in musicPlayer.demixer.stems)
-                              buildVolumeSlider(stem),
-                          ]),
+                buildBody(context),
               ]);
             },
           );
         });
+  }
+
+  Widget buildBody(BuildContext context) {
+    switch (musicPlayer.demixer.state) {
+      case DemixerState.outOfDate:
+        return buildOutOfDate();
+
+      case DemixerState.demixing:
+        return buildLoading(context);
+
+      case DemixerState.error:
+        return const SizedBox(
+          height: 192,
+          child: Center(
+            child: Icon(Icons.cloud_off_rounded, size: 96),
+          ),
+        );
+
+      default:
+        return Column(children: [
+          for (Stem stem in musicPlayer.demixer.stems) buildVolumeSlider(stem),
+        ]);
+    }
+  }
+
+  Widget buildOutOfDate() {
+    return const SizedBox(
+      height: 192,
+      child: Center(
+        child: Column(children: [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Icon(Icons.update_rounded, size: 96),
+          ),
+          Text(
+            """A newer version of the app is available. 
+Please update to the latest version to use the Demixer.""",
+            textAlign: TextAlign.center,
+          ),
+        ]),
+      ),
+    );
   }
 
   Widget buildLoading(BuildContext context) {
@@ -107,15 +142,6 @@ class DemixerCard extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget buildError() {
-    return const SizedBox(
-      height: 192,
-      child: Center(
-        child: Icon(Icons.cloud_off_rounded, size: 96),
       ),
     );
   }

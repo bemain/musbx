@@ -21,6 +21,10 @@ enum DemixerState {
   /// The song has been demixed and is ready to be played.
   done,
 
+  /// The Demixer isn't up to date with the DemixerAPI.
+  /// The app has to be updated to the latest version.
+  outOfDate,
+
   /// Something went wrong while demixing the song.
   error,
 }
@@ -64,11 +68,20 @@ class Demixer extends MusicPlayerComponent {
       // TODO: Get the Demixer to work with the Equalizer.
       if (musicPlayer.equalizer.enabled) enabled = false;
     });
+
+    DemixingProcess.api.isUpToDate().then((value) {
+      if (!value) stateNotifier.value = DemixerState.outOfDate;
+    });
   }
 
   AudioSource? originalAudioSource;
 
   Future<void> onNewSongLoaded() async {
+    if (!await DemixingProcess.api.isUpToDate()) {
+      stateNotifier.value = DemixerState.outOfDate;
+      return;
+    }
+
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
     if (song == null) return;

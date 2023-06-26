@@ -40,6 +40,8 @@ enum StemType {
 }
 
 class DemixerApi {
+  static const String version = "1.0";
+
   /// The server hosting the Demixer API.
   static const String host = "musbx.agardh.se:4242";
 
@@ -57,8 +59,18 @@ class DemixerApi {
 
   static Future<Directory> _createTempDirectory(String dirName) async {
     var dir = Directory("${(await getTemporaryDirectory()).path}/$dirName/");
+    await dir.delete(recursive: true);
     await dir.create();
     return dir;
+  }
+
+  /// Check if the app version of the Demixer is up to date with the DemixerAPI.
+  Future<bool> isUpToDate() async {
+    Uri url = Uri.http(host, "/version");
+    var response = await http.get(url, headers: httpHeaders);
+
+    if (response.statusCode != 200) throw const ServerException();
+    return response.body == version;
   }
 
   /// Download the audio to a Youtube file via the server.
