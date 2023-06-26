@@ -66,13 +66,13 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                 LoopCard(),
               ],
             ),
+            CardList(
+              children: [DemixerCard()],
+            ),
             if (!Platform.isIOS)
               CardList(
                 children: [EqualizerCard()],
               ),
-            CardList(
-              children: [DemixerCard()],
-            )
           ];
 
           return Scaffold(
@@ -87,7 +87,12 @@ ${Platform.isAndroid ? "Swipe right for Equalizer." : ""}""",
               length: tabs.length,
               child: Column(
                 children: [
-                  if (tabs.length > 1) const EmptyTabBar(),
+                  if (tabs.length > 1)
+                    TabBar(tabs: [
+                      const Tab(text: "Slowdowner"),
+                      const Tab(text: "Demixer"),
+                      if (!Platform.isIOS) const Tab(text: "Equalizer"),
+                    ]),
                   WidgetCard(
                     child: Column(children: [
                       CurrentSongPanel(),
