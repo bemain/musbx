@@ -138,7 +138,7 @@ class Demixer extends MusicPlayerComponent {
     if (!isReady) return;
     MusicPlayer musicPlayer = MusicPlayer.instance;
 
-    final Duration minAllowedPositionError = const Duration(milliseconds: 20) *
+    final Duration minAllowedPositionError = const Duration(milliseconds: 50) *
         (musicPlayer.slowdowner.enabled ? musicPlayer.slowdowner.speed : 1);
 
     for (Stem stem in stems) {
