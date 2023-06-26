@@ -142,11 +142,10 @@ class Demixer extends MusicPlayerComponent {
         (musicPlayer.slowdowner.enabled ? musicPlayer.slowdowner.speed : 1);
 
     for (Stem stem in stems) {
-      if (stem.enabled &&
-          (musicPlayer.position - stem.player.position).abs() >
-              minAllowedPositionError) {
+      Duration error = (musicPlayer.position - stem.player.position).abs();
+      if (stem.enabled && error > minAllowedPositionError) {
         debugPrint(
-            "DEMIXER: Correcting position for stem ${stem.type.name}. Error: ${(musicPlayer.position - stem.player.position).abs().inMilliseconds}ms");
+            "DEMIXER: Correcting position for stem ${stem.type.name}. Error: ${error.inMilliseconds}ms");
         stem.player.seek(musicPlayer.position);
       }
     }
@@ -224,9 +223,10 @@ class Demixer extends MusicPlayerComponent {
 
     for (Stem stem in stems) {
       Map<String, dynamic> stemData = json[stem.type.name];
-      bool? enabled = tryCast<bool>(stemData["enabled"]);
 
+      bool? enabled = tryCast<bool>(stemData["enabled"]);
       if (enabled != null) stem.enabled = enabled;
+
       double? volume = tryCast<double>(stemData["volume"]);
       if (volume != null) stem.volume = volume;
     }

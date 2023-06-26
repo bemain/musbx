@@ -59,8 +59,8 @@ class DemixerApi {
 
   static Future<Directory> _createTempDirectory(String dirName) async {
     var dir = Directory("${(await getTemporaryDirectory()).path}/$dirName/");
-    await dir.delete(recursive: true);
-    await dir.create();
+    if (await dir.exists()) await dir.delete(recursive: true); // Clear
+    await dir.create(recursive: true);
     return dir;
   }
 
