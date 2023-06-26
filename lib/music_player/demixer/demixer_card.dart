@@ -27,7 +27,7 @@ class DemixerCard extends StatelessWidget {
                       child: Switch(
                         value: demixerEnabled,
                         onChanged: musicPlayer.nullIfNoSongElse(
-                          !musicPlayer.demixer.isReady
+                          musicPlayer.demixer.state != DemixerState.done
                               ? null
                               : (value) => musicPlayer.demixer.enabled = value,
                         ),
@@ -80,12 +80,7 @@ class DemixerCard extends StatelessWidget {
         return buildLoading(context);
 
       case DemixerState.error:
-        return const SizedBox(
-          height: 192,
-          child: Center(
-            child: Icon(Icons.cloud_off_rounded, size: 96),
-          ),
-        );
+        return buildError();
 
       default:
         return Column(children: [
@@ -106,6 +101,24 @@ class DemixerCard extends StatelessWidget {
           Text(
             """A newer version of the app is available. 
 Please update to the latest version to use the Demixer.""",
+            textAlign: TextAlign.center,
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget buildError() {
+    return const SizedBox(
+      height: 192,
+      child: Center(
+        child: Column(children: [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Icon(Icons.cloud_off_rounded, size: 96),
+          ),
+          Text(
+            """An error occurred while demixing. Please try again later.""",
             textAlign: TextAlign.center,
           ),
         ]),
@@ -209,7 +222,7 @@ Please update to the latest version to use the Demixer.""",
           Checkbox(
             value: stemEnabled,
             onChanged: musicPlayer.nullIfNoSongElse(
-              (!musicPlayer.demixer.enabled)
+              (!musicPlayer.demixer.isReady)
                   ? null
                   : (bool? value) {
                       if (value != null) stem.enabled = value;
@@ -226,7 +239,7 @@ Please update to the latest version to use the Demixer.""",
               builder: (context, volume, child) => Slider(
                 value: volume,
                 onChanged: musicPlayer.nullIfNoSongElse(
-                  (!musicPlayer.demixer.enabled || !stemEnabled)
+                  (!musicPlayer.demixer.isReady || !stemEnabled)
                       ? null
                       : (double value) => stem.volume = value,
                 ),

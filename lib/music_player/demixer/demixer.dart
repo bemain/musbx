@@ -47,8 +47,8 @@ class Demixer extends MusicPlayerComponent {
 
   /// Whether the Demixer is ready to play the current song.
   ///
-  /// If `true`, the current song has been separated and mixed, and the Demixer is ready to use.
-  bool get isReady => state == DemixerState.done;
+  /// If `true`, the current song has been separated and mixed, and the Demixer is enabled.
+  bool get isReady => state == DemixerState.done && enabled;
 
   /// The process demxing the current song, if a song has been selected.
   DemixingProcess? process;
@@ -126,7 +126,7 @@ class Demixer extends MusicPlayerComponent {
   }
 
   void onIsPlayingChanged() {
-    if (!isReady || !enabled) return;
+    if (!isReady) return;
     MusicPlayer musicPlayer = MusicPlayer.instance;
 
     for (Stem stem in stems) {
@@ -139,7 +139,7 @@ class Demixer extends MusicPlayerComponent {
   }
 
   void onPositionChanged() {
-    if (!isReady || !enabled) return;
+    if (!isReady) return;
     MusicPlayer musicPlayer = MusicPlayer.instance;
 
     final Duration minAllowedPositionError = const Duration(milliseconds: 20) *
