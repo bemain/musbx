@@ -74,8 +74,6 @@ class Demixer extends MusicPlayerComponent {
     });
   }
 
-  AudioSource? originalAudioSource;
-
   Future<void> onNewSongLoaded() async {
     try {
       if (!await DemixingProcess.api.isUpToDate()) {
@@ -91,8 +89,6 @@ class Demixer extends MusicPlayerComponent {
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
     if (song == null) return;
-
-    originalAudioSource = song.audioSource;
 
     stateNotifier.value = DemixerState.demixing;
 
@@ -202,9 +198,8 @@ class Demixer extends MusicPlayerComponent {
       );
     } else {
       // Restore "normal" audio
-      if (originalAudioSource == null) return;
       await musicPlayer.player.setAudioSource(
-        originalAudioSource!,
+        song.audioSource,
         initialPosition: position,
       );
     }
