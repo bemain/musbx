@@ -12,18 +12,19 @@ import 'package:musbx/music_player/position_card/position_slider.dart';
 import 'package:musbx/music_player/current_song_card/song_history_list.dart';
 import 'package:musbx/screen/card_list.dart';
 import 'package:musbx/screen/default_app_bar.dart';
-import 'package:musbx/screen/empty_tab_bar.dart';
 import 'package:musbx/screen/widget_card.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   /// Screen that allows the user to select and play a song.
   ///
   /// Includes:
+  ///  - Label showing current song, and button to load a song from device.
   ///  - Buttons to play/pause, forward and rewind.
   ///  - Slider for seeking a position in the song.
   ///  - Sliders for changing pitch and speed of the song.
-  ///  - Label showing current song, and button to load a song from device.
   ///  - Slider and buttons for looping a section of the song.
+  ///  - Controls for the Demixer.
+  ///  - Controls for the Equalizer.
   const MusicPlayerScreen({super.key});
 
   @override

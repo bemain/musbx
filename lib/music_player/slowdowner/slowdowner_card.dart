@@ -49,7 +49,8 @@ class SlowdownerCard extends StatelessWidget {
     );
   }
 
-  bool wasPlayingBeforeChange = false;
+  /// Whether the MusicPlayer was playing before the user began changing the pitch or speed.
+  static bool wasPlayingBeforeChange = false;
 
   Widget buildPitchSlider(double radius) {
     return ValueListenableBuilder(
