@@ -77,8 +77,14 @@ class Demixer extends MusicPlayerComponent {
   AudioSource? originalAudioSource;
 
   Future<void> onNewSongLoaded() async {
-    if (!await DemixingProcess.api.isUpToDate()) {
-      stateNotifier.value = DemixerState.outOfDate;
+    try {
+      if (!await DemixingProcess.api.isUpToDate()) {
+        stateNotifier.value = DemixerState.outOfDate;
+        return;
+      }
+    } catch (error) {
+      debugPrint("DEMIXER: Error accessing the DemixerAPI: $error");
+      stateNotifier.value = DemixerState.error;
       return;
     }
 
