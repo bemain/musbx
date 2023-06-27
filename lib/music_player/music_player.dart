@@ -4,7 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:html_unescape/html_unescape.dart';
+import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
@@ -163,14 +163,12 @@ class MusicPlayer {
       id: file.path!.hashCode.toString(),
       title: file.name,
       source: SongSource.file,
-      audioSource: AudioSource.uri(Uri.file(file.path!)),
+      audioSource: AudioSource.file(file.path!),
     ));
   }
 
   /// Load a song to play from a [YoutubeVideo].
   Future<void> loadVideo(YoutubeVideo video) async {
-    // Get stream info
-
     HtmlUnescape htmlUnescape = HtmlUnescape();
 
     await loadSong(Song(

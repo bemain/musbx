@@ -54,8 +54,9 @@ class DemixingProcess {
     UploadResponse response;
     switch (song.source) {
       case SongSource.file:
-        response = await api
-            .uploadFile(File((song.audioSource as UriAudioSource).uri.path));
+        String path =
+            "/${(song.audioSource as UriAudioSource).uri.pathSegments.join("/")}";
+        response = await api.uploadFile(File(path));
         break;
       case SongSource.youtube:
         response = await api.uploadYoutubeSong(song.id);
