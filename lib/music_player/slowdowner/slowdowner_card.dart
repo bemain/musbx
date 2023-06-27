@@ -18,10 +18,36 @@ class SlowdownerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.slowdowner.enabledNotifier,
-      builder: (context, loopEnabled, _) => Stack(children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 40),
-          child: LayoutBuilder(
+      builder: (context, loopEnabled, _) => Column(
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Switch(
+                  value: loopEnabled,
+                  onChanged: musicPlayer.nullIfNoSongElse(
+                    (value) => musicPlayer.slowdowner.enabled = value,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Center(
+                  child: Text(
+                    "Slowdowner",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: buildResetButton(),
+              ),
+            ],
+          ),
+          LayoutBuilder(
             builder: (context, BoxConstraints constraints) => Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -31,21 +57,8 @@ class SlowdownerCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Switch(
-            value: loopEnabled,
-            onChanged: musicPlayer.nullIfNoSongElse(
-              (value) => musicPlayer.slowdowner.enabled = value,
-            ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: buildResetButton(),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 

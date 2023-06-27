@@ -46,11 +46,13 @@ class LoopCard extends StatelessWidget {
               icon: const Icon(Icons.arrow_circle_right_outlined),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: Text(
-              "Loop",
-              style: Theme.of(context).textTheme.bodyLarge,
+          Align(
+            alignment: Alignment.center,
+            child: Center(
+              child: Text(
+                "Loop",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           ),
           // Set the loopSection's end to position
