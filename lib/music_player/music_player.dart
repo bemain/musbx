@@ -4,12 +4,13 @@ import 'package:audio_service/audio_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:html_unescape/html_unescape.dart';
+import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
+import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
-import 'package:musbx/music_player/loop_card/looper.dart';
+import 'package:musbx/music_player/looper/looper.dart';
 import 'package:musbx/music_player/slowdowner/slowdowner.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_history.dart';
@@ -47,16 +48,18 @@ class MusicPlayer {
   final ValueNotifier<MusicPlayerState> stateNotifier =
       ValueNotifier(MusicPlayerState.idle);
 
+  /// The audio pipeline used by [player].
+  late final AudioPipeline audioPipeline = AudioPipeline(androidAudioEffects: [
+    if (Platform.isAndroid) equalizer.androidEqualizer
+  ]);
+
   /// The [AudioPlayer] used for playback.
-  late final AudioPlayer player = AudioPlayer(
-    audioPipeline: AudioPipeline(androidAudioEffects: [
-      if (Platform.isAndroid) equalizer.androidEqualizer
-    ]),
-  );
+  late final AudioPlayer player = AudioPlayer(audioPipeline: audioPipeline);
 
   late final MusicPlayerAudioHandler audioHandler = MusicPlayerAudioHandler(
     onPlay: play,
     onPause: pause,
+    // TODO: Implement onStop
     playbackStateStream: player.playbackEventStream.map(
       (event) => MusicPlayerAudioHandler.transformEvent(event, player),
     ),
@@ -120,6 +123,8 @@ class MusicPlayer {
   /// Component for adjusting the gain for different frequency bands of the song.
   final Equalizer equalizer = Equalizer();
 
+  final Demixer demixer = Demixer();
+
   /// Load a [song].
   ///
   /// Prepares for playing the audio provided by [Song.audioSource], and updates the media player notification.
@@ -158,14 +163,12 @@ class MusicPlayer {
       id: file.path!.hashCode.toString(),
       title: file.name,
       source: SongSource.file,
-      audioSource: AudioSource.uri(Uri.file(file.path!)),
+      audioSource: AudioSource.file(file.path!),
     ));
   }
 
   /// Load a song to play from a [YoutubeVideo].
   Future<void> loadVideo(YoutubeVideo video) async {
-    // Get stream info
-
     HtmlUnescape htmlUnescape = HtmlUnescape();
 
     await loadSong(Song(
@@ -204,6 +207,11 @@ class MusicPlayer {
     if (equalizerSettings != null) {
       equalizer.loadSettingsFromJson(equalizerSettings);
     }
+
+    var demixerSetttings = tryCast<Map<String, dynamic>>(json["demixer"]);
+    if (demixerSetttings != null) {
+      demixer.loadSettingsFromJson(demixerSetttings);
+    }
   }
 
   /// Save preferences for the current song.
@@ -217,12 +225,15 @@ class MusicPlayer {
       "slowdowner": slowdowner.saveSettingsToJson(),
       "looper": looper.saveSettingsToJson(),
       "equalizer": equalizer.saveSettingsToJson(),
+      "demixer": demixer.saveSettingsToJson(),
     });
   }
 
   /// Listen for changes from [player].
   void _init() {
     songHistory.fetch();
+
+    player.setVolume(0.5);
 
     // isPlaying
     player.playingStream.listen((playing) {
@@ -267,6 +278,7 @@ class MusicPlayer {
     slowdowner.initialize(this);
     looper.initialize(this);
     equalizer.initialize(this);
+    demixer.initialize(this);
   }
 
   /// Initialize the audio service for [audioHandler], to enable interaction

@@ -18,10 +18,36 @@ class SlowdownerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.slowdowner.enabledNotifier,
-      builder: (context, loopEnabled, _) => Stack(children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 40),
-          child: LayoutBuilder(
+      builder: (context, loopEnabled, _) => Column(
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Switch(
+                  value: loopEnabled,
+                  onChanged: musicPlayer.nullIfNoSongElse(
+                    (value) => musicPlayer.slowdowner.enabled = value,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Center(
+                  child: Text(
+                    "Slowdowner",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: buildResetButton(),
+              ),
+            ],
+          ),
+          LayoutBuilder(
             builder: (context, BoxConstraints constraints) => Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -31,23 +57,13 @@ class SlowdownerCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Switch(
-            value: loopEnabled,
-            onChanged: musicPlayer.nullIfNoSongElse(
-              (value) => musicPlayer.slowdowner.enabled = value,
-            ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: buildResetButton(),
-        ),
-      ]),
+        ],
+      ),
     );
   }
+
+  /// Whether the MusicPlayer was playing before the user began changing the pitch or speed.
+  static bool wasPlayingBeforeChange = false;
 
   Widget buildPitchSlider(double radius) {
     return ValueListenableBuilder(
@@ -71,6 +87,13 @@ class SlowdownerCard extends StatelessWidget {
                         .setPitchSemitones((value * 10).roundToDouble() / 10);
                   },
           ),
+          onChangeStart: () {
+            wasPlayingBeforeChange = musicPlayer.isPlaying;
+            musicPlayer.pause();
+          },
+          onChangeEnd: () {
+            if (wasPlayingBeforeChange) musicPlayer.play();
+          },
         ),
         Positioned.fill(
           child: Align(
@@ -110,6 +133,13 @@ class SlowdownerCard extends StatelessWidget {
                         .setSpeed(pow(value, 2) + value / 2 + 0.5);
                   },
           ),
+          onChangeStart: () {
+            wasPlayingBeforeChange = musicPlayer.isPlaying;
+            musicPlayer.pause();
+          },
+          onChangeEnd: () {
+            if (wasPlayingBeforeChange) musicPlayer.play();
+          },
         ),
         Positioned.fill(
           child: Align(

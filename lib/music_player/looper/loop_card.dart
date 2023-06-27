@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/loop_card/loop_slider.dart';
-import 'package:musbx/music_player/loop_card/looper.dart';
+import 'package:musbx/music_player/looper/loop_slider.dart';
+import 'package:musbx/music_player/looper/looper.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class LoopCard extends StatelessWidget {
@@ -46,11 +46,13 @@ class LoopCard extends StatelessWidget {
               icon: const Icon(Icons.arrow_circle_right_outlined),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: Text(
-              "Loop",
-              style: Theme.of(context).textTheme.bodyLarge,
+          Align(
+            alignment: Alignment.center,
+            child: Center(
+              child: Text(
+                "Loop",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           ),
           // Set the loopSection's end to position

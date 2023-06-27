@@ -6,8 +6,9 @@ import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/widgets.dart';
 
+/// A component for [MusicPlayer] that is used to adjust the gain for different frequency bands.
 class Equalizer extends MusicPlayerComponent {
-  /// The [AndroidEqualizer] used internally to adjust the gain for different frequency bands.
+  /// The [AndroidEqualizer] used internally.
   final AndroidEqualizer androidEqualizer = AndroidEqualizer();
 
   /// The parameters of this equalizer, or null if no song has been loaded.
@@ -41,6 +42,12 @@ class Equalizer extends MusicPlayerComponent {
         resetGain();
       },
     );
+
+    musicPlayer.demixer.enabledNotifier.addListener(() {
+      // For now, disable when demixer is enabled since they don't work together.
+      // TODO: Get the Demixer to work with the Equalizer.
+      if (musicPlayer.demixer.enabled) enabled = false;
+    });
   }
 
   /// Load settings from a [json] map.

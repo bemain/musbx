@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/loop_card/looper.dart';
+import 'package:musbx/music_player/looper/looper.dart';
 import 'package:musbx/music_player/position_card/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/music_player/music_player.dart';
 
@@ -35,6 +35,9 @@ class PositionSlider extends StatelessWidget {
     );
   }
 
+  /// Whether the MusicPlayer was playing before the user began changing the position.
+  static bool wasPlayingBeforeChange = false;
+
   Widget _buildSlider(
     BuildContext context,
     Duration duration,
@@ -69,10 +72,24 @@ class PositionSlider extends StatelessWidget {
             thumbColor: Theme.of(context).colorScheme.primary,
             min: 0,
             max: duration.inMilliseconds.roundToDouble(),
-            value: position.inMilliseconds.roundToDouble(),
+            value: position.inMilliseconds
+                .clamp(
+                  loopEnabled ? loopSection.start.inMilliseconds : 0,
+                  loopEnabled
+                      ? loopSection.end.inMilliseconds
+                      : duration.inMilliseconds,
+                )
+                .roundToDouble(),
+            onChangeStart: (_) {
+              wasPlayingBeforeChange = musicPlayer.isPlaying;
+              musicPlayer.pause();
+            },
             onChanged: musicPlayer.nullIfNoSongElse((double value) {
               musicPlayer.seek(Duration(milliseconds: value.round()));
             }),
+            onChangeEnd: (_) {
+              if (wasPlayingBeforeChange) musicPlayer.play();
+            },
           ),
         ),
         Positioned.fill(

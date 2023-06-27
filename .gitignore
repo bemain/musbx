@@ -1,5 +1,5 @@
 # API key
-lib/music_player/api_key.dart
+lib/keys.dart
 
 # Miscellaneous
 *.class

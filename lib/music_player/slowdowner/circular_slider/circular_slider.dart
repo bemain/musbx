@@ -22,6 +22,8 @@ class CircularSlider extends StatefulWidget {
     super.key,
     required this.value,
     required this.onChanged,
+    this.onChangeStart,
+    this.onChangeEnd,
     this.label,
     this.min = 0.0,
     this.max = 1.0,
@@ -57,6 +59,23 @@ class CircularSlider extends StatefulWidget {
   ///
   /// If null, the slider will be displayed as disabled.
   final void Function(double value)? onChanged;
+
+  /// Called when the user starts selecting a new value for the slider.
+  ///
+  /// This callback shouldn't be used to update the slider [value] (use
+  /// [onChanged] for that), but rather to be notified when the user has started
+  /// selecting a new value by starting a drag or with a tap.
+  ///
+  /// The value passed will be the last [value] that the slider had before the
+  /// change began.
+  final void Function()? onChangeStart;
+
+  /// Called when the user is done selecting a new value for the slider.
+  ///
+  /// This callback shouldn't be used to update the slider [value] (use
+  /// [onChanged] for that), but rather to know when the user has completed
+  /// selecting a new [value] by ending a drag or a click.
+  final void Function()? onChangeEnd;
 
   /// The values on the slider where divisions are placed.
   ///
@@ -116,6 +135,7 @@ class CircularSliderState extends State<CircularSlider> {
           setState(() {
             dragging = false;
           });
+          widget.onChangeEnd?.call();
         },
         onPanCancel: (PointerCancelEvent event) {
           setState(() {
@@ -171,6 +191,7 @@ class CircularSliderState extends State<CircularSlider> {
             eventAngle < widget.endAngle) ||
         isPointInsideCircle(globalToLocal(event.position), thumbOffset, 10)) {
       dragging = true;
+      widget.onChangeStart?.call();
       onPan(event.position);
       return true;
     }
