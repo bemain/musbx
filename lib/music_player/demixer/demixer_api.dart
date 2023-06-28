@@ -78,7 +78,7 @@ class DemixerApi {
     Uri url = Uri.http(host, "/download/$youtubeId");
     var response = await http.get(url, headers: httpHeaders);
 
-    if (response.statusCode == 499) throw const YoutubeVideoNotFoundException();
+    if (response.statusCode == 497) throw const FileTooLargeException();
     if (response.statusCode != 200) throw const ServerException();
 
     File file = File("${(await youtubeDirectory).path}/$youtubeId.mp3");
@@ -103,10 +103,8 @@ class DemixerApi {
 
     String songName = json["song_name"];
 
-    if (response.statusCode == 200) {
-      return UploadResponse(songName);
-    }
-
+    if (response.statusCode == 488) throw const ServerOverloadedxception();
+    if (response.statusCode == 497) throw const FileTooLargeException();
     if (response.statusCode != 201) throw const ServerException();
 
     return UploadResponse(songName, jobId: json["job"]);
@@ -124,6 +122,9 @@ class DemixerApi {
       return UploadResponse(songName);
     }
 
+    if (response.statusCode == 499) throw const YoutubeVideoNotFoundException();
+    if (response.statusCode == 488) throw const ServerOverloadedxception();
+    if (response.statusCode == 497) throw const FileTooLargeException();
     if (response.statusCode != 201) throw const ServerException();
 
     return UploadResponse(songName, jobId: json["job"]);

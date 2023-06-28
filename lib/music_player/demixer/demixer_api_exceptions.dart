@@ -25,6 +25,24 @@ class YoutubeVideoNotFoundException implements Exception {
   String toString() => msg ?? 'The requested video was not found';
 }
 
+class FileTooLargeException implements Exception {
+  final String? msg;
+
+  const FileTooLargeException([this.msg]);
+
+  @override
+  String toString() => msg ?? 'The selected file is too large';
+}
+
+class ServerOverloadedxception implements Exception {
+  final String? msg;
+
+  const ServerOverloadedxception([this.msg]);
+
+  @override
+  String toString() => msg ?? 'The server is overloaded';
+}
+
 class ServerException implements Exception {
   final String? msg;
 
