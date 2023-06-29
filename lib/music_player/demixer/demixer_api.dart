@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:musbx/keys.dart';
@@ -39,56 +40,43 @@ enum StemType {
   other,
 }
 
-class DemixerApi {
-  static const String version = "1.0";
-
-  /// The server hosting the Demixer API.
-  static const String host = "musbx.agardh.se:4242";
-
+class Host {
   static const Map<String, String> httpHeaders = {
     "Authorization": demixerApiKey
   };
 
-  /// The directory where stems are saved.
-  static final Future<Directory> stemDirectory =
-      _createTempDirectory("demixer");
+  const Host(this.address);
 
-  /// The directory where Youtube files are saved.
-  static final Future<Directory> youtubeDirectory =
-      _createTempDirectory("youtube");
-
-  static Future<Directory> _createTempDirectory(String dirName) async {
-    var dir = Directory("${(await getTemporaryDirectory()).path}/$dirName/");
-    if (await dir.exists()) await dir.delete(recursive: true); // Clear
-    await dir.create(recursive: true);
-    return dir;
-  }
+  final String address;
 
   /// Check if the app version of the Demixer is up to date with the DemixerAPI.
-  Future<bool> isUpToDate() async {
-    Uri url = Uri.http(host, "/version");
+  Future<String> getVersion() async {
+    Uri url = Uri.http(address, "/version");
     var response = await http.get(url, headers: httpHeaders);
 
     if (response.statusCode != 200) throw const ServerException();
-    return response.body == version;
+    return response.body;
   }
 
   /// Download the audio to a Youtube file via the server.
-  Future<File> downloadYoutubeSong(String youtubeId) async {
-    Uri url = Uri.http(host, "/download/$youtubeId");
+  Future<File> downloadYoutubeSong(
+    String youtubeId,
+    Directory downloadDirectory,
+  ) async {
+    Uri url = Uri.http(address, "/download/$youtubeId");
     var response = await http.get(url, headers: httpHeaders);
 
     if (response.statusCode == 497) throw const FileTooLargeException();
     if (response.statusCode != 200) throw const ServerException();
 
-    File file = File("${(await youtubeDirectory).path}/$youtubeId.mp3");
+    File file = File("${downloadDirectory.path}/$youtubeId.mp3");
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }
 
   /// Upload a local [file] to the server.
   Future<UploadResponse> uploadFile(File file) async {
-    Uri url = Uri.http(host, "/upload");
+    Uri url = Uri.http(address, "/upload");
     var request = http.MultipartRequest("POST", url);
     request.headers.addAll(httpHeaders);
     request.files.add(await http.MultipartFile.fromPath(
@@ -112,7 +100,7 @@ class DemixerApi {
 
   /// Upload a YouTube song to the server.
   Future<UploadResponse> uploadYoutubeSong(String youtubeId) async {
-    Uri url = Uri.http(host, "/upload/$youtubeId");
+    Uri url = Uri.http(address, "/upload/$youtubeId");
     var response = await http.post(url, headers: httpHeaders);
     Map<String, dynamic> json = jsonDecode(response.body);
 
@@ -138,7 +126,7 @@ class DemixerApi {
     String jobId, {
     Duration checkEvery = const Duration(seconds: 5),
   }) async* {
-    Uri url = Uri.http(host, "/job/$jobId");
+    Uri url = Uri.http(address, "/job/$jobId");
     int progress = 0;
 
     while (true) {
@@ -159,8 +147,12 @@ class DemixerApi {
   }
 
   /// Download a [stem] for a [song] to the [stemDirectory].
-  Future<File> downloadStem(String song, StemType stem) async {
-    Uri url = Uri.http(host, "/stem/$song/${stem.name}");
+  Future<File> downloadStem(
+    String song,
+    StemType stem,
+    Directory downloadDirectory,
+  ) async {
+    Uri url = Uri.http(address, "/stem/$song/${stem.name}");
     var response = await http.get(url, headers: httpHeaders);
     if (response.statusCode == 479) {
       throw StemNotFoundException("Stem '$stem' not found for song '$song'");
@@ -168,8 +160,51 @@ class DemixerApi {
 
     if (response.statusCode != 200) throw const ServerException();
 
-    File file = File("${(await stemDirectory).path}/${stem.name}.mp3");
+    File file = File("${downloadDirectory.path}/${stem.name}.mp3");
     await file.writeAsBytes(response.bodyBytes);
     return file;
+  }
+}
+
+class DemixerApi {
+  static const String version = "1.0";
+
+  /// The server hosting the Demixer API.
+  static const List<Host> _hosts = [Host("192.168.1.174:4242")];
+
+  /// The directory where stems are saved.
+  static final Future<Directory> stemDirectory =
+      _createTempDirectory("demixer");
+
+  /// The directory where Youtube files are saved.
+  static final Future<Directory> youtubeDirectory =
+      _createTempDirectory("youtube");
+
+  static Future<Directory> _createTempDirectory(String dirName) async {
+    var dir = Directory("${(await getTemporaryDirectory()).path}/$dirName/");
+    if (await dir.exists()) await dir.delete(recursive: true); // Clear
+    await dir.create(recursive: true);
+    return dir;
+  }
+
+  /// Find a host that is available and whose version matches [version].
+  ///
+  /// Throws if no such host was found.
+  Future<Host> findHost() async {
+    /// Whether at least one host is available.
+    bool hostAvailable = false;
+
+    for (Host host in _hosts) {
+      try {
+        if (await host.getVersion() == version) return host;
+        hostAvailable = true;
+      } catch (_) {
+        debugPrint("DEMIXER: Host is not available: ${host.address}");
+      }
+    }
+
+    throw hostAvailable
+        ? const OutOfDateException()
+        : const ServerOfflineException();
   }
 }

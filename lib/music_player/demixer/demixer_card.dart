@@ -161,36 +161,40 @@ Please update to the latest version to use the Demixer.""",
 
   Widget buildLoadingTextWithInfoButton(
     BuildContext context,
-    String title,
-    String description,
-  ) {
+    String title, [
+    String? description,
+  ]) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 96),
+          constraints:
+              BoxConstraints(maxWidth: (description == null) ? 192 : 96),
           child: Text(title),
         ),
-        IconButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text(title),
-                  content: Text(description),
-                );
-              },
-            );
-          },
-          icon: const Icon(Icons.info_outline_rounded),
-        )
+        if (description != null)
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text(title),
+                    content: Text(description),
+                  );
+                },
+              );
+            },
+            icon: const Icon(Icons.info_outline_rounded),
+          )
       ],
     );
   }
 
   Widget buildLoadingText(BuildContext context) {
     switch (musicPlayer.demixer.process?.step) {
+      case DemixingStep.findingHost:
+        return buildLoadingTextWithInfoButton(context, "Finding host...");
       case DemixingStep.uploading:
         return buildLoadingTextWithInfoButton(
           context,
@@ -209,8 +213,8 @@ Please update to the latest version to use the Demixer.""",
           "Downloading...",
           "The song has been demixed and is being downloaded to your device.",
         );
-      default:
-        return const Text("Loading...");
+      case null:
+        return const Text("Loading");
     }
   }
 

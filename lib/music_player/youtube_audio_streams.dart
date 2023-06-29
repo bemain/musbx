@@ -11,8 +11,11 @@ final DemixerApi _demixerApi = DemixerApi();
 /// Get the audio stream of a YouTube video with [videoId].
 Future<Uri> getAudioStream(String videoId) async {
   try {
-    // Try using the demixer API
-    File file = await _demixerApi.downloadYoutubeSong(videoId);
+    // Try using the Demixer API
+    File file = await (await _demixerApi.findHost()).downloadYoutubeSong(
+      videoId,
+      await DemixerApi.youtubeDirectory,
+    );
     return Uri.file(file.path);
   } catch (error) {
     // Fallback to using the YoutubeExplode API
