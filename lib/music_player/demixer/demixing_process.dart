@@ -9,7 +9,7 @@ import 'package:musbx/music_player/demixer/host.dart';
 import 'package:musbx/music_player/song.dart';
 
 enum DemixingStep {
-  /// The API is looking for an open host with the correct version.
+  /// The API is looking for an available host with the correct version.
   findingHost,
 
   /// The song is being uploaded to the server.

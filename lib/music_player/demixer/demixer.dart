@@ -72,6 +72,8 @@ class Demixer extends MusicPlayerComponent {
   }
 
   Future<void> onNewSongLoaded() async {
+    if (await isOnCellular()) enabled = false;
+
     if (!enabled) return;
 
     MusicPlayer musicPlayer = MusicPlayer.instance;
@@ -108,10 +110,10 @@ class Demixer extends MusicPlayerComponent {
       return;
     }
 
+    stateNotifier.value = DemixerState.done;
+
     // Trigger enable
     await onEnabledToggle();
-
-    stateNotifier.value = DemixerState.done;
   }
 
   void onIsPlayingChanged() {

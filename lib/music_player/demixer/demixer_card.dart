@@ -29,7 +29,41 @@ class DemixerCard extends StatelessWidget {
                         onChanged: musicPlayer.nullIfNoSongElse(
                           (musicPlayer.demixer.state == DemixerState.outOfDate)
                               ? null
-                              : (value) => musicPlayer.demixer.enabled = value,
+                              : (value) async {
+                                  if (!value ||
+                                      musicPlayer.demixer.state ==
+                                          DemixerState.done ||
+                                      !await isOnCellular()) {
+                                    musicPlayer.demixer.enabled = value;
+                                    return;
+                                  }
+
+                                  // Show warning dialog
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text(
+                                          "Enable Demixer on cellular?"),
+                                      content: const Text(
+                                          "Your device is connected to a mobile network. Please note that the Demixer requires downloading some data (around 50 MB per song). Are you sure you want to enable the Demixer using cellular?"),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            musicPlayer.demixer.enabled = value;
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text("Enable"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
                         ),
                       ),
                     ),
