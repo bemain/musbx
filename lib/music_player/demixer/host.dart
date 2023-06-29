@@ -163,4 +163,9 @@ class Host {
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }
+
+  @override
+  String toString() {
+    return "Host($address)";
+  }
 }

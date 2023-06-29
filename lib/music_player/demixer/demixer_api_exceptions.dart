@@ -52,13 +52,13 @@ class ServerException implements Exception {
   String toString() => msg ?? 'The server encountered an internal error';
 }
 
-class ServerOfflineException implements Exception {
+class NoHostAvailableException implements Exception {
   final String? msg;
 
-  const ServerOfflineException([this.msg]);
+  const NoHostAvailableException([this.msg]);
 
   @override
-  String toString() => msg ?? 'The server is down';
+  String toString() => msg ?? 'No host is available';
 }
 
 class OutOfDateException implements Exception {

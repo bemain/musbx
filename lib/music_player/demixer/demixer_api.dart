@@ -6,10 +6,13 @@ import 'package:musbx/music_player/demixer/host.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DemixerApi {
-  static const String version = "1.0";
+  static const String version = "1.1";
 
   /// The server hosting the Demixer API.
-  static const List<Host> _hosts = [Host("192.168.1.174:4242")];
+  static const List<Host> _hosts = [
+    Host("192.168.1.174:4242"),
+    Host("musbx.agardh.se:4242"),
+  ];
 
   /// The directory where stems are saved.
   static final Future<Directory> stemDirectory =
@@ -35,15 +38,19 @@ class DemixerApi {
 
     for (Host host in _hosts) {
       try {
-        if (await host.getVersion() == version) return host;
+        String hostVersion = await host.getVersion();
+        if (hostVersion == version) return host;
+
+        debugPrint(
+            "DEMIXER: The host's version ($hostVersion) does not match DemixerAPI's version ($version): $host");
         hostAvailable = true;
       } catch (_) {
-        debugPrint("DEMIXER: Host is not available: ${host.address}");
+        debugPrint("DEMIXER: Host is not available: $host");
       }
     }
 
     throw hostAvailable
         ? const OutOfDateException()
-        : const ServerOfflineException();
+        : const NoHostAvailableException();
   }
 }
