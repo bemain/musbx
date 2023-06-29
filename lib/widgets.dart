@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 
 class ContinuousTextButton extends StatelessWidget {
@@ -93,4 +94,11 @@ extension StringCasingExtension on String {
       .split(' ')
       .map((str) => str.toCapitalized())
       .join(' ');
+}
+
+/// Whether the phone is connected to a mobile network.
+Future<bool> isOnCellular() async {
+  final connectivity = await (Connectivity().checkConnectivity());
+  return connectivity != ConnectivityResult.wifi &&
+      connectivity != ConnectivityResult.ethernet;
 }

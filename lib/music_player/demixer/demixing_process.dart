@@ -5,9 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
+import 'package:musbx/music_player/demixer/host.dart';
 import 'package:musbx/music_player/song.dart';
 
 enum DemixingStep {
+  /// The API is looking for an available host with the correct version.
+  findingHost,
+
   /// The song is being uploaded to the server.
   uploading,
 
@@ -19,9 +23,6 @@ enum DemixingStep {
 }
 
 class DemixingProcess {
-  /// The API used internally to demix songs.
-  static final DemixerApi api = DemixerApi();
-
   /// A cancellable process that demixes [song].
   DemixingProcess(Song song) {
     future = demixSong(song);
@@ -49,6 +50,12 @@ class DemixingProcess {
 
   /// Upload, separate and download stem files for [song].
   Future<Map<StemType, File>?> demixSong(Song song) async {
+    stepNotifier.value = DemixingStep.findingHost;
+
+    Host host = await DemixerApi.findHost();
+
+    if (_cancelled) return null;
+
     stepNotifier.value = DemixingStep.uploading;
 
     UploadResponse response;
@@ -56,10 +63,10 @@ class DemixingProcess {
       case SongSource.file:
         String path =
             "/${(song.audioSource as UriAudioSource).uri.pathSegments.join("/")}";
-        response = await api.uploadFile(File(path));
+        response = await host.uploadFile(File(path));
         break;
       case SongSource.youtube:
-        response = await api.uploadYoutubeSong(song.id);
+        response = await host.uploadYoutubeSong(song.id);
         break;
     }
 
@@ -70,7 +77,7 @@ class DemixingProcess {
     if (response.jobId != null) {
       stepNotifier.value = DemixingStep.separating;
 
-      var subscription = api.jobProgress(response.jobId!).handleError((error) {
+      var subscription = host.jobProgress(response.jobId!).handleError((error) {
         if (error is! JobNotFoundException) throw error;
       }).listen(null, cancelOnError: true);
       subscription.onData((response) {
@@ -92,7 +99,11 @@ class DemixingProcess {
     for (StemType stem in StemType.values) {
       if (_cancelled) return null;
 
-      stemFiles[stem] = await api.downloadStem(songName, stem);
+      stemFiles[stem] = await host.downloadStem(
+        songName,
+        stem,
+        await DemixerApi.stemDirectory,
+      );
     }
 
     if (_cancelled) return null;

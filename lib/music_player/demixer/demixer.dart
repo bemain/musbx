@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
+import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
+import 'package:musbx/music_player/demixer/host.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
@@ -21,7 +23,7 @@ enum DemixerState {
   /// The song has been demixed and is ready to be played.
   done,
 
-  /// The Demixer isn't up to date with the DemixerAPI.
+  /// The Demixer isn't up to date with the server.
   /// The app has to be updated to the latest version.
   outOfDate,
 
@@ -50,7 +52,7 @@ class Demixer extends MusicPlayerComponent {
   /// If `true`, the current song has been separated and mixed, and the Demixer is enabled.
   bool get isReady => state == DemixerState.done && enabled;
 
-  /// The process demxing the current song, if a song has been selected.
+  /// The process demxing the current song, or `null` if no song has been selected.
   DemixingProcess? process;
 
   @override
@@ -69,23 +71,17 @@ class Demixer extends MusicPlayerComponent {
       if (musicPlayer.equalizer.enabled) enabled = false;
     });
 
-    DemixingProcess.api.isUpToDate().then((value) {
-      if (!value) stateNotifier.value = DemixerState.outOfDate;
-    });
+    // Check if the host is up to date
+    try {
+      DemixerApi.findHost().then((_) {});
+    } on OutOfDateException {
+      stateNotifier.value = DemixerState.outOfDate;
+    } catch (error) {
+      stateNotifier.value = DemixerState.error;
+    }
   }
 
-  Future<void> onNewSongLoaded() async {
-    try {
-      if (!await DemixingProcess.api.isUpToDate()) {
-        stateNotifier.value = DemixerState.outOfDate;
-        return;
-      }
-    } catch (error) {
-      debugPrint("DEMIXER: Error accessing the DemixerAPI: $error");
-      stateNotifier.value = DemixerState.error;
-      return;
-    }
-
+  Future<void> demixCurrentSong() async {
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
     if (song == null) return;
@@ -109,16 +105,29 @@ class Demixer extends MusicPlayerComponent {
       // Make sure all players have the same duration
       assert(stems.every(
           (stem) => stem.player.duration == stems.first.player.duration));
+    } on OutOfDateException {
+      debugPrint(
+          "DEMIXER: Out of date. Try upgrading the app to the latest version");
+      stateNotifier.value = DemixerState.outOfDate;
+      return;
     } catch (error) {
       debugPrint("DEMIXER: Error demixing song: $error");
       stateNotifier.value = DemixerState.error;
       return;
     }
 
+    stateNotifier.value = DemixerState.done;
+  }
+
+  Future<void> onNewSongLoaded() async {
+    if (await isOnCellular()) enabled = false;
+
+    if (!enabled) return;
+
+    await demixCurrentSong();
+
     // Trigger enable
     await onEnabledToggle();
-
-    stateNotifier.value = DemixerState.done;
   }
 
   void onIsPlayingChanged() {
@@ -177,6 +186,16 @@ class Demixer extends MusicPlayerComponent {
   }
 
   Future<void> onEnabledToggle() async {
+    if (state != DemixerState.done) {
+      if (enabled) {
+        await demixCurrentSong();
+      } else {
+        process?.cancel();
+        stateNotifier.value = DemixerState.inactive;
+      }
+      return;
+    }
+
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
     if (song == null) return;

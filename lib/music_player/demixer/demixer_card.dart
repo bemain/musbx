@@ -27,9 +27,43 @@ class DemixerCard extends StatelessWidget {
                       child: Switch(
                         value: demixerEnabled,
                         onChanged: musicPlayer.nullIfNoSongElse(
-                          musicPlayer.demixer.state != DemixerState.done
+                          (musicPlayer.demixer.state == DemixerState.outOfDate)
                               ? null
-                              : (value) => musicPlayer.demixer.enabled = value,
+                              : (value) async {
+                                  if (!value ||
+                                      musicPlayer.demixer.state ==
+                                          DemixerState.done ||
+                                      !await isOnCellular()) {
+                                    musicPlayer.demixer.enabled = value;
+                                    return;
+                                  }
+
+                                  // Show warning dialog
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text(
+                                          "Enable Demixer on cellular?"),
+                                      content: const Text(
+                                          "Your device is connected to a mobile network. Please note that the Demixer requires downloading some data (around 50 MB per song). Are you sure you want to enable the Demixer using cellular?"),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            musicPlayer.demixer.enabled = true;
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text("Enable"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
                         ),
                       ),
                     ),
@@ -73,11 +107,11 @@ class DemixerCard extends StatelessWidget {
 
   Widget buildBody(BuildContext context) {
     switch (musicPlayer.demixer.state) {
-      case DemixerState.outOfDate:
-        return buildOutOfDate();
-
       case DemixerState.demixing:
         return buildLoading(context);
+
+      case DemixerState.outOfDate:
+        return buildOutOfDate();
 
       case DemixerState.error:
         return buildError();
@@ -161,36 +195,40 @@ Please update to the latest version to use the Demixer.""",
 
   Widget buildLoadingTextWithInfoButton(
     BuildContext context,
-    String title,
-    String description,
-  ) {
+    String title, [
+    String? description,
+  ]) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 96),
+          constraints:
+              BoxConstraints(maxWidth: (description == null) ? 192 : 96),
           child: Text(title),
         ),
-        IconButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text(title),
-                  content: Text(description),
-                );
-              },
-            );
-          },
-          icon: const Icon(Icons.info_outline_rounded),
-        )
+        if (description != null)
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text(title),
+                    content: Text(description),
+                  );
+                },
+              );
+            },
+            icon: const Icon(Icons.info_outline_rounded),
+          )
       ],
     );
   }
 
   Widget buildLoadingText(BuildContext context) {
     switch (musicPlayer.demixer.process?.step) {
+      case DemixingStep.findingHost:
+        return buildLoadingTextWithInfoButton(context, "Finding host...");
       case DemixingStep.uploading:
         return buildLoadingTextWithInfoButton(
           context,
@@ -209,8 +247,8 @@ Please update to the latest version to use the Demixer.""",
           "Downloading...",
           "The song has been demixed and is being downloaded to your device.",
         );
-      default:
-        return const Text("Loading...");
+      case null:
+        return const Text("Loading");
     }
   }
 

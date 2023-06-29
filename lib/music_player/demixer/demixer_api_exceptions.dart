@@ -51,3 +51,21 @@ class ServerException implements Exception {
   @override
   String toString() => msg ?? 'The server encountered an internal error';
 }
+
+class NoHostAvailableException implements Exception {
+  final String? msg;
+
+  const NoHostAvailableException([this.msg]);
+
+  @override
+  String toString() => msg ?? 'No host is available';
+}
+
+class OutOfDateException implements Exception {
+  final String? msg;
+
+  const OutOfDateException([this.msg]);
+
+  @override
+  String toString() => msg ?? 'The app is out of date with the server';
+}
