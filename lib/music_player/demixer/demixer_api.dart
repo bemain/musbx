@@ -11,8 +11,9 @@ class DemixerApi {
 
   /// The server hosting the Demixer API.
   static const List<Host> _hosts = [
-    Host("192.168.1.174:4242"),
+    // Host("192.168.1.174:4242"),
     Host("musbx.agardh.se:4242"),
+    Host("brunnby.homeip.net:4242"),
   ];
 
   /// The directory where stems are saved.

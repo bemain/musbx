@@ -49,9 +49,11 @@ class Host {
   final String address;
 
   /// Check if the app version of the Demixer is up to date with the DemixerAPI.
-  Future<String> getVersion() async {
+  Future<String> getVersion({
+    Duration timeout = const Duration(seconds: 1),
+  }) async {
     Uri url = Uri.http(address, "/version");
-    var response = await http.get(url, headers: httpHeaders);
+    var response = await http.get(url, headers: httpHeaders).timeout(timeout);
 
     if (response.statusCode != 200) throw const ServerException();
     return response.body;
