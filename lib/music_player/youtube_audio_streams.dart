@@ -6,13 +6,12 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// Used internally to get audio streams from YouTube.
 final YoutubeExplode _youtubeExplode = YoutubeExplode();
-final DemixerApi _demixerApi = DemixerApi();
 
 /// Get the audio stream of a YouTube video with [videoId].
 Future<Uri> getAudioStream(String videoId) async {
   try {
     // Try using the Demixer API
-    File file = await (await _demixerApi.findHost()).downloadYoutubeSong(
+    File file = await (await DemixerApi.findHost()).downloadYoutubeSong(
       videoId,
       await DemixerApi.youtubeDirectory,
     );

@@ -23,9 +23,6 @@ enum DemixingStep {
 }
 
 class DemixingProcess {
-  /// The API used internally to demix songs.
-  static final DemixerApi api = DemixerApi();
-
   /// A cancellable process that demixes [song].
   DemixingProcess(Song song) {
     future = demixSong(song);
@@ -55,7 +52,7 @@ class DemixingProcess {
   Future<Map<StemType, File>?> demixSong(Song song) async {
     stepNotifier.value = DemixingStep.findingHost;
 
-    Host host = await api.findHost();
+    Host host = await DemixerApi.findHost();
 
     if (_cancelled) return null;
 

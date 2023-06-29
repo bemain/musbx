@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/host.dart';
@@ -72,7 +73,7 @@ class Demixer extends MusicPlayerComponent {
 
     // Check if the host is up to date
     try {
-      DemixingProcess.api.findHost().then((_) {});
+      DemixerApi.findHost().then((_) {});
     } on OutOfDateException {
       stateNotifier.value = DemixerState.outOfDate;
     } catch (error) {

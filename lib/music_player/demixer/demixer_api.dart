@@ -32,7 +32,7 @@ class DemixerApi {
   /// Find a host that is available and whose version matches [version].
   ///
   /// Throws if no such host was found.
-  Future<Host> findHost() async {
+  static Future<Host> findHost() async {
     /// Whether at least one host is available.
     bool hostAvailable = false;
 
