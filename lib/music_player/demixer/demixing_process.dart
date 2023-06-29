@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
+import 'package:musbx/music_player/demixer/host.dart';
 import 'package:musbx/music_player/song.dart';
 
 enum DemixingStep {
