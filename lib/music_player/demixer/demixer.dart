@@ -22,7 +22,7 @@ enum DemixerState {
   /// The song has been demixed and is ready to be played.
   done,
 
-  /// The Demixer isn't up to date with the DemixerAPI.
+  /// The Demixer isn't up to date with the server.
   /// The app has to be updated to the latest version.
   outOfDate,
 
@@ -51,7 +51,7 @@ class Demixer extends MusicPlayerComponent {
   /// If `true`, the current song has been separated and mixed, and the Demixer is enabled.
   bool get isReady => state == DemixerState.done && enabled;
 
-  /// The process demxing the current song, if a song has been selected.
+  /// The process demxing the current song, or `null` if no song has been selected.
   DemixingProcess? process;
 
   @override
@@ -72,6 +72,8 @@ class Demixer extends MusicPlayerComponent {
   }
 
   Future<void> onNewSongLoaded() async {
+    if (!enabled) return;
+
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
     if (song == null) return;
@@ -168,6 +170,16 @@ class Demixer extends MusicPlayerComponent {
   }
 
   Future<void> onEnabledToggle() async {
+    if (state != DemixerState.done) {
+      if (enabled) {
+        await onNewSongLoaded();
+      } else {
+        process?.cancel();
+        stateNotifier.value = DemixerState.inactive;
+      }
+      return;
+    }
+
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
     if (song == null) return;

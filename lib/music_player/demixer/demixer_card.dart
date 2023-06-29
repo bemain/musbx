@@ -27,7 +27,7 @@ class DemixerCard extends StatelessWidget {
                       child: Switch(
                         value: demixerEnabled,
                         onChanged: musicPlayer.nullIfNoSongElse(
-                          musicPlayer.demixer.state != DemixerState.done
+                          (musicPlayer.demixer.state == DemixerState.outOfDate)
                               ? null
                               : (value) => musicPlayer.demixer.enabled = value,
                         ),
@@ -73,11 +73,11 @@ class DemixerCard extends StatelessWidget {
 
   Widget buildBody(BuildContext context) {
     switch (musicPlayer.demixer.state) {
-      case DemixerState.outOfDate:
-        return buildOutOfDate();
-
       case DemixerState.demixing:
         return buildLoading(context);
+
+      case DemixerState.outOfDate:
+        return buildOutOfDate();
 
       case DemixerState.error:
         return buildError();
