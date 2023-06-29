@@ -69,13 +69,18 @@ class Demixer extends MusicPlayerComponent {
       // TODO: Get the Demixer to work with the Equalizer.
       if (musicPlayer.equalizer.enabled) enabled = false;
     });
+
+    // Check if the host is up to date
+    try {
+      DemixingProcess.api.findHost().then((_) {});
+    } on OutOfDateException {
+      stateNotifier.value = DemixerState.outOfDate;
+    } catch (error) {
+      stateNotifier.value = DemixerState.error;
+    }
   }
 
-  Future<void> onNewSongLoaded() async {
-    if (await isOnCellular()) enabled = false;
-
-    if (!enabled) return;
-
+  Future<void> demixCurrentSong() async {
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
     if (song == null) return;
@@ -111,6 +116,14 @@ class Demixer extends MusicPlayerComponent {
     }
 
     stateNotifier.value = DemixerState.done;
+  }
+
+  Future<void> onNewSongLoaded() async {
+    if (await isOnCellular()) enabled = false;
+
+    if (!enabled) return;
+
+    await demixCurrentSong();
 
     // Trigger enable
     await onEnabledToggle();
@@ -174,7 +187,7 @@ class Demixer extends MusicPlayerComponent {
   Future<void> onEnabledToggle() async {
     if (state != DemixerState.done) {
       if (enabled) {
-        await onNewSongLoaded();
+        await demixCurrentSong();
       } else {
         process?.cancel();
         stateNotifier.value = DemixerState.inactive;

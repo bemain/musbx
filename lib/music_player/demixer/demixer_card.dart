@@ -55,7 +55,7 @@ class DemixerCard extends StatelessWidget {
                                         ),
                                         TextButton(
                                           onPressed: () {
-                                            musicPlayer.demixer.enabled = value;
+                                            musicPlayer.demixer.enabled = true;
                                             Navigator.of(context).pop();
                                           },
                                           child: const Text("Enable"),
