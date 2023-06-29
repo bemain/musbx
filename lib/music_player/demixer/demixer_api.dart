@@ -6,7 +6,8 @@ import 'package:musbx/music_player/demixer/host.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DemixerApi {
-  static const String version = "1.1";
+  /// The version of the server that this is compatible with.
+  static const String version = "1.0";
 
   /// The server hosting the Demixer API.
   static const List<Host> _hosts = [
