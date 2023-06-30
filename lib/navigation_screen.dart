@@ -13,7 +13,8 @@ class NavigationScreen extends StatefulWidget {
 }
 
 class NavigationScreenState extends State<NavigationScreen> {
-  int selectedIndex = 1;
+  int currentIndex = 1;
+  final PageController controller = PageController(initialPage: 1);
 
   @override
   void initState() {
@@ -31,8 +32,14 @@ class NavigationScreenState extends State<NavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: selectedIndex,
+      body: PageView(
+        controller: controller,
+        physics: const NeverScrollableScrollPhysics(),
+        onPageChanged: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
         children: const [
           MetronomeScreen(),
           MusicPlayerScreen(),
@@ -41,11 +48,12 @@ class NavigationScreenState extends State<NavigationScreen> {
       ),
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
+          controller.jumpToPage(index);
           setState(() {
-            selectedIndex = index;
+            currentIndex = index;
           });
         },
-        selectedIndex: selectedIndex,
+        selectedIndex: currentIndex,
         destinations: const [
           NavigationDestination(
             label: "Metronome",

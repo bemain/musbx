@@ -32,7 +32,10 @@ class MusicPlayerScreen extends StatefulWidget {
 }
 
 class MusicPlayerScreenState extends State<MusicPlayerScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     super.initState();
@@ -57,6 +60,8 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return ValueListenableBuilder(
         valueListenable: MusicPlayer.instance.stateNotifier,
         builder: (context, state, _) {
