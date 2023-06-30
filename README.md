@@ -5,18 +5,20 @@
 </p>
 
 
-Musician's Toolbox offers everything a musician needs for transcribing, practicing and performing. 
+Transcribe – Practice – Perform
+
+Musician's Toolbox offers all the essential tools in a single app, built to provide a sleek and easy-to-use experience that puts state-of-the-art AI technology at your fingertips. Whether you are a professional musician or just want to tune your guitar, Musician's Toolbox has the right tool for the job. 
 
 ## Current features
 - Metronome
 - Tuner
 - Music player featuring:
     - Slowdowner for changing the pitch and speed of audio
+    - Demixer for muting or isolating specific instruments from a song
     - Equalizer
 
 ## Planned features
 - Drone
-- Source separation (extracting specific instruments from a song)
 
 ## Privacy policy
 Privacy policy can be found [here](https://github.com/BeMain/musbx/blob/master/PRIVACY_POLICY.md)
