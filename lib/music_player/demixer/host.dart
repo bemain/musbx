@@ -50,7 +50,7 @@ class Host {
 
   /// Check if the app version of the Demixer is up to date with the DemixerAPI.
   Future<String> getVersion({
-    Duration timeout = const Duration(seconds: 2),
+    Duration timeout = const Duration(seconds: 3),
   }) async {
     Uri url = Uri.http(address, "/version");
     var response = await http.get(url, headers: httpHeaders).timeout(timeout);
@@ -87,14 +87,14 @@ class Host {
     ));
 
     var response = await request.send();
-    Map<String, dynamic> json =
-        jsonDecode(await response.stream.bytesToString());
-
-    String songName = json["song_name"];
 
     if (response.statusCode == 488) throw const ServerOverloadedxception();
     if (response.statusCode == 497) throw const FileTooLargeException();
     if (response.statusCode != 201) throw const ServerException();
+
+    Map<String, dynamic> json =
+        jsonDecode(await response.stream.bytesToString());
+    String songName = json["song_name"];
 
     return UploadResponse(songName, jobId: json["job"]);
   }
