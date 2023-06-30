@@ -31,11 +31,14 @@ class NavigationScreenState extends State<NavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const [
-        MetronomeScreen(),
-        MusicPlayerScreen(),
-        TunerScreen(),
-      ][selectedIndex],
+      body: IndexedStack(
+        index: selectedIndex,
+        children: const [
+          MetronomeScreen(),
+          MusicPlayerScreen(),
+          TunerScreen(),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
           setState(() {
