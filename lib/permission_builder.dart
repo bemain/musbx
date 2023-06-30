@@ -13,6 +13,7 @@ class PermissionBuilder extends StatefulWidget {
     this.permissionText,
     this.permissionDeniedIcon,
     this.permissionGrantedIcon,
+    this.initialRequest = true,
   }) : permissionName = permissionName ?? "$permission";
 
   /// The permission that needs to be granted before [onPermissionGranted] is called.
@@ -33,6 +34,10 @@ class PermissionBuilder extends StatefulWidget {
   /// The widget displayed when permission has been granted.
   final Widget? permissionGrantedIcon;
 
+  /// Whether to request permission when this is initialized.
+  /// Otherwise, the request is made when the user presses the request button.
+  final bool initialRequest;
+
   @override
   State<StatefulWidget> createState() => PermissionBuilderState();
 }
@@ -48,10 +53,11 @@ class PermissionBuilderState extends State<PermissionBuilder>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // [Permission.status] method is unable to return [PermissionStatus.permanentlyDenied]
-    // (see https://github.com/Baseflow/flutter-permission-handler/issues/568)
-    // Therefore, we can't just use [Permission.status] to check status, but need to make a full request.
-    requestPermission();
+    if (widget.initialRequest) {
+      requestPermission();
+    } else {
+      checkPermissionStatus();
+    }
   }
 
   @override
@@ -66,7 +72,7 @@ class PermissionBuilderState extends State<PermissionBuilder>
 
     if (state == AppLifecycleState.resumed &&
         prevState == AppLifecycleState.paused) {
-      requestPermission();
+      checkPermissionStatus();
     }
     prevState = state;
   }
@@ -99,14 +105,25 @@ class PermissionBuilderState extends State<PermissionBuilder>
     );
   }
 
+  Future<void> checkPermissionStatus() async {
+    // [Permission.status] is unable to return [PermissionStatus.permanentlyDenied]
+    // (see https://github.com/Baseflow/flutter-permission-handler/issues/568)
+    // Therefore, this won't return status correctly, but it still works fine.
+    var status = await widget.permission.status;
+    if (mounted) {
+      setState(() {
+        this.status = status;
+      });
+    }
+  }
+
   Future<void> requestPermission() async {
-    widget.permission.request().then((newStatus) {
-      if (mounted) {
-        setState(() {
-          status = newStatus;
-        });
-      }
-    });
+    var status = await widget.permission.request();
+    if (mounted) {
+      setState(() {
+        this.status = status;
+      });
+    }
   }
 
   Widget buildPermissionDeniedScreen({

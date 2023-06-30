@@ -32,6 +32,7 @@ class TunerScreenState extends State<TunerScreen> {
               "To use the tuner, give the app permission to access the microphone.",
           permissionDeniedIcon: const Icon(Icons.mic_off_rounded, size: 128),
           permissionGrantedIcon: const Icon(Icons.mic_rounded, size: 128),
+          initialRequest: false,
           onPermissionGranted: () async {
             await tuner.initialize();
             if (mounted) setState(() {});
