@@ -103,18 +103,18 @@ class Host {
   Future<UploadResponse> uploadYoutubeSong(String youtubeId) async {
     Uri url = Uri.http(address, "/upload/$youtubeId");
     var response = await http.post(url, headers: httpHeaders);
-    Map<String, dynamic> json = jsonDecode(response.body);
-
-    String songName = json["song_name"];
-
-    if (response.statusCode == 200) {
-      return UploadResponse(songName);
-    }
 
     if (response.statusCode == 499) throw const YoutubeVideoNotFoundException();
     if (response.statusCode == 488) throw const ServerOverloadedxception();
     if (response.statusCode == 497) throw const FileTooLargeException();
     if (response.statusCode != 201) throw const ServerException();
+
+    Map<String, dynamic> json = jsonDecode(response.body);
+    String songName = json["song_name"];
+
+    if (response.statusCode == 200) {
+      return UploadResponse(songName);
+    }
 
     return UploadResponse(songName, jobId: json["job"]);
   }
