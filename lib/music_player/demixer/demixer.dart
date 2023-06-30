@@ -117,17 +117,18 @@ class Demixer extends MusicPlayerComponent {
     }
 
     stateNotifier.value = DemixerState.done;
+
+    onEnabledToggle();
   }
 
   Future<void> onNewSongLoaded() async {
+    stateNotifier.value = DemixerState.inactive;
+
     if (await isOnCellular()) enabled = false;
 
     if (!enabled) return;
 
     await demixCurrentSong();
-
-    // Trigger enable
-    await onEnabledToggle();
   }
 
   void onIsPlayingChanged() {
@@ -200,13 +201,14 @@ class Demixer extends MusicPlayerComponent {
     Song? song = musicPlayer.song;
     if (song == null) return;
 
-    Duration position = musicPlayer.position;
     bool wasPlaying = musicPlayer.isPlaying;
 
     for (Stem stem in stems) {
       await stem.player.pause();
     }
     await musicPlayer.pause();
+
+    Duration position = musicPlayer.position;
 
     if (enabled) {
       // Disable "normal" audio
