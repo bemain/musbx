@@ -3,6 +3,7 @@ import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/music_player/song.dart';
 import 'package:musbx/widgets.dart';
 
 class DemixerCard extends StatelessWidget {
@@ -249,7 +250,7 @@ Please update to the latest version to use the Demixer.""",
         return buildLoadingTextWithInfoButton(
           context,
           "Demixing...",
-          "The server is demixing the song. \nAudio source separation is a complex process, and might take a while.",
+          "The server is demixing the song. \nAudio source separation is a complex process, and might take a while. ${(musicPlayer.song?.source == SongSource.youtube ? "\n\nYou may close the app while the demixing is in progress. \n\nThis only needs to be done once, so loading the song next time will be much faster." : "")}",
         );
       case DemixingStep.downloading:
         return buildLoadingTextWithInfoButton(
