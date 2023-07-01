@@ -107,7 +107,6 @@ class Host {
     if (response.statusCode == 499) throw const YoutubeVideoNotFoundException();
     if (response.statusCode == 488) throw const ServerOverloadedxception();
     if (response.statusCode == 497) throw const FileTooLargeException();
-    if (response.statusCode != 201) throw const ServerException();
 
     Map<String, dynamic> json = jsonDecode(response.body);
     String songName = json["song_name"];
@@ -115,6 +114,8 @@ class Host {
     if (response.statusCode == 200) {
       return UploadResponse(songName);
     }
+
+    if (response.statusCode != 201) throw const ServerException();
 
     return UploadResponse(songName, jobId: json["job"]);
   }
