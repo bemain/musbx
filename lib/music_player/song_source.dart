@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musbx/music_player/youtube_audio_streams.dart';
+import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/widgets.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// Where the audio for a song is loaded from.
 abstract class SongSource {
@@ -85,7 +86,7 @@ class YoutubeSource implements SongSource {
 
   @override
   Future<AudioSource> toAudioSource() async {
-    Uri uri = await getAudioStream(youtubeId);
+    Uri uri = await getYoutubeAudio(youtubeId);
     return AudioSource.uri(uri);
   }
 
@@ -94,4 +95,48 @@ class YoutubeSource implements SongSource {
         "type": "youtube",
         "youtubeId": youtubeId,
       };
+
+  /// Get the audio of a YouTube video.
+  ///
+  /// Tries to download the audio file using the [DemixerApi].
+  /// If that fails, uses [YoutubeExplode] to stream the audio instead (not on iOS).
+  ///
+  /// If the device is on a cellular network, prefers stream over downloading to minimize data usage.
+  static Future<Uri> getYoutubeAudio(String videoId) async {
+    if (Platform.isIOS) return downloadYoutubeAudio(videoId);
+
+    if (await isOnCellular()) {
+      try {
+        return getYoutubeAudioStream(videoId); // Try using YoutubeExplode
+      } catch (error) {
+        debugPrint(
+            "YOUTUBE: YoutubeExplode is not available, falling back to the Demixer API");
+        return downloadYoutubeAudio(videoId);
+      }
+    }
+
+    try {
+      return downloadYoutubeAudio(videoId); // Try using the Demixer API
+    } catch (error) {
+      debugPrint(
+          "YOUTUBE: Demixer API is not available, falling back to YoutubeExplode");
+      return getYoutubeAudioStream(videoId);
+    }
+  }
+
+  /// Download the audio of a Youtube video using the [DemixerApi].
+  static Future<Uri> downloadYoutubeAudio(String videoId) async {
+    File file = await (await DemixerApi.findHost()).downloadYoutubeSong(
+      videoId,
+      await DemixerApi.youtubeDirectory,
+    );
+    return Uri.file(file.path);
+  }
+
+  static Future<Uri> getYoutubeAudioStream(String videoId) async {
+    StreamManifest manifest =
+        await YoutubeExplode().videos.streams.getManifest(videoId);
+    AudioOnlyStreamInfo streamInfo = manifest.audioOnly.withHighestBitrate();
+    return streamInfo.url;
+  }
 }
