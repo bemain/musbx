@@ -14,20 +14,21 @@ abstract class SongSource {
   /// Convert this to a json map.
   ///
   /// The map will contain at least the following key:
-  /// - type
+  /// - `type` [String] The type of the source.
+  ///
   /// Depending on the type, the map will contain some additional keys. \
-  /// "youtube": youtubeId \
-  /// "file": path
+  /// "youtube" [String] `youtubeId`: The id of the Youtube song. \
+  /// "file" [String] `path`: The path to the file.
   Map<String, dynamic> toJson();
 
   /// Try to create a [SongSource] from a json map.
   ///
   /// The map should contain at least the following key:
-  /// - type
+  /// - `type` [String] The type of the source.
   ///
   /// Depending on the type, the map should contain some additional keys. \
-  /// "youtube": youtubeId \
-  /// "file": path
+  /// "youtube": `youtubeId` [String] The id of the Youtube song. \
+  /// "file": `path` [String] The path to the file.
   static SongSource? fromJson(Map<String, dynamic> json) {
     if (!json.containsKey("type")) return null;
     String? type = tryCast<String>(json["type"]);
@@ -152,12 +153,9 @@ class Song {
   /// Convert this [Song] to a json map.
   ///
   /// The map will always contain the following keys:
-  /// - id
-  /// - title
-  /// - source
-  ///
-  /// The "source" value is a map containing the key "type"
-  /// and other values required to intialize the source.
+  /// - `id` [String] A unique id.
+  /// - `title` [String] The title of this song.
+  /// - `source` [Map<String, dynamic>] Where this song's audio was loaded from. Will contain the key `type` and other values depending on the type.
   Map<String, dynamic> toJson() {
     return {
       "id": id,
@@ -172,13 +170,10 @@ class Song {
 
   /// Create a [Song] from a json map.
   ///
-  /// The map should contain the following keys, else we return `null`.
-  ///  - id
-  ///  - title
-  ///  - source
-  ///
-  /// The "source" value should be a map containing the key "type"
-  /// and other values required to intialize the source.
+  /// The map should always contain the following keys:
+  /// - `id` [String] A unique id.
+  /// - `title` [String] The title of this song.
+  /// - `source` [Map<String, dynamic>] Where this song's audio was loaded from. Should contain the key `type` and other values depending on the type.
   static Future<Song?> fromJson(Map<String, dynamic> json) async {
     if (!json.containsKey("id") ||
         !json.containsKey("title") ||

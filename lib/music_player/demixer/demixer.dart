@@ -229,15 +229,15 @@ class Demixer extends MusicPlayerComponent {
 
   /// Load settings from a [json] map.
   ///
-  /// [json] can contain the following stems (beyond "enabled"):
-  ///  - "drums"
-  ///  - "bass"
-  ///  - "vocals"
-  ///  - "other"
+  /// [json] can contain the following stems (beyond `enabled`):
+  ///  - `drums`
+  ///  - `bass`
+  ///  - `vocals`
+  ///  - `other`
   ///
   /// Each stem can contain the following key-value pairs:
-  ///  - "enabled": [bool] Whether this stem is enabled and should be played.
-  ///  - "volume": [double] The volume this stem is played back at. Must be between 0 and 1.
+  ///  - `enabled` [bool] Whether this stem is enabled and should be played.
+  ///  - `volume` [double] The volume this stem is played back at. Must be between 0 and 1.
   @override
   void loadSettingsFromJson(Map<String, dynamic> json) {
     super.loadSettingsFromJson(json);
@@ -256,14 +256,14 @@ class Demixer extends MusicPlayerComponent {
   /// Save settings for a song to a json map.
   ///
   /// Saves the following stems:
-  ///  - "drums"
-  ///  - "bass"
-  ///  - "vocals"
-  ///  - "other"
+  ///  - `drums`
+  ///  - `bass`
+  ///  - `vocals`
+  ///  - `other`
   ///
   /// Each stem contains the following key-value pairs:
-  ///  - "enabled": [bool] Whether this stem is enabled and should be played.
-  ///  - "volume": [double] The volume this stem is played back at. Must be between 0 and 1.
+  ///  - `enabled` [bool] Whether this stem is enabled and should be played.
+  ///  - `volume` [double] The volume this stem is played back at. Must be between 0 and 1.
   @override
   Map<String, dynamic> saveSettingsToJson() {
     return {

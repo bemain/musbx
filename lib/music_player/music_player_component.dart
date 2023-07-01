@@ -24,7 +24,7 @@ abstract class MusicPlayerComponent {
   /// Called when a song that has preferences saved is loaded.
   ///
   /// By default, handles the following key-value pair:
-  ///  - "enabled": [bool] Whether this component is enabled or not.
+  ///  - `enabled` [bool] Whether this component is enabled or not.
   ///
   /// Implementations should be able to handle a value being null,
   /// and never expect a specific key to exist in [json].
@@ -36,7 +36,7 @@ abstract class MusicPlayerComponent {
   /// Save settings for a song to a json map.
   ///
   /// By default, saves the following key-value pair:
-  ///  - "enabled": [bool] Whether this component is enabled or not.
+  ///  - `enabled` [bool] Whether this component is enabled or not.
   @mustCallSuper
   Map<String, dynamic> saveSettingsToJson() {
     return {"enabled": enabled};

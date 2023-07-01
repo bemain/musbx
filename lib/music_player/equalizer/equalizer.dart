@@ -52,8 +52,8 @@ class Equalizer extends MusicPlayerComponent {
 
   /// Load settings from a [json] map.
   ///
-  /// [json] can contain the following key-value pairs (beyond "enabled"):
-  ///  - "gain": [Map<int, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
+  /// [json] can contain the following key-value pairs (beyond `enabled`):
+  ///  - `gain` [Map<int, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
   void loadSettingsFromJson(Map<String, dynamic> json) async {
     super.loadSettingsFromJson(json);
@@ -72,8 +72,8 @@ class Equalizer extends MusicPlayerComponent {
 
   /// Save settings for a song to a json map.
   ///
-  /// Saves the following key-value pairs (beyond "enabled"):
-  ///  - "gain": [Map<int, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
+  /// Saves the following key-value pairs (beyond `enabled`):
+  ///  - `gain` [Map<int, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
   Map<String, dynamic> saveSettingsToJson() {
     return {
