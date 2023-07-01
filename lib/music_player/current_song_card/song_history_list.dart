@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/song.dart';
+import 'package:musbx/music_player/song_source.dart';
 
 class SongHistoryList extends StatefulWidget {
   /// Widget displaying the previously played songs as buttons.
@@ -67,13 +68,13 @@ class SongHistoryListState extends State<SongHistoryList> {
   }
 
   Widget? _buildSongSourceAvatar(Song song) {
-    switch (song.source) {
-      case SongSource.file:
-        return const Icon(Icons.file_present_rounded);
-      case SongSource.youtube:
-        return const Icon(CustomIcons.youtube);
-      default:
-        return null;
+    if (song.source is FileSource) {
+      return const Icon(Icons.file_present_rounded);
     }
+    if (song.source is YoutubeSource) {
+      return const Icon(CustomIcons.youtube);
+    }
+
+    return null;
   }
 }
