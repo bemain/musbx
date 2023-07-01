@@ -6,6 +6,7 @@ import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:musbx/music_player/demixer/host.dart';
 import 'package:musbx/music_player/song.dart';
+import 'package:musbx/music_player/song_source.dart';
 
 enum DemixingStep {
   /// The API is looking for an available host with the correct version.

@@ -3,7 +3,7 @@ import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/song.dart';
+import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/widgets.dart';
 
 class DemixerCard extends StatelessWidget {

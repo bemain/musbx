@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/song.dart';
+import 'package:musbx/music_player/song_source.dart';
 
 class SongHistoryList extends StatefulWidget {
   /// Widget displaying the previously played songs as buttons.
