@@ -33,6 +33,9 @@ enum DemixerState {
 
 /// A component for [MusicPlayer] that is used to separate a song into stems and change the volume of those individually.
 class Demixer extends MusicPlayerComponent {
+  /// The minimum allowed deviation in position between the [AudioPlayer]s playing the [stems].
+  static const Duration minAllowedPositionError = Duration(milliseconds: 20);
+
   /// The stems that songs are being separated into.
   List<Stem> get stems => stemsNotifier.value;
   late final StemsNotifier stemsNotifier = StemsNotifier([
@@ -148,15 +151,27 @@ class Demixer extends MusicPlayerComponent {
     MusicPlayer musicPlayer = MusicPlayer.instance;
     if (!isReady || !musicPlayer.isPlaying) return;
 
-    final Duration minAllowedPositionError = const Duration(milliseconds: 20) *
-        (musicPlayer.slowdowner.enabled ? musicPlayer.slowdowner.speed : 1);
-
+    // Make sure all players are at the same position
     for (Stem stem in stems) {
-      Duration error = (musicPlayer.position - stem.player.position).abs();
-      if (stem.enabled && error > minAllowedPositionError) {
+      Duration positionError =
+          (musicPlayer.position - stem.player.position).abs();
+      if (stem.enabled && positionError > minAllowedPositionError) {
         debugPrint(
-            "DEMIXER: Correcting position for stem ${stem.type.name}. Error: ${error.inMilliseconds}ms");
+            "DEMIXER: Correcting position for stem ${stem.type.name}. Error: ${positionError.inMilliseconds}ms");
         stem.player.seek(musicPlayer.position);
+      }
+    }
+
+    // Make sure all players have the same speed and pitch
+    for (Stem stem in stems) {
+      if (stem.enabled && stem.player.speed != musicPlayer.player.speed) {
+        debugPrint("DEMIXER: Correcting speed for stem ${stem.type.name}.");
+        stem.player.setSpeed(musicPlayer.player.speed);
+      }
+
+      if (stem.enabled && stem.player.pitch != musicPlayer.player.pitch) {
+        debugPrint("DEMIXER: Correcting pitch for stem ${stem.type.name}.");
+        stem.player.setPitch(musicPlayer.player.pitch);
       }
     }
   }
