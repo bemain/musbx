@@ -15,7 +15,6 @@ import 'package:musbx/music_player/slowdowner/slowdowner.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_history.dart';
 import 'package:musbx/music_player/song_preferences.dart';
-import 'package:musbx/music_player/youtube_audio_streams.dart';
 import 'package:musbx/widgets.dart';
 
 /// The state of [MusicPlayer].
@@ -136,7 +135,7 @@ class MusicPlayer {
     await saveSongPreferences();
 
     // Load audio
-    await player.setAudioSource(song.audioSource);
+    await player.setAudioSource(await song.source.toAudioSource());
 
     // Update songTitle
     songNotifier.value = song;
@@ -162,8 +161,7 @@ class MusicPlayer {
     await loadSong(Song(
       id: file.path!.hashCode.toString(),
       title: file.name,
-      source: SongSource.file,
-      audioSource: AudioSource.file(file.path!),
+      source: FileSource(file.path!),
     ));
   }
 
@@ -176,8 +174,7 @@ class MusicPlayer {
       title: htmlUnescape.convert(video.title),
       artist: htmlUnescape.convert(video.channelTitle),
       artUri: Uri.tryParse(video.thumbnails.high.url),
-      source: SongSource.youtube,
-      audioSource: AudioSource.uri(await getAudioStream(video.id)),
+      source: YoutubeSource(video.id),
     ));
   }
 

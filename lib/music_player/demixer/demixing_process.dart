@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:musbx/music_player/demixer/host.dart';
@@ -59,15 +58,11 @@ class DemixingProcess {
     stepNotifier.value = DemixingStep.uploading;
 
     UploadResponse response;
-    switch (song.source) {
-      case SongSource.file:
-        String path =
-            "/${(song.audioSource as UriAudioSource).uri.pathSegments.join("/")}";
-        response = await host.uploadFile(File(path));
-        break;
-      case SongSource.youtube:
-        response = await host.uploadYoutubeSong(song.id);
-        break;
+    if (song.source is FileSource) {
+      response = await host.uploadFile((song.source as FileSource).file);
+    } else {
+      response = await host
+          .uploadYoutubeSong((song.source as YoutubeSource).youtubeId);
     }
 
     String songName = response.songName;

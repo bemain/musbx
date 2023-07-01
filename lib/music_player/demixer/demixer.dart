@@ -219,7 +219,7 @@ class Demixer extends MusicPlayerComponent {
     } else {
       // Restore "normal" audio
       await musicPlayer.player.setAudioSource(
-        song.audioSource,
+        await song.source.toAudioSource(),
         initialPosition: position,
       );
     }

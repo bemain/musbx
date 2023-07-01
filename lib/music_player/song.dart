@@ -1,35 +1,99 @@
+import 'dart:io';
+
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/youtube_audio_streams.dart';
 import 'package:musbx/widgets.dart';
 
-/// Where a song was loaded from.
-enum SongSource {
-  /// From searching or entering a url for a video on YouTube.
-  youtube,
+/// Where the audio for a song is loaded from.
+abstract class SongSource {
+  /// Create an [AudioSource] playable by [AudioPlayer].
+  Future<AudioSource> toAudioSource();
 
-  /// From a local file selected by the user.
-  file;
+  /// Convert this to a json map.
+  ///
+  /// The map will contain at least the following key:
+  /// - type
+  /// Depending on the type, the map will contain some additional keys. \
+  /// "youtube": youtubeId \
+  /// "file": path
+  Map<String, dynamic> toJson();
 
-  @override
-  String toString() {
-    switch (this) {
-      case SongSource.youtube:
-        return "youtube";
-      case SongSource.file:
-        return "file";
-    }
-  }
+  /// Try to create a [SongSource] from a json map.
+  ///
+  /// The map should contain at least the following key:
+  /// - type
+  ///
+  /// Depending on the type, the map should contain some additional keys. \
+  /// "youtube": youtubeId \
+  /// "file": path
+  static SongSource? fromJson(Map<String, dynamic> json) {
+    if (!json.containsKey("type")) return null;
+    String? type = tryCast<String>(json["type"]);
 
-  static SongSource? fromString(String? string) {
-    switch (string) {
+    switch (type) {
       case "youtube":
-        return SongSource.youtube;
+        if (!json.containsKey("youtubeId")) break;
+        String? id = tryCast<String>(json["youtubeId"]);
+        if (id == null) break;
+
+        return YoutubeSource(id);
       case "file":
-        return SongSource.file;
+        if (!json.containsKey("path")) break;
+        String? path = tryCast<String>(json["path"]);
+        if (path == null) break;
+
+        return FileSource(path);
     }
     return null;
   }
+}
+
+class FileSource implements SongSource {
+  /// A song with audio loaded from a local file.
+  FileSource(this.path);
+
+  /// The path to the file.
+  final String path;
+
+  /// The file that the audio is loaded from.
+  File get file => File(path);
+
+  @override
+  Future<AudioSource> toAudioSource() async {
+    if (!await File(path).exists()) {
+      debugPrint("File doesn't exist, $path");
+    }
+
+    return AudioSource.file(path);
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "type": "file",
+        "path": path,
+      };
+}
+
+class YoutubeSource implements SongSource {
+  /// A song with audio loaded from Youtube.
+  YoutubeSource(this.youtubeId);
+
+  /// The id of the Youtube song.
+  final String youtubeId;
+
+  @override
+  Future<AudioSource> toAudioSource() async {
+    Uri uri = await getAudioStream(youtubeId);
+    return AudioSource.uri(uri);
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "type": "youtube",
+        "youtubeId": youtubeId,
+      };
 }
 
 class Song {
@@ -42,7 +106,6 @@ class Song {
     this.genre,
     this.artUri,
     required this.source,
-    required this.audioSource,
   }) : mediaItem = MediaItem(
           id: id,
           title: title,
@@ -72,11 +135,10 @@ class Song {
   /// See [MediaItem.artUri]
   final Uri? artUri;
 
-  /// Where this song was loaded from, e.g. a YouTube video or a local file.
+  /// Where this song's audio was loaded from, e.g. a YouTube video or a local file.
+  ///
+  /// Can be used to create an [AudioSource] playable by [AudioPlayer].
   final SongSource source;
-
-  /// The audio source for this song, playable by [AudioPlayer].
-  final AudioSource audioSource;
 
   /// The media item for this song, provided to [MusicPlayerAudioHandler] when
   /// this song is played.
@@ -93,9 +155,9 @@ class Song {
   /// - id
   /// - title
   /// - source
-  /// - audioSource
   ///
-  /// Additionally, if audioSource is [AudioSource.file], the map will contain the key `filePath`.
+  /// The "source" value is a map containing the key "type"
+  /// and other values required to intialize the source.
   Map<String, dynamic> toJson() {
     return {
       "id": id,
@@ -104,9 +166,7 @@ class Song {
       if (artist != null) "artist": artist,
       if (genre != null) "genre": genre,
       if (artUri != null) "artUri": artUri.toString(),
-      "source": source.toString(),
-      if (source == SongSource.file)
-        "filePath": (audioSource as UriAudioSource).uri.toString(),
+      "source": source.toJson(),
     };
   }
 
@@ -116,17 +176,16 @@ class Song {
   ///  - id
   ///  - title
   ///  - source
-  ///  - audioSource
   ///
-  /// Additionally, if audioSource is [AudioSource.file], the map should contain the key `filePath`.
+  /// The "source" value should be a map containing the key "type"
+  /// and other values required to intialize the source.
   static Future<Song?> fromJson(Map<String, dynamic> json) async {
-    if (!json.containsKey("id") || !json.containsKey("title")) return null;
+    if (!json.containsKey("id") ||
+        !json.containsKey("title") ||
+        !json.containsKey("source")) return null;
 
-    SongSource? source = SongSource.fromString(tryCast<String>(json["source"]));
+    SongSource? source = SongSource.fromJson(json["source"]);
     if (source == null) return null;
-
-    AudioSource? audioSource = await _tryParseAudioSource(json, source);
-    if (audioSource == null) return null;
 
     return Song(
       id: json["id"] as String,
@@ -136,26 +195,6 @@ class Song {
       genre: tryCast<String>(json["genre"]),
       artUri: Uri.tryParse(tryCast<String>(json["artUri"]) ?? ""),
       source: source,
-      audioSource: audioSource,
     );
-  }
-
-  /// Try to parse a [AudioSource] from a json map, given the [source].
-  ///
-  /// If [source] is [SongSource.file], the map should contain the key `filePath`.
-  static Future<AudioSource?> _tryParseAudioSource(
-    Map<String, dynamic> json,
-    SongSource source,
-  ) async {
-    switch (source) {
-      case SongSource.youtube:
-        return AudioSource.uri(await getAudioStream(json["id"]));
-
-      case SongSource.file:
-        if (!json.containsKey("filePath")) return null;
-        final Uri? fileUrl = Uri.tryParse(json["filePath"] as String);
-        if (fileUrl == null) return null;
-        return AudioSource.uri(fileUrl);
-    }
   }
 }
