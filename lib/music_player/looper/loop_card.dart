@@ -20,8 +20,8 @@ class LoopCard extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: ValueListenableBuilder(
               valueListenable: musicPlayer.looper.enabledNotifier,
-              builder: (context, loopEnabled, _) => Switch(
-                value: loopEnabled,
+              builder: (context, enabled, _) => Switch(
+                value: enabled,
                 onChanged: musicPlayer.nullIfNoSongElse(
                   (value) => musicPlayer.looper.enabled = value,
                 ),
