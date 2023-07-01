@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/card_header.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
@@ -15,92 +16,42 @@ class DemixerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
         valueListenable: musicPlayer.demixer.enabledNotifier,
-        builder: (context, demixerEnabled, child) {
+        builder: (context, enabled, child) {
           return ValueListenableBuilder(
             valueListenable: musicPlayer.demixer.stateNotifier,
             builder: (context, state, child) {
               return Column(children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Switch(
-                        value: demixerEnabled,
-                        onChanged: musicPlayer.nullIfNoSongElse(
-                          (musicPlayer.demixer.state ==
-                                      DemixerState.outOfDate ||
-                                  musicPlayer.demixer.state ==
-                                      DemixerState.error)
-                              ? null
-                              : (value) async {
-                                  if (!value ||
-                                      musicPlayer.demixer.state ==
-                                          DemixerState.done ||
-                                      !await isOnCellular()) {
-                                    musicPlayer.demixer.enabled = value;
-                                    return;
-                                  }
-
+                ValueListenableBuilder(
+                  valueListenable: musicPlayer.demixer.stemsNotifier,
+                  builder: (context, stems, child) => CardHeader(
+                    title: "Demixer",
+                    enabled: enabled,
+                    onEnabledChanged:
+                        (musicPlayer.demixer.state == DemixerState.outOfDate ||
+                                musicPlayer.demixer.state == DemixerState.error)
+                            ? null
+                            : (value) async {
+                                if (value &&
+                                    musicPlayer.demixer.state !=
+                                        DemixerState.done &&
+                                    await isOnCellular()) {
                                   // Show warning dialog
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text(
-                                          "Enable Demixer on cellular?"),
-                                      content: const Text(
-                                          "Your device is connected to a mobile network. Please note that the Demixer requires downloading some data (around 50 MB per song). Are you sure you want to enable the Demixer using cellular?"),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: const Text("Cancel"),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            musicPlayer.demixer.enabled = true;
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: const Text("Enable"),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Center(
-                        child: Text(
-                          "Demixer",
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ValueListenableBuilder(
-                        valueListenable: musicPlayer.demixer.stemsNotifier,
-                        builder: (context, stems, child) => IconButton(
-                          iconSize: 20,
-                          onPressed: musicPlayer.nullIfNoSongElse(stems.every(
-                                  (Stem stem) =>
-                                      stem.enabled && stem.volume == 0.5)
-                              ? null
-                              : () {
-                                  for (Stem stem in stems) {
-                                    stem.volume = 0.5;
-                                    stem.enabled = true;
-                                  }
-                                }),
-                          icon: const Icon(Icons.refresh_rounded),
-                        ),
-                      ),
-                    ),
-                  ],
+                                  await showCellularWarningDialog(context);
+                                  return;
+                                }
+
+                                musicPlayer.demixer.enabled = value;
+                              },
+                    onResetPressed: stems.every(
+                            (Stem stem) => stem.enabled && stem.volume == 0.5)
+                        ? null
+                        : () {
+                            for (Stem stem in stems) {
+                              stem.volume = 0.5;
+                              stem.enabled = true;
+                            }
+                          },
+                  ),
                 ),
                 buildBody(context),
               ]);
@@ -294,6 +245,32 @@ Please update to the latest version to use the Demixer.""",
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> showCellularWarningDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Enable Demixer on cellular?"),
+        content: const Text(
+            "Your device is connected to a mobile network. Please note that the Demixer requires downloading some data (around 50 MB per song). Are you sure you want to enable the Demixer using cellular?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              musicPlayer.demixer.enabled = true;
+              Navigator.of(context).pop();
+            },
+            child: const Text("Enable"),
           ),
         ],
       ),

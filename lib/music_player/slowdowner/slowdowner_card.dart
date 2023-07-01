@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/card_header.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/slowdowner/circular_slider/circular_slider.dart';
 
@@ -18,34 +19,26 @@ class SlowdownerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.slowdowner.enabledNotifier,
-      builder: (context, loopEnabled, _) => Column(
+      builder: (context, enabled, _) => Column(
         children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Switch(
-                  value: loopEnabled,
-                  onChanged: musicPlayer.nullIfNoSongElse(
-                    (value) => musicPlayer.slowdowner.enabled = value,
-                  ),
-                ),
+          ValueListenableBuilder(
+            valueListenable: musicPlayer.slowdowner.speedNotifier,
+            builder: (_, speed, __) => ValueListenableBuilder(
+              valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
+              builder: (context, pitch, _) => CardHeader(
+                title: "Slowdowner",
+                enabled: enabled,
+                onEnabledChanged: (value) =>
+                    musicPlayer.slowdowner.enabled = value,
+                onResetPressed: (speed.toStringAsFixed(2) == "1.00" &&
+                        pitch.abs().toStringAsFixed(1) == "0.0")
+                    ? null
+                    : () {
+                        musicPlayer.slowdowner.setSpeed(1.0);
+                        musicPlayer.slowdowner.setPitchSemitones(0);
+                      },
               ),
-              Align(
-                alignment: Alignment.center,
-                child: Center(
-                  child: Text(
-                    "Slowdowner",
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: buildResetButton(),
-              ),
-            ],
+            ),
           ),
           LayoutBuilder(
             builder: (context, BoxConstraints constraints) => Row(
