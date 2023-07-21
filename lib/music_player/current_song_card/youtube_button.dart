@@ -3,18 +3,19 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
 import 'package:musbx/music_player/current_song_card/youtube_api/youtube_api.dart';
+import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/widgets.dart';
 import 'package:musbx/keys.dart';
 
 class YoutubeButton extends StatelessWidget {
   /// Button for searching for a song from Youtube and loading it to [MusicPlayer].
-  const YoutubeButton({super.key});
+  YoutubeButton({super.key});
+
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
-    final MusicPlayer musicPlayer = MusicPlayer.instance;
-
     return FilledButton(
       onPressed: musicPlayer.isLoading
           ? null
@@ -27,11 +28,23 @@ class YoutubeButton extends StatelessWidget {
                 delegate: YoutubeSearchDelegate(),
               );
 
-              if (video != null) {
-                musicPlayer.loadVideo(video);
-              } else {
+              if (video == null) {
                 // Restore state
                 musicPlayer.stateNotifier.value = prevState;
+                return;
+              }
+
+              try {
+                await musicPlayer.loadVideo(video);
+                return;
+              } catch (error) {
+                showExceptionDialog(
+                  const YoutubeUnavailableDialog(),
+                );
+
+                // Restore state
+                musicPlayer.stateNotifier.value = prevState;
+                return;
               }
             },
       child: const Icon(CustomIcons.youtube),

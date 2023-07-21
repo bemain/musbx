@@ -40,10 +40,10 @@ class NavigationScreenState extends State<NavigationScreen> {
             currentIndex = index;
           });
         },
-        children: const [
-          MetronomeScreen(),
+        children: [
+          const MetronomeScreen(),
           MusicPlayerScreen(),
-          TunerScreen(),
+          const TunerScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(

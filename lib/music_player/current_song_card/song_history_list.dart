@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
+import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
@@ -55,8 +56,23 @@ class SongHistoryListState extends State<SongHistoryList> {
       child: ActionChip(
         onPressed: musicPlayer.isLoading
             ? null
-            : () {
-                musicPlayer.loadSong(song);
+            : () async {
+                MusicPlayerState prevState = musicPlayer.state;
+                musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
+                try {
+                  await musicPlayer.loadSong(song);
+                  return;
+                } catch (error) {
+                  showExceptionDialog(
+                    song.source is YoutubeSource
+                        ? const YoutubeUnavailableDialog()
+                        : const FileCouldNotBeLoadedDialog(),
+                  );
+
+                  // Restore state
+                  musicPlayer.stateNotifier.value = prevState;
+                  return;
+                }
               },
         avatar: _buildSongSourceAvatar(song),
         label: ConstrainedBox(
