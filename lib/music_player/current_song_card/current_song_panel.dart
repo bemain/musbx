@@ -38,7 +38,7 @@ class CurrentSongPanel extends StatelessWidget {
         ),
         PickSongButton(),
         Container(width: 10),
-        if (!Platform.isIOS) const YoutubeButton(),
+        if (!Platform.isIOS) YoutubeButton(),
       ],
     );
   }

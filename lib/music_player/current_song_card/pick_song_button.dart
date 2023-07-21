@@ -1,6 +1,7 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/permission_builder.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -24,12 +25,8 @@ class PickSongButton extends StatelessWidget {
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
-  /// Required to show dialog. Probably not the best way to do this...
-  late final BuildContext _navigatorContext;
-
   @override
   Widget build(BuildContext context) {
-    _navigatorContext = Navigator.of(context).context;
     return FilledButton(
       onPressed: musicPlayer.isLoading
           ? null
@@ -60,46 +57,29 @@ class PickSongButton extends StatelessWidget {
     }
     String extension = result.files.single.path!.split(".").last;
     if (!allowedExtensions.contains(extension)) {
-      showUnsupportedFileExtensionDialog(extension);
+      showExceptionDialog(UnsupportedFileExtensionDialog(extension: extension));
+
       // Restore state
       musicPlayer.stateNotifier.value = prevState;
       return;
     }
 
-    await musicPlayer.loadFile(result.files.single);
-  }
+    try {
+      await musicPlayer.loadFile(result.files.single);
+    } catch (error) {
+      showExceptionDialog(const FileCouldNotBeLoadedDialog());
 
-  Future<void> showUnsupportedFileExtensionDialog(String extension) async {
-    await showDialog(
-      context: _navigatorContext,
-      builder: (context) => AlertDialog(
-        title: const Text("Unsupported file type"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.file_present_rounded, size: 128),
-            const SizedBox(height: 15),
-            Text(
-                "The file type '.$extension' is not supported. Try loading a different file.")
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text("Dismiss"),
-          )
-        ],
-      ),
-    );
+      // Restore state
+      musicPlayer.stateNotifier.value = prevState;
+      return;
+    }
   }
 
   void pushPermissionBuilder(BuildContext context) async {
     // On Android sdk 33 or greater, use of granular permissionss is required
     final bool useGranularPermissions = !Platform.isAndroid
         ? false
-        : (await DeviceInfoPlugin().androidInfo).version.sdkInt > 32;
+        : (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 33;
 
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => Scaffold(

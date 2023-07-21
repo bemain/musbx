@@ -14,6 +14,9 @@ import 'package:musbx/screen/card_list.dart';
 import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/screen/widget_card.dart';
 
+/// The key of the [MusicPlayerScreen]. Can be used to show dialogs.
+final GlobalKey<MusicPlayerScreenState> musicPlayerScreenKey = GlobalKey();
+
 class MusicPlayerScreen extends StatefulWidget {
   /// Screen that allows the user to select and play a song.
   ///
@@ -25,7 +28,7 @@ class MusicPlayerScreen extends StatefulWidget {
   ///  - Slider and buttons for looping a section of the song.
   ///  - Controls for the Demixer.
   ///  - Controls for the Equalizer.
-  const MusicPlayerScreen({super.key});
+  MusicPlayerScreen() : super(key: musicPlayerScreenKey);
 
   @override
   State<StatefulWidget> createState() => MusicPlayerScreenState();

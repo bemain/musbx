@@ -65,6 +65,7 @@ class FileSource implements SongSource {
   Future<AudioSource> toAudioSource() async {
     if (!await File(path).exists()) {
       debugPrint("File doesn't exist, $path");
+      throw FileSystemException("File doesn't exist", path);
     }
 
     return AudioSource.file(path);
