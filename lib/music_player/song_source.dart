@@ -103,24 +103,24 @@ class YoutubeSource implements SongSource {
   ///
   /// If the device is on a cellular network, prefers stream over downloading to minimize data usage.
   static Future<Uri> getYoutubeAudio(String videoId) async {
-    if (Platform.isIOS) return downloadYoutubeAudio(videoId);
+    if (Platform.isIOS) return await downloadYoutubeAudio(videoId);
 
     if (await isOnCellular()) {
       try {
-        return getYoutubeAudioStream(videoId); // Try using YoutubeExplode
+        return await getYoutubeAudioStream(videoId); // Try using YoutubeExplode
       } catch (error) {
         debugPrint(
             "YOUTUBE: YoutubeExplode is not available, falling back to the Demixer API");
-        return downloadYoutubeAudio(videoId);
+        return await downloadYoutubeAudio(videoId);
       }
     }
 
     try {
-      return downloadYoutubeAudio(videoId); // Try using the Demixer API
+      return await downloadYoutubeAudio(videoId); // Try using the Demixer API
     } catch (error) {
       debugPrint(
           "YOUTUBE: Demixer API is not available, falling back to YoutubeExplode");
-      return getYoutubeAudioStream(videoId);
+      return await getYoutubeAudioStream(videoId);
     }
   }
 
