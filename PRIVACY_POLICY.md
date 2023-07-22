@@ -4,7 +4,6 @@ title: Privacy Policy
 permalink: /privacy_policy/
 ---
 
-# Privacy Policy
 This app, Musician’s Toolbox, offers a set of tools for musicians, including but not limited to a Metronome, a Tuner and a Music player (for transcribing songs).
 
 As an avid Android user myself, I take privacy very seriously. I know how irritating it is when apps collect your data without your knowledge.
