@@ -1,4 +1,4 @@
-#title: Musician's Toolbox
+title: Musician's Toolbox
 description: The all-in-one tool for musicians
 
 theme: minima
@@ -8,7 +8,8 @@ minima:
     - { platform: github,  user_url: "https://github.com/BeMain" }
 
 header_pages:
-  - PRIVACY_POLICY
+  - PRIVACY_POLICY.md
+
 author:
   name: Benjamin Agardh
   email: "bemain.dev@gmail.com"
