@@ -17,16 +17,20 @@ class DemixerApi {
   ];
 
   /// The directory where stems are saved.
-  static final Future<Directory> stemDirectory =
+  static final Future<Directory> demixerDirectory =
       _createTempDirectory("demixer");
+
+  static Future<Directory> getSongDirectory(String songName) async =>
+      _createTempDirectory("${(await demixerDirectory).path}/$songName");
 
   /// The directory where Youtube files are saved.
   static final Future<Directory> youtubeDirectory =
       _createTempDirectory("youtube");
 
-  static Future<Directory> _createTempDirectory(String dirName) async {
-    var dir = Directory("${(await getTemporaryDirectory()).path}/$dirName/");
-    if (await dir.exists()) await dir.delete(recursive: true); // Clear
+  /// Creates a temporary directory with the given [name].
+  /// If the directory already exists, does nothing.
+  static Future<Directory> _createTempDirectory(String name) async {
+    var dir = Directory("${(await getTemporaryDirectory()).path}/$name/");
     await dir.create(recursive: true);
     return dir;
   }
@@ -44,10 +48,10 @@ class DemixerApi {
         if (hostVersion == version) return host;
 
         debugPrint(
-            "DEMIXER: The host's version ($hostVersion) does not match DemixerAPI's version ($version): $host");
+            "[DEMIXER] The host's version ($hostVersion) does not match DemixerAPI's version ($version): $host");
         hostAvailable = true;
       } catch (_) {
-        debugPrint("DEMIXER: Host is not available: $host");
+        debugPrint("[DEMIXER] Host is not available: $host");
       }
     }
 

@@ -70,7 +70,11 @@ class Host {
     if (response.statusCode == 497) throw const FileTooLargeException();
     if (response.statusCode != 200) throw const ServerException();
 
-    File file = File("${downloadDirectory.path}/$youtubeId.mp3");
+    assert(response.headers.containsKey("content-disposition"));
+    String fileName =
+        response.headers["content-disposition"]!.split("filename=").last.trim();
+    assert(fileName.isNotEmpty);
+    File file = File("${downloadDirectory.path}/$fileName");
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }
@@ -148,16 +152,17 @@ class Host {
     }
   }
 
-  /// Download a [stem] for a [song] to the [stemDirectory].
+  /// Download a [stem] for a [songName] to the [stemDirectory].
   Future<File> downloadStem(
-    String song,
+    String songName,
     StemType stem,
     Directory downloadDirectory,
   ) async {
-    Uri url = Uri.http(address, "/stem/$song/${stem.name}");
+    Uri url = Uri.http(address, "/stem/$songName/${stem.name}");
     var response = await http.get(url, headers: httpHeaders);
     if (response.statusCode == 479) {
-      throw StemNotFoundException("Stem '$stem' not found for song '$song'");
+      throw StemNotFoundException(
+          "Stem '$stem' not found for song '$songName'");
     }
 
     if (response.statusCode != 200) throw const ServerException();

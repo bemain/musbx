@@ -37,7 +37,7 @@ class DemixingProcess {
   /// The current step of the demixing process.
   DemixingStep get step => stepNotifier.value;
   final ValueNotifier<DemixingStep> stepNotifier =
-      ValueNotifier(DemixingStep.uploading);
+      ValueNotifier(DemixingStep.findingHost);
 
   /// The progress of the separation, or `null` if [step] is not [DemixingStep.separating].
   int? get separationProgress => separationProgressNotifier.value;
@@ -50,6 +50,20 @@ class DemixingProcess {
 
   /// Upload, separate and download stem files for [song].
   Future<Map<StemType, File>?> demixSong(Song song) async {
+    // Try to grab stems from cache
+    Directory songDirectory = await DemixerApi.getSongDirectory(song.id);
+    if (await songDirectory.exists()) {
+      Map<StemType, File> stemFiles = {
+        for (StemType stem in StemType.values)
+          stem: File("${songDirectory.path}/${stem.name}.mp3")
+      };
+
+      if (stemFiles.values.every((file) => file.existsSync())) {
+        debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
+        return stemFiles;
+      }
+    }
+
     stepNotifier.value = DemixingStep.findingHost;
 
     Host host = await DemixerApi.findHost();
@@ -98,7 +112,7 @@ class DemixingProcess {
       stemFiles[stem] = await host.downloadStem(
         songName,
         stem,
-        await DemixerApi.stemDirectory,
+        songDirectory,
       );
     }
 

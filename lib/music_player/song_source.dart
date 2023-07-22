@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/music_player/current_song_card/pick_song_button.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/widgets.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -64,7 +65,6 @@ class FileSource implements SongSource {
   @override
   Future<AudioSource> toAudioSource() async {
     if (!await File(path).exists()) {
-      debugPrint("File doesn't exist, $path");
       throw FileSystemException("File doesn't exist", path);
     }
 
@@ -104,6 +104,17 @@ class YoutubeSource implements SongSource {
   ///
   /// If the device is on a cellular network, prefers stream over downloading to minimize data usage.
   static Future<Uri> getYoutubeAudio(String videoId) async {
+    // Use cached audio, if available
+    String cacheDirectory = (await DemixerApi.youtubeDirectory).path;
+    for (String extension in allowedExtensions) {
+      File file = File("$cacheDirectory/$videoId.$extension");
+      if (await file.exists()) {
+        debugPrint(
+            "[YOUTUBE] Using cached audio '${file.path}' for Youtube song $videoId");
+        return file.uri;
+      }
+    }
+
     if (Platform.isIOS) return await downloadYoutubeAudio(videoId);
 
     if (await isOnCellular()) {
@@ -111,7 +122,7 @@ class YoutubeSource implements SongSource {
         return await getYoutubeAudioStream(videoId); // Try using YoutubeExplode
       } catch (error) {
         debugPrint(
-            "YOUTUBE: YoutubeExplode is not available, falling back to the Demixer API");
+            "[YOUTUBE] YoutubeExplode is not available, falling back to the Demixer API");
         return await downloadYoutubeAudio(videoId);
       }
     }
@@ -120,7 +131,7 @@ class YoutubeSource implements SongSource {
       return await downloadYoutubeAudio(videoId); // Try using the Demixer API
     } catch (error) {
       debugPrint(
-          "YOUTUBE: Demixer API is not available, falling back to YoutubeExplode");
+          "[YOUTUBE] Demixer API is not available, falling back to YoutubeExplode");
       return await getYoutubeAudioStream(videoId);
     }
   }

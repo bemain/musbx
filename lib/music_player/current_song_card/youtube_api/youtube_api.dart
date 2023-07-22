@@ -29,7 +29,7 @@ class YoutubeApi {
     final res = await http.get(url, headers: httpHeaders);
     var jsonData = json.decode(res.body);
     if (jsonData['error'] != null) {
-      debugPrint("YotubeApi ERROR: ${jsonData['error']['message']}");
+      debugPrint("[YOUTUBE] Error: ${jsonData['error']['message']}");
       return null;
     }
 
@@ -62,7 +62,7 @@ class YoutubeApi {
     final res = await http.get(url, headers: httpHeaders);
     var jsonData = json.decode(res.body);
     if (jsonData['error'] != null) {
-      debugPrint("YotubeApi ERROR: ${jsonData['error']['message']}");
+      debugPrint("[YOUTUBE] Error: ${jsonData['error']['message']}");
       return [];
     }
 

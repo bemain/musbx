@@ -110,11 +110,11 @@ class Demixer extends MusicPlayerComponent {
           (stem) => stem.player.duration == stems.first.player.duration));
     } on OutOfDateException {
       debugPrint(
-          "DEMIXER: Out of date. Try upgrading the app to the latest version");
+          "[DEMIXER] Out of date. Try upgrading the app to the latest version");
       stateNotifier.value = DemixerState.outOfDate;
       return;
     } catch (error) {
-      debugPrint("DEMIXER: Error demixing song: $error");
+      debugPrint("[DEMIXER] Error demixing song: $error");
       stateNotifier.value = DemixerState.error;
       return;
     }
@@ -157,7 +157,7 @@ class Demixer extends MusicPlayerComponent {
           (musicPlayer.position - stem.player.position).abs();
       if (stem.enabled && positionError > minAllowedPositionError) {
         debugPrint(
-            "DEMIXER: Correcting position for stem ${stem.type.name}. Error: ${positionError.inMilliseconds}ms");
+            "[DEMIXER] Correcting position for stem ${stem.type.name}. Error: ${positionError.inMilliseconds}ms");
         stem.player.seek(musicPlayer.position);
       }
     }
@@ -165,12 +165,12 @@ class Demixer extends MusicPlayerComponent {
     // Make sure all players have the same speed and pitch
     for (Stem stem in stems) {
       if (stem.enabled && stem.player.speed != musicPlayer.player.speed) {
-        debugPrint("DEMIXER: Correcting speed for stem ${stem.type.name}.");
+        debugPrint("[DEMIXER] Correcting speed for stem ${stem.type.name}.");
         stem.player.setSpeed(musicPlayer.player.speed);
       }
 
       if (stem.enabled && stem.player.pitch != musicPlayer.player.pitch) {
-        debugPrint("DEMIXER: Correcting pitch for stem ${stem.type.name}.");
+        debugPrint("[DEMIXER] Correcting pitch for stem ${stem.type.name}.");
         stem.player.setPitch(musicPlayer.player.pitch);
       }
     }

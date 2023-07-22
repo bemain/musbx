@@ -41,13 +41,13 @@ class SongHistory extends ChangeNotifier {
 
       if (date == null || entry.value is! Map<String, dynamic>) {
         debugPrint(
-            "Incorrectly formatted entry in history file: (${entry.key}, ${entry.value})");
+            "[SONG HISTORY] Incorrectly formatted entry in history file: (${entry.key}, ${entry.value})");
         return;
       }
       Song? song = await Song.fromJson(entry.value);
       if (song == null) {
         debugPrint(
-            "History entry (${entry.key}, ${entry.value}) is missing required fields");
+            "[SONG HISTORY] History entry (${entry.key}, ${entry.value}) is missing required fields");
         return;
       }
 
