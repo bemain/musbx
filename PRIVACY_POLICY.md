@@ -20,7 +20,7 @@ android.permission.RECORD_AUDIO             | Required for the Tuner to function
 android.permission.READ_EXTERNAL_STORAGE    | Required by the Music player if the user wants to upload a song from the device. Can be revoked by the system or the user at any time, and the app will still function. |
 
 
-If you find any security vulnerability that has been inadvertently caused by me, or have any question regarding how the app protectes your privacy, please send me an email at bemain.dev@gmail.com.
+If you find any security vulnerability that has been inadvertently caused by me, or have any question regarding how the app protectes your privacy, please send me an email at [bemain.dev@gmail.com](mailto:bemain.dev@gmail.com).
 
 Yours sincerly,\
 Benjamin Agardh \
