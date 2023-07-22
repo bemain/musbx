@@ -48,10 +48,10 @@ class DemixerApi {
         if (hostVersion == version) return host;
 
         debugPrint(
-            "DEMIXER: The host's version ($hostVersion) does not match DemixerAPI's version ($version): $host");
+            "[DEMIXER] The host's version ($hostVersion) does not match DemixerAPI's version ($version): $host");
         hostAvailable = true;
       } catch (_) {
-        debugPrint("DEMIXER: Host is not available: $host");
+        debugPrint("[DEMIXER] Host is not available: $host");
       }
     }
 

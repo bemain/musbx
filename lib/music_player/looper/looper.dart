@@ -56,16 +56,17 @@ class Looper extends MusicPlayerComponent {
     int? end = tryCast<int>(json["end"]);
 
     if (end != null && end < (start ?? 0)) {
-      debugPrint("Invalid LoopSection, start (${start ?? 0}) > end ($end)");
+      debugPrint(
+          "[LOOPER] Invalid LoopSection, start (${start ?? 0}) > end ($end)");
       return;
     }
     if (start != null && start < 0) {
-      debugPrint("Invalid LoopSection, start ($start) < 0");
+      debugPrint("[LOOPER] Invalid LoopSection, start ($start) < 0");
       return;
     }
     if (end != null && end > section.end.inMilliseconds) {
       debugPrint(
-        "Invalid LoopSection, end ($end) > duration (${section.end.inMilliseconds})",
+        "[LOOPER] Invalid LoopSection, end ($end) > duration (${section.end.inMilliseconds})",
       );
       return;
     }

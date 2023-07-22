@@ -59,7 +59,7 @@ class DemixingProcess {
       };
 
       if (stemFiles.values.every((file) => file.existsSync())) {
-        debugPrint("DEMIXER: Using cached stems for song ${song.id}.");
+        debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
         return stemFiles;
       }
     }
