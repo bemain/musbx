@@ -10,7 +10,6 @@ minima:
 header_pages:
   - PRIVACY_POLICY.md
 
-author:
-  name: Benjamin Agardh
-  email: "bemain.dev@gmail.com"
+author: Benjamin Agardh
+email: bemain.dev@gmail.com
 
