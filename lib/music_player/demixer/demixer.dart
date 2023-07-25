@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/host.dart';
@@ -73,15 +72,6 @@ class Demixer extends MusicPlayerComponent {
       // TODO: Get the Demixer to work with the Equalizer.
       if (musicPlayer.equalizer.enabled) enabled = false;
     });
-
-    // Check if the host is up to date
-    try {
-      DemixerApi.findHost().then((_) {});
-    } on OutOfDateException {
-      stateNotifier.value = DemixerState.outOfDate;
-    } catch (error) {
-      stateNotifier.value = DemixerState.error;
-    }
   }
 
   Future<void> demixCurrentSong() async {
@@ -134,9 +124,17 @@ class Demixer extends MusicPlayerComponent {
     await demixCurrentSong();
   }
 
-  void onIsPlayingChanged() {
+  void onIsPlayingChanged() async {
     if (!isReady) return;
     MusicPlayer musicPlayer = MusicPlayer.instance;
+    Duration musicPlayerPosition = musicPlayer.player.position;
+
+    // Make sure all players are at the same position
+    for (Stem stem in stems) {
+      if (musicPlayer.isPlaying && stem.enabled) {
+        await stem.player.seek(musicPlayerPosition);
+      }
+    }
 
     for (Stem stem in stems) {
       if (musicPlayer.isPlaying) {
@@ -152,9 +150,10 @@ class Demixer extends MusicPlayerComponent {
     if (!isReady || !musicPlayer.isPlaying) return;
 
     // Make sure all players are at the same position
+    Duration musicPlayerPosition = musicPlayer.player.position;
     for (Stem stem in stems) {
       Duration positionError =
-          (musicPlayer.position - stem.player.position).abs();
+          (musicPlayerPosition - stem.player.position).abs();
       if (stem.enabled && positionError > minAllowedPositionError) {
         debugPrint(
             "[DEMIXER] Correcting position for stem ${stem.type.name}. Error: ${positionError.inMilliseconds}ms");
