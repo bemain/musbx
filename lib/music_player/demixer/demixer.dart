@@ -124,7 +124,7 @@ class Demixer extends MusicPlayerComponent {
     await demixCurrentSong();
   }
 
-  void onIsPlayingChanged() async {
+  Future<void> onIsPlayingChanged() async {
     if (!isReady) return;
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Duration musicPlayerPosition = musicPlayer.player.position;
@@ -217,22 +217,20 @@ class Demixer extends MusicPlayerComponent {
 
     MusicPlayer musicPlayer = MusicPlayer.instance;
 
-    bool wasPlaying = musicPlayer.isPlaying;
-    for (Stem stem in stems) {
-      stem.player.pause();
-    }
-    musicPlayer.pause();
-
     if (enabled) {
       originalVolume = musicPlayer.player.volume;
       // Mute "normal" audio
       await musicPlayer.player.setVolume(0);
     } else {
+      for (Stem stem in stems) {
+        stem.player.pause();
+      }
       // Restore "normal" audio
       if (originalVolume == null) return;
       await musicPlayer.player.setVolume(originalVolume!);
     }
-    if (wasPlaying) musicPlayer.play();
+
+    await onIsPlayingChanged();
   }
 
   /// Load settings from a [json] map.
