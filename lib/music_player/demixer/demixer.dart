@@ -202,7 +202,7 @@ class Demixer extends MusicPlayerComponent {
 
   /// The audio loaded to [MusicPlayer] before the Demixer was enabled.
   /// Used to restore the audio when the Demixer is disabled.
-  AudioSource? originalAudio;
+  double? originalVolume;
 
   Future<void> onEnabledToggle() async {
     if (state != DemixerState.done) {
@@ -216,34 +216,22 @@ class Demixer extends MusicPlayerComponent {
     }
 
     MusicPlayer musicPlayer = MusicPlayer.instance;
-    Song? song = musicPlayer.song;
-    if (song == null) return;
 
     bool wasPlaying = musicPlayer.isPlaying;
-
     for (Stem stem in stems) {
-      await stem.player.pause();
+      stem.player.pause();
     }
-    await musicPlayer.pause();
-
-    Duration position = musicPlayer.position;
+    musicPlayer.pause();
 
     if (enabled) {
-      originalAudio = musicPlayer.player.audioSource;
-      // Disable "normal" audio
-      await musicPlayer.player.setAudioSource(
-        SilenceAudioSource(duration: stems.first.player.duration!),
-        initialPosition: position,
-      );
+      originalVolume = musicPlayer.player.volume;
+      // Mute "normal" audio
+      await musicPlayer.player.setVolume(0);
     } else {
       // Restore "normal" audio
-      if (originalAudio == null) return;
-      await musicPlayer.player.setAudioSource(
-        originalAudio!,
-        initialPosition: position,
-      );
+      if (originalVolume == null) return;
+      await musicPlayer.player.setVolume(originalVolume!);
     }
-    await musicPlayer.seek(position);
     if (wasPlaying) musicPlayer.play();
   }
 
