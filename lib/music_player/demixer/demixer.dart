@@ -168,7 +168,9 @@ class Demixer extends MusicPlayerComponent {
         stem.player.setSpeed(musicPlayer.player.speed);
       }
 
-      if (stem.enabled && stem.player.pitch != musicPlayer.player.pitch) {
+      if (stem.enabled &&
+          stem.player.pitch != musicPlayer.player.pitch &&
+          !Platform.isIOS) {
         debugPrint("[DEMIXER] Correcting pitch for stem ${stem.type.name}.");
         stem.player.setPitch(musicPlayer.player.pitch);
       }
@@ -176,12 +178,16 @@ class Demixer extends MusicPlayerComponent {
   }
 
   void onSpeedChanged(double speed) {
+    if (Platform.isIOS) return;
+
     for (Stem stem in stems) {
       stem.player.setSpeed(speed);
     }
   }
 
   void onPitchChanged(double pitch) async {
+    if (Platform.isIOS) return;
+
     for (Stem stem in stems) {
       stem.player.setPitch(pitch);
     }

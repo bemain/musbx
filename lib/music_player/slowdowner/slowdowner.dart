@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -17,7 +18,8 @@ class Slowdowner extends MusicPlayerComponent {
 
   /// Set how much the pitch will be shifted, in semitones.
   Future<void> setPitchSemitones(double pitch) async {
-    if (enabled) {
+    // TODO: Implement pitch-changing on iOS
+    if (enabled && !Platform.isIOS) {
       await audioPlayer.setPitch(pow(2, pitch / 12).toDouble());
     }
     pitchSemitonesNotifier.value = pitch;
@@ -50,7 +52,7 @@ class Slowdowner extends MusicPlayerComponent {
     enabledNotifier.addListener(() {
       if (!enabled) {
         // Silently reset [MusicPlayer]'s pitch and speed
-        audioPlayer.setPitch(1.0);
+        if (!Platform.isIOS) audioPlayer.setPitch(1.0);
         audioPlayer.setSpeed(1.0);
         musicPlayer.audioHandler.setSpeed(1.0);
       } else {
