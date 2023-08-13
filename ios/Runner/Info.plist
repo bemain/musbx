@@ -45,11 +45,6 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<!--Added by audio_service package-->
-	<key>UIBackgroundModes</key>
-  	<array>
-    	<string>audio</string>
-  	</array>
 	<!--Added by just_audio package-->
 	<key>NSAppTransportSecurity</key>
 	<dict>
@@ -68,9 +63,11 @@
 	<string>To load audio from the device, file access is required</string>
 	<key>NSCameraUsageDescription</key>
 	<string>To load audio from the device, file access is required</string>
-	<!--Added by file_picker package-->
 	<key>UIBackgroundModes</key>
 	<array>
+		<!--Added by audio_service package-->
+	    <string>audio</string>
+		<!--Added by file_picker package-->
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
