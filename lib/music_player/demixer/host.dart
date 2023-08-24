@@ -44,15 +44,20 @@ class Host {
     "Authorization": demixerApiKey
   };
 
-  const Host(this.address);
+  const Host(this.address, {this.https = false});
 
   final String address;
+
+  final bool https;
+
+  Uri Function(String, [String, Map<String, dynamic>?]) get uriConstructor =>
+      (https ? Uri.https : Uri.http);
 
   /// Check if the app version of the Demixer is up to date with the DemixerAPI.
   Future<String> getVersion({
     Duration timeout = const Duration(seconds: 3),
   }) async {
-    Uri url = Uri.http(address, "/version");
+    Uri url = uriConstructor(address, "/version");
     var response = await http.get(url, headers: httpHeaders).timeout(timeout);
 
     if (response.statusCode != 200) throw const ServerException();
@@ -64,7 +69,7 @@ class Host {
     String youtubeId,
     Directory downloadDirectory,
   ) async {
-    Uri url = Uri.http(address, "/download/$youtubeId");
+    Uri url = uriConstructor(address, "/download/$youtubeId");
     var response = await http.get(url, headers: httpHeaders);
 
     if (response.statusCode == 497) throw const FileTooLargeException();
@@ -81,7 +86,7 @@ class Host {
 
   /// Upload a local [file] to the server.
   Future<UploadResponse> uploadFile(File file) async {
-    Uri url = Uri.http(address, "/upload");
+    Uri url = uriConstructor(address, "/upload");
     var request = http.MultipartRequest("POST", url);
     request.headers.addAll(httpHeaders);
     request.files.add(await http.MultipartFile.fromPath(
@@ -105,7 +110,7 @@ class Host {
 
   /// Upload a YouTube song to the server.
   Future<UploadResponse> uploadYoutubeSong(String youtubeId) async {
-    Uri url = Uri.http(address, "/upload/$youtubeId");
+    Uri url = uriConstructor(address, "/upload/$youtubeId");
     var response = await http.post(url, headers: httpHeaders);
 
     if (response.statusCode == 499) throw const YoutubeVideoNotFoundException();
@@ -132,7 +137,7 @@ class Host {
     String jobId, {
     Duration checkEvery = const Duration(seconds: 5),
   }) async* {
-    Uri url = Uri.http(address, "/job/$jobId");
+    Uri url = uriConstructor(address, "/job/$jobId");
     int progress = 0;
 
     while (true) {
@@ -158,7 +163,7 @@ class Host {
     StemType stem,
     Directory downloadDirectory,
   ) async {
-    Uri url = Uri.http(address, "/stem/$songName/${stem.name}");
+    Uri url = uriConstructor(address, "/stem/$songName/${stem.name}");
     var response = await http.get(url, headers: httpHeaders);
     if (response.statusCode == 479) {
       throw StemNotFoundException(

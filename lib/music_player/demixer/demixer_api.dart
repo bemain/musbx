@@ -12,6 +12,7 @@ class DemixerApi {
   /// The server hosting the Demixer API.
   static const List<Host> _hosts = [
     // Host("192.168.1.174:4242"),
+    // Host("musbx-demixer-gpb4qgoxha-lz.a.run.app", https: true),
     Host("musbx.agardh.se:4242"),
     Host("brunnby.homeip.net:4242"),
   ];
