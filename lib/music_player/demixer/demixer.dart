@@ -65,6 +65,8 @@ class Demixer extends MusicPlayerComponent {
     musicPlayer.equalizer.parametersNotifier.addListener(onEqualizerChanged);
     enabledNotifier.addListener(onEnabledToggle);
 
+    stemsNotifier.addListener(onStemsChanged);
+
     musicPlayer.equalizer.enabledNotifier.addListener(() {
       // For now, disable when demixer is enabled since they don't work together.
       // TODO: Get the Demixer to work with the Equalizer.
@@ -99,6 +101,16 @@ class Demixer extends MusicPlayerComponent {
     stateNotifier.value = DemixerState.done;
 
     onEnabledToggle();
+  }
+
+  Future<void> onStemsChanged() async {
+    if (!isReady) return;
+
+    MusicPlayer musicPlayer = MusicPlayer.instance;
+    Song? song = musicPlayer.song;
+    if (song == null) return;
+
+    await onEnabledToggle();
   }
 
   Future<void> onNewSongLoaded() async {
@@ -149,6 +161,30 @@ class Demixer extends MusicPlayerComponent {
 
     Duration position = musicPlayer.position;
 
+    // Make sure no other process is currently setting the audio source
+    Future<void>? awaitBeforeLoading = musicPlayer.futureSongLock;
+    musicPlayer.futureSongLock = _loadAudioSource(
+      song,
+      position,
+      awaitBeforeLoading: awaitBeforeLoading,
+    );
+    await musicPlayer.futureSongLock;
+
+    await musicPlayer.seek(position);
+    if (wasPlaying) musicPlayer.play();
+  }
+
+  /// Awaits [awaitBeforeLoading] and enables/disables demixed audio.
+  /// See [MusicPlayer.futureSongLock] for more info why this is required.
+  Future<void> _loadAudioSource(
+    song,
+    position, {
+    Future<void>? awaitBeforeLoading,
+  }) async {
+    await awaitBeforeLoading;
+
+    MusicPlayer musicPlayer = MusicPlayer.instance;
+
     if (enabled) {
       originalAudio = musicPlayer.player.audioSource;
       // Enable mixed audio
@@ -168,8 +204,6 @@ class Demixer extends MusicPlayerComponent {
         initialPosition: position,
       );
     }
-    await musicPlayer.seek(position);
-    if (wasPlaying) musicPlayer.play();
   }
 
   /// Load settings from a [json] map.
