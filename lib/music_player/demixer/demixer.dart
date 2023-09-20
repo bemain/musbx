@@ -62,10 +62,6 @@ class Demixer extends MusicPlayerComponent {
   @override
   void initialize(MusicPlayer musicPlayer) {
     musicPlayer.songNotifier.addListener(onNewSongLoaded);
-    musicPlayer.isPlayingNotifier.addListener(onIsPlayingChanged);
-    musicPlayer.positionNotifier.addListener(onPositionChanged);
-    musicPlayer.player.speedStream.listen(onSpeedChanged);
-    musicPlayer.player.pitchStream.listen(onPitchChanged);
     musicPlayer.equalizer.parametersNotifier.addListener(onEqualizerChanged);
     enabledNotifier.addListener(onEnabledToggle);
 
@@ -89,17 +85,6 @@ class Demixer extends MusicPlayerComponent {
 
       Map<StemType, File>? stemFiles = await process?.future;
       if (stemFiles == null) return;
-
-      for (Stem stem in stems) {
-        if (stemFiles.containsKey(stem.type) && stemFiles[stem.type] != null) {
-          await stem.player
-              .setAudioSource(AudioSource.file(stemFiles[stem.type]!.path));
-        }
-      }
-
-      // Make sure all players have the same duration
-      assert(stems.every(
-          (stem) => stem.player.duration == stems.first.player.duration));
     } on OutOfDateException {
       debugPrint(
           "[DEMIXER] Out of date. Try upgrading the app to the latest version");
@@ -124,69 +109,6 @@ class Demixer extends MusicPlayerComponent {
     if (!enabled) return;
 
     await demixCurrentSong();
-  }
-
-  void onIsPlayingChanged() async {
-    if (!isReady) return;
-    MusicPlayer musicPlayer = MusicPlayer.instance;
-    Duration musicPlayerPosition = musicPlayer.player.position;
-
-    // Make sure all players are at the same position
-    for (Stem stem in stems) {
-      if (musicPlayer.isPlaying && stem.enabled) {
-        await stem.player.seek(musicPlayerPosition);
-      }
-    }
-
-    for (Stem stem in stems) {
-      if (musicPlayer.isPlaying) {
-        if (stem.enabled) stem.player.play();
-      } else {
-        stem.player.pause();
-      }
-    }
-  }
-
-  void onPositionChanged() {
-    MusicPlayer musicPlayer = MusicPlayer.instance;
-    if (!isReady || !musicPlayer.isPlaying) return;
-
-    // Make sure all players are at the same position
-    Duration musicPlayerPosition = musicPlayer.player.position;
-    for (Stem stem in stems) {
-      Duration positionError =
-          (musicPlayerPosition - stem.player.position).abs();
-      if (stem.enabled && positionError > minAllowedPositionError) {
-        debugPrint(
-            "[DEMIXER] Correcting position for stem ${stem.type.name}. Error: ${positionError.inMilliseconds}ms");
-        stem.player.seek(musicPlayer.position);
-      }
-    }
-
-    // Make sure all players have the same speed and pitch
-    for (Stem stem in stems) {
-      if (stem.enabled && stem.player.speed != musicPlayer.player.speed) {
-        debugPrint("[DEMIXER] Correcting speed for stem ${stem.type.name}.");
-        stem.player.setSpeed(musicPlayer.player.speed);
-      }
-
-      if (stem.enabled && stem.player.pitch != musicPlayer.player.pitch) {
-        debugPrint("[DEMIXER] Correcting pitch for stem ${stem.type.name}.");
-        stem.player.setPitch(musicPlayer.player.pitch);
-      }
-    }
-  }
-
-  void onSpeedChanged(double speed) {
-    for (Stem stem in stems) {
-      stem.player.setSpeed(speed);
-    }
-  }
-
-  void onPitchChanged(double pitch) async {
-    for (Stem stem in stems) {
-      stem.player.setPitch(pitch);
-    }
   }
 
   Future<void> onEqualizerChanged() async {
@@ -223,20 +145,16 @@ class Demixer extends MusicPlayerComponent {
 
     bool wasPlaying = musicPlayer.isPlaying;
 
-    for (Stem stem in stems) {
-      await stem.player.pause();
-    }
     await musicPlayer.pause();
 
     Duration position = musicPlayer.position;
 
     if (enabled) {
       originalAudio = musicPlayer.player.audioSource;
-      // Disable "normal" audio
+      // Enable mixed audio
       Directory directory = await DemixerApi.getSongDirectory(song.id);
-      List<File> files = StemType.values
-          .map((stem) => File("${directory.path}/${stem.name}.wav"))
-          .toList();
+      Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
+          MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
 
       await musicPlayer.player.setAudioSource(
         MixedAudioSource(files),
