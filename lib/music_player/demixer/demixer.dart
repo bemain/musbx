@@ -3,9 +3,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/host.dart';
+import 'package:musbx/music_player/demixer/mixed_audio_source.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
@@ -231,8 +233,13 @@ class Demixer extends MusicPlayerComponent {
     if (enabled) {
       originalAudio = musicPlayer.player.audioSource;
       // Disable "normal" audio
+      Directory directory = await DemixerApi.getSongDirectory(song.id);
+      List<File> files = StemType.values
+          .map((stem) => File("${directory.path}/${stem.name}.wav"))
+          .toList();
+
       await musicPlayer.player.setAudioSource(
-        SilenceAudioSource(duration: stems.first.player.duration!),
+        MixedAudioSource(files),
         initialPosition: position,
       );
     } else {

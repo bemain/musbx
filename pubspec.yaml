@@ -57,6 +57,7 @@ dependencies:
   mic_stream: ^0.6.4
   gauges: ^1.0.0
   wav: ^1.3.0
+  async: ^2.11.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
