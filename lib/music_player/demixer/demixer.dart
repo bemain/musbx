@@ -62,16 +62,9 @@ class Demixer extends MusicPlayerComponent {
   @override
   void initialize(MusicPlayer musicPlayer) {
     musicPlayer.songNotifier.addListener(onNewSongLoaded);
-    musicPlayer.equalizer.parametersNotifier.addListener(onEqualizerChanged);
     enabledNotifier.addListener(onEnabledToggle);
 
     stemsNotifier.addListener(onStemsChanged);
-
-    musicPlayer.equalizer.enabledNotifier.addListener(() {
-      // For now, disable when demixer is enabled since they don't work together.
-      // TODO: Get the Demixer to work with the Equalizer.
-      if (musicPlayer.equalizer.enabled) enabled = false;
-    });
   }
 
   Future<void> demixCurrentSong() async {
@@ -121,19 +114,6 @@ class Demixer extends MusicPlayerComponent {
     if (!enabled) return;
 
     await demixCurrentSong();
-  }
-
-  Future<void> onEqualizerChanged() async {
-    // TODO: Get this to work. Currently, there is no trigger for when the Equalizer's parameters changes.
-    // var musicPlayerBands = MusicPlayer.instance.equalizer.parameters?.bands;
-    // if (musicPlayerBands == null) return;
-
-    // for (Stem stem in stems) {
-    //   var bands = (await stem.equalizer.parameters).bands;
-    //   for (int i = 0; i < bands.length; i++) {
-    //     await bands[i].setGain(musicPlayerBands[i].gain);
-    //   }
-    // }
   }
 
   /// The audio loaded to [MusicPlayer] before the Demixer was enabled.
