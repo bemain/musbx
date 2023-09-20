@@ -73,7 +73,7 @@ class DemixerCard extends StatelessWidget {
 
       default:
         return Column(children: [
-          for (Stem stem in musicPlayer.demixer.stems) buildVolumeSlider(stem),
+          for (Stem stem in musicPlayer.demixer.stems) StemControls(stem: stem),
         ]);
     }
   }
@@ -214,43 +214,6 @@ Please update to the latest version to use the Demixer.""",
     }
   }
 
-  Widget buildVolumeSlider(Stem stem) {
-    return ValueListenableBuilder(
-      valueListenable: stem.enabledNotifier,
-      builder: (context, stemEnabled, child) => Row(
-        children: [
-          Checkbox(
-            value: stemEnabled,
-            onChanged: musicPlayer.nullIfNoSongElse(
-              (!musicPlayer.demixer.isReady)
-                  ? null
-                  : (bool? value) {
-                      if (value != null) stem.enabled = value;
-                    },
-            ),
-          ),
-          SizedBox(
-            width: 46,
-            child: Text(stem.type.name.toCapitalized()),
-          ),
-          Expanded(
-            child: ValueListenableBuilder(
-              valueListenable: stem.volumeNotifier,
-              builder: (context, volume, child) => Slider(
-                value: volume,
-                onChanged: musicPlayer.nullIfNoSongElse(
-                  (!musicPlayer.demixer.isReady || !stemEnabled)
-                      ? null
-                      : (double value) => stem.volume = value,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> showCellularWarningDialog(BuildContext context) async {
     await showDialog(
       context: context,
@@ -271,6 +234,75 @@ Please update to the latest version to use the Demixer.""",
               Navigator.of(context).pop();
             },
             child: const Text("Enable"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class StemControls extends StatefulWidget {
+  const StemControls({super.key, required this.stem});
+
+  @override
+  State<StatefulWidget> createState() => StemControlsState();
+
+  final Stem stem;
+}
+
+class StemControlsState extends State<StemControls> {
+  MusicPlayer musicPlayer = MusicPlayer.instance;
+
+  double volume = 0;
+  void updateVolume() {
+    volume = widget.stem.volume;
+  }
+
+  @override
+  void initState() {
+    widget.stem.volumeNotifier.addListener(updateVolume);
+    updateVolume();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.stem.volumeNotifier.removeListener(updateVolume);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: widget.stem.enabledNotifier,
+      builder: (context, stemEnabled, child) => Row(
+        children: [
+          Checkbox(
+            value: stemEnabled,
+            onChanged: musicPlayer.nullIfNoSongElse(
+              (!musicPlayer.demixer.isReady)
+                  ? null
+                  : (bool? value) {
+                      if (value != null) widget.stem.enabled = value;
+                    },
+            ),
+          ),
+          SizedBox(
+            width: 46,
+            child: Text(widget.stem.type.name.toCapitalized()),
+          ),
+          Expanded(
+            child: Slider(
+              value: volume,
+              onChanged: musicPlayer.nullIfNoSongElse(
+                (!musicPlayer.demixer.isReady || !stemEnabled)
+                    ? null
+                    : (double value) => setState(() {
+                          volume = value;
+                        }),
+              ),
+              onChangeEnd: (value) => widget.stem.volume = value,
+            ),
           ),
         ],
       ),
