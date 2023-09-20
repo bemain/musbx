@@ -14,13 +14,12 @@ class MixedAudioSource extends StreamAudioSource {
 
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
-    print("[DEMIXER] Request ($start, $end)");
     int sourceLength = await files.first.length();
 
-    Iterable<Stream<List<int>>> streams =
+    Iterable<Stream<List<int>>> readStreams =
         files.map((file) => file.openRead(start, end));
-
-    Stream<List<int>> mixed = StreamZip<List<int>>(streams).map(mixByteLists);
+    Stream<List<int>> mixed =
+        StreamZip<List<int>>(readStreams).map(mixWavFiles);
 
     return StreamAudioResponse(
       sourceLength: sourceLength,
@@ -37,20 +36,17 @@ class MixedAudioSource extends StreamAudioSource {
 /// convert between signed and unsigned PCM.
 int fold(int x, int bits) => (x + (1 << (bits - 1))) % (1 << bits);
 
-List<int> mixByteLists(List<List<int>> byteLists) {
-  // Assumes all headers are equal
-  // TODO: Remove "clicking" noise caused be the headers not being equal
-  List<int> header = byteLists.first.sublist(0, 44);
-  List<List<int>> contents =
-      byteLists.map((byteList) => byteList.sublist(44)).toList();
-
-  // TODO: Check header for audio format (16, 32 bit...)
-  // Assumes 16 bits per sample
-
+/// Mix multiple `wav` files together by taking the average value of each byte.
+///
+/// 16 bits per sample is assumed.
+/// TODO: Check header for audio format (16, 32 bit...)
+///
+/// The wav headers (if present) are (for simplicity) also mixed, which will cause undefined
+/// behaviour if the files have different headers.
+List<int> mixWavFiles(List<List<int>> dataLists) {
   /// Convert byte lists from 8 bit to 16 bit.
   List<Uint16List> uint16lists = [
-    for (final content in contents)
-      Uint8List.fromList(content).buffer.asUint16List()
+    for (final data in dataLists) Uint8List.fromList(data).buffer.asUint16List()
   ];
 
   /// Shift all values to make them signed (between `[-32768, 32767]` instead of `[0, 65536]`).
@@ -75,5 +71,5 @@ List<int> mixByteLists(List<List<int>> byteLists) {
   /// Convert back to 8 bit.
   Uint8List uint8list = Uint16List.fromList(unshifted).buffer.asUint8List();
 
-  return header + uint8list;
+  return uint8list;
 }
