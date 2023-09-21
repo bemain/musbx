@@ -31,10 +31,10 @@ class Equalizer extends MusicPlayerComponent {
   void initialize(MusicPlayer musicPlayer) {
     if (Platform.isIOS) return; // TODO: Implement Equalizer on iOS
 
-    enabled = false;
     enabledNotifier.addListener(() {
       androidEqualizer.setEnabled(enabled);
     });
+    androidEqualizer.setEnabled(enabled); // Trigger initial enable
 
     androidEqualizer.parameters.then(
       (value) {
