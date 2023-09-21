@@ -42,12 +42,12 @@ class DemixerCard extends StatelessWidget {
 
                                 musicPlayer.demixer.enabled = value;
                               },
-                    onResetPressed: stems.every(
-                            (Stem stem) => stem.enabled && stem.volume == 0.5)
+                    onResetPressed: stems.every((Stem stem) =>
+                            stem.enabled && stem.volume == Stem.defaultVolume)
                         ? null
                         : () {
                             for (Stem stem in stems) {
-                              stem.volume = 0.5;
+                              stem.volume = Stem.defaultVolume;
                               stem.enabled = true;
                             }
                           },

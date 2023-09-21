@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/equalizer/equalizer_overlay.dart';
 import 'package:musbx/music_player/equalizer/inactive_slider_track_shape.dart';
@@ -59,7 +60,7 @@ class EqualizerSliders extends StatelessWidget {
           child: Slider(
             min: equalizer.parameters?.minDecibels ?? 0,
             max: equalizer.parameters?.maxDecibels ?? 1,
-            value: band?.gain ?? 0.5,
+            value: band?.gain ?? Stem.defaultVolume,
             onChanged: !enabled ? null : band?.setGain,
           ),
         );
