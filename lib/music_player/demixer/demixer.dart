@@ -9,6 +9,7 @@ import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/host.dart';
 import 'package:musbx/music_player/demixer/mixed_audio_source.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
+import 'package:musbx/music_player/looper/looper.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/music_player/song.dart';
@@ -116,10 +117,6 @@ class Demixer extends MusicPlayerComponent {
     await demixCurrentSong();
   }
 
-  /// The audio loaded to [MusicPlayer] before the Demixer was enabled.
-  /// Used to restore the audio when the Demixer is disabled.
-  AudioSource? originalAudio;
-
   Future<void> onEnabledToggle() async {
     if (state != DemixerState.done) {
       if (enabled) {
@@ -132,43 +129,30 @@ class Demixer extends MusicPlayerComponent {
     }
 
     MusicPlayer musicPlayer = MusicPlayer.instance;
-    Song? song = musicPlayer.song;
-    if (song == null) return;
-
-    bool wasPlaying = musicPlayer.isPlaying;
-
-    await musicPlayer.pause();
-
-    Duration position = musicPlayer.position;
+    if (musicPlayer.song == null) return;
 
     // Make sure no other process is currently setting the audio source
-    Future<void>? awaitBeforeLoading = musicPlayer.futureSongLock;
-    musicPlayer.futureSongLock = _loadAudioSource(
-      song,
-      position,
+    Future<void>? awaitBeforeLoading = musicPlayer.loadSongLock;
+    musicPlayer.loadSongLock = _loadAudioSource(
       awaitBeforeLoading: awaitBeforeLoading,
     );
-    await musicPlayer.futureSongLock;
-
-    await musicPlayer.seek(position);
-    if (wasPlaying) musicPlayer.play();
+    await musicPlayer.loadSongLock;
   }
 
   /// Awaits [awaitBeforeLoading] and enables/disables demixed audio.
-  /// See [MusicPlayer.futureSongLock] for more info why this is required.
-  Future<void> _loadAudioSource(
-    song,
-    position, {
+  /// See [MusicPlayer.loadSongLock] for more info why this is required.
+  Future<void> _loadAudioSource({
     Future<void>? awaitBeforeLoading,
   }) async {
     await awaitBeforeLoading;
 
     MusicPlayer musicPlayer = MusicPlayer.instance;
+    Duration position = musicPlayer.position;
 
     if (enabled) {
-      originalAudio = musicPlayer.player.audioSource;
       // Enable mixed audio
-      Directory directory = await DemixerApi.getSongDirectory(song.id);
+      Directory directory =
+          await DemixerApi.getSongDirectory(musicPlayer.song!.id);
       Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
           MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
 
@@ -178,12 +162,17 @@ class Demixer extends MusicPlayerComponent {
       );
     } else {
       // Restore "normal" audio
-      if (originalAudio == null) return;
+      if (musicPlayer.song == null) return;
       await musicPlayer.player.setAudioSource(
-        originalAudio!,
+        await musicPlayer.song!.source.toAudioSource(),
         initialPosition: position,
       );
     }
+
+    // Update loopSection to avoid error if new audio source isn't exectly as long as the previous.
+    musicPlayer.looper.section = LoopSection(
+      end: musicPlayer.player.duration ?? const Duration(seconds: 1),
+    );
   }
 
   /// Load settings from a [json] map.
