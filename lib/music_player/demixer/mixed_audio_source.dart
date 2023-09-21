@@ -86,9 +86,10 @@ class MixedAudioSource extends StreamAudioSource {
     }
 
     // Mix all byte lists into one
+    // I thought we would need to divide the sum by 4 here, but then the volume is lowered to 1/4. Why?
     List<int> mixed = [
       for (int i = 0; i < listsToMix.first.length; i++)
-        (listsToMix.fold(0.0, (sum, list) => sum + list[i]) / 4).round()
+        listsToMix.fold(0.0, (sum, list) => sum + list[i]).round()
     ];
 
     // Shift all values back to between `[0, 65536]`

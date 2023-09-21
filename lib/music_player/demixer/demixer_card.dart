@@ -253,15 +253,16 @@ class StemControls extends StatefulWidget {
 class StemControlsState extends State<StemControls> {
   MusicPlayer musicPlayer = MusicPlayer.instance;
 
-  double volume = 0;
+  late double volume = widget.stem.volume;
   void updateVolume() {
-    volume = widget.stem.volume;
+    setState(() {
+      volume = widget.stem.volume;
+    });
   }
 
   @override
   void initState() {
     widget.stem.volumeNotifier.addListener(updateVolume);
-    updateVolume();
     super.initState();
   }
 

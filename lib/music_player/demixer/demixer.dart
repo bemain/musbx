@@ -160,6 +160,7 @@ class Demixer extends MusicPlayerComponent {
         MixedAudioSource(files),
         initialPosition: position,
       );
+      await musicPlayer.player.setVolume(1.0);
     } else {
       // Restore "normal" audio
       if (musicPlayer.song == null) return;
@@ -167,12 +168,16 @@ class Demixer extends MusicPlayerComponent {
         await musicPlayer.song!.source.toAudioSource(),
         initialPosition: position,
       );
+      await musicPlayer.player.setVolume(0.5);
     }
 
     // Update loopSection to avoid error if new audio source isn't exectly as long as the previous.
-    musicPlayer.looper.section = LoopSection(
-      end: musicPlayer.player.duration ?? const Duration(seconds: 1),
-    );
+    if (musicPlayer.song == null) return;
+    Duration newDuration = musicPlayer.player.duration!;
+    if (musicPlayer.looper.section.end.compareTo(newDuration) > 0) {
+      // Section end is greater than new duration
+      musicPlayer.looper.section = LoopSection(end: newDuration);
+    }
   }
 
   /// Load settings from a [json] map.

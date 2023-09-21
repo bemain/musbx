@@ -3,7 +3,7 @@ import 'package:musbx/music_player/demixer/host.dart';
 
 class Stem {
   /// The default [volume]
-  static const defaultVolume = 1.0;
+  static const defaultVolume = 0.5;
 
   /// A demixed stem for a song. Can be played back in sync with other stems.
   ///
