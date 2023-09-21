@@ -104,7 +104,10 @@ class Demixer extends MusicPlayerComponent {
     Song? song = musicPlayer.song;
     if (song == null) return;
 
-    await onEnabledToggle();
+    // Ugly way to force just_audio to perform a new request to MixedAudioSource, so that changes to stems are detected.
+    Duration position = musicPlayer.position;
+    await musicPlayer.seek(position - const Duration(seconds: 1));
+    await musicPlayer.seek(position);
   }
 
   Future<void> onNewSongLoaded() async {
