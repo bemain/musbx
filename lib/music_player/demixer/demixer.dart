@@ -3,10 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/host.dart';
+import 'package:musbx/music_player/demixer/mixed_audio_source.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
+import 'package:musbx/music_player/looper/looper.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/music_player/song.dart';
@@ -59,21 +62,16 @@ class Demixer extends MusicPlayerComponent {
 
   @override
   void initialize(MusicPlayer musicPlayer) {
-    musicPlayer.songNotifier.addListener(onNewSongLoaded);
-    musicPlayer.isPlayingNotifier.addListener(onIsPlayingChanged);
-    musicPlayer.positionNotifier.addListener(onPositionChanged);
-    musicPlayer.player.speedStream.listen(onSpeedChanged);
-    musicPlayer.player.pitchStream.listen(onPitchChanged);
-    musicPlayer.equalizer.parametersNotifier.addListener(onEqualizerChanged);
-    enabledNotifier.addListener(onEnabledToggle);
-
-    musicPlayer.equalizer.enabledNotifier.addListener(() {
-      // For now, disable when demixer is enabled since they don't work together.
-      // TODO: Get the Demixer to work with the Equalizer.
-      if (musicPlayer.equalizer.enabled) enabled = false;
-    });
+    musicPlayer.songNotifier.addListener(_onNewSongLoaded);
+    enabledNotifier.addListener(_onEnabledToggle);
+    stemsNotifier.addListener(_onStemsChanged);
   }
 
+  /// Demix [MusicPlayer]'s current song.
+  ///
+  /// Starts a [process] demixing the song, and catches any error encountered.
+  ///
+  /// Does nothing if no song has been loaded to [MusicPlayer].
   Future<void> demixCurrentSong() async {
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
@@ -87,17 +85,6 @@ class Demixer extends MusicPlayerComponent {
 
       Map<StemType, File>? stemFiles = await process?.future;
       if (stemFiles == null) return;
-
-      for (Stem stem in stems) {
-        if (stemFiles.containsKey(stem.type) && stemFiles[stem.type] != null) {
-          await stem.player
-              .setAudioSource(AudioSource.file(stemFiles[stem.type]!.path));
-        }
-      }
-
-      // Make sure all players have the same duration
-      assert(stems.every(
-          (stem) => stem.player.duration == stems.first.player.duration));
     } on OutOfDateException {
       debugPrint(
           "[DEMIXER] Out of date. Try upgrading the app to the latest version");
@@ -111,10 +98,23 @@ class Demixer extends MusicPlayerComponent {
 
     stateNotifier.value = DemixerState.done;
 
-    onEnabledToggle();
+    _onEnabledToggle();
   }
 
-  Future<void> onNewSongLoaded() async {
+  Future<void> _onStemsChanged() async {
+    if (!isReady) return;
+
+    MusicPlayer musicPlayer = MusicPlayer.instance;
+    Song? song = musicPlayer.song;
+    if (song == null) return;
+
+    // Ugly way to force just_audio to perform a new request to MixedAudioSource, so that changes to stems are detected.
+    Duration position = musicPlayer.position;
+    await musicPlayer.seek(position - const Duration(seconds: 1));
+    await musicPlayer.seek(position);
+  }
+
+  Future<void> _onNewSongLoaded() async {
     stateNotifier.value = DemixerState.inactive;
 
     if (await isOnCellular()) enabled = false;
@@ -124,87 +124,7 @@ class Demixer extends MusicPlayerComponent {
     await demixCurrentSong();
   }
 
-  void onIsPlayingChanged() async {
-    if (!isReady) return;
-    MusicPlayer musicPlayer = MusicPlayer.instance;
-    Duration musicPlayerPosition = musicPlayer.player.position;
-
-    // Make sure all players are at the same position
-    for (Stem stem in stems) {
-      if (musicPlayer.isPlaying && stem.enabled) {
-        await stem.player.seek(musicPlayerPosition);
-      }
-    }
-
-    for (Stem stem in stems) {
-      if (musicPlayer.isPlaying) {
-        if (stem.enabled) stem.player.play();
-      } else {
-        stem.player.pause();
-      }
-    }
-  }
-
-  void onPositionChanged() {
-    MusicPlayer musicPlayer = MusicPlayer.instance;
-    if (!isReady || !musicPlayer.isPlaying) return;
-
-    // Make sure all players are at the same position
-    Duration musicPlayerPosition = musicPlayer.player.position;
-    for (Stem stem in stems) {
-      Duration positionError =
-          (musicPlayerPosition - stem.player.position).abs();
-      if (stem.enabled && positionError > minAllowedPositionError) {
-        debugPrint(
-            "[DEMIXER] Correcting position for stem ${stem.type.name}. Error: ${positionError.inMilliseconds}ms");
-        stem.player.seek(musicPlayer.position);
-      }
-    }
-
-    // Make sure all players have the same speed and pitch
-    for (Stem stem in stems) {
-      if (stem.enabled && stem.player.speed != musicPlayer.player.speed) {
-        debugPrint("[DEMIXER] Correcting speed for stem ${stem.type.name}.");
-        stem.player.setSpeed(musicPlayer.player.speed);
-      }
-
-      if (stem.enabled && stem.player.pitch != musicPlayer.player.pitch) {
-        debugPrint("[DEMIXER] Correcting pitch for stem ${stem.type.name}.");
-        stem.player.setPitch(musicPlayer.player.pitch);
-      }
-    }
-  }
-
-  void onSpeedChanged(double speed) {
-    for (Stem stem in stems) {
-      stem.player.setSpeed(speed);
-    }
-  }
-
-  void onPitchChanged(double pitch) async {
-    for (Stem stem in stems) {
-      stem.player.setPitch(pitch);
-    }
-  }
-
-  Future<void> onEqualizerChanged() async {
-    // TODO: Get this to work. Currently, there is no trigger for when the Equalizer's parameters changes.
-    // var musicPlayerBands = MusicPlayer.instance.equalizer.parameters?.bands;
-    // if (musicPlayerBands == null) return;
-
-    // for (Stem stem in stems) {
-    //   var bands = (await stem.equalizer.parameters).bands;
-    //   for (int i = 0; i < bands.length; i++) {
-    //     await bands[i].setGain(musicPlayerBands[i].gain);
-    //   }
-    // }
-  }
-
-  /// The audio loaded to [MusicPlayer] before the Demixer was enabled.
-  /// Used to restore the audio when the Demixer is disabled.
-  AudioSource? originalAudio;
-
-  Future<void> onEnabledToggle() async {
+  Future<void> _onEnabledToggle() async {
     if (state != DemixerState.done) {
       if (enabled) {
         await demixCurrentSong();
@@ -216,35 +136,56 @@ class Demixer extends MusicPlayerComponent {
     }
 
     MusicPlayer musicPlayer = MusicPlayer.instance;
-    Song? song = musicPlayer.song;
-    if (song == null) return;
+    if (musicPlayer.song == null) return;
 
-    bool wasPlaying = musicPlayer.isPlaying;
+    // Make sure no other process is currently setting the audio source
+    Future<void>? awaitBeforeLoading = musicPlayer.loadSongLock;
+    musicPlayer.loadSongLock = _loadAudioSource(
+      awaitBeforeLoading: awaitBeforeLoading,
+    );
+    await musicPlayer.loadSongLock;
+  }
 
-    for (Stem stem in stems) {
-      await stem.player.pause();
-    }
-    await musicPlayer.pause();
+  /// Awaits [awaitBeforeLoading] and enables/disables demixed audio.
+  /// See [MusicPlayer.loadSongLock] for more info why this is required.
+  Future<void> _loadAudioSource({
+    Future<void>? awaitBeforeLoading,
+  }) async {
+    await awaitBeforeLoading;
 
+    MusicPlayer musicPlayer = MusicPlayer.instance;
     Duration position = musicPlayer.position;
 
     if (enabled) {
-      originalAudio = musicPlayer.player.audioSource;
-      // Disable "normal" audio
+      // Load wav files
+      Directory directory =
+          await DemixerApi.getSongDirectory(musicPlayer.song!.id);
+      Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
+          MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
+
+      // Enable mixed audio
       await musicPlayer.player.setAudioSource(
-        SilenceAudioSource(duration: stems.first.player.duration!),
+        MixedAudioSource(files),
         initialPosition: position,
       );
+      await musicPlayer.player.setVolume(1.0);
     } else {
       // Restore "normal" audio
-      if (originalAudio == null) return;
+      if (musicPlayer.song == null) return;
       await musicPlayer.player.setAudioSource(
-        originalAudio!,
+        await musicPlayer.song!.source.toAudioSource(),
         initialPosition: position,
       );
+      await musicPlayer.player.setVolume(0.5);
     }
-    await musicPlayer.seek(position);
-    if (wasPlaying) musicPlayer.play();
+
+    // Update loopSection to avoid error if new audio source isn't exectly as long as the previous.
+    if (musicPlayer.song == null) return;
+    Duration newDuration = musicPlayer.player.duration!;
+    if (musicPlayer.looper.section.end.compareTo(newDuration) > 0) {
+      // Section end is greater than new duration
+      musicPlayer.looper.section = LoopSection(end: newDuration);
+    }
   }
 
   /// Load settings from a [json] map.

@@ -125,10 +125,47 @@ class MusicPlayer {
 
   final Demixer demixer = Demixer();
 
+  /// The process currently loading a song, or `null` if no song has been loaded.
+  ///
+  /// This is used to make sure two processes don't try to load a song at the same time.
+  /// Every process wanting to set [player]'s audio source must:
+  ///  1. Create a future that first awaits [loadSongLock] and then sets [player]'s audio source.
+  ///  2. Overrite [loadSongLock] with the newly created future.
+  ///  3. Await the future it created.
+  ///
+  /// Here is an example of how that could be done:
+  /// ```
+  /// Future<void> loadAudioSource() async {
+  ///   Future<void>? awaitBeforeLoading = futureSongLoading;
+  ///   futureSongLoading = _loadAudioSource(awaitBeforeLoading);
+  ///   await futureSongLoading;
+  /// }
+  ///
+  /// Future<void> _loadAudioSource(Future<void>? awaitBeforeLoading) async {
+  ///   await awaitBeforeLoading;
+  ///   await player.setAudioSource(...)
+  /// }
+  ///
+  /// ```
+  Future<void>? loadSongLock;
+
   /// Load a [song].
   ///
-  /// Prepares for playing the audio provided by [Song.audioSource], and updates the media player notification.
+  /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
   Future<void> loadSong(Song song) async {
+    // Make sure no other process is currently setting the audio source
+    Future<void>? awaitBeforeLoading = loadSongLock;
+    loadSongLock = _loadSong(song, awaitBeforeLoading: awaitBeforeLoading);
+    await loadSongLock;
+  }
+
+  /// Awaits [awaitBeforeLoading] and then loads [song].
+  /// See [loadSongLock] for more info why this is required.
+  Future<void> _loadSong(
+    Song song, {
+    Future<void>? awaitBeforeLoading,
+  }) async {
+    await awaitBeforeLoading;
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 

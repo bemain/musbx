@@ -42,19 +42,20 @@ dependencies:
   soundpool: ^2.3.0
   
   # Music player
-  just_audio: ^0.9.31
-  audio_service: ^0.18.9
-  file_picker: ^5.2.5
-  http: ^0.13.6
-  youtube_explode_dart: ^1.12.3
+  just_audio: ^0.9.35
+  audio_service: ^0.18.12
+  file_picker: ^5.5.0
+  http: ^1.1.0
+  youtube_explode_dart: ^2.0.2
   html_unescape: ^2.0.0
   http_parser: ^4.0.2
-  connectivity_plus: ^4.0.1
+  connectivity_plus: ^4.0.2
+  async: ^2.11.0
 
   #Tuner
   pitch_detector_dart: ^0.0.2
-  flutter_audio_capture: ^1.1.4
-  mic_stream: ^0.6.4
+  flutter_audio_capture: ^1.1.6
+  mic_stream: ^0.6.5
   gauges: ^1.0.0
 
   # The following adds the Cupertino Icons font to your application.

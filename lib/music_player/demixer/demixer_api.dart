@@ -7,14 +7,13 @@ import 'package:path_provider/path_provider.dart';
 
 class DemixerApi {
   /// The version of the server that this is compatible with.
-  static const String version = "1.0";
+  static const String version = "1.1";
 
   /// The server hosting the Demixer API.
   static const List<Host> _hosts = [
-    // Host("192.168.1.174:4242"),
-    // Host("musbx-demixer-gpb4qgoxha-lz.a.run.app", https: true),
-    Host("musbx.agardh.se:4242"),
+    // Host("192.168.1.88:4242"),
     Host("brunnby.homeip.net:4242"),
+    Host("musbx.agardh.se:4242"),
   ];
 
   /// The directory where stems are saved.
