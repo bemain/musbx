@@ -31,10 +31,10 @@ class Equalizer extends MusicPlayerComponent {
   void initialize(MusicPlayer musicPlayer) {
     if (Platform.isIOS) return; // TODO: Implement Equalizer on iOS
 
-    enabled = false;
     enabledNotifier.addListener(() {
       androidEqualizer.setEnabled(enabled);
     });
+    androidEqualizer.setEnabled(enabled); // Trigger initial enable
 
     androidEqualizer.parameters.then(
       (value) {
@@ -42,12 +42,6 @@ class Equalizer extends MusicPlayerComponent {
         resetGain();
       },
     );
-
-    musicPlayer.demixer.enabledNotifier.addListener(() {
-      // For now, disable when demixer is enabled since they don't work together.
-      // TODO: Get the Demixer to work with the Equalizer.
-      if (musicPlayer.demixer.enabled) enabled = false;
-    });
   }
 
   /// Load settings from a [json] map.

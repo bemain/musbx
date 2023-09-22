@@ -7,6 +7,11 @@ import 'package:musbx/keys.dart';
 
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 
+enum StemFileType {
+  mp3,
+  wav,
+}
+
 class UploadResponse {
   /// Returned when uploading a song to the server.
   ///
@@ -40,20 +45,25 @@ enum StemType {
 }
 
 class Host {
-  static const Map<String, String> httpHeaders = {
+  static const Map<String, String> authHeaders = {
     "Authorization": demixerApiKey
   };
 
-  const Host(this.address);
+  const Host(this.address, {this.https = false});
 
   final String address;
+
+  final bool https;
+
+  Uri Function(String, [String, Map<String, dynamic>?]) get uriConstructor =>
+      (https ? Uri.https : Uri.http);
 
   /// Check if the app version of the Demixer is up to date with the DemixerAPI.
   Future<String> getVersion({
     Duration timeout = const Duration(seconds: 3),
   }) async {
-    Uri url = Uri.http(address, "/version");
-    var response = await http.get(url, headers: httpHeaders).timeout(timeout);
+    Uri url = uriConstructor(address, "/version");
+    var response = await http.get(url, headers: authHeaders).timeout(timeout);
 
     if (response.statusCode != 200) throw const ServerException();
     return response.body;
@@ -64,8 +74,8 @@ class Host {
     String youtubeId,
     Directory downloadDirectory,
   ) async {
-    Uri url = Uri.http(address, "/download/$youtubeId");
-    var response = await http.get(url, headers: httpHeaders);
+    Uri url = uriConstructor(address, "/download/$youtubeId");
+    var response = await http.get(url, headers: authHeaders);
 
     if (response.statusCode == 497) throw const FileTooLargeException();
     if (response.statusCode != 200) throw const ServerException();
@@ -80,10 +90,18 @@ class Host {
   }
 
   /// Upload a local [file] to the server.
-  Future<UploadResponse> uploadFile(File file) async {
-    Uri url = Uri.http(address, "/upload");
+  ///
+  /// The stem files generated from the uploaded file will be of the type [desiredStemFilesType].
+  Future<UploadResponse> uploadFile(
+    File file, {
+    StemFileType desiredStemFilesType = StemFileType.mp3,
+  }) async {
+    Uri url = uriConstructor(address, "/upload");
     var request = http.MultipartRequest("POST", url);
-    request.headers.addAll(httpHeaders);
+    request.headers.addAll({
+      ...authHeaders,
+      "FileType": desiredStemFilesType.name,
+    });
     request.files.add(await http.MultipartFile.fromPath(
       "file",
       file.path,
@@ -104,9 +122,17 @@ class Host {
   }
 
   /// Upload a YouTube song to the server.
-  Future<UploadResponse> uploadYoutubeSong(String youtubeId) async {
-    Uri url = Uri.http(address, "/upload/$youtubeId");
-    var response = await http.post(url, headers: httpHeaders);
+  ///
+  /// The stem files generated from the uploaded file will be of the type [desiredStemFilesType].
+  Future<UploadResponse> uploadYoutubeSong(
+    String youtubeId, {
+    StemFileType desiredStemFilesType = StemFileType.mp3,
+  }) async {
+    Uri url = uriConstructor(address, "/upload/$youtubeId");
+    var response = await http.post(url, headers: {
+      ...authHeaders,
+      "FileType": desiredStemFilesType.name,
+    });
 
     if (response.statusCode == 499) throw const YoutubeVideoNotFoundException();
     if (response.statusCode == 488) throw const ServerOverloadedxception();
@@ -132,12 +158,12 @@ class Host {
     String jobId, {
     Duration checkEvery = const Duration(seconds: 5),
   }) async* {
-    Uri url = Uri.http(address, "/job/$jobId");
+    Uri url = uriConstructor(address, "/job/$jobId");
     int progress = 0;
 
     while (true) {
       // Check job status
-      var response = await http.get(url, headers: httpHeaders);
+      var response = await http.get(url, headers: authHeaders);
       if (response.statusCode == 489) {
         yield* Stream.error(JobNotFoundException("Job '$jobId' was not found"));
         return;
@@ -152,14 +178,18 @@ class Host {
     }
   }
 
-  /// Download a [stem] for a [songName] to the [stemDirectory].
+  /// Download a [stem] for song with [songName] to the [downloadDirectory].
   Future<File> downloadStem(
     String songName,
     StemType stem,
-    Directory downloadDirectory,
-  ) async {
-    Uri url = Uri.http(address, "/stem/$songName/${stem.name}");
-    var response = await http.get(url, headers: httpHeaders);
+    Directory downloadDirectory, {
+    StemFileType fileType = StemFileType.mp3,
+  }) async {
+    Uri url = uriConstructor(address, "/stem/$songName/${stem.name}");
+    var response = await http.get(url, headers: {
+      ...authHeaders,
+      "FileType": fileType.name,
+    });
     if (response.statusCode == 479) {
       throw StemNotFoundException(
           "Stem '$stem' not found for song '$songName'");
@@ -167,7 +197,16 @@ class Host {
 
     if (response.statusCode != 200) throw const ServerException();
 
-    File file = File("${downloadDirectory.path}/${stem.name}.mp3");
+    // Determine file extension
+    assert(response.headers.containsKey("content-disposition"));
+    String fileName =
+        response.headers["content-disposition"]!.split("filename=").last.trim();
+    assert(fileName.isNotEmpty);
+    String extension = fileName.split(".").last;
+    assert(extension == fileType.name,
+        "The returned stem file ('$fileName') was not of the requested type (.${fileType.name}).");
+
+    File file = File("${downloadDirectory.path}/${stem.name}.$extension");
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }

@@ -48,17 +48,38 @@ class DemixingProcess {
     _cancelled = true;
   }
 
+  /// Get stems from [songDirectory], if all stems (see [StemType]) were found and of [fileType].
+  Future<Map<StemType, File>?> getStemsInCache(
+    Directory songDirectory, {
+    StemFileType fileType = StemFileType.mp3,
+  }) async {
+    if ((await Future.wait(StemType.values.map((stem) async =>
+            await File("${songDirectory.path}/${stem.name}.${fileType.name}")
+                .exists())))
+        .every((element) => element)) {
+      // All stems were found in the cache,
+      return {
+        for (final stem in StemType.values)
+          stem: File("${songDirectory.path}/${stem.name}.${fileType.name}")
+      };
+    }
+
+    return null;
+  }
+
   /// Upload, separate and download stem files for [song].
-  Future<Map<StemType, File>?> demixSong(Song song) async {
+  ///
+  /// The stem files will be of the type [stemFilesType].
+  Future<Map<StemType, File>?> demixSong(
+    Song song, {
+    StemFileType stemFilesType = StemFileType.wav,
+  }) async {
     // Try to grab stems from cache
     Directory songDirectory = await DemixerApi.getSongDirectory(song.id);
     if (await songDirectory.exists()) {
-      Map<StemType, File> stemFiles = {
-        for (StemType stem in StemType.values)
-          stem: File("${songDirectory.path}/${stem.name}.mp3")
-      };
-
-      if (stemFiles.values.every((file) => file.existsSync())) {
+      Map<StemType, File>? stemFiles =
+          await getStemsInCache(songDirectory, fileType: stemFilesType);
+      if (stemFiles != null) {
         debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
         return stemFiles;
       }
@@ -74,10 +95,15 @@ class DemixingProcess {
 
     UploadResponse response;
     if (song.source is FileSource) {
-      response = await host.uploadFile((song.source as FileSource).file);
+      response = await host.uploadFile(
+        (song.source as FileSource).file,
+        desiredStemFilesType: stemFilesType,
+      );
     } else {
-      response = await host
-          .uploadYoutubeSong((song.source as YoutubeSource).youtubeId);
+      response = await host.uploadYoutubeSong(
+        (song.source as YoutubeSource).youtubeId,
+        desiredStemFilesType: stemFilesType,
+      );
     }
 
     String songName = response.songName;
@@ -113,6 +139,7 @@ class DemixingProcess {
         songName,
         stem,
         songDirectory,
+        fileType: stemFilesType,
       );
     }
 
