@@ -10,18 +10,23 @@ import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class StemFileData {
+  /// Helper class for matching data from a stem file to the type of the stem.
   StemFileData({required this.stemType, required this.fileData});
 
+  /// The type of the stem that [fileData] comes from.
   final StemType stemType;
+
+  /// Byte data from the file.
   final List<int> fileData;
 }
 
 class MixedAudioSource extends StreamAudioSource {
   /// An [AudioSource] that mixes multiple .wav files.
   ///
-  /// All [files] must have the same duration
+  /// All [files] must have the same duration.
   MixedAudioSource(this.files) : super(tag: 'MixedAudioSource');
 
+  /// The files to mix.
   final Map<StemType, File> files;
 
   @override
@@ -90,7 +95,7 @@ class MixedAudioSource extends StreamAudioSource {
     }
 
     // Mix all byte lists into one
-    // I thought we would need to divide the sum by 4 here, but then the volume is lowered to 1/4. Why?
+    // I thought we would need to divide the sum by 4 here, but then the volume is lowered. Why?
     List<int> mixed = [
       for (int i = 0; i < listsToMix.first.length; i++)
         listsToMix.fold(0.0, (sum, list) => sum + list[i]).round()

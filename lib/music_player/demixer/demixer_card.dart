@@ -248,18 +248,27 @@ Please update to the latest version to use the Demixer.""",
 }
 
 class StemControls extends StatefulWidget {
+  /// Widget for enabling/disabling and changing the volume of [stem].
   const StemControls({super.key, required this.stem});
 
   @override
   State<StatefulWidget> createState() => StemControlsState();
 
+  /// The stem this widget controls.
   final Stem stem;
 }
 
 class StemControlsState extends State<StemControls> {
   MusicPlayer musicPlayer = MusicPlayer.instance;
 
+  /// The volume of the stem.
+  ///
+  /// Note that this doesn't always equal [widget.stem.volume], as this value is
+  /// changed whenever the user drags the volume slider but [widget.stem.volume]
+  /// is only updated once the user is done selecting a value.
   late double volume = widget.stem.volume;
+
+  /// Update [volume] to equal [widget.stem.volume]
   void updateVolume() {
     setState(() {
       volume = widget.stem.volume;

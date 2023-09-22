@@ -62,12 +62,16 @@ class Demixer extends MusicPlayerComponent {
 
   @override
   void initialize(MusicPlayer musicPlayer) {
-    musicPlayer.songNotifier.addListener(onNewSongLoaded);
-    enabledNotifier.addListener(onEnabledToggle);
-
-    stemsNotifier.addListener(onStemsChanged);
+    musicPlayer.songNotifier.addListener(_onNewSongLoaded);
+    enabledNotifier.addListener(_onEnabledToggle);
+    stemsNotifier.addListener(_onStemsChanged);
   }
 
+  /// Demix [MusicPlayer]'s current song.
+  ///
+  /// Starts a [process] demixing the song, and catches any error encountered.
+  ///
+  /// Does nothing if no song has been loaded to [MusicPlayer].
   Future<void> demixCurrentSong() async {
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
@@ -94,10 +98,10 @@ class Demixer extends MusicPlayerComponent {
 
     stateNotifier.value = DemixerState.done;
 
-    onEnabledToggle();
+    _onEnabledToggle();
   }
 
-  Future<void> onStemsChanged() async {
+  Future<void> _onStemsChanged() async {
     if (!isReady) return;
 
     MusicPlayer musicPlayer = MusicPlayer.instance;
@@ -110,7 +114,7 @@ class Demixer extends MusicPlayerComponent {
     await musicPlayer.seek(position);
   }
 
-  Future<void> onNewSongLoaded() async {
+  Future<void> _onNewSongLoaded() async {
     stateNotifier.value = DemixerState.inactive;
 
     if (await isOnCellular()) enabled = false;
@@ -120,7 +124,7 @@ class Demixer extends MusicPlayerComponent {
     await demixCurrentSong();
   }
 
-  Future<void> onEnabledToggle() async {
+  Future<void> _onEnabledToggle() async {
     if (state != DemixerState.done) {
       if (enabled) {
         await demixCurrentSong();
@@ -153,12 +157,13 @@ class Demixer extends MusicPlayerComponent {
     Duration position = musicPlayer.position;
 
     if (enabled) {
-      // Enable mixed audio
+      // Load wav files
       Directory directory =
           await DemixerApi.getSongDirectory(musicPlayer.song!.id);
       Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
           MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
 
+      // Enable mixed audio
       await musicPlayer.player.setAudioSource(
         MixedAudioSource(files),
         initialPosition: position,
