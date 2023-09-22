@@ -72,9 +72,15 @@ class DemixerCard extends StatelessWidget {
         return buildError();
 
       default:
-        return Column(children: [
-          for (Stem stem in musicPlayer.demixer.stems) StemControls(stem: stem),
-        ]);
+        return ValueListenableBuilder(
+          valueListenable: musicPlayer.demixer.stemsNotifier,
+          builder: (context, stemEnabled, child) => Column(
+            children: [
+              for (Stem stem in musicPlayer.demixer.stems)
+                StemControls(stem: stem),
+            ],
+          ),
+        );
     }
   }
 
@@ -274,39 +280,40 @@ class StemControlsState extends State<StemControls> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: widget.stem.enabledNotifier,
-      builder: (context, stemEnabled, child) => Row(
-        children: [
-          Checkbox(
-            value: stemEnabled,
+    return Row(
+      children: [
+        Checkbox(
+          value: widget.stem.enabled,
+          onChanged: musicPlayer.nullIfNoSongElse(
+            (!musicPlayer.demixer.isReady ||
+                    // All other stems are disabled
+                    musicPlayer.demixer.stems
+                        .where((stem) => stem != widget.stem)
+                        .every((stem) => !stem.enabled))
+                ? null
+                : (bool? value) {
+                    if (value != null) widget.stem.enabled = value;
+                  },
+          ),
+        ),
+        SizedBox(
+          width: 46,
+          child: Text(widget.stem.type.name.toCapitalized()),
+        ),
+        Expanded(
+          child: Slider(
+            value: volume,
             onChanged: musicPlayer.nullIfNoSongElse(
-              (!musicPlayer.demixer.isReady)
+              (!musicPlayer.demixer.isReady || !widget.stem.enabled)
                   ? null
-                  : (bool? value) {
-                      if (value != null) widget.stem.enabled = value;
-                    },
+                  : (double value) => setState(() {
+                        volume = value;
+                      }),
             ),
+            onChangeEnd: (value) => widget.stem.volume = value,
           ),
-          SizedBox(
-            width: 46,
-            child: Text(widget.stem.type.name.toCapitalized()),
-          ),
-          Expanded(
-            child: Slider(
-              value: volume,
-              onChanged: musicPlayer.nullIfNoSongElse(
-                (!musicPlayer.demixer.isReady || !stemEnabled)
-                    ? null
-                    : (double value) => setState(() {
-                          volume = value;
-                        }),
-              ),
-              onChangeEnd: (value) => widget.stem.volume = value,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
