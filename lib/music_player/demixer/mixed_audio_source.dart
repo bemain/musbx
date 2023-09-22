@@ -29,6 +29,13 @@ class MixedAudioSource extends StreamAudioSource {
     int sourceLength = await files.values.first.length();
 
     List<Stream<StemFileData>> readStreams = files.entries
+        // Only files for stems that are enabled
+        .where((entry) {
+          Stem stem = MusicPlayer.instance.demixer.stems
+              .firstWhere((stem) => stem.type == entry.key);
+          return stem.enabled;
+        })
+        // Open files for reading
         .map((entry) => entry.value
             .openRead(start, end)
             .map((data) => StemFileData(stemType: entry.key, fileData: data)))
@@ -51,8 +58,6 @@ class MixedAudioSource extends StreamAudioSource {
   /// TODO: Check header for audio format (16, 32 bit...)
   List<int> mixWavFiles(List<StemFileData> dataLists) {
     Demixer demixer = MusicPlayer.instance.demixer;
-    List<Stem> enabledStems =
-        demixer.stems.where((stem) => stem.enabled).toList();
 
     // Try to detect wav header
     // This method isn't fool proof (might by accident be these bytes at the start of the audio sample...) but it works for now
@@ -65,10 +70,9 @@ class MixedAudioSource extends StreamAudioSource {
             ));
 
     List<List<double>> listsToMix = [];
-    for (Stem stem in enabledStems) {
-      StemFileData stemFileData = dataLists
-          .where((stemFileData) => stemFileData.stemType == stem.type)
-          .first;
+    for (StemFileData stemFileData in dataLists) {
+      Stem stem = demixer.stems
+          .firstWhere((stem) => stem.type == stemFileData.stemType);
 
       List<int> data = headerPresent
           ? stemFileData.fileData.sublist(44) // Remove header
