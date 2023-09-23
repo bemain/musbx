@@ -104,6 +104,12 @@ class Demixer extends MusicPlayerComponent {
     Song? song = musicPlayer.song;
     if (song == null) return;
 
+    if (Platform.isIOS) {
+      // On iOS segments of the audio source are cached, so a full reload is required.
+      await _onEnabledToggle();
+      return;
+    }
+
     // Ugly way to force just_audio to perform a new request to MixedAudioSource, so that changes to stems are detected.
     Duration position = musicPlayer.position;
     await musicPlayer.seek(position - const Duration(seconds: 1));
@@ -159,6 +165,7 @@ class Demixer extends MusicPlayerComponent {
       Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
           MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
 
+      print("[DEBUG] Setting audio source");
       // Enable mixed audio
       await musicPlayer.player.setAudioSource(
         MixedAudioSource(files),

@@ -297,6 +297,9 @@ class MusicPlayer {
 
     // duration
     player.durationStream.listen((duration) {
+      // On iOS, duration can sometimes become very close to 0 which causes problems. Avoid this...
+      if (duration?.inMilliseconds == 0) return;
+
       durationNotifier.value = duration ?? const Duration(seconds: 1);
     });
 
