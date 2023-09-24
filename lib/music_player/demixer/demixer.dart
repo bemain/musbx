@@ -165,7 +165,6 @@ class Demixer extends MusicPlayerComponent {
       Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
           MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
 
-      print("[DEBUG] Setting audio source");
       // Enable mixed audio
       await musicPlayer.player.setAudioSource(
         MixedAudioSource(files),
