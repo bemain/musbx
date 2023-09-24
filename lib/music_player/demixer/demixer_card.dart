@@ -172,7 +172,11 @@ Please update to the latest version to use the Demixer.""",
         ConstrainedBox(
           constraints:
               BoxConstraints(maxWidth: (description == null) ? 192 : 96),
-          child: Text(title),
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.clip,
+          ),
         ),
         if (description != null)
           IconButton(
@@ -196,7 +200,7 @@ Please update to the latest version to use the Demixer.""",
   Widget buildLoadingText(BuildContext context) {
     switch (musicPlayer.demixer.process?.step) {
       case DemixingStep.findingHost:
-        return buildLoadingTextWithInfoButton(context, "Finding host...");
+        return buildLoadingTextWithInfoButton(context, "Preparing...");
       case DemixingStep.uploading:
         return buildLoadingTextWithInfoButton(
           context,
@@ -216,7 +220,7 @@ Please update to the latest version to use the Demixer.""",
           "The song has been demixed and is being downloaded to your device.",
         );
       case null:
-        return const Text("Loading");
+        return buildLoadingTextWithInfoButton(context, "Loading...");
     }
   }
 
