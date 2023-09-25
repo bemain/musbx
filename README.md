@@ -35,23 +35,9 @@ A commit message should be structured as follows:
 [optional footer(s)]
 ```
 
-`type` should be one of the following: 
-
-Type    | Description
-----    | -----------
-feat    | A new feature
-fix     | A bug fix
-docs    | Docume­ntation only changes
-style   | Changes that do not affect the meaning of the code (white­-space, format­ting, missing semi-c­olons, etc)
-refactor| A code change that neither fixes a bug nor adds a feature
-perf    | A code change that improves perfor­mance
-test    | Adding missing tests or correcting existing tests
-build   | Changes that affect the build system or external depend­encies (example scopes: gulp, broccoli, npm)
-ci      | Changes to our CI config­uration files and scripts
-chore   | Other changes that don't modify src or test files
-revert  | Reverts a previous commit
-
 A commit that has a footer `BREAKING CHANGE`:, or appends a ! after the type/scope, introduces a breaking API change.
+
+[Commitizen](https://commitizen-tools.github.io/commitizen/) is a command line tool that can be used to assist in creating commits that follows the Conventional commits specification. 
 
 ### Branches
 A branch should be named as follows:
