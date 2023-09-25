@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -320,8 +321,9 @@ class MusicPlayer {
     demixer.initialize(this);
   }
 
-  /// Initialize the audio service for [audioHandler], to enable interaction
-  /// with the phone's media player.
+  /// Initialize the audio service for [audioHandler] to enable interaction
+  /// with the phone's media player, and the audio session to allow playing
+  /// and recording simultaneously (required on iOS).
   Future<void> initAudioService() async {
     await AudioService.init(
       builder: () => audioHandler,
@@ -330,5 +332,24 @@ class MusicPlayer {
         androidNotificationChannelName: 'Music player',
       ),
     );
+
+    final session = await AudioSession.instance;
+    await session.configure(AudioSessionConfiguration(
+      avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+      avAudioSessionCategoryOptions:
+          AVAudioSessionCategoryOptions.allowBluetooth |
+              AVAudioSessionCategoryOptions.defaultToSpeaker,
+      avAudioSessionMode: AVAudioSessionMode.spokenAudio,
+      avAudioSessionRouteSharingPolicy:
+          AVAudioSessionRouteSharingPolicy.defaultPolicy,
+      avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+      androidAudioAttributes: const AndroidAudioAttributes(
+        contentType: AndroidAudioContentType.music,
+        flags: AndroidAudioFlags.none,
+        usage: AndroidAudioUsage.media,
+      ),
+      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+      androidWillPauseWhenDucked: true,
+    ));
   }
 }
