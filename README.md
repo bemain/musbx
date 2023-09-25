@@ -35,7 +35,8 @@ A commit message should be structured as follows:
 [optional footer(s)]
 ```
 
-A commit that has a footer `BREAKING CHANGE`:, or appends a ! after the type/scope, introduces a breaking API change.
+A commit that has a footer `BREAKING CHANGE`:, or appends a ! after the type/scope, introduces a breaking API change. 
+The footer `Fixes <issue number>` can be used to reference a GitHub issue.
 
 [Commitizen](https://commitizen-tools.github.io/commitizen/) is a command line tool that can be used to assist in creating commits that follows the Conventional commits specification. 
 
