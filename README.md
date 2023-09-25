@@ -49,7 +49,7 @@ test    | Adding missing tests or correcting existing tests
 build   | Changes that affect the build system or external depend­encies (example scopes: gulp, broccoli, npm)
 ci      | Changes to our CI config­uration files and scripts
 chore   | Other changes that don't modify src or test files
-revert  |Reverts a previous commit
+revert  | Reverts a previous commit
 
 A commit that has a footer `BREAKING CHANGE`:, or appends a ! after the type/scope, introduces a breaking API change.
 
@@ -57,10 +57,17 @@ A commit that has a footer `BREAKING CHANGE`:, or appends a ! after the type/sco
 A branch should be named as follows:
 
 ```
-[area]/<description>
+[area]/[issue reference]/<description>
 ```
 
-Example `area`s: `demixer`, `tuner`, `theme`, `music player`
+Example `area`s: `demixer`, `tuner`, `theme`, `music-player`.
+
+The `description` should use dashes (`-`) to separate words.
+
+Here's a complete example: 
+```
+music-player/issue72/configure-audio-session
+```
 
 ## Privacy policy
 Privacy policy can be found [here](https://bemain.github.io/musbx/privacy_policy/)
