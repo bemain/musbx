@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
@@ -35,9 +34,6 @@ enum DemixerState {
 
 /// A component for [MusicPlayer] that is used to separate a song into stems and change the volume of those individually.
 class Demixer extends MusicPlayerComponent {
-  /// The minimum allowed deviation in position between the [AudioPlayer]s playing the [stems].
-  static const Duration minAllowedPositionError = Duration(milliseconds: 20);
-
   /// The stems that songs are being separated into.
   List<Stem> get stems => stemsNotifier.value;
   late final StemsNotifier stemsNotifier = StemsNotifier([
@@ -107,6 +103,12 @@ class Demixer extends MusicPlayerComponent {
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Song? song = musicPlayer.song;
     if (song == null) return;
+
+    if (Platform.isIOS) {
+      // On iOS segments of the audio source are cached, so a full reload is required.
+      await _onEnabledToggle();
+      return;
+    }
 
     // Ugly way to force just_audio to perform a new request to MixedAudioSource, so that changes to stems are detected.
     Duration position = musicPlayer.position;

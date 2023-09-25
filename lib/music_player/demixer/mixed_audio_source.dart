@@ -64,6 +64,9 @@ class MixedAudioSource extends StreamAudioSource {
   List<int> mixWavFiles(List<StemFileData> dataLists) {
     Demixer demixer = MusicPlayer.instance.demixer;
 
+    // By some reason, on iOS, the two first bytes are requested when the audio source is loaded.
+    if (dataLists.first.fileData.length < 44) return dataLists.first.fileData;
+
     // Try to detect wav header
     // This method isn't fool proof (might by accident be these bytes at the start of the audio sample...) but it works for now
     bool headerPresent = dataLists.every((stemFileData) =>
