@@ -196,14 +196,13 @@ class DemixingProcess {
 
 /// Convert [file] from mp3 to 16 bit pcm wav.
 Future<File> mp3ToWav(File file) async {
-  List<String> fileParts = file.path.split(".");
-
-  /// File path without extension
-  String fileName = fileParts.sublist(0, fileParts.length - 1).join(".");
+  /// File name without extension
+  String fileName = file.path.split("/").last.split(".").first;
+  String outputDirectoryPath = (await DemixerApi.demixerDirectory).path;
 
   // Use ffmpeg to convert files to wav
   String arguments =
-      "-y -i $fileName.mp3 -bitexact -acodec pcm_s16le $fileName.wav";
+      "-y -i ${file.path} -bitexact -acodec pcm_s16le $outputDirectoryPath/$fileName.wav";
   final session = await FFmpegKit.execute(arguments);
   ReturnCode? returnCode = await session.getReturnCode();
 
