@@ -56,19 +56,19 @@ class DemixingProcess {
     _cancelled = true;
   }
 
-  /// Get stems from [songDirectory], if all stems (see [StemType]) were found and of [fileType].
+  /// Get stems from [songDirectory], if all stems (see [StemType]) were found with [fileExtension].
   Future<Map<StemType, File>?> getStemsInCache(
     Directory songDirectory, {
-    StemFileType fileType = StemFileType.mp3,
+    String fileExtension = "mp3",
   }) async {
     if ((await Future.wait(StemType.values.map((stem) async =>
-            await File("${songDirectory.path}/${stem.name}.${fileType.name}")
+            await File("${songDirectory.path}/${stem.name}.$fileExtension")
                 .exists())))
         .every((element) => element)) {
       // All stems were found in the cache,
       return {
         for (final stem in StemType.values)
-          stem: File("${songDirectory.path}/${stem.name}.${fileType.name}")
+          stem: File("${songDirectory.path}/${stem.name}.$fileExtension")
       };
     }
 
@@ -77,25 +77,19 @@ class DemixingProcess {
 
   /// Upload, separate and download stem files for [song].
   ///
-  /// The stem files will be of the type [stemFilesType].
-  Future<Map<StemType, File>?> demixSong(
-    Song song, {
-    StemFileType stemFilesType = StemFileType.mp3,
-  }) async {
+  /// The stem files will be 16 bit wav files.
+  Future<Map<StemType, File>?> demixSong(Song song) async {
     // Try to grab stems from cache
     Directory songDirectory = await DemixerApi.getSongDirectory(song.id);
     if (await songDirectory.exists()) {
-      Map<StemType, File>? stemFiles =
-          await getStemsInCache(songDirectory, fileType: stemFilesType);
+      Map<StemType, File>? stemFiles = await getStemsInCache(songDirectory);
       if (stemFiles != null) {
         debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
 
-        if (stemFilesType == StemFileType.mp3) {
-          // Cached files need to be converted to wav
-          for (final entry in stemFiles.entries) {
-            stemFiles[entry.key] = await mp3ToWav(entry.value);
-            if (_cancelled) return null;
-          }
+        // Cached files need to be converted to wav
+        for (final entry in stemFiles.entries) {
+          stemFiles[entry.key] = await mp3ToWav(entry.value);
+          if (_cancelled) return null;
         }
 
         return stemFiles;
@@ -108,18 +102,17 @@ class DemixingProcess {
 
     if (_cancelled) return null;
 
+    // Upload song to server
     stepNotifier.value = DemixingStep.uploading;
 
     UploadResponse response;
     if (song.source is FileSource) {
       response = await host.uploadFile(
         (song.source as FileSource).file,
-        desiredStemFilesType: stemFilesType,
       );
     } else {
       response = await host.uploadYoutubeSong(
         (song.source as YoutubeSource).youtubeId,
-        desiredStemFilesType: stemFilesType,
       );
     }
 
@@ -128,6 +121,7 @@ class DemixingProcess {
     if (_cancelled) return null;
 
     if (response.jobId != null) {
+      // Wait for demixing job to complete
       stepNotifier.value = DemixingStep.separating;
 
       var subscription = host.jobProgress(response.jobId!).handleError((error) {
@@ -138,7 +132,7 @@ class DemixingProcess {
           subscription.cancel();
         }
 
-        if (stemFilesType == StemFileType.mp3 && response.progress == 100) {
+        if (response.progress == 100) {
           // The server is converting files to mp3
           stepNotifier.value = DemixingStep.compressing;
           separationProgressNotifier.value = null;
@@ -154,45 +148,42 @@ class DemixingProcess {
 
     if (_cancelled) return null;
 
+    // Download stem files
     stepNotifier.value = DemixingStep.downloading;
 
-    Map<StemType, File> stemFiles = {};
-    for (StemType stem in StemType.values) {
-      if (_cancelled) return null;
-
-      stemFiles[stem] = await host.downloadStem(
-        songName,
-        stem,
-        songDirectory,
-        fileType: stemFilesType,
-      );
-    }
+    Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
+      StemType.values.map((stem) async {
+        File file = await host.downloadStem(
+          songName,
+          stem,
+          songDirectory,
+        );
+        return MapEntry(stem, file);
+      }),
+    ));
 
     if (_cancelled) return null;
 
+    // Convert files to wav
     stepNotifier.value = DemixingStep.extracting;
 
-    if (stemFilesType == StemFileType.mp3) {
-      // Downloaded files need to be converted to wav
-      for (final entry in stemFiles.entries) {
-        stemFiles[entry.key] = await mp3ToWav(entry.value);
-        if (_cancelled) return null;
-      }
+    for (final entry in stemFiles.entries) {
+      stemFiles[entry.key] = await mp3ToWav(entry.value);
+      if (_cancelled) return null;
     }
-
-    if (_cancelled) return null;
 
     return stemFiles;
   }
 }
 
+/// Convert [file] from mp3 to 16 bit pcm wav.
 Future<File> mp3ToWav(File file) async {
   List<String> fileParts = file.path.split(".");
 
   /// File path without extension
   String fileName = fileParts.sublist(0, fileParts.length - 1).join(".");
 
-  // Use ffmpeg to convert
+  // Use ffmpeg to convert files to wav
   String arguments =
       "-i $fileName.mp3 -bitexact -acodec pcm_s16le $fileName.wav";
   final session = await FFmpegKit.execute(arguments);
