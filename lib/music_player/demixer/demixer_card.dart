@@ -151,7 +151,7 @@ Please update to the latest version to use the Demixer.""",
               alignment: const Alignment(0, 0.3),
               child: ValueListenableBuilder(
                 valueListenable:
-                    musicPlayer.demixer.process!.separationProgressNotifier,
+                    musicPlayer.demixer.process!.stepProgressNotifier,
                 builder: (context, progress, child) =>
                     Text((progress == null) ? "" : "$progress%"),
               ),

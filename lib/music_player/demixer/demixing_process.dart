@@ -47,9 +47,9 @@ class DemixingProcess {
   final ValueNotifier<DemixingStep> stepNotifier =
       ValueNotifier(DemixingStep.findingHost);
 
-  /// The progress of the separation, or `null` if [step] is not [DemixingStep.separating].
-  int? get separationProgress => separationProgressNotifier.value;
-  final ValueNotifier<int?> separationProgressNotifier = ValueNotifier(null);
+  /// The progress of the current demixing [step], or `null` if [step] doesn't report progress.
+  int? get stepProgress => stepProgressNotifier.value;
+  final ValueNotifier<int?> stepProgressNotifier = ValueNotifier(null);
 
   /// Cancel this job as soon as possible.
   void cancel() {
@@ -135,21 +135,22 @@ class DemixingProcess {
         if (response.progress == 100) {
           // The server is converting files to mp3
           stepNotifier.value = DemixingStep.compressing;
-          separationProgressNotifier.value = null;
+          stepProgressNotifier.value = null;
         } else {
           // Update demixing progress
-          separationProgressNotifier.value = response.progress;
+          stepProgressNotifier.value = response.progress;
         }
       });
 
       await subscription.asFuture();
-      separationProgressNotifier.value = null;
+      stepProgressNotifier.value = null;
     }
 
     if (_cancelled) return null;
 
     // Download stem files
     stepNotifier.value = DemixingStep.downloading;
+    stepProgressNotifier.value = 0;
 
     Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
       StemType.values.map((stem) async {
@@ -158,6 +159,8 @@ class DemixingProcess {
           stem,
           songDirectory,
         );
+        stepProgressNotifier.value = (stepProgress ?? 0) + 25;
+
         return MapEntry(stem, file);
       }),
     ));
@@ -166,9 +169,13 @@ class DemixingProcess {
 
     // Convert files to wav
     stepNotifier.value = DemixingStep.extracting;
+    stepProgressNotifier.value = 0;
 
     for (final entry in stemFiles.entries) {
       stemFiles[entry.key] = await mp3ToWav(entry.value);
+
+      stepProgressNotifier.value = (stepProgress ?? 0) + 25;
+
       if (_cancelled) return null;
     }
 
