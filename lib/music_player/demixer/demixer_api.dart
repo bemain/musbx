@@ -16,12 +16,14 @@ class DemixerApi {
     Host("musbx.agardh.se:4242"),
   ];
 
-  /// The directory where stems are saved.
+  /// The directory where demixer saves files.
   static final Future<Directory> demixerDirectory =
       _createTempDirectory("demixer");
 
+  /// The directory where stems for song with name [songName] are saved.
+  /// Will be a subdirectory of [demixerDirectory].
   static Future<Directory> getSongDirectory(String songName) async =>
-      _createTempDirectory("${(await demixerDirectory).path}/$songName");
+      _createTempDirectory("demixer/$songName");
 
   /// The directory where Youtube files are saved.
   static final Future<Directory> youtubeDirectory =

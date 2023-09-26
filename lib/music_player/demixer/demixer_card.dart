@@ -151,7 +151,7 @@ Please update to the latest version to use the Demixer.""",
               alignment: const Alignment(0, 0.3),
               child: ValueListenableBuilder(
                 valueListenable:
-                    musicPlayer.demixer.process!.separationProgressNotifier,
+                    musicPlayer.demixer.process!.stepProgressNotifier,
                 builder: (context, progress, child) =>
                     Text((progress == null) ? "" : "$progress%"),
               ),
@@ -199,6 +199,7 @@ Please update to the latest version to use the Demixer.""",
 
   Widget buildLoadingText(BuildContext context) {
     switch (musicPlayer.demixer.process?.step) {
+      case DemixingStep.checkingCache:
       case DemixingStep.findingHost:
         return buildLoadingTextWithInfoButton(context, "Preparing...");
       case DemixingStep.uploading:
@@ -213,11 +214,23 @@ Please update to the latest version to use the Demixer.""",
           "Demixing...",
           "The server is demixing the song. \nAudio source separation is a complex process, and might take a while. ${(musicPlayer.song?.source is YoutubeSource ? "\n\nYou may close the app while the demixing is in progress. \n\nThis only needs to be done once, so loading the song next time will be much faster." : "")}",
         );
+      case DemixingStep.compressing:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Compressing...",
+          "The server is compressing the song to decrease the amount of data that needs to be sent.",
+        );
       case DemixingStep.downloading:
         return buildLoadingTextWithInfoButton(
           context,
           "Downloading...",
           "The song has been demixed and is being downloaded to your device.",
+        );
+      case DemixingStep.extracting:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Extracting...",
+          "The compressed song downloaded from the server is being extracted. \n\nTo save space on your phone and decrease network traffic, all songs are compressed when they aren't being played.",
         );
       case null:
         return buildLoadingTextWithInfoButton(context, "Loading...");
