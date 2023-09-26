@@ -199,6 +199,7 @@ Please update to the latest version to use the Demixer.""",
 
   Widget buildLoadingText(BuildContext context) {
     switch (musicPlayer.demixer.process?.step) {
+      case DemixingStep.checkingCache:
       case DemixingStep.findingHost:
         return buildLoadingTextWithInfoButton(context, "Preparing...");
       case DemixingStep.uploading:

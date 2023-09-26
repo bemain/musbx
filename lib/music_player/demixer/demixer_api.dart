@@ -21,7 +21,7 @@ class DemixerApi {
       _createTempDirectory("demixer");
 
   static Future<Directory> getSongDirectory(String songName) async =>
-      _createTempDirectory("${(await demixerDirectory).path}/$songName");
+      _createTempDirectory("demixer/$songName");
 
   /// The directory where Youtube files are saved.
   static final Future<Directory> youtubeDirectory =

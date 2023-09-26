@@ -11,6 +11,9 @@ import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 
 enum DemixingStep {
+  /// The cache is being checked to see if stem files are available there.
+  checkingCache,
+
   /// The API is looking for an available host with the correct version.
   findingHost,
 
@@ -45,7 +48,7 @@ class DemixingProcess {
   /// The current step of the demixing process.
   DemixingStep get step => stepNotifier.value;
   final ValueNotifier<DemixingStep> stepNotifier =
-      ValueNotifier(DemixingStep.findingHost);
+      ValueNotifier(DemixingStep.checkingCache);
 
   /// The progress of the current demixing [step], or `null` if [step] doesn't report progress.
   int? get stepProgress => stepProgressNotifier.value;
@@ -61,11 +64,13 @@ class DemixingProcess {
     Directory songDirectory, {
     String fileExtension = "mp3",
   }) async {
-    if ((await Future.wait(StemType.values.map((stem) async =>
-            await File("${songDirectory.path}/${stem.name}.$fileExtension")
-                .exists())))
-        .every((element) => element)) {
-      // All stems were found in the cache,
+    List<File> stemFiles = StemType.values
+        .map(
+            (stem) => File("${songDirectory.path}/${stem.name}.$fileExtension"))
+        .toList();
+    if ((await Future.wait(stemFiles.map((stem) => stem.exists())))
+        .every((value) => value)) {
+      // All stems were found in the cache.
       return {
         for (final stem in StemType.values)
           stem: File("${songDirectory.path}/${stem.name}.$fileExtension")
@@ -78,22 +83,28 @@ class DemixingProcess {
   /// Upload, separate and download stem files for [song].
   ///
   /// The stem files will be 16 bit wav files.
+  ///
+  /// TODO: Improve progress tracking for upload and download.
   Future<Map<StemType, File>?> demixSong(Song song) async {
     // Try to grab stems from cache
+    stepNotifier.value = DemixingStep.checkingCache;
+
     Directory songDirectory = await DemixerApi.getSongDirectory(song.id);
-    if (await songDirectory.exists()) {
-      Map<StemType, File>? stemFiles = await getStemsInCache(songDirectory);
-      if (stemFiles != null) {
-        debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
+    Map<StemType, File>? cachedStemFiles = await getStemsInCache(songDirectory);
+    if (cachedStemFiles != null) {
+      debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
 
-        // Cached files need to be converted to wav
-        for (final entry in stemFiles.entries) {
-          stemFiles[entry.key] = await mp3ToWav(entry.value);
-          if (_cancelled) return null;
-        }
+      // Cached files need to be converted to wav
+      stepNotifier.value = DemixingStep.extracting;
+      stepProgressNotifier.value = 0;
 
-        return stemFiles;
+      for (final entry in cachedStemFiles.entries) {
+        cachedStemFiles[entry.key] = await mp3ToWav(entry.value);
+        stepProgressNotifier.value = (stepProgress ?? 0) + 25;
+        if (_cancelled) return null;
       }
+
+      return cachedStemFiles;
     }
 
     stepNotifier.value = DemixingStep.findingHost;
@@ -192,7 +203,7 @@ Future<File> mp3ToWav(File file) async {
 
   // Use ffmpeg to convert files to wav
   String arguments =
-      "-i $fileName.mp3 -bitexact -acodec pcm_s16le $fileName.wav";
+      "-y -i $fileName.mp3 -bitexact -acodec pcm_s16le $fileName.wav";
   final session = await FFmpegKit.execute(arguments);
   ReturnCode? returnCode = await session.getReturnCode();
 
