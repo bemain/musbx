@@ -54,7 +54,7 @@ class DemixingProcess {
   int? get stepProgress => stepProgressNotifier.value;
   final ValueNotifier<int?> stepProgressNotifier = ValueNotifier(null);
 
-  /// Cancel this job as soon as possible.
+  /// Queue this job for cancellation.
   void cancel() {
     _cancelled = true;
   }
@@ -208,9 +208,9 @@ Future<File> mp3ToWav(File file) async {
 
   if (!ReturnCode.isSuccess(returnCode)) {
     throw ProcessException(
-      session.toString(),
+      "ffmpeg",
       arguments.split(" "),
-      "Converting file $fileName.mp3 to wav failed",
+      "Converting file $fileName.mp3 to wav failed. \n${await session.getOutput()}",
       returnCode?.getValue() ?? 0,
     );
   }
