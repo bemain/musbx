@@ -230,7 +230,7 @@ Please update to the latest version to use the Demixer.""",
         return buildLoadingTextWithInfoButton(
           context,
           "Extracting...",
-          "The compressed file downloaded from the server is being extracted.",
+          "The compressed song downloaded from the server is being extracted. \n\nTo save space on your phone and decrease network traffic, all songs are compressed when they aren't being played.",
         );
       case null:
         return buildLoadingTextWithInfoButton(context, "Loading...");
