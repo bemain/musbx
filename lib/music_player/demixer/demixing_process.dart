@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
@@ -18,8 +20,14 @@ enum DemixingStep {
   /// The server has begun separating the song into stems.
   separating,
 
+  /// The server is compressing the stem files.
+  compressing,
+
   /// The stem files are being downloaded.
   downloading,
+
+  /// The stem files are being extracted.
+  extracting,
 }
 
 class DemixingProcess {
@@ -72,7 +80,7 @@ class DemixingProcess {
   /// The stem files will be of the type [stemFilesType].
   Future<Map<StemType, File>?> demixSong(
     Song song, {
-    StemFileType stemFilesType = StemFileType.wav,
+    StemFileType stemFilesType = StemFileType.mp3,
   }) async {
     // Try to grab stems from cache
     Directory songDirectory = await DemixerApi.getSongDirectory(song.id);
@@ -81,6 +89,15 @@ class DemixingProcess {
           await getStemsInCache(songDirectory, fileType: stemFilesType);
       if (stemFiles != null) {
         debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
+
+        if (stemFilesType == StemFileType.mp3) {
+          // Cached files need to be converted to wav
+          for (final entry in stemFiles.entries) {
+            stemFiles[entry.key] = await mp3ToWav(entry.value);
+            if (_cancelled) return null;
+          }
+        }
+
         return stemFiles;
       }
     }
@@ -120,7 +137,15 @@ class DemixingProcess {
         if (_cancelled) {
           subscription.cancel();
         }
-        separationProgressNotifier.value = response.progress;
+
+        if (stemFilesType == StemFileType.mp3 && response.progress == 100) {
+          // The server is converting files to mp3
+          stepNotifier.value = DemixingStep.compressing;
+          separationProgressNotifier.value = null;
+        } else {
+          // Update demixing progress
+          separationProgressNotifier.value = response.progress;
+        }
       });
 
       await subscription.asFuture();
@@ -145,6 +170,42 @@ class DemixingProcess {
 
     if (_cancelled) return null;
 
+    stepNotifier.value = DemixingStep.extracting;
+
+    if (stemFilesType == StemFileType.mp3) {
+      // Downloaded files need to be converted to wav
+      for (final entry in stemFiles.entries) {
+        stemFiles[entry.key] = await mp3ToWav(entry.value);
+        if (_cancelled) return null;
+      }
+    }
+
+    if (_cancelled) return null;
+
     return stemFiles;
   }
+}
+
+Future<File> mp3ToWav(File file) async {
+  List<String> fileParts = file.path.split(".");
+
+  /// File path without extension
+  String fileName = fileParts.sublist(0, fileParts.length - 1).join(".");
+
+  // Use ffmpeg to convert
+  String arguments =
+      "-i $fileName.mp3 -bitexact -acodec pcm_s16le $fileName.wav";
+  final session = await FFmpegKit.execute(arguments);
+  ReturnCode? returnCode = await session.getReturnCode();
+
+  if (!ReturnCode.isSuccess(returnCode)) {
+    throw ProcessException(
+      session.toString(),
+      arguments.split(" "),
+      "Converting file $fileName.mp3 to wav failed",
+      returnCode?.getValue() ?? 0,
+    );
+  }
+
+  return File("$fileName.wav");
 }

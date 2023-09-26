@@ -213,11 +213,23 @@ Please update to the latest version to use the Demixer.""",
           "Demixing...",
           "The server is demixing the song. \nAudio source separation is a complex process, and might take a while. ${(musicPlayer.song?.source is YoutubeSource ? "\n\nYou may close the app while the demixing is in progress. \n\nThis only needs to be done once, so loading the song next time will be much faster." : "")}",
         );
+      case DemixingStep.compressing:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Compressing...",
+          "The server is compressing the song to decrease the amount of data that needs to be sent.",
+        );
       case DemixingStep.downloading:
         return buildLoadingTextWithInfoButton(
           context,
           "Downloading...",
           "The song has been demixed and is being downloaded to your device.",
+        );
+      case DemixingStep.extracting:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Extracting...",
+          "The compressed file downloaded from the server is being extracted.",
         );
       case null:
         return buildLoadingTextWithInfoButton(context, "Loading...");
