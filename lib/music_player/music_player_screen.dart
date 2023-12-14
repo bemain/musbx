@@ -15,7 +15,7 @@ import 'package:musbx/music_player/current_song_card/song_history_list.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
-import 'package:musbx/music_player/pick_song_button/speed_dial_child.dart';
+import 'package:musbx/music_player/pick_song_button/components/action.dart';
 import 'package:musbx/screen/card_list.dart';
 import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/screen/widget_card.dart';

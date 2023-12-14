@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
-import 'speed_dial_child.dart';
 import 'animated_children.dart';
 import 'animated_fab.dart';
+
+abstract class SpeedDialChild {
+  const SpeedDialChild();
+
+  Widget assemble(BuildContext context, Animation<double> animation);
+}
 
 class SpeedDial extends StatefulWidget {
   final Widget? child, expandedChild;

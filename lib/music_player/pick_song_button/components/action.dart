@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-
-abstract class SpeedDialChild {
-  const SpeedDialChild();
-
-  Widget assemble(BuildContext context, Animation<double> animation);
-}
+import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
 
 class SpeedDialAction extends SpeedDialChild {
   const SpeedDialAction({

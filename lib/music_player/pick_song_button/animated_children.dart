@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'speed_dial_child.dart';
+import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
 
 class AnimatedChildren extends StatelessWidget {
   final Animation<double> animation;
