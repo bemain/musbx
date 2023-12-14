@@ -106,15 +106,15 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
                       ..remove(musicPlayer.song))
                     .map(_buildHistoryItem)
                     .toList(),
-                SpeedDialChild(
-                  onPressed: () {},
+                SpeedDialAction(
+                  onPressed: (event) {},
                   label: const Text("Search on Youtube"),
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   child: const Icon(CustomIcons.youtube),
                 ),
-                SpeedDialChild(
-                  onPressed: () {},
+                SpeedDialAction(
+                  onPressed: (event) {},
                   label: const Text("Upload from device"),
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -161,10 +161,10 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
   }
 
   SpeedDialChild _buildHistoryItem(Song song) {
-    return SpeedDialChild(
+    return SpeedDialAction(
       onPressed: musicPlayer.isLoading
           ? null
-          : () async {
+          : (event) async {
               MusicPlayerState prevState = musicPlayer.state;
               musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
               try {

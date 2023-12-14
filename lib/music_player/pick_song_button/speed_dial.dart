@@ -151,7 +151,7 @@ class SpeedDialState extends State<SpeedDial>
               right: right,
               child: AnimatedChildren(
                 animation: _controller,
-                actions: widget.children,
+                children: widget.children,
                 invokeAfterClosing: widget.invokeAfterClosing,
                 close: _close,
               ),
