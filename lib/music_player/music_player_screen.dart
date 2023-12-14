@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/demixer/demixer_card.dart';
 import 'package:musbx/music_player/equalizer/equalizer_card.dart';
+import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/looper/loop_card.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/slowdowner/slowdowner_card.dart';
@@ -10,6 +12,10 @@ import 'package:musbx/music_player/position_card/button_panel.dart';
 import 'package:musbx/music_player/current_song_card/current_song_panel.dart';
 import 'package:musbx/music_player/position_card/position_slider.dart';
 import 'package:musbx/music_player/current_song_card/song_history_list.dart';
+import 'package:musbx/music_player/song.dart';
+import 'package:musbx/music_player/song_source.dart';
+import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
+import 'package:musbx/music_player/pick_song_button/speed_dial_child.dart';
 import 'package:musbx/screen/card_list.dart';
 import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/screen/widget_card.dart';
@@ -36,6 +42,8 @@ class MusicPlayerScreen extends StatefulWidget {
 
 class MusicPlayerScreenState extends State<MusicPlayerScreen>
     with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -56,7 +64,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Save preferences for the current song
     if (state == AppLifecycleState.paused) {
-      MusicPlayer.instance.saveSongPreferences();
+      musicPlayer.saveSongPreferences();
     }
     super.didChangeAppLifecycleState(state);
   }
@@ -66,7 +74,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
     super.build(context);
 
     return ValueListenableBuilder(
-        valueListenable: MusicPlayer.instance.stateNotifier,
+        valueListenable: musicPlayer.stateNotifier,
         builder: (context, state, _) {
           List<Widget> tabs = [
             CardList(
@@ -91,6 +99,34 @@ The Slowdowner allows you to adjust pitch and speed using the circular sliders. 
 Change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.
 Mute or isolate specific instruments using the Demixer.
 ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequency bands." : ""}""",
+            ),
+            floatingActionButton: SpeedDial(
+              children: [
+                ...(musicPlayer.songHistory.sorted(ascending: false)
+                      ..remove(musicPlayer.song))
+                    .map(_buildHistoryItem)
+                    .toList(),
+                SpeedDialChild(
+                  onPressed: () {},
+                  label: const Text("Search on Youtube"),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  child: const Icon(CustomIcons.youtube),
+                ),
+                SpeedDialChild(
+                  onPressed: () {},
+                  label: const Text("Upload from device"),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  child: const Icon(Icons.upload_rounded),
+                ),
+              ],
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              expandedBackgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+              expandedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+              expandedChild: const Icon(Icons.close_rounded),
+              child: const Icon(Icons.add_rounded),
             ),
             body: DefaultTabController(
               length: tabs.length,
@@ -122,5 +158,46 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
             ),
           );
         });
+  }
+
+  SpeedDialChild _buildHistoryItem(Song song) {
+    return SpeedDialChild(
+      onPressed: musicPlayer.isLoading
+          ? null
+          : () async {
+              MusicPlayerState prevState = musicPlayer.state;
+              musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
+              try {
+                await musicPlayer.loadSong(song);
+                return;
+              } catch (error) {
+                showExceptionDialog(
+                  song.source is YoutubeSource
+                      ? const YoutubeUnavailableDialog()
+                      : const FileCouldNotBeLoadedDialog(),
+                );
+
+                // Restore state
+                musicPlayer.stateNotifier.value = prevState;
+                return;
+              }
+            },
+      label: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 128),
+        child: Text(song.title),
+      ),
+      child: _buildSongSourceAvatar(song) ?? Container(),
+    );
+  }
+
+  Widget? _buildSongSourceAvatar(Song song) {
+    if (song.source is FileSource) {
+      return const Icon(Icons.file_present_rounded);
+    }
+    if (song.source is YoutubeSource) {
+      return const Icon(CustomIcons.youtube);
+    }
+
+    return null;
   }
 }
