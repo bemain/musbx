@@ -7,6 +7,9 @@ import 'package:musbx/music_player/equalizer/equalizer_card.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/looper/loop_card.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/music_player/pick_song_button/components/spacer.dart';
+import 'package:musbx/music_player/pick_song_button/components/search_youtube_button.dart';
+import 'package:musbx/music_player/pick_song_button/components/upload_file_button.dart';
 import 'package:musbx/music_player/slowdowner/slowdowner_card.dart';
 import 'package:musbx/music_player/position_card/button_panel.dart';
 import 'package:musbx/music_player/current_song_card/current_song_panel.dart';
@@ -102,29 +105,14 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
             ),
             floatingActionButton: SpeedDial(
               children: [
-                ...(musicPlayer.songHistory.sorted(ascending: false)
+                ...(musicPlayer.songHistory.sorted(ascending: true)
                       ..remove(musicPlayer.song))
                     .map(_buildHistoryItem)
                     .toList(),
-                SpeedDialAction(
-                  onPressed: (event) {},
-                  label: const Text("Search on Youtube"),
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  child: const Icon(CustomIcons.youtube),
-                ),
-                SpeedDialAction(
-                  onPressed: (event) {},
-                  label: const Text("Upload from device"),
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  child: const Icon(Icons.upload_rounded),
-                ),
+                SpeedDialSpacer(),
+                SearchYoutubeButton(),
+                UploadSongButton(),
               ],
-              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              expandedBackgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
-              expandedForegroundColor: Theme.of(context).colorScheme.onPrimary,
               expandedChild: const Icon(Icons.close_rounded),
               child: const Icon(Icons.add_rounded),
             ),
@@ -182,6 +170,8 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
                 return;
               }
             },
+      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+      foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
       label: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 128),
         child: Text(song.title),

@@ -35,9 +35,13 @@ class AnimatedChildren extends StatelessWidget {
   Widget _buildAnimatedSpeedDialChild(BuildContext context, int i) {
     final speedDialChild = children[i];
     final curvedAnimation = CurvedAnimation(
-        parent: animation,
-        curve: Interval(((children.length - 1 - i) / children.length), 1,
-            curve: Curves.easeInOutCubic));
+      parent: animation,
+      curve: Interval(
+        ((children.length - 1 - i) / children.length),
+        1,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
