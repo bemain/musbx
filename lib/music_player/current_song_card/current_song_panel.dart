@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/current_song_card/pick_song_button.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/current_song_card/youtube_button.dart';
 
 class CurrentSongPanel extends StatelessWidget {
   /// Panel displaying the currently loaded song, with buttons to load a new song,
@@ -34,9 +32,6 @@ class CurrentSongPanel extends StatelessWidget {
             ],
           ),
         ),
-        PickSongButton(),
-        Container(width: 10),
-        YoutubeButton(),
       ],
     );
   }

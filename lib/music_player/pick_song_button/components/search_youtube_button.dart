@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:musbx/custom_icons.dart';
-import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
-import 'package:musbx/music_player/current_song_card/youtube_api/youtube_api.dart';
+import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
+import 'package:musbx/music_player/pick_song_button/youtube_api/youtube_api.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/pick_song_button/speed_dial.dart';

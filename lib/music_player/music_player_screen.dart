@@ -14,7 +14,6 @@ import 'package:musbx/music_player/slowdowner/slowdowner_card.dart';
 import 'package:musbx/music_player/position_card/button_panel.dart';
 import 'package:musbx/music_player/current_song_card/current_song_panel.dart';
 import 'package:musbx/music_player/position_card/position_slider.dart';
-import 'package:musbx/music_player/current_song_card/song_history_list.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
@@ -127,10 +126,7 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
                       if (!Platform.isIOS) const Tab(text: "Equalizer"),
                     ]),
                   WidgetCard(
-                    child: Column(children: [
-                      CurrentSongPanel(),
-                      const SongHistoryList(),
-                    ]),
+                    child: CurrentSongPanel(),
                   ),
                   WidgetCard(
                     child: Column(children: [

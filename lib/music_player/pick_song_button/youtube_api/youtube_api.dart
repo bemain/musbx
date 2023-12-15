@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
+import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 
 class YoutubeApi {
   /// Helper class for interacting with the Youtube Data API (https://developers.google.com/youtube/v3).
