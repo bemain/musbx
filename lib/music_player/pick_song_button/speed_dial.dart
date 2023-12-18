@@ -117,13 +117,8 @@ class SpeedDialState extends State<SpeedDial>
     final animation =
         CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic);
 
-    double? left, right;
-    if (Directionality.of(context) == TextDirection.ltr) {
-      right = MediaQuery.of(context).size.width - position.dx - box.size.width;
-    } else {
-      left = position.dx;
-    }
-    print("$left $right");
+    double horizontal =
+        MediaQuery.of(context).size.width - position.dx - box.size.width;
 
     return OverlayEntry(
       builder: (context) => Material(
@@ -156,8 +151,8 @@ class SpeedDialState extends State<SpeedDial>
             Positioned(
               top: 0,
               bottom: MediaQuery.of(context).size.height - position.dy + 4,
-              left: left,
-              right: right,
+              left: horizontal,
+              right: horizontal,
               child: AnimatedChildren(
                 animation: _controller,
                 children: widget.children,

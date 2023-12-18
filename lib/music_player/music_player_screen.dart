@@ -169,8 +169,13 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
       backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
       foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
       label: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 128),
-        child: Text(song.title),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 2 / 3,
+        ),
+        child: Text(
+          song.title,
+          maxLines: 1,
+        ),
       ),
       child: _buildSongSourceAvatar(song) ?? Container(),
     );

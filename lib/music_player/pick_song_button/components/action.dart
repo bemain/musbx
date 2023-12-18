@@ -23,10 +23,12 @@ class SpeedDialAction extends SpeedDialChild {
     return Listener(
       onPointerUp: onPressed,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           DefaultTextStyle(
             style: TextStyle(
               color: Theme.of(context).colorScheme.onPrimary,
+              overflow: TextOverflow.ellipsis,
             ),
             child: Opacity(
               opacity: animation.value,
