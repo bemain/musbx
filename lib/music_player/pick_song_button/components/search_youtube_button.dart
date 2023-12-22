@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
-import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/youtube_api.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
@@ -21,8 +20,8 @@ class SearchYoutubeButton extends SpeedDialChild {
           : (event) async {
               await pickYoutubeSong(context);
             },
-      label: const Text("Search on Youtube"),
-      child: const Icon(CustomIcons.youtube),
+      label: const Text("Search Youtube"),
+      child: const Icon(Icons.search_rounded),
     );
 
     return action.assemble(context, animation);

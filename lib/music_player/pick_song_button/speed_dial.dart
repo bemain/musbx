@@ -112,8 +112,6 @@ class SpeedDialState extends State<SpeedDial>
     RenderBox? box = _key.currentContext?.findRenderObject() as RenderBox;
     Offset position = box.localToGlobal(Offset.zero);
 
-    final overlayBackgroundColorTween =
-        ColorTween(end: widget.overlayColor ?? Colors.black.withOpacity(0.5));
     final animation =
         CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic);
 
@@ -130,7 +128,13 @@ class SpeedDialState extends State<SpeedDial>
               child: AnimatedBuilder(
                 animation: animation,
                 builder: (_, __) => Container(
-                  color: overlayBackgroundColorTween.lerp(animation.value),
+                  color: ColorTween(
+                    end: widget.overlayColor ??
+                        Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.7),
+                  ).lerp(animation.value),
                 ),
               ),
             ),

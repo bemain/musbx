@@ -26,10 +26,10 @@ class SpeedDialAction extends SpeedDialChild {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           DefaultTextStyle(
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimary,
-              overflow: TextOverflow.ellipsis,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  color: Theme.of(context).colorScheme.surface,
+                  overflow: TextOverflow.ellipsis,
+                ),
             child: Opacity(
               opacity: animation.value,
               child: Center(child: label),

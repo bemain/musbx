@@ -94,6 +94,10 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
               ),
           ];
 
+          final List<Song> songHistory = musicPlayer.songHistory
+              .sorted(ascending: true)
+            ..remove(musicPlayer.song);
+
           return Scaffold(
             appBar: DefaultAppBar(
               helpText: """Load song from device or YouTube.
@@ -104,11 +108,8 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
             ),
             floatingActionButton: SpeedDial(
               children: [
-                ...(musicPlayer.songHistory.sorted(ascending: true)
-                      ..remove(musicPlayer.song))
-                    .map(_buildHistoryItem)
-                    .toList(),
-                SpeedDialSpacer(),
+                ...(songHistory).map(_buildHistoryItem).toList(),
+                if (songHistory.isNotEmpty) SpeedDialSpacer(),
                 SearchYoutubeButton(),
                 UploadSongButton(),
               ],
