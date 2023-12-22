@@ -18,11 +18,6 @@ class SpeedDial extends StatefulWidget {
       overlayColor;
   final Duration animationDuration;
 
-  /// onPressed for SpeedDial will be called after completely closing the SpeedDial.
-  /// Enabling it will prevent SpeedDial from showing between navigation transitions
-  /// or when SnackBar is being shown.
-  final bool invokeAfterClosing;
-
   const SpeedDial({
     Key? key,
     this.child,
@@ -33,7 +28,6 @@ class SpeedDial extends StatefulWidget {
     this.expandedForegroundColor,
     this.overlayColor,
     this.children = const [],
-    this.invokeAfterClosing = false,
     this.animationDuration = const Duration(milliseconds: 300),
   }) : super(key: key);
 
@@ -160,7 +154,6 @@ class SpeedDialState extends State<SpeedDial>
               child: AnimatedChildren(
                 animation: _controller,
                 children: widget.children,
-                invokeAfterClosing: widget.invokeAfterClosing,
                 close: _close,
               ),
             ),

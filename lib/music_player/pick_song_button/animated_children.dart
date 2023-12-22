@@ -5,14 +5,12 @@ class AnimatedChildren extends StatelessWidget {
   final Animation<double> animation;
   final List<SpeedDialChild> children;
   final Future Function() close;
-  final bool invokeAfterClosing;
 
   const AnimatedChildren({
     Key? key,
     required this.animation,
     required this.children,
     required this.close,
-    required this.invokeAfterClosing,
   }) : super(key: key);
 
   @override
@@ -46,9 +44,7 @@ class AnimatedChildren extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Listener(
-        onPointerUp: (event) async {
-          invokeAfterClosing ? await close() : close();
-        },
+        onPointerUp: (event) => close(),
         child: speedDialChild.assemble(context, curvedAnimation),
       ),
     );
