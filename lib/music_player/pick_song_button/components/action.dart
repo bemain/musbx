@@ -27,7 +27,6 @@ class SpeedDialAction extends SpeedDialChild {
         children: [
           DefaultTextStyle(
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: Theme.of(context).colorScheme.surface,
                   overflow: TextOverflow.ellipsis,
                 ),
             child: Opacity(
