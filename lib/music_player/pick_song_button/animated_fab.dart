@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 class AnimatedFAB extends StatelessWidget {
   final Animation<double> animation;
-  final Color? backgroundColor,
-      expandedBackgroundColor,
-      foregroundColor,
-      expandedForegroundColor;
+  final Color? backgroundColor;
+  final Color? expandedBackgroundColor;
+  final Color? foregroundColor;
+  final Color? expandedForegroundColor;
   final VoidCallback? onClosePressed;
-  final Widget? child, expandedChild;
+  final Widget? child;
+  final Widget? expandedChild;
 
   const AnimatedFAB({
     Key? key,

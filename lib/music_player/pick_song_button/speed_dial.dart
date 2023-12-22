@@ -9,13 +9,14 @@ abstract class SpeedDialChild {
 }
 
 class SpeedDial extends StatefulWidget {
-  final Widget? child, expandedChild;
+  final Widget? child;
+  final Widget? expandedChild;
   final List<SpeedDialChild> children;
-  final Color? backgroundColor,
-      expandedBackgroundColor,
-      foregroundColor,
-      expandedForegroundColor,
-      overlayColor;
+  final Color? backgroundColor;
+  final Color? expandedBackgroundColor;
+  final Color? foregroundColor;
+  final Color? expandedForegroundColor;
+  final Color? overlayColor;
   final Duration animationDuration;
 
   const SpeedDial({
