@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'animated_children.dart';
 import 'animated_fab.dart';
@@ -18,8 +16,8 @@ class SpeedDial extends StatefulWidget {
   final Color? expandedBackgroundColor;
   final Color? foregroundColor;
   final Color? expandedForegroundColor;
+  final Color? overlayColor;
   final Duration animationDuration;
-  final double blurSigma;
 
   const SpeedDial({
     Key? key,
@@ -29,7 +27,7 @@ class SpeedDial extends StatefulWidget {
     this.expandedBackgroundColor,
     this.foregroundColor,
     this.expandedForegroundColor,
-    this.blurSigma = 4.0,
+    this.overlayColor,
     this.children = const [],
     this.animationDuration = const Duration(milliseconds: 300),
   }) : super(key: key);
@@ -124,15 +122,14 @@ class SpeedDialState extends State<SpeedDial>
               onTap: _close,
               child: AnimatedBuilder(
                 animation: animation,
-                builder: (context, child) => BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: animation.value * widget.blurSigma,
-                    sigmaY: animation.value * widget.blurSigma,
-                  ),
-                  child: Container(
-                    // By some reason, it needs a color for the GestureDetector to detect taps
-                    color: Colors.transparent,
-                  ),
+                builder: (_, __) => Container(
+                  color: ColorTween(
+                    end: widget.overlayColor ??
+                        Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.7),
+                  ).lerp(animation.value),
                 ),
               ),
             ),
