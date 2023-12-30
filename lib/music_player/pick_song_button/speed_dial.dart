@@ -11,6 +11,7 @@ abstract class SpeedDialChild {
 class SpeedDial extends StatefulWidget {
   final Widget? child;
   final Widget? expandedChild;
+  final Widget? expandedLabel;
   final List<SpeedDialChild> children;
   final Color? backgroundColor;
   final Color? expandedBackgroundColor;
@@ -18,11 +19,14 @@ class SpeedDial extends StatefulWidget {
   final Color? expandedForegroundColor;
   final Color? overlayColor;
   final Duration animationDuration;
+  final VoidCallback? onExpandedPressed;
 
   const SpeedDial({
     Key? key,
     this.child,
     this.expandedChild,
+    this.expandedLabel,
+    this.onExpandedPressed,
     this.backgroundColor,
     this.expandedBackgroundColor,
     this.foregroundColor,
@@ -107,10 +111,10 @@ class SpeedDialState extends State<SpeedDial>
     RenderBox? box = _key.currentContext?.findRenderObject() as RenderBox;
     Offset position = box.localToGlobal(Offset.zero);
 
-    final animation =
+    final CurvedAnimation animation =
         CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic);
 
-    double horizontal =
+    final double horizontal =
         MediaQuery.of(context).size.width - position.dx - box.size.width;
 
     return OverlayEntry(
@@ -122,17 +126,33 @@ class SpeedDialState extends State<SpeedDial>
               onTap: _close,
               child: AnimatedBuilder(
                 animation: animation,
-                builder: (_, __) => Container(
+                builder: (context, _) => Container(
                   color: ColorTween(
                     end: widget.overlayColor ??
-                        Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withOpacity(0.7),
+                        Theme.of(context).colorScheme.surface.withOpacity(0.95),
                   ).lerp(animation.value),
                 ),
               ),
             ),
+            if (widget.expandedLabel != null)
+              Positioned(
+                top: position.dy,
+                height: 56.0,
+                right: MediaQuery.sizeOf(context).width - position.dx + 16.0,
+                child: DefaultTextStyle(
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  child: AnimatedBuilder(
+                    animation: animation,
+                    builder: (context, _) => Opacity(
+                      opacity: animation.value,
+                      child: Center(child: widget.expandedLabel!),
+                    ),
+                  ),
+                ),
+              ),
             Positioned(
               top: position.dy,
               left: position.dx,
@@ -143,7 +163,10 @@ class SpeedDialState extends State<SpeedDial>
                 expandedBackgroundColor: widget.expandedBackgroundColor,
                 foregroundColor: widget.foregroundColor,
                 expandedForegroundColor: widget.expandedForegroundColor,
-                onClosePressed: _close,
+                onExpandedPressed: () {
+                  _close();
+                  widget.onExpandedPressed?.call();
+                },
                 child: widget.child,
               ),
             ),

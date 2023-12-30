@@ -4,57 +4,37 @@ import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/youtube_api.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
-import 'package:musbx/music_player/pick_song_button/components/action.dart';
 import 'package:musbx/widgets.dart';
 import 'package:musbx/keys.dart';
 
-class SearchYoutubeButton extends SpeedDialChild {
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
+/// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
+Future<void> pickYoutubeSong(BuildContext context) async {
+  MusicPlayer musicPlayer = MusicPlayer.instance;
+  MusicPlayerState prevState = musicPlayer.state;
+  musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
 
-  @override
-  Widget assemble(BuildContext context, Animation<double> animation) {
-    final SpeedDialAction action = SpeedDialAction(
-      onPressed: MusicPlayer.instance.isLoading
-          ? null
-          : (event) async {
-              await pickYoutubeSong(context);
-            },
-      label: const Text("Search Youtube"),
-      child: const Icon(Icons.search_rounded),
-    );
+  YoutubeVideo? video = await showSearch<YoutubeVideo?>(
+    context: context,
+    delegate: YoutubeSearchDelegate(),
+  );
 
-    return action.assemble(context, animation);
+  if (video == null) {
+    // Restore state
+    musicPlayer.stateNotifier.value = prevState;
+    return;
   }
 
-  Future<void> pickYoutubeSong(BuildContext context) async {
-    MusicPlayer musicPlayer = MusicPlayer.instance;
-    MusicPlayerState prevState = musicPlayer.state;
-    musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
-
-    YoutubeVideo? video = await showSearch<YoutubeVideo?>(
-      context: context,
-      delegate: YoutubeSearchDelegate(),
+  try {
+    await musicPlayer.loadVideo(video);
+    return;
+  } catch (error) {
+    showExceptionDialog(
+      const YoutubeUnavailableDialog(),
     );
 
-    if (video == null) {
-      // Restore state
-      musicPlayer.stateNotifier.value = prevState;
-      return;
-    }
-
-    try {
-      await musicPlayer.loadVideo(video);
-      return;
-    } catch (error) {
-      showExceptionDialog(
-        const YoutubeUnavailableDialog(),
-      );
-
-      // Restore state
-      musicPlayer.stateNotifier.value = prevState;
-      return;
-    }
+    // Restore state
+    musicPlayer.stateNotifier.value = prevState;
+    return;
   }
 }
 

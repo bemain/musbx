@@ -93,10 +93,15 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
             children: [
               ...(songHistory).map(_buildHistoryItem).toList(),
               if (songHistory.isNotEmpty) SpeedDialSpacer(),
-              SearchYoutubeButton(),
               UploadSongButton(),
             ],
-            expandedChild: const Icon(Icons.close_rounded),
+            onExpandedPressed: MusicPlayer.instance.isLoading
+                ? null
+                : () async {
+                    await pickYoutubeSong(context);
+                  },
+            expandedChild: const Icon(Icons.search_rounded),
+            expandedLabel: const Text("Search Youtube"),
             child: const Icon(Icons.add_rounded),
           ),
           body: Stack(
@@ -165,8 +170,6 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
                 return;
               }
             },
-      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-      foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
       label: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 2 / 3,

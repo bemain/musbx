@@ -6,7 +6,7 @@ class AnimatedFAB extends StatelessWidget {
   final Color? expandedBackgroundColor;
   final Color? foregroundColor;
   final Color? expandedForegroundColor;
-  final VoidCallback? onClosePressed;
+  final VoidCallback? onExpandedPressed;
   final Widget? child;
   final Widget? expandedChild;
 
@@ -17,7 +17,7 @@ class AnimatedFAB extends StatelessWidget {
     this.expandedBackgroundColor,
     this.foregroundColor,
     this.expandedForegroundColor,
-    this.onClosePressed,
+    this.onExpandedPressed,
     this.child,
     this.expandedChild,
   }) : super(key: key);
@@ -25,16 +25,23 @@ class AnimatedFAB extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final backgroundColorTween = ColorTween(
-        begin: backgroundColor,
-        end: expandedBackgroundColor ?? backgroundColor);
+      begin: backgroundColor ?? Theme.of(context).colorScheme.primaryContainer,
+      end: expandedBackgroundColor ??
+          backgroundColor ??
+          Theme.of(context).colorScheme.primary,
+    );
     final foregroundColorTween = ColorTween(
-        begin: foregroundColor,
-        end: expandedForegroundColor ?? foregroundColor);
+      begin:
+          foregroundColor ?? Theme.of(context).colorScheme.onPrimaryContainer,
+      end: expandedForegroundColor ??
+          foregroundColor ??
+          Theme.of(context).colorScheme.onPrimary,
+    );
     final angleTween = Tween<double>(begin: 0, end: 1);
     return AnimatedBuilder(
       animation: animation,
       builder: (context, _) => FloatingActionButton(
-        onPressed: onClosePressed,
+        onPressed: onExpandedPressed,
         backgroundColor: backgroundColorTween.lerp(animation.value),
         foregroundColor: foregroundColorTween.lerp(animation.value),
         child: Stack(

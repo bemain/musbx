@@ -20,6 +20,7 @@ class SpeedDialAction extends SpeedDialChild {
 
   @override
   Widget assemble(BuildContext context, Animation<double> animation) {
+    final colors = Theme.of(context).colorScheme;
     return Listener(
       onPointerUp: onPressed,
       child: Row(
@@ -27,7 +28,7 @@ class SpeedDialAction extends SpeedDialChild {
         children: [
           DefaultTextStyle(
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Theme.of(context).colorScheme.onSurface,
                   overflow: TextOverflow.ellipsis,
                 ),
             child: Opacity(
@@ -43,8 +44,10 @@ class SpeedDialAction extends SpeedDialChild {
               alignment: Alignment.center,
               child: FloatingActionButton.small(
                 onPressed: () {},
-                backgroundColor: backgroundColor,
-                foregroundColor: foregroundColor,
+                backgroundColor: backgroundColor ??
+                    Color.alphaBlend(
+                        colors.surfaceTint.withOpacity(0.1), colors.surface),
+                foregroundColor: foregroundColor ?? colors.primary,
                 child: child,
               ),
             ),
