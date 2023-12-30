@@ -10,29 +10,26 @@ class CurrentSongPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Currently playing:",
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(5),
-                child: Text(
-                  currentSongLabel(),
-                  style: Theme.of(context).textTheme.titleLarge,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Currently playing:",
+            style: Theme.of(context).textTheme.bodySmall,
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.all(5),
+            child: Text(
+              currentSongLabel(),
+              style: Theme.of(context).textTheme.titleLarge,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
