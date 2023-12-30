@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/demixer/demixer_card.dart';
@@ -104,13 +102,14 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
             children: [
               ListView(
                 children: [
-                  DefaultAppBar(
+                  const DefaultAppBar(
                     scrolledUnderElevation: 0.0,
-                    helpText: """Load song from device or YouTube.
-The Slowdowner allows you to adjust pitch and speed using the circular sliders. While selecting, greater accuracy can be obtained by dragging away from the center.
-Change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.
-Mute or isolate specific instruments using the Demixer.
-${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequency bands." : ""}""",
+                    helpText:
+                        """Press the plus-button and load a song from your device or YouTube.
+
+- Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.
+- Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
+- Mute or isolate specific instruments using the Demixer.""",
                   ),
                   WidgetCard(child: SlowdownerCard()),
                   WidgetCard(child: LoopCard()),
