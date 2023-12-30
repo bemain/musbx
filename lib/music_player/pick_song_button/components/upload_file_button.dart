@@ -18,6 +18,9 @@ const List<String> allowedExtensions = [
   "mka",
 ];
 
+/// A child of [SpeedDial] that looks similar to a [SpeedDialAction] but with a primary color.
+///
+/// When pressed, allows the user to upload a song from their devices and loads that song to [MusicPlayer].
 class UploadSongButton extends SpeedDialChild {
   /// Whether permission to read external storage has been given or not.
   static bool permissionGranted = false;

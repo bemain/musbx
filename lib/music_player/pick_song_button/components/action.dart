@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
 
 class SpeedDialAction extends SpeedDialChild {
+  /// A child of [SpeedDial] with a small [FloatingActionButton] and a [label] (usually a Text widget) beside it.
   const SpeedDialAction({
     this.onPressed,
     this.child,
@@ -10,12 +11,19 @@ class SpeedDialAction extends SpeedDialChild {
     this.foregroundColor,
   });
 
+  /// Callback for when the [FloatingActionButton] is pressed.
   final void Function(PointerUpEvent event)? onPressed;
 
+  /// The label describing the action performed when the [FloatingActionButton] is pressed.
   final Widget? label;
+
+  /// The child of the [FloatingActionButton].
   final Widget? child;
 
+  /// The background color of the [FloatingActionButton].
   final Color? backgroundColor;
+
+  /// The foreground color of the [FloatingActionButton].
   final Color? foregroundColor;
 
   @override

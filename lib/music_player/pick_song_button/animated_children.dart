@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
 
 class AnimatedChildren extends StatelessWidget {
-  final Animation<double> animation;
-  final List<SpeedDialChild> children;
-  final Future Function() close;
-
   const AnimatedChildren({
-    Key? key,
+    super.key,
     required this.animation,
     required this.children,
     required this.close,
-  }) : super(key: key);
+  });
+
+  final Animation<double> animation;
+  final List<SpeedDialChild> children;
+  final Future Function() close;
 
   @override
   Widget build(BuildContext context) {

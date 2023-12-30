@@ -3,26 +3,17 @@ import 'animated_children.dart';
 import 'animated_fab.dart';
 
 abstract class SpeedDialChild {
+  /// A child of [SpeedDial].
   const SpeedDialChild();
 
+  /// Should return a widget that animates in and out according to [animation].
   Widget assemble(BuildContext context, Animation<double> animation);
 }
 
 class SpeedDial extends StatefulWidget {
-  final Widget? child;
-  final Widget? expandedChild;
-  final Widget? expandedLabel;
-  final List<SpeedDialChild> children;
-  final Color? backgroundColor;
-  final Color? expandedBackgroundColor;
-  final Color? foregroundColor;
-  final Color? expandedForegroundColor;
-  final Color? overlayColor;
-  final Duration animationDuration;
-  final VoidCallback? onExpandedPressed;
-
+  /// An expandable [FloatingActionButton] that shows [children] when pressed.
   const SpeedDial({
-    Key? key,
+    super.key,
     this.child,
     this.expandedChild,
     this.expandedLabel,
@@ -32,9 +23,43 @@ class SpeedDial extends StatefulWidget {
     this.foregroundColor,
     this.expandedForegroundColor,
     this.overlayColor,
-    this.children = const [],
+    required this.children,
     this.animationDuration = const Duration(milliseconds: 300),
-  }) : super(key: key);
+  });
+
+  /// Child of the primary [FloatingActionButton].
+  final Widget? child;
+
+  /// Child of the primary [FloatingActionButton] when expanded.
+  final Widget? expandedChild;
+
+  /// Label displayed next to the primary [FloatingActionButton] when expanded.
+  final Widget? expandedLabel;
+
+  /// The widgets displayed when in an expanded state.
+  final List<SpeedDialChild> children;
+
+  /// Background color of the primary [FloatingActionButton].
+  final Color? backgroundColor;
+
+  /// Background color of the primary [FloatingActionButton] when expanded.
+  final Color? expandedBackgroundColor;
+
+  /// Foreground color of the primary [FloatingActionButton].
+  final Color? foregroundColor;
+
+  /// Foreground color of the primary [FloatingActionButton] when expanded.
+  final Color? expandedForegroundColor;
+
+  /// Color of the overlay that is placed behind the [children] when in an
+  /// expanded state, to avoid interference with the content of the rest of the app.
+  final Color? overlayColor;
+
+  /// The duration of the opening and closing animation.
+  final Duration animationDuration;
+
+  /// Callback for when the primary [FloatingActionButton] is pressed in an expanded state.
+  final VoidCallback? onExpandedPressed;
 
   @override
   SpeedDialState createState() => SpeedDialState();

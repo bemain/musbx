@@ -1,17 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AnimatedFAB extends StatelessWidget {
-  final Animation<double> animation;
-  final Color? backgroundColor;
-  final Color? expandedBackgroundColor;
-  final Color? foregroundColor;
-  final Color? expandedForegroundColor;
-  final VoidCallback? onExpandedPressed;
-  final Widget? child;
-  final Widget? expandedChild;
-
   const AnimatedFAB({
-    Key? key,
+    super.key,
     required this.animation,
     this.backgroundColor,
     this.expandedBackgroundColor,
@@ -20,7 +11,16 @@ class AnimatedFAB extends StatelessWidget {
     this.onExpandedPressed,
     this.child,
     this.expandedChild,
-  }) : super(key: key);
+  });
+
+  final Animation<double> animation;
+  final Color? backgroundColor;
+  final Color? expandedBackgroundColor;
+  final Color? foregroundColor;
+  final Color? expandedForegroundColor;
+  final VoidCallback? onExpandedPressed;
+  final Widget? child;
+  final Widget? expandedChild;
 
   @override
   Widget build(BuildContext context) {
