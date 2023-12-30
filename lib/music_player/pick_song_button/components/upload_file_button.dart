@@ -3,6 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
+import 'package:musbx/music_player/pick_song_button/components/action.dart';
 import 'package:musbx/permission_builder.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io' show Platform;
@@ -16,29 +18,34 @@ const List<String> allowedExtensions = [
   "mka",
 ];
 
-class PickSongButton extends StatelessWidget {
+/// A child of [SpeedDial] that looks similar to a [SpeedDialAction] but with a primary color.
+///
+/// When pressed, allows the user to upload a song from their devices and loads that song to [MusicPlayer].
+class UploadSongButton extends SpeedDialChild {
   /// Whether permission to read external storage has been given or not.
   static bool permissionGranted = false;
-
-  /// Button for picking a song from the device and loading it to [MusicPlayer].
-  PickSongButton({super.key});
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
-  Widget build(BuildContext context) {
-    return FilledButton(
+  Widget assemble(BuildContext context, Animation<double> animation) {
+    final SpeedDialAction action = SpeedDialAction(
       onPressed: musicPlayer.isLoading
           ? null
-          : () {
+          : (event) {
               if (permissionGranted) {
                 pickFile(context);
               } else {
                 pushPermissionBuilder(context);
               }
             },
-      child: const Icon(Icons.file_upload_rounded),
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+      label: const Text("Upload from device"),
+      child: const Icon(Icons.upload_rounded),
     );
+
+    return action.assemble(context, animation);
   }
 
   Future<void> pickFile(BuildContext context) async {

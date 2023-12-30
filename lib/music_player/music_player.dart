@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
-import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
+import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/looper/looper.dart';
