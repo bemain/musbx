@@ -20,6 +20,7 @@ import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
 import 'package:musbx/music_player/pick_song_button/components/action.dart';
 import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/screen/widget_card.dart';
+import 'package:musbx/widgets.dart';
 
 /// The key of the [MusicPlayerScreen]. Can be used to show dialogs.
 final GlobalKey<MusicPlayerScreenState> musicPlayerScreenKey = GlobalKey();
@@ -70,6 +71,8 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
     super.didChangeAppLifecycleState(state);
   }
 
+  Size? positionCardSize;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -112,32 +115,40 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
                   WidgetCard(child: LoopCard()),
                   WidgetCard(child: DemixerCard()),
                   WidgetCard(child: EqualizerCard()),
-                  const SizedBox(height: 212)
+                  if (positionCardSize != null)
+                    SizedBox(height: positionCardSize!.height)
                 ],
               ),
               Align(
                 alignment: Alignment.bottomCenter,
-                child: Card(
-                  clipBehavior: Clip.antiAlias,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(12.0)),
-                  ),
-                  color: Theme.of(context).colorScheme.surface,
-                  elevation: 3.0,
-                  margin: const EdgeInsets.only(top: 4.0),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                child: MeasureSize(
+                  onChange: (Size size) {
+                    setState(() {
+                      positionCardSize = size;
+                    });
+                  },
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(12.0)),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CurrentSongPanel(),
-                        PositionSlider(),
-                        ButtonPanel(),
-                      ],
+                    color: Theme.of(context).colorScheme.surface,
+                    elevation: 3.0,
+                    margin: const EdgeInsets.only(top: 4.0),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CurrentSongPanel(),
+                          PositionSlider(),
+                          ButtonPanel(),
+                        ],
+                      ),
                     ),
                   ),
                 ),
