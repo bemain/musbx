@@ -85,13 +85,6 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           ..remove(musicPlayer.song);
 
         return Scaffold(
-          appBar: DefaultAppBar(
-            helpText: """Load song from device or YouTube.
-The Slowdowner allows you to adjust pitch and speed using the circular sliders. While selecting, greater accuracy can be obtained by dragging away from the center.
-Change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.
-Mute or isolate specific instruments using the Demixer.
-${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequency bands." : ""}""",
-          ),
           floatingActionButton: SpeedDial(
             children: [
               ...(songHistory).map(_buildHistoryItem).toList(),
@@ -111,6 +104,14 @@ ${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequ
             children: [
               ListView(
                 children: [
+                  DefaultAppBar(
+                    scrolledUnderElevation: 0.0,
+                    helpText: """Load song from device or YouTube.
+The Slowdowner allows you to adjust pitch and speed using the circular sliders. While selecting, greater accuracy can be obtained by dragging away from the center.
+Change what section to loop using the range slider. Use the arrows to set the start or end of the section to the current position.
+Mute or isolate specific instruments using the Demixer.
+${Platform.isAndroid ? "Use the Equalizer to adjust the gain of individual frequency bands." : ""}""",
+                  ),
                   WidgetCard(child: SlowdownerCard()),
                   WidgetCard(child: LoopCard()),
                   WidgetCard(child: DemixerCard()),
