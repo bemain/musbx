@@ -33,15 +33,16 @@ class EqualizerSliders extends StatelessWidget {
         child: AspectRatio(
           aspectRatio: 16 / 11,
           child: SliderTheme(
-            data: Theme.of(context)
-                .sliderTheme
-                .copyWith(trackShape: InactiveSliderTrackShape()),
+            data: Theme.of(context).sliderTheme.copyWith(
+                  trackShape: InactiveSliderTrackShape(),
+                ),
             child: Row(
               mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 for (var band
                     in equalizer.parameters?.bands ?? List.filled(5, null))
-                  Expanded(child: buildSlider(band: band, enabled: enabled)),
+                  buildSlider(band: band, enabled: enabled),
               ],
             ),
           ),
@@ -55,13 +56,16 @@ class EqualizerSliders extends StatelessWidget {
     return StreamBuilder<double>(
       stream: band?.gainStream,
       builder: (context, snapshot) {
-        return RotatedBox(
-          quarterTurns: -1,
-          child: Slider(
-            min: equalizer.parameters?.minDecibels ?? 0,
-            max: equalizer.parameters?.maxDecibels ?? 1,
-            value: band?.gain ?? Stem.defaultVolume,
-            onChanged: !enabled ? null : band?.setGain,
+        return SizedBox(
+          width: 28.0,
+          child: RotatedBox(
+            quarterTurns: -1,
+            child: Slider(
+              min: equalizer.parameters?.minDecibels ?? 0,
+              max: equalizer.parameters?.maxDecibels ?? 1,
+              value: band?.gain ?? Stem.defaultVolume,
+              onChanged: !enabled ? null : band?.setGain,
+            ),
           ),
         );
       },

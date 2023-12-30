@@ -1,63 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
-import 'package:musbx/custom_icons.dart';
-import 'package:musbx/music_player/current_song_card/youtube_api/video.dart';
-import 'package:musbx/music_player/current_song_card/youtube_api/youtube_api.dart';
+import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
+import 'package:musbx/music_player/pick_song_button/youtube_api/youtube_api.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/widgets.dart';
 import 'package:musbx/keys.dart';
 
-class YoutubeButton extends StatelessWidget {
-  /// Button for searching for a song from Youtube and loading it to [MusicPlayer].
-  YoutubeButton({super.key});
+/// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
+Future<void> pickYoutubeSong(BuildContext context) async {
+  MusicPlayer musicPlayer = MusicPlayer.instance;
+  MusicPlayerState prevState = musicPlayer.state;
+  musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
 
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
+  YoutubeVideo? video = await showSearch<YoutubeVideo?>(
+    context: context,
+    delegate: YoutubeSearchDelegate(),
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton(
-      onPressed: musicPlayer.isLoading
-          ? null
-          : () async {
-              MusicPlayerState prevState = musicPlayer.state;
-              musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
-
-              YoutubeVideo? video = await showSearch<YoutubeVideo?>(
-                context: context,
-                delegate: YoutubeSearchDelegate(),
-              );
-
-              if (video == null) {
-                // Restore state
-                musicPlayer.stateNotifier.value = prevState;
-                return;
-              }
-
-              try {
-                await musicPlayer.loadVideo(video);
-                return;
-              } catch (error) {
-                showExceptionDialog(
-                  const YoutubeUnavailableDialog(),
-                );
-
-                // Restore state
-                musicPlayer.stateNotifier.value = prevState;
-                return;
-              }
-            },
-      child: const Icon(CustomIcons.youtube),
-    );
+  if (video == null) {
+    // Restore state
+    musicPlayer.stateNotifier.value = prevState;
+    return;
   }
 
-  /// Parse [String] to [Duration].
-  Duration parseDuration(String s) {
-    List<String> parts = s.split(":");
-    return Duration(
-      minutes: int.parse(parts[0]),
-      seconds: int.parse(parts[1]),
+  try {
+    await musicPlayer.loadVideo(video);
+    return;
+  } catch (error) {
+    showExceptionDialog(
+      const YoutubeUnavailableDialog(),
     );
+
+    // Restore state
+    musicPlayer.stateNotifier.value = prevState;
+    return;
   }
 }
 

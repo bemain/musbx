@@ -1,4 +1,4 @@
-import 'package:musbx/music_player/current_song_card/youtube_api/thumbnails.dart';
+import 'package:musbx/music_player/pick_song_button/youtube_api/thumbnails.dart';
 
 typedef YoutubeVideoId = String;
 typedef YoutubeChannelId = String;

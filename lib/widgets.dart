@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class ContinuousTextButton extends StatelessWidget {
   /// Button that can be held down to yield continuous presses.
@@ -101,4 +102,48 @@ Future<bool> isOnCellular() async {
   final connectivity = await (Connectivity().checkConnectivity());
   return connectivity != ConnectivityResult.wifi &&
       connectivity != ConnectivityResult.ethernet;
+}
+
+class MeasureSizeRenderObject extends RenderProxyBox {
+  void Function(Size size) onChange;
+  Size? oldSize;
+
+  MeasureSizeRenderObject(this.onChange);
+
+  @override
+  void performLayout() {
+    super.performLayout();
+
+    Size newSize = child!.size;
+    if (oldSize == newSize) return;
+
+    oldSize = newSize;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      onChange(newSize);
+    });
+  }
+}
+
+class MeasureSize extends SingleChildRenderObjectWidget {
+  final void Function(Size size) onChange;
+
+  /// Provides a callback for when the size of [child] changes.
+  const MeasureSize({
+    super.key,
+    required this.onChange,
+    required super.child,
+  });
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return MeasureSizeRenderObject(onChange);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant MeasureSizeRenderObject renderObject,
+  ) {
+    renderObject.onChange = onChange;
+  }
 }
