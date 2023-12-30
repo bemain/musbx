@@ -110,7 +110,7 @@ class YoutubeSource implements SongSource {
       File file = File("$cacheDirectory/$videoId.$extension");
       if (await file.exists()) {
         debugPrint(
-            "[YOUTUBE] Using cached audio '${file.path}' for Youtube song $videoId");
+            "[YOUTUBE] Using cached audio '${file.path}' for YouTube song $videoId");
         return file.uri;
       }
     }

@@ -97,7 +97,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     await pickYoutubeSong(context);
                   },
             expandedChild: const Icon(Icons.search_rounded),
-            expandedLabel: const Text("Search Youtube"),
+            expandedLabel: const Text("Search YouTube"),
             child: const Icon(Icons.add_rounded),
           ),
           body: Stack(
