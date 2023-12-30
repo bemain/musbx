@@ -37,9 +37,9 @@ class Demixer extends MusicPlayerComponent {
   /// The stems that songs are being separated into.
   List<Stem> get stems => stemsNotifier.value;
   late final StemsNotifier stemsNotifier = StemsNotifier([
-    Stem(StemType.drums),
-    Stem(StemType.bass),
     Stem(StemType.vocals),
+    Stem(StemType.bass),
+    Stem(StemType.drums),
     Stem(StemType.other)
   ]);
 
