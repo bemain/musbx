@@ -83,11 +83,11 @@ flutter_launcher_icons:
   android: true
   min_sdk_android: 16
   ios: true
-  image_path_ios: "assets/icon/ios.png"
+  image_path_ios: "assets/logo/ios.png"
   remove_alpha_ios: true
-  image_path: "assets/icon/icon.png"
-  adaptive_icon_background: "assets/icon/background.png"
-  adaptive_icon_foreground: "assets/icon/foreground.png"
+  image_path: "assets/logo/icon.png"
+  adaptive_icon_background: "assets/logo/background.png"
+  adaptive_icon_foreground: "assets/logo/foreground.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -102,7 +102,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/icon/icon.png
+    - assets/logo/icon.png
     # Metronome
     - assets/bpm_tapper.mp3
     - assets/metronome/
