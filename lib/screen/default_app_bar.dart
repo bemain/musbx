@@ -51,7 +51,7 @@ class InfoButton extends StatelessWidget {
           showAboutDialog(
             context: context,
             applicationIcon: const ImageIcon(
-              AssetImage("assets/logo/icon.png"),
+              AssetImage("assets/logo/logo.png"),
             ),
             applicationVersion: "Version ${packageInfo?.version}",
             children: (child == null) ? null : [child!],
