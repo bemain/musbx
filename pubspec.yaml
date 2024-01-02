@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.3.0+14
+version: 1.4.4+23
 
 environment:
   sdk: '>=2.18.0 <3.0.0'
@@ -31,26 +31,34 @@ dependencies:
     sdk: flutter
 
   # General
-  package_info_plus: ^3.0.2
+  package_info_plus: ^4.0.2
   dynamic_color: ^1.5.4
   permission_handler: ^10.2.0
-  device_info_plus: ^8.0.0
+  device_info_plus: ^9.0.2
+  path_provider: ^2.0.14
+  advanced_in_app_review: ^1.1.3
 
   # Metronome
   soundpool: ^2.3.0
   
   # Music player
-  just_audio: ^0.9.31 # Also used by Drone
-  audio_service: ^0.18.9
-  file_picker: ^5.2.5
-  http: ^0.13.5
-  youtube_explode_dart: ^1.12.3
+  just_audio: ^0.9.35  # Also used by Drone
+  audio_service: ^0.18.12
+  audio_session: ^0.1.16
+  file_picker: ^5.5.0
+  http: ^1.1.0
+  youtube_explode_dart: ^2.0.2
+  html_unescape: ^2.0.0
+  http_parser: ^4.0.2
+  connectivity_plus: ^4.0.2
+  async: ^2.11.0
+  ffmpeg_kit_flutter: ^6.0.3
 
   # Tuner
   pitch_detector_dart: ^0.0.2
-  mic_stream: ^0.6.2
+  flutter_audio_capture: ^1.1.6
+  mic_stream: ^0.6.5
   gauges: ^1.0.0
-  html_unescape: ^2.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -60,7 +68,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  flutter_launcher_icons: ^0.11.0
+  flutter_launcher_icons: ^0.13.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -70,10 +78,12 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 # To apply changes to the icon configuration, run:
-# `flutter pub run flutter_launcher_icons:main`
+# `flutter pub run flutter_launcher_icons`
 flutter_icons:
   android: true
+  min_sdk_android: 16
   ios: true
+  image_path_ios: "assets/icon/musbx_ios.png"
   remove_alpha_ios: true
   image_path: "assets/icon/musbx.png"
   adaptive_icon_background: "assets/icon/musbx_background.png"
@@ -92,9 +102,10 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/
+    - assets/icon/musbx.png
+    # Metronome
+    - assets/bpm_tapper.mp3
     - assets/metronome/
-    - assets/icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -48,17 +48,17 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-    <!-- Required by mic_stream package. -->
+    <!-- Required by flutter_audio_capture package. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <!-- Required by audio_service package. -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <!-- Required by just_audio package. -->
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <!-- Required for haptic feedback. -->
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- Required for file_picker to work on Android 13. -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-    android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
 </manifest>

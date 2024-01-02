@@ -43,10 +43,10 @@ class BpmTapper extends StatelessWidget {
           _pool.load(soundData).then((value) => soundId = value));
     }
 
-    return OutlinedButton(
-      onPressed: () async {
+    return Listener(
+      onPointerDown: (_) {
         // Play sound
-        if (soundId != null) await _pool.play(soundId!);
+        if (soundId != null) _pool.play(soundId!);
         // Vibrate
         HapticFeedback.vibrate();
 
@@ -74,9 +74,12 @@ class BpmTapper extends StatelessWidget {
         // Reset stopwatch
         stopwatch.reset();
       },
-      child: const Padding(
-        padding: EdgeInsets.all(10.0),
-        child: Icon(Icons.ads_click_rounded),
+      child: OutlinedButton(
+        onPressed: () {},
+        child: const Padding(
+          padding: EdgeInsets.all(10.0),
+          child: Icon(Icons.ads_click_rounded),
+        ),
       ),
     );
   }

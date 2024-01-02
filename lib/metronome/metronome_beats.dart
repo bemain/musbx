@@ -65,7 +65,7 @@ class MetronomeBeats extends ChangeNotifier {
   BeatSound removeAt(int index) {
     if (sounds.length <= 1) {
       debugPrint(
-          "BeatSounds.removeAt($index) ignored! BeatSounds must always contain at least one sound!");
+          "[METRONOME] BeatSounds.removeAt($index) ignored! BeatSounds must always contain at least one sound!");
       return _sounds[0];
     }
     var res = _sounds.removeAt(index);
@@ -79,7 +79,7 @@ class MetronomeBeats extends ChangeNotifier {
       // Play sound
       if (soundIds == null) {
         debugPrint(
-            "playBeat($count) skipped; soundIDs haven't been loaded yet.");
+            "[METRONOME] playBeat($count) skipped; soundIDs haven't been loaded yet.");
         return;
       }
       if (soundIds![sounds[count]] == null) return;

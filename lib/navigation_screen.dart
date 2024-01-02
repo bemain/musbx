@@ -1,3 +1,4 @@
+import 'package:advanced_in_app_review/advanced_in_app_review.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone_screen.dart';
 import 'package:musbx/metronome/metronome_screen.dart';
@@ -13,24 +14,48 @@ class NavigationScreen extends StatefulWidget {
 }
 
 class NavigationScreenState extends State<NavigationScreen> {
-  int selectedIndex = 1;
+  int currentIndex = 1;
+  final PageController controller = PageController(initialPage: 1);
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Setup in-app review
+    AdvancedInAppReview()
+        .setMinDaysBeforeRemind(7)
+        .setMinDaysAfterInstall(7)
+        .setMinLaunchTimes(5)
+        .setMinSecondsBeforeShowDialog(4)
+        .monitor();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const [
-        MetronomeScreen(),
-        MusicPlayerScreen(),
-        TunerScreen(),
-        DroneScreen(),
-      ][selectedIndex],
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) {
+      body: PageView(
+        controller: controller,
+        physics: const NeverScrollableScrollPhysics(),
+        onPageChanged: (index) {
           setState(() {
-            selectedIndex = index;
+            currentIndex = index;
           });
         },
-        selectedIndex: selectedIndex,
+        children: [
+          const MetronomeScreen(),
+          MusicPlayerScreen(),
+          const TunerScreen(),
+          const DroneScreen(),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        onDestinationSelected: (int index) {
+          controller.jumpToPage(index);
+          setState(() {
+            currentIndex = index;
+          });
+        },
+        selectedIndex: currentIndex,
         destinations: const [
           NavigationDestination(
             label: "Metronome",
