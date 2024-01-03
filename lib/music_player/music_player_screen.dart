@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/demixer/demixer_card.dart';
@@ -114,7 +116,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                   WidgetCard(child: SlowdownerCard()),
                   WidgetCard(child: LoopCard()),
                   WidgetCard(child: DemixerCard()),
-                  WidgetCard(child: EqualizerCard()),
+                  if (!Platform.isIOS) WidgetCard(child: EqualizerCard()),
                   if (positionCardSize != null)
                     SizedBox(height: positionCardSize!.height)
                 ],
