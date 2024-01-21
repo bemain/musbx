@@ -69,6 +69,7 @@ dev_dependencies:
     sdk: flutter
   
   flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.9
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -88,6 +89,17 @@ flutter_launcher_icons:
   image_path: "assets/logo/logo.png"
   adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: "assets/logo/adaptive_foreground.png"
+
+# To apply changes to the splash screen configuration, run:
+# `dart run flutter_native_splash:create`
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/logo/splash.png
+  android_12:
+    image: assets/logo/splash_android12.png
+
+  ios: true
+  web: false
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
