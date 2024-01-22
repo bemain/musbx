@@ -68,7 +68,11 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons:
+    git:
+      url: https://github.com/fluttercommunity/flutter_launcher_icons.git
+      ref: master  # Newest version from GitHub is required to generate monochrome icons
+
   flutter_native_splash: ^2.3.9
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -89,6 +93,7 @@ flutter_launcher_icons:
   image_path: "assets/logo/logo.png"
   adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: "assets/logo/adaptive_foreground.png"
+  adaptive_icon_monochrome: "assets/logo/adaptive_monochrome.png"
 
 # To apply changes to the splash screen configuration, run:
 # `dart run flutter_native_splash:create`
