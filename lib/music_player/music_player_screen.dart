@@ -124,32 +124,48 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
               Align(
                 alignment: Alignment.bottomCenter,
                 child: MeasureSize(
-                  onChange: (Size size) {
+                  onSizeChanged: (Size size) {
                     setState(() {
                       positionCardSize = size;
                     });
                   },
-                  child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(12.0)),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .shadow
+                              .withOpacity(0.25),
+                          blurRadius: 8.0,
+                          spreadRadius: 4.0,
+                        )
+                      ],
                     ),
-                    color: Theme.of(context).colorScheme.surface,
-                    elevation: 3.0,
-                    margin: const EdgeInsets.only(top: 4.0),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(12.0),
+                        ),
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CurrentSongPanel(),
-                          PositionSlider(),
-                          ButtonPanel(),
-                        ],
+                      color: Theme.of(context).colorScheme.surface,
+                      elevation: 3.0,
+                      margin: EdgeInsets.zero,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CurrentSongPanel(),
+                            PositionSlider(),
+                            ButtonPanel(),
+                          ],
+                        ),
                       ),
                     ),
                   ),

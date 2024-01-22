@@ -125,18 +125,18 @@ class MeasureSizeRenderObject extends RenderProxyBox {
 }
 
 class MeasureSize extends SingleChildRenderObjectWidget {
-  final void Function(Size size) onChange;
+  final void Function(Size size) onSizeChanged;
 
   /// Provides a callback for when the size of [child] changes.
   const MeasureSize({
     super.key,
-    required this.onChange,
+    required this.onSizeChanged,
     required super.child,
   });
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return MeasureSizeRenderObject(onChange);
+    return MeasureSizeRenderObject(onSizeChanged);
   }
 
   @override
@@ -144,6 +144,6 @@ class MeasureSize extends SingleChildRenderObjectWidget {
     BuildContext context,
     covariant MeasureSizeRenderObject renderObject,
   ) {
-    renderObject.onChange = onChange;
+    renderObject.onChange = onSizeChanged;
   }
 }
