@@ -54,7 +54,16 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
       onPressed: () {
         close(context, null);
       },
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
       icon: const BackButtonIcon(),
+    );
+  }
+
+  @override
+  PreferredSizeWidget? buildBottom(BuildContext context) {
+    return const PreferredSize(
+      preferredSize: Size(double.infinity, 1.0),
+      child: Divider(height: 1.0),
     );
   }
 
@@ -65,6 +74,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
         onPressed: () {
           query = "";
         },
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         icon: const Icon(Icons.clear_rounded),
       )
     ];
@@ -89,15 +99,26 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
     }
 
     return ListView(
-      children: searchHistory
-          .map((query) => ListTile(
-                title: Text(query),
-                onTap: () {
-                  this.query = query;
-                  showResults(context);
-                },
-              ))
-          .toList(),
+      children: searchHistory.map((query) {
+        return ListTile(
+          leading: Icon(
+            Icons.history_rounded,
+            color: Theme.of(context).colorScheme.outline,
+          ),
+          title: Text(query),
+          trailing: RotatedBox(
+            quarterTurns: -1,
+            child: Icon(
+              Icons.arrow_outward_rounded,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
+          onTap: () {
+            this.query = query;
+            showResults(context);
+          },
+        );
+      }).toList(),
     );
   }
 
