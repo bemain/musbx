@@ -1,15 +1,17 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 
+const Color defaultSeed = Color(0xff578cff);
+
 Future<void> generateThemes({
   required Function(ThemeData light, ThemeData dark) onThemesGenerated,
 }) async {
   // Defaults
   final ColorScheme lightDefault = ColorScheme.fromSeed(
-    seedColor: Colors.blue,
+    seedColor: defaultSeed,
   );
   final ColorScheme darkDefault = ColorScheme.fromSeed(
-    seedColor: Colors.blue,
+    seedColor: defaultSeed,
     brightness: Brightness.dark,
   );
 

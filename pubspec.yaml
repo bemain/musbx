@@ -68,7 +68,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons:
+    git:
+      url: https://github.com/fluttercommunity/flutter_launcher_icons.git
+      ref: master  # Newest version from GitHub is required to generate monochrome icons
+
+  flutter_native_splash: ^2.3.9
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -78,16 +83,28 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 # To apply changes to the icon configuration, run:
-# `flutter pub run flutter_launcher_icons`
-flutter_icons:
+# `dart run flutter_launcher_icons`
+flutter_launcher_icons:
   android: true
-  min_sdk_android: 16
+  min_sdk_android: 24
   ios: true
-  image_path_ios: "assets/icon/musbx_ios.png"
+  image_path_ios: "assets/logo/ios.png"
   remove_alpha_ios: true
-  image_path: "assets/icon/musbx.png"
-  adaptive_icon_background: "assets/icon/musbx_background.png"
-  adaptive_icon_foreground: "assets/icon/musbx_foreground.png"
+  image_path: "assets/logo/logo.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/logo/adaptive_foreground.png"
+  adaptive_icon_monochrome: "assets/logo/adaptive_monochrome.png"
+
+# To apply changes to the splash screen configuration, run:
+# `dart run flutter_native_splash:create`
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/splash/splash.png
+  android_12:
+    image: assets/splash/splash_android12.png
+
+  ios: true
+  web: false
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -102,7 +119,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/icon/musbx.png
+    - assets/splash/splash.png
     # Metronome
     - assets/bpm_tapper.mp3
     - assets/metronome/
