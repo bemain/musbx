@@ -182,11 +182,14 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
               color: Theme.of(context).colorScheme.outline,
             ),
             title: Text(query),
-            trailing: RotatedBox(
-              quarterTurns: -1,
-              child: Icon(
-                Icons.arrow_outward_rounded,
-                color: Theme.of(context).colorScheme.outline,
+            trailing: IconButton(
+              onPressed: () => this.query = query,
+              color: Theme.of(context).colorScheme.outline,
+              icon: const RotatedBox(
+                quarterTurns: -1,
+                child: Icon(
+                  Icons.arrow_outward_rounded,
+                ),
               ),
             ),
             onTap: () {
