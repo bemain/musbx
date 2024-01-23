@@ -20,10 +20,10 @@ class DemixerApi {
   static final Future<Directory> demixerDirectory =
       _createTempDirectory("demixer");
 
-  /// The directory where stems for song with name [songName] are saved.
+  /// The directory where stems for song with name [songId] are saved.
   /// Will be a subdirectory of [demixerDirectory].
-  static Future<Directory> getSongDirectory(String songName) async =>
-      _createTempDirectory("demixer/$songName");
+  static Future<Directory> getSongDirectory(String songId) async =>
+      _createTempDirectory("demixer/$songId");
 
   /// The directory where Youtube files are saved.
   static final Future<Directory> youtubeDirectory =

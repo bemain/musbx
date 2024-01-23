@@ -127,7 +127,7 @@ class DemixingProcess {
       );
     }
 
-    String songName = response.songName;
+    String songId = response.songId;
 
     if (_cancelled) return null;
 
@@ -166,7 +166,7 @@ class DemixingProcess {
     Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
       StemType.values.map((stem) async {
         File file = await host.downloadStem(
-          songName,
+          songId,
           stem,
           songDirectory,
         );

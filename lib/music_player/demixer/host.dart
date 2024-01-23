@@ -17,10 +17,10 @@ class UploadResponse {
   ///
   /// If [jobId] is not `null`, the server has begun separating the song.
   /// Check the job status with [jobProgress] to make sure the separation job has completed before trying to download stems.
-  const UploadResponse(this.songName, {this.jobId});
+  const UploadResponse(this.songId, {this.jobId});
 
   /// The name of the folder where the stems are saved. Used to download the stems.
-  final String songName;
+  final String songId;
 
   /// The name of the job that separates the song into stems,
   /// if the stems were not found in the cache.
@@ -116,9 +116,9 @@ class Host {
 
     Map<String, dynamic> json =
         jsonDecode(await response.stream.bytesToString());
-    String songName = json["song_name"];
+    String songId = json["song_name"];
 
-    return UploadResponse(songName, jobId: json["job"]);
+    return UploadResponse(songId, jobId: json["job"]);
   }
 
   /// Upload a YouTube song to the server.
@@ -139,15 +139,15 @@ class Host {
     if (response.statusCode == 497) throw const FileTooLargeException();
 
     Map<String, dynamic> json = jsonDecode(response.body);
-    String songName = json["song_name"];
+    String songId = json["song_name"];
 
     if (response.statusCode == 200) {
-      return UploadResponse(songName);
+      return UploadResponse(songId);
     }
 
     if (response.statusCode != 201) throw const ServerException();
 
-    return UploadResponse(songName, jobId: json["job"]);
+    return UploadResponse(songId, jobId: json["job"]);
   }
 
   /// Check the progress of a separation job.
@@ -178,21 +178,20 @@ class Host {
     }
   }
 
-  /// Download a [stem] for song with [songName] to the [downloadDirectory].
+  /// Download a [stem] for song with [songId] to the [downloadDirectory].
   Future<File> downloadStem(
-    String songName,
+    String songId,
     StemType stem,
     Directory downloadDirectory, {
     StemFileType fileType = StemFileType.mp3,
   }) async {
-    Uri url = uriConstructor(address, "/stem/$songName/${stem.name}");
+    Uri url = uriConstructor(address, "/stem/$songId/${stem.name}");
     var response = await http.get(url, headers: {
       ...authHeaders,
       "FileType": fileType.name,
     });
     if (response.statusCode == 479) {
-      throw StemNotFoundException(
-          "Stem '$stem' not found for song '$songName'");
+      throw StemNotFoundException("Stem '$stem' not found for song '$songId'");
     }
 
     if (response.statusCode != 200) throw const ServerException();
