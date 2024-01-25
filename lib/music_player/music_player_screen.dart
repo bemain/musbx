@@ -118,7 +118,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                   WidgetCard(child: DemixerCard()),
                   if (!Platform.isIOS) WidgetCard(child: EqualizerCard()),
                   if (positionCardSize != null)
-                    SizedBox(height: positionCardSize!.height)
+                    SizedBox(height: positionCardSize!.height + 4.0)
                 ],
               ),
               Align(
