@@ -99,6 +99,7 @@ flutter_launcher_icons:
 # `dart run flutter_native_splash:create`
 flutter_native_splash:
   color: "#ffffff"
+  color_dark: "#1a1a1a"
   image: assets/splash/splash.png
   android_12:
     image: assets/splash/splash_android12.png
