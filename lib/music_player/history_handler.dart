@@ -2,24 +2,39 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/song.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Helper class for saving the history of previously played songs to disk.
-class SongHistory extends ChangeNotifier {
-  /// The maximum number of songs saved in history.
-  static const int historyLength = 5;
+/// Helper class for persisting history entries to disk.
+class HistoryHandler<T> extends ChangeNotifier {
+  HistoryHandler({
+    required this.fromJson,
+    required this.toJson,
+    required this.historyFileName,
+    this.maxEntries = 5,
+  });
+
+  /// The maximum number of entries saved in history.
+  final int maxEntries;
+
+  /// The name of the file where entries are persisted, without extension.
+  final String historyFileName;
+
+  /// Convert json from the history file to the desired type.
+  T Function(dynamic json) fromJson;
+
+  /// Convert a history entry to json, that is then saved to the history file.
+  dynamic Function(T value) toJson;
 
   /// The file where song history is saved.
   Future<File> get _historyFile async => File(
-      "${(await getApplicationDocumentsDirectory()).path}/song_history.json");
+      "${(await getApplicationDocumentsDirectory()).path}/$historyFileName.json");
 
   /// The history entries, with the previously loaded songs and the time they were loaded.
-  final Map<DateTime, Song> history = {};
+  final Map<DateTime, T> history = {};
 
   /// The previously played songs, sorted by date.
-  List<Song> sorted({ascending = false}) {
-    List<Song> sorted = (history.entries.toList()
+  List<T> sorted({ascending = false}) {
+    List<T> sorted = (history.entries.toList()
           ..sort((a, b) => a.key.compareTo(b.key)))
         .map((entry) => entry.value)
         .toList();
@@ -36,35 +51,28 @@ class SongHistory extends ChangeNotifier {
 
     history.clear();
 
-    await Future.forEach(json.entries, (entry) async {
+    for (var entry in json.entries) {
       DateTime? date = DateTime.tryParse(entry.key);
-
-      if (date == null || entry.value is! Map<String, dynamic>) {
-        debugPrint(
-            "[SONG HISTORY] Incorrectly formatted entry in history file: (${entry.key}, ${entry.value})");
-        return;
+      T? value;
+      try {
+        value = fromJson(entry.value);
+      } catch (e) {
+        debugPrint("$e");
       }
-      Song? song = await Song.fromJson(entry.value);
-      if (song == null) {
-        debugPrint(
-            "[SONG HISTORY] History entry (${entry.key}, ${entry.value}) is missing required fields");
-        return;
-      }
-
-      history[date] = song;
-    });
+      if (date != null && value != null) history[date] = value;
+    }
 
     notifyListeners();
   }
 
-  /// Add [song] to the history.
+  /// Add [newValue] to the history.
   ///
   /// Notifies listeners when done.
-  Future<void> add(Song song) async {
+  Future<void> add(T newValue) async {
     // Remove duplicates
-    history.removeWhere((key, value) => value.id == song.id);
+    history.removeWhere((key, value) => value == newValue);
 
-    history[DateTime.now()] = song;
+    history[DateTime.now()] = newValue;
     await save();
 
     notifyListeners();
@@ -73,7 +81,7 @@ class SongHistory extends ChangeNotifier {
   /// Save history entries to disk.
   Future<void> save() async {
     // Only keep the [historyLength] newest entries
-    while (history.length > historyLength) {
+    while (history.length > maxEntries) {
       history.remove(history.entries
           .reduce((oldest, element) =>
               element.key.isBefore(oldest.key) ? element : oldest)
@@ -83,7 +91,7 @@ class SongHistory extends ChangeNotifier {
     await (await _historyFile).writeAsString(jsonEncode(history.map(
       (date, song) => MapEntry(
         date.toString(),
-        song.toJson(),
+        toJson(song),
       ),
     )));
   }

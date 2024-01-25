@@ -1,15 +1,12 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/youtube_api.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/music_player/history_handler.dart';
 import 'package:musbx/widgets.dart';
 import 'package:musbx/keys.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
 Future<void> pickYoutubeSong(BuildContext context) async {
@@ -42,79 +39,16 @@ Future<void> pickYoutubeSong(BuildContext context) async {
   }
 }
 
-/// Helper class for saving the history of search queries to disk.
-class YoutubeSearchHistory extends ChangeNotifier {
-  /// The maximum number of songs saved in history.
-  static const int historyLength = 5;
-
-  /// The file where search history is saved.
-  Future<File> get _historyFile async => File(
-      "${(await getApplicationDocumentsDirectory()).path}/youtube_search_history.json");
-
-  /// The history entries, with the previous search queries and the time they were searched for.
-  final Map<DateTime, String> queries = {};
-
-  /// The previously played songs, sorted by date.
-  List<String> sorted({ascending = false}) {
-    List<String> sorted = (queries.entries.toList()
-          ..sort((a, b) => a.key.compareTo(b.key)))
-        .map((entry) => entry.value)
-        .toList();
-    return ascending ? sorted : sorted.reversed.toList();
-  }
-
-  /// Fetch the history from disk.
-  ///
-  /// Notifies listeners when done.
-  Future<void> fetch() async {
-    File file = await _historyFile;
-    if (!await file.exists()) return;
-    Map<String, dynamic> json = jsonDecode(await file.readAsString());
-
-    queries.clear();
-
-    for (var entry in json.entries) {
-      DateTime? date = DateTime.tryParse(entry.key);
-      if (date != null) queries[date] = entry.value as String;
-    }
-
-    notifyListeners();
-  }
-
-  /// Add [query] to the history.
-  ///
-  /// Notifies listeners when done.
-  Future<void> add(String query) async {
-    // Remove duplicates
-    queries.removeWhere((key, value) => value == query);
-
-    queries[DateTime.now()] = query;
-    await save();
-
-    notifyListeners();
-  }
-
-  /// Save history entries to disk.
-  Future<void> save() async {
-    // Only keep the [historyLength] newest entries
-    while (queries.length > historyLength) {
-      queries.remove(queries.entries
-          .reduce((oldest, element) =>
-              element.key.isBefore(oldest.key) ? element : oldest)
-          .key);
-    }
-
-    await (await _historyFile).writeAsString(jsonEncode(queries.map(
-      (date, song) => MapEntry(date.toString(), song),
-    )));
-  }
-}
+/// The history of previous search queries.
+final HistoryHandler<String> youtubeSearchHistory = HistoryHandler<String>(
+  fromJson: (json) => json as String,
+  toJson: (value) => value,
+  historyFileName: "youtube_search_history",
+);
 
 /// [SearchDelegate] for searching for a song on Youtube.
 class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   YoutubeSearchDelegate() : super(searchFieldLabel: "Search YouTube");
-
-  static final YoutubeSearchHistory searchHistory = YoutubeSearchHistory();
 
   /// The API key used to access Youtube.
   final YoutubeApi youtubeApi = YoutubeApi(key: youtubeApiKey);
@@ -153,10 +87,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    // Begin fetching search history
-    searchHistory.fetch();
-
-    if (searchHistory.queries.isEmpty) {
+    if (youtubeSearchHistory.history.isEmpty) {
       // Help text
       return Container(
         constraints: const BoxConstraints.expand(),
@@ -173,9 +104,9 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
     }
 
     return ListenableBuilder(
-      listenable: searchHistory,
+      listenable: youtubeSearchHistory,
       builder: (context, child) => ListView(
-        children: searchHistory.sorted().map((query) {
+        children: youtubeSearchHistory.sorted().map((query) {
           return ListTile(
             leading: Icon(
               Icons.history_rounded,
@@ -204,7 +135,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
   @override
   Widget buildResults(BuildContext context) {
-    if (query != "") searchHistory.add(query.trim());
+    if (query != "") youtubeSearchHistory.add(query.trim());
 
     return FutureBuilder(
       future: _getVideosFromQuery(query),

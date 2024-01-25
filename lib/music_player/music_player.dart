@@ -8,13 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
+import 'package:musbx/music_player/pick_song_button/components/search_youtube_button.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
 import 'package:musbx/music_player/looper/looper.dart';
 import 'package:musbx/music_player/slowdowner/slowdowner.dart';
 import 'package:musbx/music_player/song.dart';
-import 'package:musbx/music_player/song_history.dart';
+import 'package:musbx/music_player/history_handler.dart';
 import 'package:musbx/music_player/song_preferences.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/widgets.dart';
@@ -69,7 +70,21 @@ class MusicPlayer {
   /// Used internally to load and save preferences for songs.
   final SongPreferences _songPreferences = SongPreferences();
 
-  final SongHistory songHistory = SongHistory();
+  /// The history of previously loaded songs.
+  final HistoryHandler<Song> songHistory = HistoryHandler<Song>(
+    fromJson: (json) {
+      if (json is! Map<String, dynamic>) {
+        throw "[SONG HISTORY] Incorrectly formatted entry in history file: ($json)";
+      }
+      Song? song = Song.fromJson(json);
+      if (song == null) {
+        throw "[SONG HISTORY] History entry ($json) is missing required fields";
+      }
+      return song;
+    },
+    toJson: (value) => value.toJson(),
+    historyFileName: "song_history",
+  );
 
   /// Start or resume playback.
   Future<void> play() async => await player.play();
@@ -268,6 +283,8 @@ class MusicPlayer {
 
   /// Listen for changes from [player].
   void _init() {
+    // Begin fetching history from disk
+    youtubeSearchHistory.fetch();
     songHistory.fetch();
 
     player.setVolume(0.5);

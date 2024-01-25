@@ -80,7 +80,7 @@ class Song {
   /// - `id` [String] A unique id.
   /// - `title` [String] The title of this song.
   /// - `source` [Map<String, dynamic>] Where this song's audio was loaded from. Should contain the key `type` and other values depending on the type.
-  static Future<Song?> fromJson(Map<String, dynamic> json) async {
+  static Song? fromJson(Map<String, dynamic> json) {
     if (!json.containsKey("id") ||
         !json.containsKey("title") ||
         !json.containsKey("source")) return null;
