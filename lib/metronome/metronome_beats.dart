@@ -18,7 +18,7 @@ class MetronomeBeats extends ChangeNotifier {
                 (beatSound.fileName == "")
                     ? null
                     : await rootBundle
-                        .load("assets/metronome/${beatSound.fileName}")
+                        .load("assets/sounds/${beatSound.fileName}")
                         .then((ByteData soundData) => pool.load(soundData))))
             .toList())
         .then((entries) => soundIds = Map.fromEntries(entries));

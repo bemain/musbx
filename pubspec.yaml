@@ -122,8 +122,10 @@ flutter:
   assets:
     - assets/splash/splash.png
     # Metronome
-    - assets/bpm_tapper.mp3
-    - assets/metronome/
+    - assets/sounds/bpm_tapper.mp3
+    - assets/sounds/sticks.wav
+    - assets/sounds/cowbell.mp3
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
