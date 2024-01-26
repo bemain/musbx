@@ -215,7 +215,6 @@ class MusicPlayer {
     await loadSong(Song(
       id: file.path!.hashCode.toString(),
       title: file.name,
-      // TODO: Add art uri
       source: FileSource(file.path!),
     ));
   }

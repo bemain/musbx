@@ -3,6 +3,11 @@ import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/widgets.dart';
 
+/// The default album art.
+/// TODO: Make this a local asset.
+final Uri defaultAlbumArt = Uri.parse(
+    "https://github.com/BeMain/musbx/blob/main/assets/images/default_album_art.png?raw=true");
+
 class Song {
   /// Representation of a song, to be played by [MusicPlayer].
   Song({
@@ -19,7 +24,7 @@ class Song {
           album: album,
           artist: artist,
           genre: genre,
-          artUri: artUri,
+          artUri: artUri ?? defaultAlbumArt,
         );
 
   /// A unique id.
@@ -69,7 +74,7 @@ class Song {
       if (album != null) "album": album,
       if (artist != null) "artist": artist,
       if (genre != null) "genre": genre,
-      if (artUri != null) "artUri": artUri.toString(),
+      if (artUri != null) "artUri": artUri?.toString(),
       "source": source.toJson(),
     };
   }
@@ -87,6 +92,7 @@ class Song {
 
     SongSource? source = SongSource.fromJson(json["source"]);
     if (source == null) return null;
+    final String? artUri = tryCast<String>(json["artUri"]);
 
     return Song(
       id: json["id"] as String,
@@ -94,7 +100,7 @@ class Song {
       album: tryCast<String>(json["album"]),
       artist: tryCast<String>(json["artist"]),
       genre: tryCast<String>(json["genre"]),
-      artUri: Uri.tryParse(tryCast<String>(json["artUri"]) ?? ""),
+      artUri: artUri == null ? null : Uri.tryParse(artUri),
       source: source,
     );
   }
