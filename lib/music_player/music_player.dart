@@ -346,6 +346,7 @@ class MusicPlayer {
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'se.agardh.musbx.channel.music_player',
         androidNotificationChannelName: 'Music player',
+        androidNotificationIcon: "drawable/ic_notification",
       ),
     );
 
