@@ -58,7 +58,10 @@ class DemixerCard extends StatelessWidget {
                           },
                   ),
                 ),
-                buildBody(context),
+                SizedBox(
+                  height: 240, //192
+                  child: buildBody(context),
+                ),
               ]);
             },
           );
@@ -90,46 +93,42 @@ class DemixerCard extends StatelessWidget {
   }
 
   Widget buildOutOfDate() {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 192),
-      child: const Center(
-        child: Column(children: [
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Icon(Icons.update_rounded, size: 96),
-          ),
-          Text(
-            """A newer version of the app is available. 
+    return const Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Icon(Icons.update_rounded, size: 96),
+        ),
+        Text(
+          """A newer version of the app is available. 
 Please update to the latest version to use the Demixer.""",
-            textAlign: TextAlign.center,
-          ),
-        ]),
-      ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
   Widget buildError() {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 192),
-        child: Column(children: [
-          const Icon(Icons.cloud_off_rounded, size: 96),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              """An error occurred while demixing. Please try again later.""",
-              textAlign: TextAlign.center,
-            ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.cloud_off_rounded, size: 96),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            """An error occurred while demixing. Please try again later.""",
+            textAlign: TextAlign.center,
           ),
-          OutlinedButton(
-            onPressed: () {
-              musicPlayer.demixer.enabled = false;
-              musicPlayer.demixer.enabled = true;
-            },
-            child: const Text("Retry"),
-          ),
-        ]),
-      ),
+        ),
+        OutlinedButton(
+          onPressed: () {
+            musicPlayer.demixer.enabled = false;
+            musicPlayer.demixer.enabled = true;
+          },
+          child: const Text("Retry"),
+        ),
+      ],
     );
   }
 
