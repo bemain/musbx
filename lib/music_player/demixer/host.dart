@@ -116,7 +116,7 @@ class Host {
 
     Map<String, dynamic> json =
         jsonDecode(await response.stream.bytesToString());
-    String songId = json["song_name"];
+    String songId = json["song_id"];
 
     return UploadResponse(songId, jobId: json["job"]);
   }
@@ -139,7 +139,7 @@ class Host {
     if (response.statusCode == 497) throw const FileTooLargeException();
 
     Map<String, dynamic> json = jsonDecode(response.body);
-    String songId = json["song_name"];
+    String songId = json["song_id"];
 
     if (response.statusCode == 200) {
       return UploadResponse(songId);
