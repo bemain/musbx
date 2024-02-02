@@ -85,7 +85,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
       for (final entry in cachedStemFiles.entries) {
         cachedStemFiles[entry.key] = await mp3ToWav(entry.value);
-        progressNotifier.value = (progress ?? 0) + 0.25;
+        progressNotifier.value = (progress ?? 0) + 1 ~/ StemType.values.length;
         breakIfCancelled();
       }
 
@@ -156,7 +156,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
           song,
           stem,
         );
-        progressNotifier.value = (progress ?? 0) + 0.25;
+        progressNotifier.value = (progress ?? 0) + 1 ~/ StemType.values.length;
 
         return MapEntry(stem, file);
       }),
@@ -171,7 +171,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     for (final entry in stemFiles.entries) {
       stemFiles[entry.key] = await mp3ToWav(entry.value);
 
-      progressNotifier.value = (progress ?? 0) + 0.25;
+      progressNotifier.value = (progress ?? 0) + 1 ~/ StemType.values.length;
 
       breakIfCancelled();
     }
