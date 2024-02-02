@@ -37,6 +37,7 @@ class Demixer extends MusicPlayerComponent {
   List<Stem> get stems => stemsNotifier.value;
   late final StemsNotifier stemsNotifier = StemsNotifier([
     Stem(StemType.vocals),
+    Stem(StemType.piano),
     Stem(StemType.guitar),
     Stem(StemType.bass),
     Stem(StemType.drums),

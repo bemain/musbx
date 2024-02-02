@@ -39,7 +39,7 @@ class SeparationResponse {
 /// The stems that can be requested from the server.
 enum StemType {
   vocals,
-  // piano, // Not included as the quality is still too bad.
+  piano,
   guitar,
   bass,
   drums,

@@ -59,7 +59,7 @@ class DemixerCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  height: 240, //192
+                  height: 288,
                   child: buildBody(context),
                 ),
               ]);
