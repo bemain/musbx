@@ -6,6 +6,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:musbx/keys.dart';
 
 import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
+import 'package:path_provider/path_provider.dart';
 
 enum StemFileType {
   mp3,
@@ -36,6 +37,29 @@ class SeparationResponse {
   final int progress;
 }
 
+class MusbxApiVersion {
+  const MusbxApiVersion({
+    required this.youtubeApiVersion,
+    required this.demixerApiVersion,
+  });
+
+  /// The version of the Youtube API.
+  final String youtubeApiVersion;
+
+  /// The version of the Demixer API.
+  final String demixerApiVersion;
+
+  @override
+  bool operator ==(Object other) {
+    return other is MusbxApiVersion &&
+        other.youtubeApiVersion == youtubeApiVersion &&
+        other.demixerApiVersion == demixerApiVersion;
+  }
+
+  @override
+  int get hashCode => Object.hash(youtubeApiVersion, demixerApiVersion);
+}
+
 /// The stems that can be requested from the server.
 enum StemType {
   drums,
@@ -44,12 +68,20 @@ enum StemType {
   other,
 }
 
-class Host {
-  static const Map<String, String> authHeaders = {
-    "Authorization": demixerApiKey
+/// Creates a temporary directory with the given [name].
+/// If the directory already exists, does nothing.
+Future<Directory> _createTempDirectory(String name) async {
+  var dir = Directory("${(await getTemporaryDirectory()).path}/$name/");
+  await dir.create(recursive: true);
+  return dir;
+}
+
+abstract class MusbxApiHost {
+  static const Map<String, String> _authHeaders = {
+    "Authorization": musbxApiKey
   };
 
-  const Host(this.address, {this.https = false});
+  MusbxApiHost(this.address, {this.https = false});
 
   final String address;
 
@@ -58,24 +90,60 @@ class Host {
   Uri Function(String, [String, Map<String, dynamic>?]) get uriConstructor =>
       (https ? Uri.https : Uri.http);
 
-  /// Check if the app version of the Demixer is up to date with the DemixerAPI.
-  Future<String> getVersion({
-    Duration timeout = const Duration(seconds: 3),
-  }) async {
-    Uri url = uriConstructor(address, "/version");
-    var response = await http.get(url, headers: authHeaders).timeout(timeout);
-
-    if (response.statusCode != 200) throw const ServerException();
-    return response.body;
+  /// Perform a `GET` request to the server at the requested [route].
+  /// The [route] should begin with a leading slash ("/").
+  Future<http.Response> get(String route, {Map<String, String>? headers}) {
+    return http.get(
+      uriConstructor(address, route),
+      headers: {...MusbxApiHost._authHeaders, ...?headers},
+    );
   }
 
-  /// Download the audio to a Youtube file via the server.
-  Future<File> downloadYoutubeSong(
-    String youtubeId,
-    Directory downloadDirectory,
-  ) async {
-    Uri url = uriConstructor(address, "/download/$youtubeId");
-    var response = await http.get(url, headers: authHeaders);
+  /// Perform a `POST` request to the server at the requested [route].
+  /// The [route] should begin with a leading slash ("/").
+  Future<http.Response> post(
+    String route, {
+    Object? body,
+    Map<String, String>? headers,
+  }) {
+    return http.post(
+      uriConstructor(address, route),
+      body: body,
+      headers: {...MusbxApiHost._authHeaders, ...?headers},
+    );
+  }
+
+  /// Get the version of this host's MusbxApi.
+  Future<MusbxApiVersion> getVersion({
+    Duration timeout = const Duration(seconds: 3),
+  }) async {
+    final response = await get("/version").timeout(timeout);
+
+    if (response.statusCode != 200) throw const ServerException();
+    Map<String, dynamic> json = jsonDecode(response.body);
+
+    return MusbxApiVersion(
+      youtubeApiVersion: json["youtube"],
+      demixerApiVersion: json["demixer"],
+    );
+  }
+
+  @override
+  String toString() {
+    return "MusbxApiHost($address)";
+  }
+}
+
+class YoutubeApiHost extends MusbxApiHost {
+  YoutubeApiHost(super.address, {super.https});
+
+  /// The directory where Youtube files are saved.
+  static final Future<Directory> youtubeDirectory =
+      _createTempDirectory("youtube");
+
+  /// Download the audio for a Youtube video.
+  Future<File> downloadYoutubeSong(String youtubeId) async {
+    var response = await get("/download/$youtubeId");
 
     if (response.statusCode == 497) throw const FileTooLargeException();
     if (response.statusCode != 200) throw const ServerException();
@@ -84,10 +152,23 @@ class Host {
     String fileName =
         response.headers["content-disposition"]!.split("filename=").last.trim();
     assert(fileName.isNotEmpty);
-    File file = File("${downloadDirectory.path}/$fileName");
+    File file = File("${(await youtubeDirectory).path}/$fileName");
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }
+}
+
+class DemixerApiHost extends MusbxApiHost {
+  DemixerApiHost(super.address, {super.https});
+
+  /// The directory where demixer saves files.
+  static final Future<Directory> demixerDirectory =
+      _createTempDirectory("demixer");
+
+  /// The directory where stems for song with name [songId] are saved.
+  /// Will be a subdirectory of [demixerDirectory].
+  static Future<Directory> getSongDirectory(String songId) async =>
+      _createTempDirectory("demixer/$songId");
 
   /// Upload a local [file] to the server.
   ///
@@ -99,7 +180,7 @@ class Host {
     Uri url = uriConstructor(address, "/upload");
     var request = http.MultipartRequest("POST", url);
     request.headers.addAll({
-      ...authHeaders,
+      ...MusbxApiHost._authHeaders,
       "FileType": desiredStemFilesType.name,
     });
     request.files.add(await http.MultipartFile.fromPath(
@@ -128,9 +209,7 @@ class Host {
     String youtubeId, {
     StemFileType desiredStemFilesType = StemFileType.mp3,
   }) async {
-    Uri url = uriConstructor(address, "/upload/$youtubeId");
-    var response = await http.post(url, headers: {
-      ...authHeaders,
+    var response = await post("/upload/$youtubeId", headers: {
       "FileType": desiredStemFilesType.name,
     });
 
@@ -158,12 +237,11 @@ class Host {
     String jobId, {
     Duration checkEvery = const Duration(seconds: 5),
   }) async* {
-    Uri url = uriConstructor(address, "/job/$jobId");
     int progress = 0;
 
     while (true) {
       // Check job status
-      var response = await http.get(url, headers: authHeaders);
+      var response = await get("/job/$jobId");
       if (response.statusCode == 489) {
         yield* Stream.error(JobNotFoundException("Job '$jobId' was not found"));
         return;
@@ -181,13 +259,10 @@ class Host {
   /// Download a [stem] for song with [songId] to the [downloadDirectory].
   Future<File> downloadStem(
     String songId,
-    StemType stem,
-    Directory downloadDirectory, {
+    StemType stem, {
     StemFileType fileType = StemFileType.mp3,
   }) async {
-    Uri url = uriConstructor(address, "/stem/$songId/${stem.name}");
-    var response = await http.get(url, headers: {
-      ...authHeaders,
+    var response = await get("/stem/$songId/${stem.name}", headers: {
       "FileType": fileType.name,
     });
     if (response.statusCode == 479) {
@@ -205,13 +280,9 @@ class Host {
     assert(extension == fileType.name,
         "The returned stem file ('$fileName') was not of the requested type (.${fileType.name}).");
 
-    File file = File("${downloadDirectory.path}/${stem.name}.$extension");
+    File file = File(
+        "${(await getSongDirectory(songId)).path}/${stem.name}.$extension");
     await file.writeAsBytes(response.bodyBytes);
     return file;
-  }
-
-  @override
-  String toString() {
-    return "Host($address)";
   }
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer_api.dart';
+import 'package:musbx/music_player/demixer/host.dart';
 import 'package:musbx/music_player/pick_song_button/components/upload_file_button.dart';
 import 'package:musbx/widgets.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -99,13 +100,13 @@ class YoutubeSource implements SongSource {
 
   /// Get the audio of a YouTube video.
   ///
-  /// Tries to download the audio file using the [DemixerApi].
+  /// Tries to download the audio file using the [MusbxApi].
   /// If that fails, uses [YoutubeExplode] to stream the audio instead (not on iOS).
   ///
   /// If the device is on a cellular network, prefers stream over downloading to minimize data usage.
   static Future<Uri> getYoutubeAudio(String videoId) async {
     // Use cached audio, if available
-    String cacheDirectory = (await DemixerApi.youtubeDirectory).path;
+    String cacheDirectory = (await YoutubeApiHost.youtubeDirectory).path;
     for (String extension in allowedExtensions) {
       File file = File("$cacheDirectory/$videoId.$extension");
       if (await file.exists()) {
@@ -136,11 +137,10 @@ class YoutubeSource implements SongSource {
     }
   }
 
-  /// Download the audio of a Youtube video using the [DemixerApi].
+  /// Download the audio of a Youtube video using the [MusbxApi].
   static Future<Uri> downloadYoutubeAudio(String videoId) async {
-    File file = await (await DemixerApi.findHost()).downloadYoutubeSong(
+    File file = await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
       videoId,
-      await DemixerApi.youtubeDirectory,
     );
     return Uri.file(file.path);
   }

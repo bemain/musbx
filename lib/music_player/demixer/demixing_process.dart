@@ -89,7 +89,7 @@ class DemixingProcess {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
-    Directory songDirectory = await DemixerApi.getSongDirectory(song.id);
+    Directory songDirectory = await DemixerApiHost.getSongDirectory(song.id);
     Map<StemType, File>? cachedStemFiles = await getStemsInCache(songDirectory);
     if (cachedStemFiles != null) {
       debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
@@ -109,7 +109,7 @@ class DemixingProcess {
 
     stepNotifier.value = DemixingStep.findingHost;
 
-    Host host = await DemixerApi.findHost();
+    DemixerApiHost host = await MusbxApi.findDemixerHost();
 
     if (_cancelled) return null;
 
@@ -168,7 +168,6 @@ class DemixingProcess {
         File file = await host.downloadStem(
           songId,
           stem,
-          songDirectory,
         );
         stepProgressNotifier.value = (stepProgress ?? 0) + 25;
 
@@ -198,7 +197,7 @@ class DemixingProcess {
 Future<File> mp3ToWav(File file) async {
   /// File name without extension
   String fileName = file.path.split("/").last.split(".").first;
-  String outputDirectoryPath = (await DemixerApi.demixerDirectory).path;
+  String outputDirectoryPath = (await DemixerApiHost.demixerDirectory).path;
 
   // Use ffmpeg to convert files to wav
   String arguments =
