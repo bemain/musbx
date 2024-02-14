@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ContinuousTextButton extends StatelessWidget {
   /// Button that can be held down to yield continuous presses.
@@ -146,4 +148,12 @@ class MeasureSize extends SingleChildRenderObjectWidget {
   ) {
     renderObject.onChange = onSizeChanged;
   }
+}
+
+/// Creates a temporary directory with the given [name].
+/// If the directory already exists, does nothing.
+Future<Directory> createTempDirectory(String name) async {
+  var dir = Directory("${(await getTemporaryDirectory()).path}/$name/");
+  await dir.create(recursive: true);
+  return dir;
 }

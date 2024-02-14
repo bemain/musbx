@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:musbx/keys.dart';
-
-import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:musbx/music_player/musbx_api/exceptions.dart';
+import 'package:musbx/music_player/musbx_api/musbx_api.dart';
+import 'package:musbx/widgets.dart';
+import 'package:http/http.dart' as http;
 
 enum StemFileType {
   mp3,
@@ -37,29 +36,6 @@ class SeparationResponse {
   final int progress;
 }
 
-class MusbxApiVersion {
-  const MusbxApiVersion({
-    required this.youtubeApiVersion,
-    required this.demixerApiVersion,
-  });
-
-  /// The version of the Youtube API.
-  final String youtubeApiVersion;
-
-  /// The version of the Demixer API.
-  final String demixerApiVersion;
-
-  @override
-  bool operator ==(Object other) {
-    return other is MusbxApiVersion &&
-        other.youtubeApiVersion == youtubeApiVersion &&
-        other.demixerApiVersion == demixerApiVersion;
-  }
-
-  @override
-  int get hashCode => Object.hash(youtubeApiVersion, demixerApiVersion);
-}
-
 /// The stems that can be requested from the server.
 enum StemType {
   drums,
@@ -68,107 +44,17 @@ enum StemType {
   other,
 }
 
-/// Creates a temporary directory with the given [name].
-/// If the directory already exists, does nothing.
-Future<Directory> _createTempDirectory(String name) async {
-  var dir = Directory("${(await getTemporaryDirectory()).path}/$name/");
-  await dir.create(recursive: true);
-  return dir;
-}
-
-abstract class MusbxApiHost {
-  static const Map<String, String> _authHeaders = {
-    "Authorization": musbxApiKey
-  };
-
-  MusbxApiHost(this.address, {this.https = false});
-
-  final String address;
-
-  final bool https;
-
-  Uri Function(String, [String, Map<String, dynamic>?]) get uriConstructor =>
-      (https ? Uri.https : Uri.http);
-
-  /// Perform a `GET` request to the server at the requested [route].
-  /// The [route] should begin with a leading slash ("/").
-  Future<http.Response> get(String route, {Map<String, String>? headers}) {
-    return http.get(
-      uriConstructor(address, route),
-      headers: {...MusbxApiHost._authHeaders, ...?headers},
-    );
-  }
-
-  /// Perform a `POST` request to the server at the requested [route].
-  /// The [route] should begin with a leading slash ("/").
-  Future<http.Response> post(
-    String route, {
-    Object? body,
-    Map<String, String>? headers,
-  }) {
-    return http.post(
-      uriConstructor(address, route),
-      body: body,
-      headers: {...MusbxApiHost._authHeaders, ...?headers},
-    );
-  }
-
-  /// Get the version of this host's MusbxApi.
-  Future<MusbxApiVersion> getVersion({
-    Duration timeout = const Duration(seconds: 3),
-  }) async {
-    final response = await get("/version").timeout(timeout);
-
-    if (response.statusCode != 200) throw const ServerException();
-    Map<String, dynamic> json = jsonDecode(response.body);
-
-    return MusbxApiVersion(
-      youtubeApiVersion: json["youtube"],
-      demixerApiVersion: json["demixer"],
-    );
-  }
-
-  @override
-  String toString() {
-    return "MusbxApiHost($address)";
-  }
-}
-
-class YoutubeApiHost extends MusbxApiHost {
-  YoutubeApiHost(super.address, {super.https});
-
-  /// The directory where Youtube files are saved.
-  static final Future<Directory> youtubeDirectory =
-      _createTempDirectory("youtube");
-
-  /// Download the audio for a Youtube video.
-  Future<File> downloadYoutubeSong(String youtubeId) async {
-    var response = await get("/download/$youtubeId");
-
-    if (response.statusCode == 497) throw const FileTooLargeException();
-    if (response.statusCode != 200) throw const ServerException();
-
-    assert(response.headers.containsKey("content-disposition"));
-    String fileName =
-        response.headers["content-disposition"]!.split("filename=").last.trim();
-    assert(fileName.isNotEmpty);
-    File file = File("${(await youtubeDirectory).path}/$fileName");
-    await file.writeAsBytes(response.bodyBytes);
-    return file;
-  }
-}
-
 class DemixerApiHost extends MusbxApiHost {
   DemixerApiHost(super.address, {super.https});
 
   /// The directory where demixer saves files.
   static final Future<Directory> demixerDirectory =
-      _createTempDirectory("demixer");
+      createTempDirectory("demixer");
 
   /// The directory where stems for song with name [songId] are saved.
   /// Will be a subdirectory of [demixerDirectory].
   static Future<Directory> getSongDirectory(String songId) async =>
-      _createTempDirectory("demixer/$songId");
+      createTempDirectory("demixer/$songId");
 
   /// Upload a local [file] to the server.
   ///
@@ -180,7 +66,7 @@ class DemixerApiHost extends MusbxApiHost {
     Uri url = uriConstructor(address, "/upload");
     var request = http.MultipartRequest("POST", url);
     request.headers.addAll({
-      ...MusbxApiHost._authHeaders,
+      ...MusbxApiHost.authHeaders,
       "FileType": desiredStemFilesType.name,
     });
     request.files.add(await http.MultipartFile.fromPath(

@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
+import 'package:musbx/music_player/musbx_api/demixer_api.dart';
+import 'package:musbx/music_player/musbx_api/exceptions.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
-import 'package:musbx/music_player/demixer/host.dart';
 import 'package:musbx/music_player/demixer/mixed_audio_source.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/looper/looper.dart';

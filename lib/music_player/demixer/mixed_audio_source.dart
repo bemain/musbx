@@ -5,7 +5,7 @@ import 'package:async/async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
-import 'package:musbx/music_player/demixer/host.dart';
+import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/music_player.dart';
 

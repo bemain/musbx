@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/demixer/demixer_api.dart';
-import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
-import 'package:musbx/music_player/demixer/host.dart';
+import 'package:musbx/music_player/musbx_api/demixer_api.dart';
+import 'package:musbx/music_player/musbx_api/musbx_api.dart';
+import 'package:musbx/music_player/musbx_api/exceptions.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 

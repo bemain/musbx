@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/demixer/host.dart';
+import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 
 class Stem {
   /// The default [volume]
