@@ -175,7 +175,7 @@ Please update to the latest version to use the Demixer.""",
       children: [
         ConstrainedBox(
           constraints:
-              BoxConstraints(maxWidth: (description == null) ? 192 : 96),
+              BoxConstraints(maxWidth: (description == null) ? 256 : 160),
           child: Text(
             title,
             maxLines: 1,
