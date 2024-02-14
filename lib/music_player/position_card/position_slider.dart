@@ -70,6 +70,20 @@ class PositionSlider extends StatelessWidget {
                 ? Theme.of(context).colorScheme.background.withOpacity(0.24)
                 : null,
             thumbColor: Theme.of(context).colorScheme.primary,
+            overlayColor: MaterialStateProperty.resolveWith((states) {
+              final colors = Theme.of(context).colorScheme;
+              if (states.contains(MaterialState.dragged)) {
+                return colors.primary.withOpacity(0.12);
+              }
+              if (states.contains(MaterialState.hovered)) {
+                return colors.primary.withOpacity(0.08);
+              }
+              if (states.contains(MaterialState.focused)) {
+                return colors.primary.withOpacity(0.12);
+              }
+
+              return Colors.transparent;
+            }),
             min: 0,
             max: duration.inMilliseconds.roundToDouble(),
             value: position.inMilliseconds
