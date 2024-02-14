@@ -6,7 +6,6 @@ import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/musbx_api/musbx_api.dart';
-import 'package:musbx/music_player/musbx_api/exceptions.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 
@@ -136,7 +135,8 @@ class DemixingProcess {
       stepNotifier.value = DemixingStep.separating;
 
       var subscription = host.jobProgress(response.jobId!).handleError((error) {
-        if (error is! JobNotFoundException) throw error;
+        if (error is! HttpException ||
+            error.message != "The requested Job does not exist") throw error;
       }).listen(null, cancelOnError: true);
       subscription.onData((response) {
         if (_cancelled) {

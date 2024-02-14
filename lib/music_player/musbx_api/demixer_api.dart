@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http_parser/http_parser.dart';
-import 'package:musbx/music_player/musbx_api/exceptions.dart';
 import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/widgets.dart';
 import 'package:http/http.dart' as http;
@@ -76,16 +75,14 @@ class DemixerApiHost extends MusbxApiHost {
     ));
 
     var response = await request.send();
-
-    if (response.statusCode == 488) throw const ServerOverloadedxception();
-    if (response.statusCode == 497) throw const FileTooLargeException();
-    if (response.statusCode != 201) throw const ServerException();
-
     Map<String, dynamic> json =
         jsonDecode(await response.stream.bytesToString());
-    String songId = json["song_id"];
 
-    return UploadResponse(songId, jobId: json["job"]);
+    if (response.statusCode != 201) {
+      throw HttpException(json["message"], uri: url);
+    }
+
+    return UploadResponse(json["song_id"], jobId: json["job"]);
   }
 
   /// Upload a YouTube song to the server.
@@ -98,21 +95,16 @@ class DemixerApiHost extends MusbxApiHost {
     var response = await post("/upload/$youtubeId", headers: {
       "FileType": desiredStemFilesType.name,
     });
-
-    if (response.statusCode == 499) throw const YoutubeVideoNotFoundException();
-    if (response.statusCode == 488) throw const ServerOverloadedxception();
-    if (response.statusCode == 497) throw const FileTooLargeException();
-
     Map<String, dynamic> json = jsonDecode(response.body);
-    String songId = json["song_id"];
 
-    if (response.statusCode == 200) {
-      return UploadResponse(songId);
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw HttpException(json["message"], uri: response.request?.url);
     }
 
-    if (response.statusCode != 201) throw const ServerException();
-
-    return UploadResponse(songId, jobId: json["job"]);
+    if (response.statusCode == 200) {
+      return UploadResponse(json["song_id"]);
+    }
+    return UploadResponse(json["song_id"], jobId: json["job"]);
   }
 
   /// Check the progress of a separation job.
@@ -128,21 +120,24 @@ class DemixerApiHost extends MusbxApiHost {
     while (true) {
       // Check job status
       var response = await get("/job/$jobId");
-      if (response.statusCode == 489) {
-        yield* Stream.error(JobNotFoundException("Job '$jobId' was not found"));
+      final json = jsonDecode(response.body);
+
+      if (response.statusCode != 200) {
+        yield* Stream.error(HttpException(
+          json["message"],
+          uri: response.request?.url,
+        ));
         return;
       }
 
-      if (response.statusCode != 200) throw const ServerException();
-
-      progress = int.tryParse(response.body) ?? progress;
+      progress = int.tryParse(json["progress"]) ?? progress;
       yield SeparationResponse(progress);
 
       await Future.delayed(checkEvery);
     }
   }
 
-  /// Download a [stem] for song with [songId] to the [downloadDirectory].
+  /// Download a [stem] for song with id [songId].
   Future<File> downloadStem(
     String songId,
     StemType stem, {
@@ -151,11 +146,12 @@ class DemixerApiHost extends MusbxApiHost {
     var response = await get("/stem/$songId/${stem.name}", headers: {
       "FileType": fileType.name,
     });
-    if (response.statusCode == 479) {
-      throw StemNotFoundException("Stem '$stem' not found for song '$songId'");
+    if (response.statusCode != 200) {
+      throw HttpException(
+        jsonDecode(response.body)["message"],
+        uri: response.request?.url,
+      );
     }
-
-    if (response.statusCode != 200) throw const ServerException();
 
     // Determine file extension
     assert(response.headers.containsKey("content-disposition"));

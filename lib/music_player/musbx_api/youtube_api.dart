@@ -1,7 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:musbx/music_player/musbx_api/musbx_api.dart';
-import 'package:musbx/music_player/musbx_api/exceptions.dart';
 import 'package:musbx/widgets.dart';
 
 class YoutubeApiHost extends MusbxApiHost {
@@ -15,9 +15,12 @@ class YoutubeApiHost extends MusbxApiHost {
   Future<File> downloadYoutubeSong(String youtubeId) async {
     var response = await get("/download/$youtubeId");
 
-    if (response.statusCode == 497) throw const FileTooLargeException();
-    if (response.statusCode != 200) throw const ServerException();
-
+    if (response.statusCode != 200) {
+      throw HttpException(
+        jsonDecode(response.body)["message"],
+        uri: response.request?.url,
+      );
+    }
     assert(response.headers.containsKey("content-disposition"));
     String fileName =
         response.headers["content-disposition"]!.split("filename=").last.trim();

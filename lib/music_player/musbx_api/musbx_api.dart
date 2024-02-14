@@ -1,11 +1,29 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:musbx/keys.dart';
 import 'package:musbx/music_player/musbx_api/demixer_api.dart';
-import 'package:musbx/music_player/musbx_api/exceptions.dart';
 import 'package:musbx/music_player/musbx_api/youtube_api.dart';
+
+class NoHostAvailableException implements Exception {
+  final String? msg;
+
+  const NoHostAvailableException([this.msg]);
+
+  @override
+  String toString() => msg ?? 'No host is available';
+}
+
+class OutOfDateException implements Exception {
+  final String? msg;
+
+  const OutOfDateException([this.msg]);
+
+  @override
+  String toString() => msg ?? 'The app is out of date with the server';
+}
 
 class MusbxApi {
   /// The version of the server that this is compatible with.
@@ -142,8 +160,13 @@ abstract class MusbxApiHost {
   }) async {
     final response = await get("/version").timeout(timeout);
 
-    if (response.statusCode != 200) throw const ServerException();
     Map<String, dynamic> json = jsonDecode(response.body);
+    if (response.statusCode != 200) {
+      throw HttpException(
+        jsonDecode(response.body)["message"],
+        uri: response.request?.url,
+      );
+    }
 
     return MusbxApiVersion(
       youtubeApiVersion: json["youtube"],
