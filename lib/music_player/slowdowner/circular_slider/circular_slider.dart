@@ -24,7 +24,7 @@ class CircularSlider extends StatefulWidget {
     required this.onChanged,
     this.onChangeStart,
     this.onChangeEnd,
-    this.label,
+    this.child,
     this.min = 0.0,
     this.max = 1.0,
     this.divisionValues,
@@ -83,7 +83,7 @@ class CircularSlider extends StatefulWidget {
   final List<double>? divisionValues;
 
   /// Widget displayed in the center of the slider.
-  final Widget? label;
+  final Widget? child;
 
   /// The radius of the slider, measured from the outside of the track touch area.
   final double outerRadius;
@@ -162,7 +162,7 @@ class CircularSliderState extends State<CircularSlider> {
         child: SizedBox(
           width: size.width,
           height: size.height,
-          child: Center(child: widget.label),
+          child: Center(child: widget.child),
         ),
       ),
     );
