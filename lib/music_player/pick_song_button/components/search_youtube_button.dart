@@ -43,6 +43,7 @@ final HistoryHandler<String> youtubeSearchHistory = HistoryHandler<String>(
   fromJson: (json) => json as String,
   toJson: (value) => value,
   historyFileName: "youtube_search_history",
+  maxEntries: 10,
 );
 
 /// [SearchDelegate] for searching for a song on Youtube.
