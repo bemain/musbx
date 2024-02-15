@@ -106,9 +106,8 @@ class YoutubeSource implements SongSource {
   /// If the device is on a cellular network, prefers stream over downloading to minimize data usage.
   static Future<Uri> getYoutubeAudio(String videoId) async {
     // Use cached audio, if available
-    String cacheDirectory = (await YoutubeApiHost.youtubeDirectory).path;
     for (String extension in allowedExtensions) {
-      File file = File("$cacheDirectory/$videoId.$extension");
+      File file = await YoutubeApiHost.getYoutubeFile(videoId, extension);
       if (await file.exists()) {
         debugPrint(
             "[YOUTUBE] Using cached audio '${file.path}' for YouTube song $videoId");

@@ -11,6 +11,13 @@ class YoutubeApiHost extends MusbxApiHost {
   static final Future<Directory> youtubeDirectory =
       createTempDirectory("youtube");
 
+  /// The file where the audio for Youtube song with id [youtubeId] is saved.
+  static Future<File> getYoutubeFile(
+    String youtubeId,
+    String extension,
+  ) async =>
+      File("${(await youtubeDirectory).path}/$youtubeId.$extension");
+
   /// Download the audio for a Youtube video.
   Future<File> downloadYoutubeSong(String youtubeId) async {
     var response = await get("/download/$youtubeId");
@@ -25,7 +32,9 @@ class YoutubeApiHost extends MusbxApiHost {
     String fileName =
         response.headers["content-disposition"]!.split("filename=").last.trim();
     assert(fileName.isNotEmpty);
-    File file = File("${(await youtubeDirectory).path}/$fileName");
+    String fileExtension = fileName.split(".").last;
+    print(fileExtension);
+    File file = await getYoutubeFile(youtubeId, fileExtension);
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }

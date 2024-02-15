@@ -10,6 +10,7 @@ class HistoryHandler<T> extends ChangeNotifier {
     required this.fromJson,
     required this.toJson,
     required this.historyFileName,
+    this.onEntryRemoved,
     this.maxEntries = 5,
   });
 
@@ -20,10 +21,13 @@ class HistoryHandler<T> extends ChangeNotifier {
   final String historyFileName;
 
   /// Convert json from the history file to the desired type.
-  T Function(dynamic json) fromJson;
+  final T Function(dynamic json) fromJson;
 
   /// Convert a history entry to json, that is then saved to the history file.
-  dynamic Function(T value) toJson;
+  final dynamic Function(T value) toJson;
+
+  /// Callback for when an entry is removed from the history due to [maxEntries] being exceeded.
+  final void Function(MapEntry<DateTime, T> entry)? onEntryRemoved;
 
   /// The file where song history is saved.
   Future<File> get _historyFile async => File(
@@ -66,6 +70,7 @@ class HistoryHandler<T> extends ChangeNotifier {
   }
 
   /// Add [newValue] to the history.
+  /// Only keeps the [maxEntries] most recent entries.
   ///
   /// Notifies listeners when done.
   Future<void> add(T newValue) async {
@@ -73,21 +78,21 @@ class HistoryHandler<T> extends ChangeNotifier {
     history.removeWhere((key, value) => value == newValue);
 
     history[DateTime.now()] = newValue;
-    await save();
 
+    // Only keep the [maxEntries] newest entries
+    while (history.length > maxEntries) {
+      final oldestEntry = history.entries.reduce((oldest, element) =>
+          element.key.isBefore(oldest.key) ? element : oldest);
+      history.remove(oldestEntry.key);
+      onEntryRemoved?.call(oldestEntry);
+    }
+
+    await save();
     notifyListeners();
   }
 
   /// Save history entries to disk.
   Future<void> save() async {
-    // Only keep the [historyLength] newest entries
-    while (history.length > maxEntries) {
-      history.remove(history.entries
-          .reduce((oldest, element) =>
-              element.key.isBefore(oldest.key) ? element : oldest)
-          .key);
-    }
-
     await (await _historyFile).writeAsString(jsonEncode(history.map(
       (date, song) => MapEntry(
         date.toString(),
