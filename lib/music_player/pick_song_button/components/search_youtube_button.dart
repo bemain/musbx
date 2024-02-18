@@ -6,7 +6,6 @@ import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/history_handler.dart';
 import 'package:musbx/widgets.dart';
-import 'package:musbx/keys.dart';
 
 /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
 Future<void> pickYoutubeSong(BuildContext context) async {
@@ -44,14 +43,12 @@ final HistoryHandler<String> youtubeSearchHistory = HistoryHandler<String>(
   fromJson: (json) => json as String,
   toJson: (value) => value,
   historyFileName: "youtube_search_history",
+  maxEntries: 10,
 );
 
 /// [SearchDelegate] for searching for a song on Youtube.
 class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   YoutubeSearchDelegate() : super(searchFieldLabel: "Search YouTube");
-
-  /// The API key used to access Youtube.
-  final YoutubeApi youtubeApi = YoutubeApi(key: youtubeApiKey);
 
   @override
   Widget? buildLeading(BuildContext context) {
@@ -168,10 +165,10 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
     // Try using the [query] as a video id
     final YoutubeVideo? videoById =
-        await youtubeApi.getVideoById(query.replaceAll(' ', ''));
+        await YoutubeDataApi.getVideoById(query.replaceAll(' ', ''));
     if (videoById != null) return [videoById];
 
-    return await youtubeApi.search(query, type: "video", maxResults: 50);
+    return await YoutubeDataApi.search(query, type: "video", maxResults: 50);
   }
 
   /// Result item, showing a [YouTubeVideo]'s title, channel and thumbnail.

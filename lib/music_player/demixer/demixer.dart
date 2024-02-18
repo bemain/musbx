@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/demixer/demixer_api.dart';
-import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
+import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
-import 'package:musbx/music_player/demixer/host.dart';
 import 'package:musbx/music_player/demixer/mixed_audio_source.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
 import 'package:musbx/music_player/looper/looper.dart';
+import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/music_player/song.dart';
@@ -160,7 +159,7 @@ class Demixer extends MusicPlayerComponent {
 
     if (enabled) {
       // Load wav files
-      Directory directory = await DemixerApi.demixerDirectory;
+      Directory directory = await DemixerApiHost.demixerDirectory;
       Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
           MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
 

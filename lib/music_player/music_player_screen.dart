@@ -88,97 +88,85 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
     return ValueListenableBuilder(
       valueListenable: musicPlayer.stateNotifier,
       builder: (context, state, _) {
-        final List<Song> songHistory = musicPlayer.songHistory
-            .sorted(ascending: true)
-          ..remove(musicPlayer.song);
-
-        return Scaffold(
-          floatingActionButton: SpeedDial(
-            children: [
-              ...(songHistory).map(_buildHistoryItem).toList(),
-              if (songHistory.isNotEmpty) SpeedDialSpacer(),
-              UploadSongButton(),
-            ],
-            onExpandedPressed: musicPlayer.isLoading
-                ? null
-                : () async {
-                    await pickYoutubeSong(context);
-                  },
-            expandedChild: const Icon(Icons.search_rounded),
-            expandedLabel: const Text("Search YouTube"),
-            child: const Icon(Icons.add_rounded),
-          ),
-          body: state == MusicPlayerState.idle
-              ? _buildWelcomeScreen(context)
-              : Stack(
+        return state == MusicPlayerState.idle
+            ? _buildWelcomeScreen(context)
+            : Scaffold(
+                body: ListView(
                   children: [
-                    ListView(
-                      children: [
-                        const DefaultAppBar(
-                          scrolledUnderElevation: 0.0,
-                          helpText: helpText,
-                        ),
-                        WidgetCard(child: SlowdownerCard()),
-                        WidgetCard(child: LoopCard()),
-                        WidgetCard(child: DemixerCard()),
-                        if (!Platform.isIOS) WidgetCard(child: EqualizerCard()),
-                        if (positionCardSize != null)
-                          SizedBox(height: positionCardSize!.height + 4.0)
+                    const DefaultAppBar(
+                      scrolledUnderElevation: 0.0,
+                      helpText:
+                          """Press the plus-button and load a song from your device or YouTube.
+
+- Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.
+- Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
+- Mute or isolate specific instruments using the Demixer.""",
+                    ),
+                    WidgetCard(child: SlowdownerCard()),
+                    WidgetCard(child: LoopCard()),
+                    WidgetCard(child: DemixerCard()),
+                    if (Platform.isAndroid) WidgetCard(child: EqualizerCard()),
+                    if (positionCardSize != null)
+                      SizedBox(height: positionCardSize!.height + 4.0)
+                  ],
+                ),
+                bottomSheet: MeasureSize(
+                  onSizeChanged: (Size size) {
+                    setState(() {
+                      positionCardSize = size;
+                    });
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .shadow
+                              .withOpacity(0.25),
+                          blurRadius: 8.0,
+                          spreadRadius: 4.0,
+                        )
                       ],
                     ),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: MeasureSize(
-                        onSizeChanged: (Size size) {
-                          setState(() {
-                            positionCardSize = size;
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .shadow
-                                    .withOpacity(0.25),
-                                blurRadius: 8.0,
-                                spreadRadius: 4.0,
-                              )
-                            ],
-                          ),
-                          child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(12.0),
-                              ),
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(12.0),
+                        ),
+                      ),
+                      color: Theme.of(context).colorScheme.surface,
+                      elevation: 3.0,
+                      margin: EdgeInsets.zero,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CurrentSongPanel(),
+                            PositionSlider(),
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                ButtonPanel(),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: _buildSpeedDial(),
+                                )
+                              ],
                             ),
-                            color: Theme.of(context).colorScheme.surface,
-                            elevation: 3.0,
-                            margin: EdgeInsets.zero,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CurrentSongPanel(),
-                                  PositionSlider(),
-                                  ButtonPanel(),
-                                ],
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-        );
+              );
       },
     );
   }
@@ -186,6 +174,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
   Widget _buildWelcomeScreen(BuildContext context) {
     return Scaffold(
       appBar: const DefaultAppBar(helpText: helpText),
+      floatingActionButton: _buildSpeedDial(),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -226,6 +215,28 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSpeedDial() {
+    final List<Song> songHistory = musicPlayer.songHistory
+        .sorted(ascending: true)
+      ..remove(musicPlayer.song);
+
+    return SpeedDial(
+      children: [
+        ...(songHistory).map(_buildHistoryItem).toList(),
+        if (songHistory.isNotEmpty) SpeedDialSpacer(),
+        UploadSongButton(),
+      ],
+      onExpandedPressed: MusicPlayer.instance.isLoading
+          ? null
+          : () async {
+              await pickYoutubeSong(context);
+            },
+      expandedChild: const Icon(Icons.search_rounded),
+      expandedLabel: const Text("Search YouTube"),
+      child: const Icon(Icons.add_rounded),
     );
   }
 

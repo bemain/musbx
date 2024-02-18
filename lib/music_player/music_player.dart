@@ -8,7 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/audio_handler.dart';
+import 'package:musbx/music_player/musbx_api/demixer_api.dart';
+import 'package:musbx/music_player/musbx_api/youtube_api.dart';
 import 'package:musbx/music_player/pick_song_button/components/search_youtube_button.dart';
+import 'package:musbx/music_player/pick_song_button/components/upload_file_button.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
@@ -84,6 +87,23 @@ class MusicPlayer {
     },
     toJson: (value) => value.toJson(),
     historyFileName: "song_history",
+    onEntryRemoved: (entry) async {
+      // Remove cached files
+      if (entry.value.source is YoutubeSource) {
+        final String videoId = (entry.value.source as YoutubeSource).youtubeId;
+        for (String extension in allowedExtensions) {
+          File file = await YoutubeApiHost.getYoutubeFile(videoId, extension);
+          if (await file.exists()) await file.delete();
+        }
+      }
+      final Directory stemsDirectory =
+          await DemixerApiHost.getSongDirectory(entry.value.id);
+      if (await stemsDirectory.exists()) {
+        debugPrint(
+            "[SONG HISTORY] Deleting cached stem files for song ${entry.value.id}");
+        await stemsDirectory.delete(recursive: true);
+      }
+    },
   );
 
   /// Start or resume playback.
@@ -139,6 +159,7 @@ class MusicPlayer {
   /// Component for adjusting the gain for different frequency bands of the song.
   final Equalizer equalizer = Equalizer();
 
+  /// Component for isolating or music specific instruments of the song.
   final Demixer demixer = Demixer();
 
   /// The process currently loading a song, or `null` if no song has been loaded.

@@ -74,7 +74,7 @@ class DemixerCard extends StatelessWidget {
       default:
         return ValueListenableBuilder(
           valueListenable: musicPlayer.demixer.stemsNotifier,
-          builder: (context, stemEnabled, child) => Column(
+          builder: (context, stems, child) => Column(
             children: [
               for (Stem stem in musicPlayer.demixer.stems)
                 StemControls(stem: stem),

@@ -4,9 +4,8 @@ import 'dart:io';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/demixer/demixer_api.dart';
-import 'package:musbx/music_player/demixer/demixer_api_exceptions.dart';
-import 'package:musbx/music_player/demixer/host.dart';
+import 'package:musbx/music_player/musbx_api/demixer_api.dart';
+import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 
@@ -89,7 +88,7 @@ class DemixingProcess {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
-    Directory songDirectory = await DemixerApi.getSongDirectory(song.id);
+    Directory songDirectory = await DemixerApiHost.getSongDirectory(song.id);
     Map<StemType, File>? cachedStemFiles = await getStemsInCache(songDirectory);
     if (cachedStemFiles != null) {
       debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
@@ -109,7 +108,7 @@ class DemixingProcess {
 
     stepNotifier.value = DemixingStep.findingHost;
 
-    Host host = await DemixerApi.findHost();
+    DemixerApiHost host = await MusbxApi.findDemixerHost();
 
     if (_cancelled) return null;
 
@@ -136,7 +135,8 @@ class DemixingProcess {
       stepNotifier.value = DemixingStep.separating;
 
       var subscription = host.jobProgress(response.jobId!).handleError((error) {
-        if (error is! JobNotFoundException) throw error;
+        if (error is! HttpException ||
+            error.message != "The requested Job does not exist") throw error;
       }).listen(null, cancelOnError: true);
       subscription.onData((response) {
         if (_cancelled) {
@@ -168,7 +168,6 @@ class DemixingProcess {
         File file = await host.downloadStem(
           songId,
           stem,
-          songDirectory,
         );
         stepProgressNotifier.value = (stepProgress ?? 0) + 25;
 
@@ -198,7 +197,7 @@ class DemixingProcess {
 Future<File> mp3ToWav(File file) async {
   /// File name without extension
   String fileName = file.path.split("/").last.split(".").first;
-  String outputDirectoryPath = (await DemixerApi.demixerDirectory).path;
+  String outputDirectoryPath = (await DemixerApiHost.demixerDirectory).path;
 
   // Use ffmpeg to convert files to wav
   String arguments =

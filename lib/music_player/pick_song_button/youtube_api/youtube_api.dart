@@ -2,25 +2,21 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:musbx/keys.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 
-class YoutubeApi {
-  /// Helper class for interacting with the Youtube Data API (https://developers.google.com/youtube/v3).
-  YoutubeApi({required this.key});
-
+/// Helper class for interacting with the Youtube Data API (https://developers.google.com/youtube/v3).
+class YoutubeDataApi {
   /// Headers used when performing a http request.
   static Map<String, String> httpHeaders = {"Accept": "application/json"};
 
-  /// The api key used to access Youtube.
-  String key;
-
   /// Get the video with [id] from Youtube, or null if no video with that [id].
-  Future<YoutubeVideo?> getVideoById(YoutubeVideoId id) async {
+  static Future<YoutubeVideo?> getVideoById(YoutubeVideoId id) async {
     // Generate search query
     final Map<String, dynamic> options = {
       "id": [id],
       "part": "snippet",
-      "key": key,
+      "key": youtubeDataApiKey,
       "type": "video",
     };
     Uri url = Uri.https('www.googleapis.com', "youtube/v3/videos", options);
@@ -39,7 +35,7 @@ class YoutubeApi {
   }
 
   /// Search Youtube for a given [query].
-  Future<List<YoutubeVideo>> search(
+  static Future<List<YoutubeVideo>> search(
     String query, {
     String type = 'video,channel,playlist',
     String order = 'relevance',
@@ -51,7 +47,7 @@ class YoutubeApi {
       "q": query,
       "part": "snippet",
       "maxResults": "$maxResults",
-      "key": key,
+      "key": youtubeDataApiKey,
       "type": type,
       "order": order,
       "videoDuration": videoDuration,
