@@ -88,6 +88,7 @@ class MusicPlayer {
     toJson: (value) => value.toJson(),
     historyFileName: "song_history",
     onEntryRemoved: (entry) async {
+      // Remove cached files
       if (entry.value.source is YoutubeSource) {
         final String videoId = (entry.value.source as YoutubeSource).youtubeId;
         for (String extension in allowedExtensions) {
@@ -98,6 +99,8 @@ class MusicPlayer {
       final Directory stemsDirectory =
           await DemixerApiHost.getSongDirectory(entry.value.id);
       if (await stemsDirectory.exists()) {
+        debugPrint(
+            "[SONG HISTORY] Deleting cached stem files for song ${entry.value.id}");
         await stemsDirectory.delete(recursive: true);
       }
     },
