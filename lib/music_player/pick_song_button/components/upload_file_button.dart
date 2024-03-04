@@ -88,6 +88,8 @@ class UploadSongButton extends SpeedDialChild {
         ? false
         : (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 33;
 
+    if (!context.mounted) return;
+
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => Scaffold(
         body: PermissionBuilder(

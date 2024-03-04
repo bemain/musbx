@@ -36,7 +36,9 @@ class DemixerCard extends StatelessWidget {
                                         DemixerState.done &&
                                     await isOnCellular()) {
                                   // Show warning dialog
-                                  await showCellularWarningDialog(context);
+                                  if (context.mounted) {
+                                    await showCellularWarningDialog(context);
+                                  }
                                   return;
                                 }
 

@@ -48,6 +48,8 @@ class InfoButton extends StatelessWidget {
         onPressed: () async {
           packageInfo ??= await PackageInfo.fromPlatform();
 
+          if (!context.mounted) return;
+
           showAboutDialog(
             context: context,
             applicationIcon: const Padding(

@@ -33,7 +33,6 @@ class YoutubeApiHost extends MusbxApiHost {
         response.headers["content-disposition"]!.split("filename=").last.trim();
     assert(fileName.isNotEmpty);
     String fileExtension = fileName.split(".").last;
-    print(fileExtension);
     File file = await getYoutubeFile(youtubeId, fileExtension);
     await file.writeAsBytes(response.bodyBytes);
     return file;
