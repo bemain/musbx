@@ -154,8 +154,8 @@ Please update to the latest version to use the Demixer.""",
               child: ValueListenableBuilder(
                 valueListenable:
                     musicPlayer.demixer.process!.stepProgressNotifier,
-                builder: (context, progress, child) =>
-                    Text((progress == null) ? "" : "$progress%"),
+                builder: (context, progress, child) => Text(
+                    (progress == null) ? "" : "${(progress * 100).round()}%"),
               ),
             ),
         ],

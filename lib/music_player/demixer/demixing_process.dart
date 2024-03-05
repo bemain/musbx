@@ -50,8 +50,9 @@ class DemixingProcess {
       ValueNotifier(DemixingStep.checkingCache);
 
   /// The progress of the current demixing [step], or `null` if [step] doesn't report progress.
-  int? get stepProgress => stepProgressNotifier.value;
-  final ValueNotifier<int?> stepProgressNotifier = ValueNotifier(null);
+  /// Should be a fraction between 0 and 1.
+  double? get stepProgress => stepProgressNotifier.value;
+  final ValueNotifier<double?> stepProgressNotifier = ValueNotifier(null);
 
   /// Queue this job for cancellation.
   void cancel() {
@@ -99,7 +100,7 @@ class DemixingProcess {
 
       for (final entry in cachedStemFiles.entries) {
         cachedStemFiles[entry.key] = await mp3ToWav(entry.value);
-        stepProgressNotifier.value = (stepProgress ?? 0) + 25;
+        stepProgressNotifier.value = (stepProgress ?? 0) + 0.25;
         if (_cancelled) return null;
       }
 
@@ -149,7 +150,7 @@ class DemixingProcess {
           stepProgressNotifier.value = null;
         } else {
           // Update demixing progress
-          stepProgressNotifier.value = response.progress;
+          stepProgressNotifier.value = response.progress / 100;
         }
       });
 
@@ -169,7 +170,7 @@ class DemixingProcess {
           songId,
           stem,
         );
-        stepProgressNotifier.value = (stepProgress ?? 0) + 25;
+        stepProgressNotifier.value = (stepProgress ?? 0) + 0.25;
 
         return MapEntry(stem, file);
       }),
@@ -184,7 +185,7 @@ class DemixingProcess {
     for (final entry in stemFiles.entries) {
       stemFiles[entry.key] = await mp3ToWav(entry.value);
 
-      stepProgressNotifier.value = (stepProgress ?? 0) + 25;
+      stepProgressNotifier.value = (stepProgress ?? 0) + 0.25;
 
       if (_cancelled) return null;
     }
