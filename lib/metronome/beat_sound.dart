@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 enum BeatSound {
-  primary(fileName: "sticks.wav"),
-  accented(fileName: "cowbell.mp3"),
-  none(fileName: "");
+  primary("sticks_low.mp3"),
+  accented("sticks_high.mp3"),
+  none("silence.mp3");
 
-  const BeatSound({required this.fileName});
+  const BeatSound(this.fileName);
 
-  /// File used when playing this sound, e.g. in BeatSounds.
+  /// Name of the file used when playing this sound.
   final String fileName;
 }
 

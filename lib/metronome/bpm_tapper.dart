@@ -61,7 +61,7 @@ class BpmTapper extends StatelessWidget {
         }
 
         // Stop metronome so it doesn't play sound while user is tapping
-        Metronome.instance.stop();
+        Metronome.instance.pause();
 
         // Add bpm
         tapBpms.add(60000 ~/ stopwatch.elapsedMilliseconds);

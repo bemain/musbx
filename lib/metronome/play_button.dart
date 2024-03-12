@@ -10,14 +10,14 @@ class PlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
-      valueListenable: Metronome.instance.isRunningNotifier,
+      valueListenable: Metronome.instance.isPlayingNotifier,
       builder: (context, bool isRunning, child) {
         return TextButton(
           onPressed: () {
             if (isRunning) {
-              Metronome.instance.stop();
+              Metronome.instance.pause();
             } else {
-              Metronome.instance.start();
+              Metronome.instance.play();
             }
           },
           child: Icon(

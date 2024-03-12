@@ -30,13 +30,13 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
     // Listen for changes to:
     // - sounds: change number of circles
     // - count: change which circle is highlighted.
-    metronome.beatSounds.addListener(_listenForUpdates);
+    metronome.beats.addListener(_listenForUpdates);
     metronome.countNotifier.addListener(_listenForUpdates);
   }
 
   @override
   void dispose() {
-    metronome.beatSounds.removeListener(_listenForUpdates);
+    metronome.beats.removeListener(_listenForUpdates);
     metronome.countNotifier.removeListener(_listenForUpdates);
     super.dispose();
   }
@@ -52,13 +52,13 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ..._buildBeatButtons(),
-        if (metronome.beatSounds.length < 8)
+        if (metronome.higher < 8)
           Ink(
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: () {
                 HapticFeedback.vibrate();
-                metronome.beatSounds.add(BeatSound.primary);
+                metronome.beats.add(BeatSound.primary);
               },
               child: const Padding(
                 padding: EdgeInsets.all(8),
@@ -71,7 +71,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
   }
 
   List<Widget> _buildBeatButtons() {
-    return metronome.beatSounds.sounds
+    return metronome.beats
         .asMap()
         .map((int index, BeatSound sound) => MapEntry(
               index,
@@ -80,13 +80,13 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                   customBorder: const CircleBorder(),
                   onTap: () {
                     // Change beat sound
-                    var sound = metronome.beatSounds[index];
-                    metronome.beatSounds[index] = BeatSound
+                    var sound = metronome.beats[index];
+                    metronome.beats[index] = BeatSound
                         .values[(sound.index + 1) % BeatSound.values.length];
                   },
                   onLongPress: () {
-                    if (metronome.beatSounds.length >= 2) {
-                      metronome.beatSounds.removeAt(index);
+                    if (metronome.beats.length >= 2) {
+                      metronome.beats.removeAt(index);
                     }
                   },
                   child: Padding(

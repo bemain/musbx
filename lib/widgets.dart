@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:collection';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -156,4 +157,38 @@ Future<Directory> createTempDirectory(String name) async {
   var dir = Directory("${(await getTemporaryDirectory()).path}/$name/");
   await dir.create(recursive: true);
   return dir;
+}
+
+class ListenableList<T> extends ListBase<T> with ChangeNotifier {
+  ListenableList(this._value);
+
+  final List<T> _value;
+
+  @override
+  int get length => _value.length;
+  @override
+  set length(int newLength) {
+    _value.length = newLength;
+  }
+
+  @override
+  T operator [](int index) => _value[index];
+
+  @override
+  operator []=(int index, T value) {
+    _value[index] = value;
+    notifyListeners();
+  }
+
+  @override
+  void add(T element) {
+    _value.add(element);
+    notifyListeners();
+  }
+
+  @override
+  void addAll(Iterable<T> iterable) {
+    _value.addAll(iterable);
+    notifyListeners();
+  }
 }
