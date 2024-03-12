@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:soundpool/soundpool.dart';
 
@@ -44,11 +45,14 @@ class BpmTapper extends StatelessWidget {
     }
 
     return Listener(
-      onPointerDown: (_) {
+      onPointerDown: (_) async {
         // Play sound
         if (soundId != null) _pool.play(soundId!);
-        // Vibrate
-        HapticFeedback.vibrate();
+
+        if (await FlutterVolumeController.getMute() == true) {
+          // Vibrate
+          HapticFeedback.vibrate();
+        }
 
         if (!stopwatch.isRunning || stopwatch.elapsed > resetDuration) {
           // Complete reset
