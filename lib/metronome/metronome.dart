@@ -19,7 +19,7 @@ class Metronome {
     });
 
     player.currentIndexStream.listen((index) {
-      count = index;
+      count = index ?? 0;
     });
 
     reset();
@@ -54,9 +54,9 @@ class Metronome {
         ..addListener(reset);
 
   /// The current beat. Ranges from 0 to [higher] - 1.
-  int? get count => countNotifier.value;
-  set count(int? value) => countNotifier.value = value;
-  final ValueNotifier<int?> countNotifier = ValueNotifier(0);
+  int get count => countNotifier.value;
+  set count(int value) => countNotifier.value = value;
+  final ValueNotifier<int> countNotifier = ValueNotifier(0);
 
   /// Whether the metronome is playing.
   bool get isPlaying => isPlayingNotifier.value;
@@ -97,8 +97,6 @@ class Metronome {
 
   /// Reset [count] and restart playback.
   Future<void> reset() async {
-    count = null;
-
     loadAudioLock = _updateAudioSource(awaitBeforeLoading: loadAudioLock);
     await loadAudioLock;
   }
