@@ -39,9 +39,8 @@ class BpmTapper extends StatelessWidget {
 
     // Make sure sound has been loaded.
     if (soundId == null) {
-      rootBundle.load("assets/sounds/bpm_tapper.mp3").then(
-          (ByteData soundData) =>
-              _pool.load(soundData).then((value) => soundId = value));
+      rootBundle.load("assets/sounds/ping.wav").then((ByteData soundData) =>
+          _pool.load(soundData).then((value) => soundId = value));
     }
 
     return Listener(
@@ -68,9 +67,10 @@ class BpmTapper extends StatelessWidget {
         // Only keep the last [tapsRemembered] taps
         tapBpms.removeRange(0, max(tapBpms.length - tapsRemembered, 0));
 
-        // Calculate average
+        // Update bpm
         Metronome.instance.bpm =
             tapBpms.reduce((a, b) => a + b) ~/ tapBpms.length;
+        Metronome.instance.reset();
 
         // Reset stopwatch
         stopwatch.reset();
