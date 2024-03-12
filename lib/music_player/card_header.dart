@@ -47,7 +47,7 @@ class CardHeader extends StatelessWidget {
           child: IconButton(
             iconSize: 20,
             onPressed: musicPlayer.nullIfNoSongElse(onResetPressed),
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const Icon(Icons.refresh),
           ),
         ),
       ],

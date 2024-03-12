@@ -193,7 +193,7 @@ Please update to the latest version to use the Demixer.""",
                 },
               );
             },
-            icon: const Icon(Icons.info_outline_rounded),
+            icon: const Icon(Icons.info_outline),
           )
       ],
     );

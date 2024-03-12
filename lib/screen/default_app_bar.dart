@@ -64,6 +64,6 @@ class InfoButton extends StatelessWidget {
             children: (child == null) ? null : [child!],
           );
         },
-        icon: const Icon(Icons.info_outline_rounded));
+        icon: const Icon(Icons.info_outline));
   }
 }

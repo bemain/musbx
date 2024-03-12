@@ -77,7 +77,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
           query = "";
         },
         color: Theme.of(context).colorScheme.onSurfaceVariant,
-        icon: const Icon(Icons.clear_rounded),
+        icon: const Icon(Icons.clear),
       )
     ];
   }
@@ -106,7 +106,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
         children: youtubeSearchHistory.sorted().map((query) {
           return ListTile(
             leading: Icon(
-              Icons.history_rounded,
+              Icons.history,
               color: Theme.of(context).colorScheme.outline,
             ),
             title: Text(query),
@@ -115,9 +115,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
               color: Theme.of(context).colorScheme.outline,
               icon: const RotatedBox(
                 quarterTurns: -1,
-                child: Icon(
-                  Icons.arrow_outward_rounded,
-                ),
+                child: Icon(Icons.arrow_outward),
               ),
             ),
             onTap: () {

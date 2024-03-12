@@ -44,9 +44,10 @@ class TunerScreenState extends State<TunerScreen> {
         body: CardList(
           children: [
             TunerGauge(
-                note: (tuner.noteHistory.isNotEmpty)
-                    ? tuner.noteHistory.last
-                    : null),
+              note: (tuner.noteHistory.isNotEmpty)
+                  ? tuner.noteHistory.last
+                  : null,
+            ),
             TuningGraph(noteHistory: tuner.noteHistory),
           ],
         ),

@@ -197,11 +197,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
             const SizedBox(height: 16.0),
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Press the"),
-                Icon(Icons.add_rounded),
-                Text("to begin")
-              ],
+              children: [Text("Press the"), Icon(Icons.add), Text("to begin")],
             ),
             const SizedBox(height: 64.0),
             Padding(
@@ -234,9 +230,9 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           : () async {
               await pickYoutubeSong(context);
             },
-      expandedChild: const Icon(Icons.search_rounded),
+      expandedChild: const Icon(Icons.search),
       expandedLabel: const Text("Search YouTube"),
-      child: const Icon(Icons.add_rounded),
+      child: const Icon(Icons.add),
     );
   }
 
@@ -276,7 +272,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
 
   Widget? _buildSongSourceAvatar(Song song) {
     if (song.source is FileSource) {
-      return const Icon(Icons.file_present_rounded);
+      return const Icon(Icons.file_present);
     }
     if (song.source is YoutubeSource) {
       return const Icon(CustomIcons.youtube);
