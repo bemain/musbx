@@ -1,16 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/metronome/beat_sound.dart';
 import 'package:musbx/widgets.dart';
-
-// TODO: Implement playing modes
-enum PlayingMode {
-  sound,
-  vibrate,
-  both,
-}
 
 class Metronome {
   Metronome._() {
@@ -18,8 +13,12 @@ class Metronome {
       isPlayingNotifier.value = playing;
     });
 
-    player.currentIndexStream.listen((index) {
+    player.currentIndexStream.listen((index) async {
       count = index ?? 0;
+
+      if (await FlutterVolumeController.getMute() == true) {
+        HapticFeedback.vibrate();
+      }
     });
 
     reset();
