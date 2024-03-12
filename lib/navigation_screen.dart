@@ -62,7 +62,7 @@ class NavigationScreenState extends State<NavigationScreen> {
           ),
           NavigationDestination(
             label: "Music player",
-            icon: Icon(Icons.music_note_rounded),
+            icon: Icon(Icons.music_note),
           ),
           NavigationDestination(
             label: "Tuner",

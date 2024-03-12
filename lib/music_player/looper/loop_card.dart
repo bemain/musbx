@@ -94,7 +94,7 @@ class LoopCard extends StatelessWidget {
                 musicPlayer.looper.section =
                     LoopSection(end: musicPlayer.duration);
               },
-        icon: const Icon(Icons.refresh_rounded),
+        icon: const Icon(Icons.refresh),
       ),
     );
   }

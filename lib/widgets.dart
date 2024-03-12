@@ -68,7 +68,7 @@ class ErrorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InfoScreen(
-      icon: const Icon(Icons.error),
+      icon: const Icon(Icons.error_rounded),
       text: text,
     );
   }

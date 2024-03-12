@@ -192,7 +192,7 @@ class SlowdownerCard extends StatelessWidget {
                   musicPlayer.slowdowner.setSpeed(1.0);
                   musicPlayer.slowdowner.setPitchSemitones(0);
                 },
-          icon: const Icon(Icons.refresh_rounded),
+          icon: const Icon(Icons.refresh),
         ),
       ),
     );

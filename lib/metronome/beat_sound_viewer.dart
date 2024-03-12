@@ -62,7 +62,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
               },
               child: const Padding(
                 padding: EdgeInsets.all(8),
-                child: Icon(Icons.add_circle_outline_rounded),
+                child: Icon(Icons.add_circle_outline),
               ),
             ),
           )
