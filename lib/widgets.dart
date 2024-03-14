@@ -159,36 +159,39 @@ Future<Directory> createTempDirectory(String name) async {
   return dir;
 }
 
-class ListenableList<T> extends ListBase<T> with ChangeNotifier {
-  ListenableList(this._value);
+class ListNotifier<T> extends ChangeNotifier {
+  ListNotifier(this._value);
 
   final List<T> _value;
 
-  @override
-  int get length => _value.length;
-  @override
-  set length(int newLength) {
-    _value.length = newLength;
-  }
+  /// The current value stored in this notifier.
+  UnmodifiableListView<T> get value => UnmodifiableListView(_value);
 
-  @override
   T operator [](int index) => _value[index];
-
-  @override
   operator []=(int index, T value) {
     _value[index] = value;
     notifyListeners();
   }
 
-  @override
   void add(T element) {
     _value.add(element);
     notifyListeners();
   }
 
-  @override
   void addAll(Iterable<T> iterable) {
     _value.addAll(iterable);
     notifyListeners();
+  }
+
+  bool remove(T element) {
+    final ret = _value.remove(element);
+    notifyListeners();
+    return ret;
+  }
+
+  T removeAt(int index) {
+    final ret = _value.removeAt(index);
+    notifyListeners();
+    return ret;
   }
 }

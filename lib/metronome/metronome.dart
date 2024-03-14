@@ -43,13 +43,13 @@ class Metronome {
   final ValueNotifier<int> bpmNotifier = ValueNotifier(60);
 
   /// The number of beats per bar.
-  int get higher => beats.length;
+  int get higher => beats.value.length;
 
   /// The beats played by the metronome.
   ///
   /// Automatically resets [count] when changed.
-  late final ListenableList<BeatSound> beats =
-      ListenableList(List.generate(4, (i) => BeatSound.primary))
+  late final ListNotifier<BeatSound> beats =
+      ListNotifier(List.generate(4, (i) => BeatSound.primary))
         ..addListener(reset);
 
   /// The current beat. Ranges from 0 to [higher] - 1.
@@ -63,7 +63,7 @@ class Metronome {
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 
   /// The [AudioPlayer] used for playback.
-  AudioPlayer player = AudioPlayer()..setLoopMode(LoopMode.all);
+  final AudioPlayer player = AudioPlayer()..setLoopMode(LoopMode.all);
 
   /// The process currently loading an [AudioSource], or `null` if no source has been loaded.
   ///
@@ -105,7 +105,7 @@ class Metronome {
     await awaitBeforeLoading;
     await player.setAudioSource(ConcatenatingAudioSource(
       useLazyPreparation: false,
-      children: beats
+      children: beats.value
           .map((beat) => ClippingAudioSource(
                 start: Duration.zero,
                 end: Duration(milliseconds: 60000 ~/ bpm),

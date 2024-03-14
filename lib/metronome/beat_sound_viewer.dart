@@ -71,7 +71,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
   }
 
   List<Widget> _buildBeatButtons() {
-    return metronome.beats
+    return metronome.beats.value
         .asMap()
         .map((int index, BeatSound sound) => MapEntry(
               index,
@@ -85,7 +85,7 @@ class BeatSoundViewerState extends State<BeatSoundViewer> {
                         .values[(sound.index + 1) % BeatSound.values.length];
                   },
                   onLongPress: () {
-                    if (metronome.beats.length >= 2) {
+                    if (metronome.higher >= 2) {
                       metronome.beats.removeAt(index);
                     }
                   },
