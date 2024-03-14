@@ -17,7 +17,7 @@ class Metronome {
       count = index ?? 0;
 
       if (await FlutterVolumeController.getMute() == true) {
-        HapticFeedback.vibrate();
+        _vibrate();
       }
     });
 
@@ -52,7 +52,7 @@ class Metronome {
       ListNotifier(List.generate(4, (i) => BeatSound.primary))
         ..addListener(reset);
 
-  /// The current beat. Ranges from 0 to [higher] - 1.
+  /// The count of the current beat. Ranges from 0 to [higher] - 1.
   int get count => countNotifier.value;
   set count(int value) => countNotifier.value = value;
   final ValueNotifier<int> countNotifier = ValueNotifier(0);
@@ -113,5 +113,18 @@ class Metronome {
               ))
           .toList(),
     ));
+  }
+
+  /// Trigger a vibration based on [count].
+  void _vibrate() {
+    switch (beats[count]) {
+      case BeatSound.primary:
+        HapticFeedback.vibrate();
+        break;
+      case BeatSound.accented:
+        HapticFeedback.heavyImpact();
+        break;
+      case BeatSound.none:
+    }
   }
 }
