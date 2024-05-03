@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
@@ -32,6 +33,9 @@ class Metronome {
 
   /// Maximum [bpm] allowed. [bpm] can never be more than this.
   static const int maxBpm = 400;
+
+  /// Used internally to show notifications.
+  static final AwesomeNotifications _notifications = AwesomeNotifications();
 
   /// Beats per minutes.
   ///
@@ -126,5 +130,61 @@ class Metronome {
         break;
       case BeatSound.none:
     }
+  }
+
+  /// Callback for when the user taps an action on the notification while the app is the background
+  @pragma("vm:entry-point")
+  static Future<void> _onNotificationActionReceived(
+    ReceivedAction action,
+  ) async {
+    print(action);
+  }
+
+  Future<void> intializeNotification() async {
+    await _notifications.initialize(
+      'resource://drawable/ic_notification',
+      [
+        NotificationChannel(
+          channelGroupKey: "metronome-group",
+          channelKey: "metronome-controls",
+          channelName: "Quick Access",
+          channelDescription:
+              "Control the Metronome directly from your notifications drawer",
+          importance: NotificationImportance.Low,
+          enableLights: false,
+          enableVibration: false,
+          playSound: false,
+        ),
+      ],
+      channelGroups: [
+        NotificationChannelGroup(
+          channelGroupKey: "metronome-group",
+          channelGroupName: "Metronome",
+        ),
+      ],
+      debug: true,
+    );
+
+    await _notifications.setListeners(
+      onActionReceivedMethod: _onNotificationActionReceived,
+    );
+
+    // TODO: Don't request during intialization
+    await _notifications.requestPermissionToSendNotifications(
+      channelKey: "metronome-controls",
+      permissions: [NotificationPermission.Alert],
+    );
+
+    await _notifications.createNotification(
+      content: NotificationContent(
+        id: 0,
+        channelKey: "metronome-controls",
+        title: 'Metronome',
+        color: Colors.transparent,
+        category: NotificationCategory.Service,
+        actionType: ActionType.Default,
+        autoDismissible: false,
+      ),
+    );
   }
 }
