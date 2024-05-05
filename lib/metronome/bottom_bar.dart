@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/metronome/beat_sound_viewer.dart';
+import 'package:musbx/metronome/count_display.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';
@@ -50,7 +50,7 @@ class MetronomeBottomBarState extends State<MetronomeBottomBar> {
           ),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
-            child: BeatSoundViewer(),
+            child: CountDisplay(),
           )
         ],
       ),

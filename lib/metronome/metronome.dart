@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/metronome/beat_sound.dart';
-import 'package:musbx/widgets.dart';
 
 class Metronome {
   Metronome._() {
@@ -15,7 +14,7 @@ class Metronome {
     });
 
     player.currentIndexStream.listen((index) async {
-      count = index ?? 0;
+      countNotifier.value = index ?? 0;
 
       if (await FlutterVolumeController.getMute() == true) {
         _vibrate();
@@ -46,19 +45,23 @@ class Metronome {
   set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
   final ValueNotifier<int> bpmNotifier = ValueNotifier(60);
 
-  /// The number of beats per bar.
-  int get higher => beats.value.length;
+  /// The number of notes per bar.
+  int get higher => higherNotifier.value;
+  set higher(int value) => higherNotifier.value = value;
+  late final ValueNotifier<int> higherNotifier = ValueNotifier(4)
+    ..addListener(reset);
 
-  /// The beats played by the metronome.
-  ///
-  /// Automatically resets [count] when changed.
-  late final ListNotifier<BeatSound> beats =
-      ListNotifier(List.generate(4, (i) => BeatSound.primary))
-        ..addListener(reset);
+  /// The note value that the time signature is counting.
+  int get lower => lowerNotifier.value;
+  set lower(int value) => lowerNotifier.value = value;
+  final ValueNotifier<int> lowerNotifier = ValueNotifier(4);
+
+  /// The number of notes each beat is divided into.
+  int get subdivisions => subdivisionsNotifier.value;
+  final ValueNotifier<int> subdivisionsNotifier = ValueNotifier(1);
 
   /// The count of the current beat. Ranges from 0 to [higher] - 1.
   int get count => countNotifier.value;
-  set count(int value) => countNotifier.value = value;
   final ValueNotifier<int> countNotifier = ValueNotifier(0);
 
   /// Whether the metronome is playing.
@@ -107,28 +110,27 @@ class Metronome {
   /// Awaits [awaitBeforeLoading] and then updates the [player]'s audio source.
   Future<void> _updateAudioSource({Future<void>? awaitBeforeLoading}) async {
     await awaitBeforeLoading;
+
     await player.setAudioSource(ConcatenatingAudioSource(
       useLazyPreparation: false,
-      children: beats.value
-          .map((beat) => ClippingAudioSource(
-                start: Duration.zero,
-                end: Duration(milliseconds: 60000 ~/ bpm),
-                child: AudioSource.asset("assets/sounds/${beat.fileName}"),
-              ))
-          .toList(),
+      children: List.generate(higher, (index) {
+        final beat = index == 0 ? BeatSound.accented : BeatSound.primary;
+
+        return ClippingAudioSource(
+          start: Duration.zero,
+          end: Duration(milliseconds: 60000 ~/ bpm),
+          child: AudioSource.asset("assets/sounds/${beat.fileName}"),
+        );
+      }),
     ));
   }
 
-  /// Trigger a vibration based on [count].
+  /// Trigger a vibration based on the current [count].
   void _vibrate() {
-    switch (beats[count]) {
-      case BeatSound.primary:
-        HapticFeedback.vibrate();
-        break;
-      case BeatSound.accented:
-        HapticFeedback.heavyImpact();
-        break;
-      case BeatSound.none:
+    if (count == 0) {
+      HapticFeedback.vibrate();
+    } else {
+      HapticFeedback.heavyImpact();
     }
   }
 
