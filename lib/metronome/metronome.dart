@@ -5,7 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musbx/metronome/beat_sound.dart';
+
+enum BeatSound {
+  accented("ping.mp3"),
+  primary("sticks_high.mp3"),
+  subdivision("sticks_low.mp3");
+
+  const BeatSound(this.fileName);
+
+  /// Name of the file used when playing this sound.
+  final String fileName;
+}
 
 class Metronome {
   Metronome._() {
@@ -14,7 +24,7 @@ class Metronome {
     });
 
     player.currentIndexStream.listen((index) async {
-      countNotifier.value = index ?? 0;
+      countNotifier.value = (index ?? 0) ~/ subdivisions;
 
       if (await FlutterVolumeController.getMute() == true) {
         _vibrate();
@@ -31,7 +41,7 @@ class Metronome {
   static const int minBpm = 20;
 
   /// Maximum [bpm] allowed. [bpm] can never be more than this.
-  static const int maxBpm = 400;
+  static const int maxBpm = 200;
 
   /// Used internally to show notifications.
   static final AwesomeNotifications _notifications = AwesomeNotifications();
@@ -58,7 +68,9 @@ class Metronome {
 
   /// The number of notes each beat is divided into.
   int get subdivisions => subdivisionsNotifier.value;
-  final ValueNotifier<int> subdivisionsNotifier = ValueNotifier(1);
+  set subdivisions(int value) => subdivisionsNotifier.value = value;
+  late final ValueNotifier<int> subdivisionsNotifier = ValueNotifier(1)
+    ..addListener(reset);
 
   /// The count of the current beat. Ranges from 0 to [higher] - 1.
   int get count => countNotifier.value;
@@ -112,13 +124,17 @@ class Metronome {
     await awaitBeforeLoading;
 
     await player.setAudioSource(ConcatenatingAudioSource(
-      useLazyPreparation: false,
-      children: List.generate(higher, (index) {
-        final beat = index == 0 ? BeatSound.accented : BeatSound.primary;
+      useLazyPreparation: true,
+      children: List.generate(higher * subdivisions, (index) {
+        final beat = index == 0
+            ? BeatSound.accented
+            : index % subdivisions == 0
+                ? BeatSound.primary
+                : BeatSound.subdivision;
 
         return ClippingAudioSource(
           start: Duration.zero,
-          end: Duration(milliseconds: 60000 ~/ bpm),
+          end: Duration(microseconds: 60e6 ~/ (bpm * subdivisions)),
           child: AudioSource.asset("assets/sounds/${beat.fileName}"),
         );
       }),
@@ -172,10 +188,10 @@ class Metronome {
     );
 
     // TODO: Don't request during intialization
-    await _notifications.requestPermissionToSendNotifications(
-      channelKey: "metronome-controls",
-      permissions: [NotificationPermission.Alert],
-    );
+    // await _notifications.requestPermissionToSendNotifications(
+    //   channelKey: "metronome-controls",
+    //   permissions: [NotificationPermission.Alert],
+    // );
 
     await _notifications.createNotification(
       content: NotificationContent(

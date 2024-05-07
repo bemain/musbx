@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/custom_icons.dart';
 import 'package:musbx/metronome/metronome.dart';
 
 /// The most common `higher` values for each `lower` value.
@@ -11,7 +12,9 @@ final List<int> commonLowers = commonTimeSignatures.keys.toList();
 
 class TimeSignature extends StatelessWidget {
   /// Displays and features buttons for changing the [Metronome]'s key signature.
-  const TimeSignature({super.key});
+  const TimeSignature({super.key, this.iconSize = 32.0});
+
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +77,37 @@ class TimeSignature extends StatelessWidget {
                         metronome.higher = commonHighers.first;
                       }
                     },
+            ),
+            const SizedBox(height: 8.0),
+            ValueListenableBuilder(
+              valueListenable: metronome.subdivisionsNotifier,
+              builder: (context, subdivisions, child) {
+                return SegmentedButton<int>(
+                  showSelectedIcon: false,
+                  selected: {subdivisions},
+                  onSelectionChanged: (value) {
+                    metronome.subdivisions = value.single;
+                  },
+                  segments: [
+                    ButtonSegment(
+                      value: 1,
+                      icon: Icon(CustomIcons.quavers_one, size: iconSize),
+                    ),
+                    ButtonSegment(
+                      value: 2,
+                      icon: Icon(CustomIcons.quavers_two, size: iconSize),
+                    ),
+                    ButtonSegment(
+                      value: 3,
+                      icon: Icon(CustomIcons.quavers_three, size: iconSize),
+                    ),
+                    ButtonSegment(
+                      value: 4,
+                      icon: Icon(CustomIcons.crochets_four, size: iconSize),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         );

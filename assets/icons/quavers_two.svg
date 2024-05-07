@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="48"
+   width="48"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="quavers_two.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)"
+   xml:space="preserve"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+     id="defs8" /><sodipodi:namedview
+     id="namedview6"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="6.1577786"
+     inkscape:cx="15.102849"
+     inkscape:cy="18.431972"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" /><path
+     id="path1"
+     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0333332"
+     d="m 18.976562,12 v 14.066406 c -0.399999,-0.244449 -0.816651,-0.424625 -1.25,-0.546875 -0.433298,-0.122199 -0.906821,-0.1875 -1.417969,-0.1875 -1.466647,0 -2.721178,0.525865 -3.765624,1.570313 -1.044398,1.044447 -1.566406,2.298977 -1.566406,3.765625 0,1.466697 0.522008,2.721177 1.566406,3.765625 C 13.587466,35.478041 14.841946,36 16.308593,36 c 1.466648,0 2.721227,-0.521959 3.765625,-1.566406 1.044497,-1.044448 1.570313,-2.298928 1.570313,-3.765625 V 17.332031 h 12.710937 v 8.734375 c -0.399999,-0.244449 -0.81665,-0.424625 -1.25,-0.546875 -0.433301,-0.122199 -0.902912,-0.1875 -1.414062,-0.1875 -1.466648,0 -2.725082,0.525865 -3.769531,1.570313 -1.044398,1.044447 -1.566407,2.299027 -1.566407,3.765625 0,1.466697 0.522009,2.721177 1.566407,3.765625 C 28.966374,35.478041 30.224807,36 31.691406,36 c 1.466597,0 2.721176,-0.521959 3.765625,-1.566406 1.044397,-1.044448 1.566406,-2.298928 1.566406,-3.765625 V 12 Z" /></svg>
