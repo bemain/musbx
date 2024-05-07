@@ -55,16 +55,11 @@ class Metronome {
   set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
   final ValueNotifier<int> bpmNotifier = ValueNotifier(60);
 
-  /// The number of notes per bar.
+  /// The number of beats per bar.
   int get higher => higherNotifier.value;
   set higher(int value) => higherNotifier.value = value;
   late final ValueNotifier<int> higherNotifier = ValueNotifier(4)
     ..addListener(reset);
-
-  /// The note value that the time signature is counting.
-  int get lower => lowerNotifier.value;
-  set lower(int value) => lowerNotifier.value = value;
-  final ValueNotifier<int> lowerNotifier = ValueNotifier(4);
 
   /// The number of notes each beat is divided into.
   int get subdivisions => subdivisionsNotifier.value;
