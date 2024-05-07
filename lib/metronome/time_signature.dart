@@ -91,7 +91,7 @@ class TimeSignature extends StatelessWidget {
                   segments: [
                     ButtonSegment(
                       value: 1,
-                      icon: Icon(CustomIcons.quavers_one, size: iconSize),
+                      icon: Icon(CustomIcons.crotchet, size: iconSize),
                     ),
                     ButtonSegment(
                       value: 2,
@@ -103,7 +103,7 @@ class TimeSignature extends StatelessWidget {
                     ),
                     ButtonSegment(
                       value: 4,
-                      icon: Icon(CustomIcons.crochets_four, size: iconSize),
+                      icon: Icon(CustomIcons.semiquavers_four, size: iconSize),
                     ),
                   ],
                 );

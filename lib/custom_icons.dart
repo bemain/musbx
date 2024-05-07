@@ -37,12 +37,12 @@ class CustomIcons {
       IconData(0xe805, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData tuning_fork =
       IconData(0xe806, fontFamily: _kFontFam, fontPackage: _kFontPkg);
-  static const IconData quavers_one =
+  static const IconData crotchet =
       IconData(0xe807, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData quavers_two =
       IconData(0xe808, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData quavers_three =
       IconData(0xe809, fontFamily: _kFontFam, fontPackage: _kFontPkg);
-  static const IconData crochets_four =
+  static const IconData semiquavers_four =
       IconData(0xe80a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }
