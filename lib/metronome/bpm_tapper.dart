@@ -79,9 +79,9 @@ class BpmTapper extends StatelessWidget {
         // Reset stopwatch
         stopwatch.reset();
       },
-      child: OutlinedButton(
+      child: IconButton.outlined(
         onPressed: () {},
-        child: const Padding(
+        icon: const Padding(
           padding: EdgeInsets.all(10.0),
           child: Icon(Icons.ads_click),
         ),

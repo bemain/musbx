@@ -41,7 +41,7 @@ class Metronome {
   static const int minBpm = 20;
 
   /// Maximum [bpm] allowed. [bpm] can never be more than this.
-  static const int maxBpm = 200;
+  static const int maxBpm = 250;
 
   /// Used internally to show notifications.
   static final AwesomeNotifications _notifications = AwesomeNotifications();

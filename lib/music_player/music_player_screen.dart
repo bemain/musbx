@@ -19,6 +19,7 @@ import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
 import 'package:musbx/music_player/pick_song_button/components/action.dart';
+import 'package:musbx/screen/bottom_bar.dart';
 import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/screen/widget_card.dart';
 import 'package:musbx/widgets.dart';
@@ -79,7 +80,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
     super.didChangeAppLifecycleState(state);
   }
 
-  Size? positionCardSize;
+  Size? bottomBarSize;
 
   @override
   Widget build(BuildContext context) {
@@ -106,63 +107,33 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     WidgetCard(child: LoopCard()),
                     WidgetCard(child: DemixerCard()),
                     if (Platform.isAndroid) WidgetCard(child: EqualizerCard()),
-                    if (positionCardSize != null)
-                      SizedBox(height: positionCardSize!.height + 4.0)
+                    if (bottomBarSize != null)
+                      SizedBox(height: bottomBarSize!.height + 4.0)
                   ],
                 ),
                 bottomSheet: MeasureSize(
                   onSizeChanged: (Size size) {
                     setState(() {
-                      positionCardSize = size;
+                      bottomBarSize = size;
                     });
                   },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .shadow
-                              .withOpacity(0.25),
-                          blurRadius: 8.0,
-                          spreadRadius: 4.0,
-                        )
-                      ],
-                    ),
-                    child: Card(
-                      clipBehavior: Clip.antiAlias,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(12.0),
-                        ),
-                      ),
-                      color: Theme.of(context).colorScheme.surface,
-                      elevation: 3.0,
-                      margin: EdgeInsets.zero,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                  child: BottomBar(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CurrentSongPanel(),
+                        PositionSlider(),
+                        Stack(
+                          alignment: Alignment.center,
                           children: [
-                            CurrentSongPanel(),
-                            PositionSlider(),
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                ButtonPanel(),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: _buildSpeedDial(),
-                                )
-                              ],
-                            ),
+                            ButtonPanel(),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: _buildLoadSongButton(),
+                            )
                           ],
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -174,7 +145,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
   Widget _buildWelcomeScreen(BuildContext context) {
     return Scaffold(
       appBar: const DefaultAppBar(helpText: helpText),
-      floatingActionButton: _buildSpeedDial(),
+      floatingActionButton: _buildLoadSongButton(),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -214,7 +185,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
     );
   }
 
-  Widget _buildSpeedDial() {
+  Widget _buildLoadSongButton() {
     final List<Song> songHistory = musicPlayer.songHistory
         .sorted(ascending: true)
       ..remove(musicPlayer.song);

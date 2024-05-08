@@ -5,10 +5,7 @@ import 'package:musbx/widgets.dart';
 class BpmButtons extends StatelessWidget {
   /// Buttons for adjusting [Metronome]'s bpm and a label showing the current bpm,
   /// arranged horizontally.
-  const BpmButtons({super.key, this.iconSize = 30, this.fontSize = 25});
-
-  /// Font size of the label showing the current bpm.
-  final double fontSize;
+  const BpmButtons({super.key, this.iconSize = 50});
 
   /// Size of the buttons for adjusting bpm.
   final double iconSize;
@@ -18,39 +15,57 @@ class BpmButtons extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ContinuousTextButton(
-          onPressed: () {
+        ContinuousButton(
+          onContinuousPress: () {
             Metronome.instance.bpm--;
           },
-          child: Icon(
-            Icons.arrow_drop_down_rounded,
-            size: iconSize,
+          onContinuousPressEnd: () {
+            Metronome.instance.reset();
+          },
+          child: IconButton(
+            onPressed: () {
+              Metronome.instance.bpm--;
+            },
+            color: Theme.of(context).colorScheme.primary,
+            icon: Icon(
+              Icons.arrow_drop_down_rounded,
+              size: iconSize,
+            ),
           ),
         ),
-        SizedBox(
-          width: fontSize * 2,
-          child: buildBpmText(),
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 80),
+          child: buildBpmText(context),
         ),
-        ContinuousTextButton(
-          onPressed: () {
+        ContinuousButton(
+          onContinuousPress: () {
             Metronome.instance.bpm++;
           },
-          child: Icon(
-            Icons.arrow_drop_up_rounded,
-            size: iconSize,
+          onContinuousPressEnd: () {
+            Metronome.instance.reset();
+          },
+          child: IconButton(
+            onPressed: () {
+              Metronome.instance.bpm++;
+            },
+            color: Theme.of(context).colorScheme.primary,
+            icon: Icon(
+              Icons.arrow_drop_up_rounded,
+              size: iconSize,
+            ),
           ),
         )
       ],
     );
   }
 
-  Widget buildBpmText() {
+  Widget buildBpmText(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: Metronome.instance.bpmNotifier,
       builder: (c, int bpm, Widget? child) {
         return Text(
           "$bpm",
-          style: TextStyle(fontSize: fontSize),
+          style: Theme.of(context).textTheme.displayMedium,
           textAlign: TextAlign.center,
         );
       },

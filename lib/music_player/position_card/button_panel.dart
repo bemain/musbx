@@ -22,17 +22,23 @@ class ButtonPanel extends StatelessWidget {
             onPressed: musicPlayer.nullIfNoSongElse(() {
               musicPlayer.seek(Duration.zero);
             }),
-            child: expandedIcon(Icons.skip_previous_rounded),
+            child: const ExpandedIcon(Icons.skip_previous_rounded),
           ),
         ),
         Flexible(
           flex: 2,
-          child: ContinuousTextButton(
-            onPressed: musicPlayer.nullIfNoSongElse(() {
+          child: ContinuousButton(
+            onContinuousPress: musicPlayer.nullIfNoSongElse(() {
               musicPlayer
                   .seek(musicPlayer.position - const Duration(seconds: 1));
             }),
-            child: expandedIcon(Icons.fast_rewind_rounded),
+            child: TextButton(
+              onPressed: musicPlayer.nullIfNoSongElse(() {
+                musicPlayer
+                    .seek(musicPlayer.position - const Duration(seconds: 1));
+              }),
+              child: const ExpandedIcon(Icons.fast_rewind_rounded),
+            ),
           ),
         ),
         Flexible(
@@ -43,29 +49,27 @@ class ButtonPanel extends StatelessWidget {
             builder: (_, isPlaying, __) => ValueListenableBuilder<bool>(
               valueListenable: musicPlayer.isBufferingNotifier,
               builder: (context, isBuffering, _) {
-                return TextButton(
-                  onPressed: musicPlayer.nullIfNoSongElse(() {
-                    if (isPlaying) {
-                      musicPlayer.pause();
-                    } else {
-                      musicPlayer.play();
-                    }
-                  }),
-                  child: (musicPlayer.isLoading || isBuffering)
-                      ? LayoutBuilder(
-                          builder: (context, constraint) => SizedBox.square(
-                            dimension: constraint.biggest.width,
-                            child: const Padding(
-                              padding: EdgeInsets.all(10),
-                              child: CircularProgressIndicator(),
-                            ),
+                return AspectRatio(
+                  aspectRatio: 1,
+                  child: TextButton(
+                    onPressed: musicPlayer.nullIfNoSongElse(() {
+                      if (isPlaying) {
+                        musicPlayer.pause();
+                      } else {
+                        musicPlayer.play();
+                      }
+                    }),
+                    child: (musicPlayer.isLoading || isBuffering)
+                        ? const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: CircularProgressIndicator(),
+                          )
+                        : ExpandedIcon(
+                            isPlaying
+                                ? Icons.stop_rounded
+                                : Icons.play_arrow_rounded,
                           ),
-                        )
-                      : expandedIcon(
-                          isPlaying
-                              ? Icons.stop_rounded
-                              : Icons.play_arrow_rounded,
-                        ),
+                  ),
                 );
               },
             ),
@@ -73,30 +77,26 @@ class ButtonPanel extends StatelessWidget {
         ),
         Flexible(
           flex: 2,
-          child: ContinuousTextButton(
-            onPressed: musicPlayer.nullIfNoSongElse(() {
+          child: ContinuousButton(
+            onContinuousPress: musicPlayer.nullIfNoSongElse(() {
               musicPlayer
                   .seek(musicPlayer.position + const Duration(seconds: 1));
             }),
-            child: expandedIcon(Icons.fast_forward_rounded),
+            child: TextButton(
+              onPressed: musicPlayer.nullIfNoSongElse(() {
+                musicPlayer
+                    .seek(musicPlayer.position + const Duration(seconds: 1));
+              }),
+              child: const ExpandedIcon(Icons.fast_forward_rounded),
+            ),
           ),
         ),
         // Placeholder, only there to take space so the play button is centered
         Flexible(
           flex: 2,
-          child: TextButton(onPressed: null, child: expandedIcon(null)),
+          child: Container(),
         ),
       ],
-    );
-  }
-
-  /// Makes [icon] fill the available space.
-  Widget expandedIcon(IconData? icon) {
-    return LayoutBuilder(
-      builder: (context, constraint) => Icon(
-        icon,
-        size: constraint.biggest.width,
-      ),
     );
   }
 }

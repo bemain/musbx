@@ -5,8 +5,11 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Create an [AppBar] with the text "Musician's toolbox" as title
   /// that features a button for opening an about dialog, that displays
   /// [helpText] and general information about the app.
-  const DefaultAppBar({super.key, this.helpText, this.scrolledUnderElevation})
-      : preferredSize = const Size.fromHeight(kToolbarHeight);
+  const DefaultAppBar({
+    super.key,
+    this.helpText,
+    this.scrolledUnderElevation = 0.0,
+  }) : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   /// A short text explaining how to use the screen. Displayed in the about dialog.
   final String? helpText;
