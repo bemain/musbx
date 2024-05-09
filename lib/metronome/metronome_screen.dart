@@ -31,6 +31,12 @@ Change the sound of beats by tapping them. Long press to remove and plus to add.
           Higher(),
           SizedBox(height: 8.0),
           Subdivisions(),
+          Expanded(
+            child: Center(
+              child: PlayButton(size: 150),
+            ),
+          ),
+          CountDisplay(),
           SizedBox(height: 24.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -40,12 +46,6 @@ Change the sound of beats by tapping them. Long press to remove and plus to add.
             ],
           ),
           BpmSlider(),
-          Expanded(
-            child: Center(
-              child: PlayButton(size: 150),
-            ),
-          ),
-          CountDisplay(),
           SizedBox(height: 16.0),
         ],
       ),
