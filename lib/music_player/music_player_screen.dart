@@ -182,7 +182,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              "Ready to",
+              "Prepare to",
               style: Theme.of(context).textTheme.titleLarge,
             ),
             Text(
@@ -191,7 +191,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                   .displayLarge,
             ),
             Text(
-              "using AI technology?",
+              "using AI technology",
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16.0),
