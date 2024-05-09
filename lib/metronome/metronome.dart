@@ -19,6 +19,15 @@ enum BeatSound {
 
 class Metronome {
   Metronome._() {
+    // Listen to app lifecycle
+    AppLifecycleListener(
+      onStateChange: (value) => print("[DEBUG] $value"),
+      onDetach: () async {
+        // TODO: This doesn't work... The future never completes
+        await Notifications.cancelAll();
+      },
+    );
+
     player.playingStream.listen((playing) {
       isPlayingNotifier.value = playing;
     });
@@ -50,13 +59,15 @@ class Metronome {
   /// Does not actually update the playback. This needs to be done manually by calling [reset].
   int get bpm => bpmNotifier.value;
   set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
-  final ValueNotifier<int> bpmNotifier = ValueNotifier(60);
+  late final ValueNotifier<int> bpmNotifier = ValueNotifier(60)
+    ..addListener(_updateNotification);
 
   /// The number of beats per bar.
   int get higher => higherNotifier.value;
   set higher(int value) => higherNotifier.value = value;
   late final ValueNotifier<int> higherNotifier = ValueNotifier(4)
-    ..addListener(reset);
+    ..addListener(reset)
+    ..addListener(_updateNotification);
 
   /// The number of notes each beat is divided into.
   int get subdivisions => subdivisionsNotifier.value;
@@ -110,8 +121,6 @@ class Metronome {
   Future<void> reset() async {
     loadAudioLock = _updateAudioSource(awaitBeforeLoading: loadAudioLock);
     await loadAudioLock;
-
-    await _updateNotification();
   }
 
   /// Awaits [awaitBeforeLoading] and then updates the [player]'s audio source.

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
@@ -304,6 +303,13 @@ class MusicPlayer {
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
     songHistory.fetch();
+
+    // Listen to app lifecycle
+    AppLifecycleListener(
+      onInactive: () async {
+        await MusicPlayer.instance.saveSongPreferences();
+      },
+    );
 
     player.setVolume(0.5);
 

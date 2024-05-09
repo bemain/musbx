@@ -90,6 +90,7 @@ class Tuner {
           throw "TUNER: Unable to capture audio from microphone";
         },
         waitForFirstDataOnAndroid: false,
+        waitForFirstDataOnIOS: false,
         sampleRate: defaultSampleRate,
         bufferSize: defaultBufferSize,
       );

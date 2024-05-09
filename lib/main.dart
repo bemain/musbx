@@ -37,17 +37,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: "Musician's Toolbox",
-        theme: lightTheme.copyWith(
-          sliderTheme: lightTheme.sliderTheme.copyWith(
-            showValueIndicator: ShowValueIndicator.always,
-          ),
+      title: "Musician's Toolbox",
+      theme: lightTheme.copyWith(
+        sliderTheme: lightTheme.sliderTheme.copyWith(
+          showValueIndicator: ShowValueIndicator.always,
         ),
-        darkTheme: darkTheme.copyWith(
-          sliderTheme: darkTheme.sliderTheme.copyWith(
-            showValueIndicator: ShowValueIndicator.always,
-          ),
+      ),
+      darkTheme: darkTheme.copyWith(
+        sliderTheme: darkTheme.sliderTheme.copyWith(
+          showValueIndicator: ShowValueIndicator.always,
         ),
-        home: const NavigationScreen());
+      ),
+      home: const NavigationScreen(),
+    );
   }
 }

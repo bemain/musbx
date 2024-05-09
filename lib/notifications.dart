@@ -89,6 +89,11 @@ class Notifications {
     return lockedPermissions.isNotEmpty;
   }
 
+  /// Cancel all notifications
+  static Future<void> cancelAll() async {
+    await _notifications.cancelAll();
+  }
+
   static Future<void> createMetronomeQuickAccess() async {
     if (!isInitialized || !hasPermission) return;
 

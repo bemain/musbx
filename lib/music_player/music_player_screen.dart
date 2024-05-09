@@ -45,7 +45,7 @@ class MusicPlayerScreen extends StatefulWidget {
 }
 
 class MusicPlayerScreenState extends State<MusicPlayerScreen>
-    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin {
   static const String helpText =
       """Press the plus-button and load a song from your device or YouTube.
 
@@ -53,32 +53,10 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
 - Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
 - Mute or isolate specific instruments using the Demixer.""";
 
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
-
   @override
   bool get wantKeepAlive => true;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    MusicPlayer.instance.saveSongPreferences();
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Save preferences for the current song
-    if (state == AppLifecycleState.paused) {
-      musicPlayer.saveSongPreferences();
-    }
-    super.didChangeAppLifecycleState(state);
-  }
+  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   Size? bottomBarSize;
 
