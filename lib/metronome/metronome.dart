@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/notifications.dart';
 
 enum BeatSound {
   accented("ping.mp3"),
@@ -43,9 +43,6 @@ class Metronome {
   /// Maximum [bpm] allowed. [bpm] can never be more than this.
   static const int maxBpm = 250;
 
-  /// Used internally to show notifications.
-  static final AwesomeNotifications _notifications = AwesomeNotifications();
-
   /// Beats per minutes.
   ///
   /// Clamped between [minBpm] and [maxBpm].
@@ -74,7 +71,8 @@ class Metronome {
   /// Whether the metronome is playing.
   bool get isPlaying => isPlayingNotifier.value;
   set isPlaying(bool value) => value ? play() : pause();
-  final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
+  late final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false)
+    ..addListener(_updateNotification);
 
   /// The [AudioPlayer] used for playback.
   final AudioPlayer player = AudioPlayer()..setLoopMode(LoopMode.all);
@@ -112,6 +110,8 @@ class Metronome {
   Future<void> reset() async {
     loadAudioLock = _updateAudioSource(awaitBeforeLoading: loadAudioLock);
     await loadAudioLock;
+
+    await _updateNotification();
   }
 
   /// Awaits [awaitBeforeLoading] and then updates the [player]'s audio source.
@@ -136,6 +136,11 @@ class Metronome {
     ));
   }
 
+  Future<void> _updateNotification() async {
+    if (!Notifications.hasPermission) return;
+    await Notifications.createMetronomeQuickAccess();
+  }
+
   /// Trigger a vibration based on the current [count].
   void _vibrate() {
     if (count == 0) {
@@ -143,61 +148,5 @@ class Metronome {
     } else {
       HapticFeedback.heavyImpact();
     }
-  }
-
-  /// Callback for when the user taps an action on the notification while the app is the background
-  @pragma("vm:entry-point")
-  static Future<void> _onNotificationActionReceived(
-    ReceivedAction action,
-  ) async {
-    print(action);
-  }
-
-  Future<void> intializeNotification() async {
-    await _notifications.initialize(
-      'resource://drawable/ic_notification',
-      [
-        NotificationChannel(
-          channelGroupKey: "metronome-group",
-          channelKey: "metronome-controls",
-          channelName: "Quick Access",
-          channelDescription:
-              "Control the Metronome directly from your notifications drawer",
-          importance: NotificationImportance.Low,
-          enableLights: false,
-          enableVibration: false,
-          playSound: false,
-        ),
-      ],
-      channelGroups: [
-        NotificationChannelGroup(
-          channelGroupKey: "metronome-group",
-          channelGroupName: "Metronome",
-        ),
-      ],
-      debug: true,
-    );
-
-    await _notifications.setListeners(
-      onActionReceivedMethod: _onNotificationActionReceived,
-    );
-
-    // TODO: Don't request during intialization
-    // await _notifications.requestPermissionToSendNotifications(
-    //   channelKey: "metronome-controls",
-    //   permissions: [NotificationPermission.Alert],
-    // );
-
-    await _notifications.createNotification(
-      content: NotificationContent(
-        id: 0,
-        channelKey: "metronome-controls",
-        title: 'Metronome',
-        color: Colors.transparent,
-        category: NotificationCategory.Service,
-        actionType: ActionType.Default,
-        autoDismissible: false,
-      ),
-    );
   }
 }

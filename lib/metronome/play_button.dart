@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/notifications.dart';
 import 'package:musbx/widgets.dart';
 
 class PlayButton extends StatelessWidget {
@@ -22,6 +23,7 @@ class PlayButton extends StatelessWidget {
               Metronome.instance.pause();
             } else {
               Metronome.instance.play();
+              _requestNotificationPermission(context);
             }
           },
           color: Theme.of(context).colorScheme.primary,
@@ -34,5 +36,17 @@ class PlayButton extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _requestNotificationPermission(BuildContext context) async {
+    if (!Notifications.hasPermission) {
+      if (await Notifications.shouldShowRationale()) {
+        if (!context.mounted) return;
+        showDialog(
+          context: context,
+          builder: (context) => const NotificationPermissionRationale(),
+        );
+      }
+    }
   }
 }

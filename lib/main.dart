@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/navigation_screen.dart';
+import 'package:musbx/notifications.dart';
 import 'package:musbx/theme.dart';
 
 Future<void> main() async {
@@ -10,7 +10,7 @@ Future<void> main() async {
 
   // Create audio service
   await MusicPlayer.instance.initAudioService();
-  await Metronome.instance.intializeNotification();
+  await Notifications.initialize();
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
