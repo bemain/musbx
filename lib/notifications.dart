@@ -14,10 +14,19 @@ class Notifications {
 
   /// Callback for when the user taps an action on the notification while the app is the background
   @pragma("vm:entry-point")
-  static Future<void> _onNotificationActionReceived(
+  static Future<void> _onActionReceived(
     ReceivedAction action,
   ) async {
-    print(action);
+    if (action.channelKey == "metronome-controls") {
+      switch (action.buttonKeyPressed) {
+        case "play":
+          Metronome.instance.play();
+          break;
+        case "pause":
+          Metronome.instance.pause();
+          break;
+      }
+    }
   }
 
   /// Initialize the notifications service.
@@ -49,7 +58,7 @@ class Notifications {
     );
 
     await _notifications.setListeners(
-      onActionReceivedMethod: _onNotificationActionReceived,
+      onActionReceivedMethod: _onActionReceived,
     );
 
     final allowedPermissions = await _notifications.checkPermissionList();
@@ -83,36 +92,40 @@ class Notifications {
   static Future<void> createMetronomeQuickAccess() async {
     if (!isInitialized || !hasPermission) return;
 
+    final bool isPlaying = Metronome.instance.isPlaying;
     await _notifications.createNotification(
       content: NotificationContent(
         id: 0,
         channelKey: "metronome-controls",
         title: 'Metronome',
-        summary: Metronome.instance.isPlaying ? "Playing" : "Paused",
-        body: "${Metronome.instance.bpm} bpm",
+        summary: isPlaying ? "Playing" : "Paused",
+        body:
+            "${Metronome.instance.higher} beats • ${Metronome.instance.bpm} bpm",
         color: Colors.transparent,
         category: NotificationCategory.Service,
         actionType: ActionType.KeepOnTop,
-        notificationLayout: NotificationLayout.MediaPlayer,
-        playbackSpeed: 0.0,
-        playState: Metronome.instance.isPlaying
-            ? NotificationPlayState.playing
-            : NotificationPlayState.paused,
-        duration: const Duration(seconds: 1),
-        progress: 100,
+        notificationLayout: NotificationLayout.Default,
         showWhen: false,
         autoDismissible: false,
         locked: true,
       ),
       actionButtons: [
-        NotificationActionButton(
-          key: "play",
-          label: "Play",
-          icon: "resource://drawable/ic_notification",
-          actionType: ActionType.KeepOnTop,
-          autoDismissible: false,
-          showInCompactView: true,
-        ),
+        if (!isPlaying)
+          NotificationActionButton(
+            key: "play",
+            label: "Play",
+            actionType: ActionType.KeepOnTop,
+            autoDismissible: false,
+            showInCompactView: true,
+          ),
+        if (isPlaying)
+          NotificationActionButton(
+            key: "pause",
+            label: "Pause",
+            actionType: ActionType.KeepOnTop,
+            autoDismissible: false,
+            showInCompactView: true,
+          ),
       ],
     );
   }
