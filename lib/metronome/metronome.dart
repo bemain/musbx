@@ -163,11 +163,10 @@ class Metronome {
         body: "$higher beats • $bpm bpm",
         color: Colors.transparent,
         category: NotificationCategory.Service,
-        actionType: ActionType.KeepOnTop,
+        actionType: ActionType.Default,
         notificationLayout: NotificationLayout.Default,
         showWhen: false,
         autoDismissible: false,
-        locked: true,
       ),
       actionButtons: [
         if (!isPlaying)
