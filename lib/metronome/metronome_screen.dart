@@ -24,10 +24,7 @@ class MetronomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: DefaultAppBar(
-        helpText:
-            """Set bpm using slider or hit the drum. Make fine adjustments using the arrows.""",
-      ),
+      appBar: DefaultAppBar(),
       body: Column(
         children: [
           WidgetCard(
