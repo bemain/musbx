@@ -205,6 +205,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
               child: Image.asset(
                 "assets/images/arrow.png",
                 width: 100,
+                color: Theme.of(context).colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 64.0),
