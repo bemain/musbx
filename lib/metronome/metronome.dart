@@ -34,10 +34,18 @@ class Metronome {
     });
 
     player.currentIndexStream.listen((index) async {
-      countNotifier.value = (index ?? 0) ~/ subdivisions;
+      index ??= 0;
+      countNotifier.value = (index) ~/ subdivisions;
 
       if (await FlutterVolumeController.getMute() == true) {
-        _vibrate();
+        // Vibrate
+        if (index == 0) {
+          HapticFeedback.vibrate();
+        } else if (index % subdivisions == 0) {
+          HapticFeedback.heavyImpact();
+        } else {
+          HapticFeedback.selectionClick();
+        }
       }
     });
 
@@ -180,14 +188,5 @@ class Metronome {
           ),
       ],
     );
-  }
-
-  /// Trigger a vibration based on the current [count].
-  void _vibrate() {
-    if (count == 0) {
-      HapticFeedback.vibrate();
-    } else {
-      HapticFeedback.heavyImpact();
-    }
   }
 }
