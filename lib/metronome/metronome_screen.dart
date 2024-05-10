@@ -8,6 +8,7 @@ import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/subdivisions.dart';
 import 'package:musbx/metronome/higher.dart';
 import 'package:musbx/screen/default_app_bar.dart';
+import 'package:musbx/screen/widget_card.dart';
 
 class MetronomeScreen extends StatelessWidget {
   /// Screen for controlling [Metronome], including:
@@ -28,25 +29,44 @@ Change the sound of beats by tapping them. Long press to remove and plus to add.
       ),
       body: Column(
         children: [
-          Higher(),
-          SizedBox(height: 8.0),
-          Subdivisions(),
-          Expanded(
-            child: Center(
-              child: PlayButton(size: 150),
+          WidgetCard(
+            child: Column(
+              children: [
+                Higher(),
+                SizedBox(height: 8.0),
+                Subdivisions(),
+              ],
             ),
           ),
-          CountDisplay(),
-          SizedBox(height: 24.0),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              BpmButtons(),
-              BpmTapper(),
-            ],
+          Expanded(
+            child: WidgetCard(
+              child: Column(
+                children: [
+                  CountDisplay(),
+                  Expanded(
+                    child: Center(
+                      child: PlayButton(size: 150),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          BpmSlider(),
-          SizedBox(height: 16.0),
+          WidgetCard(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    BpmButtons(),
+                    BpmTapper(),
+                  ],
+                ),
+                BpmSlider(),
+              ],
+            ),
+          ),
+          SizedBox(height: 4.0),
         ],
       ),
     );

@@ -18,7 +18,6 @@ class Higher extends StatelessWidget {
       valueListenable: metronome.higherNotifier,
       builder: (context, higher, child) {
         return Row(
-          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
