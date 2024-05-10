@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/navigation_screen.dart';
 import 'package:musbx/theme.dart';
@@ -35,17 +36,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: "Musician's Toolbox",
-        theme: lightTheme.copyWith(
-          sliderTheme: lightTheme.sliderTheme.copyWith(
-            showValueIndicator: ShowValueIndicator.always,
-          ),
+      title: "Musician's Toolbox",
+      theme: lightTheme.copyWith(
+        textTheme: GoogleFonts.interTextTheme(lightTheme.textTheme),
+        sliderTheme: lightTheme.sliderTheme.copyWith(
+          showValueIndicator: ShowValueIndicator.always,
         ),
-        darkTheme: darkTheme.copyWith(
-          sliderTheme: darkTheme.sliderTheme.copyWith(
-            showValueIndicator: ShowValueIndicator.always,
-          ),
+      ),
+      darkTheme: darkTheme.copyWith(
+        textTheme: GoogleFonts.interTextTheme(darkTheme.textTheme),
+        sliderTheme: darkTheme.sliderTheme.copyWith(
+          showValueIndicator: ShowValueIndicator.always,
         ),
-        home: const NavigationScreen());
+      ),
+      home: const NavigationScreen(),
+    );
   }
 }
