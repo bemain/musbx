@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/metronome/permission_rationale.dart';
 import 'package:musbx/notifications.dart';
 import 'package:musbx/widgets.dart';
 
