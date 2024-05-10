@@ -131,7 +131,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              "Ready to",
+              "Prepare to",
               style: Theme.of(context).textTheme.titleLarge,
             ),
             Text(
@@ -140,7 +140,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                   .displayLarge,
             ),
             Text(
-              "using AI technology?",
+              "using AI technology",
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16.0),
@@ -154,6 +154,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
               child: Image.asset(
                 "assets/images/arrow.png",
                 width: 100,
+                color: Theme.of(context).colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 64.0),
