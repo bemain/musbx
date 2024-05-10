@@ -7,6 +7,7 @@ import 'package:musbx/metronome/play_button.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/subdivisions.dart';
 import 'package:musbx/metronome/higher.dart';
+import 'package:musbx/metronome/volume_indicator.dart';
 import 'package:musbx/screen/default_app_bar.dart';
 import 'package:musbx/screen/widget_card.dart';
 
@@ -39,14 +40,25 @@ class MetronomeScreen extends StatelessWidget {
           ),
           Expanded(
             child: WidgetCard(
-              child: Column(
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  CountDisplay(),
-                  Expanded(
-                    child: Center(
-                      child: PlayButton(size: 150),
-                    ),
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: CountDisplay(),
                   ),
+                  Center(
+                    child: PlayButton(size: 150),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        VolumeIndicator(),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),
