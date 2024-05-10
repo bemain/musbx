@@ -24,8 +24,7 @@ class MetronomeScreen extends StatelessWidget {
     return const Scaffold(
       appBar: DefaultAppBar(
         helpText:
-            """Set bpm using slider or hit the drum. Make fine adjustments using the arrows.
-Change the sound of beats by tapping them. Long press to remove and plus to add.""",
+            """Set bpm using slider or hit the drum. Make fine adjustments using the arrows.""",
       ),
       body: Column(
         children: [
