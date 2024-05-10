@@ -40,17 +40,20 @@ class PlayButton extends StatelessWidget {
   }
 
   Future<void> _requestNotificationPermission(BuildContext context) async {
-    if (!Notifications.hasPermission) {
+    print(Notifications.hasRequestedPermission);
+    if (!Notifications.hasPermission && !Notifications.hasRequestedPermission) {
       if (await Notifications.shouldShowRationale()) {
         if (!context.mounted) return;
         await showDialog(
           context: context,
           builder: (context) => const NotificationPermissionRationale(),
         );
+      } else {
+        await Notifications.requestPermission();
+      }
 
-        if (Notifications.hasPermission) {
-          await Metronome.instance.updateNotification();
-        }
+      if (Notifications.hasPermission) {
+        await Metronome.instance.updateNotification();
       }
     }
   }

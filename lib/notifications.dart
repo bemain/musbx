@@ -1,23 +1,34 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Notifications {
   /// Whether the notification plugin has been initialized by running [initialize].
   static bool isInitialized = false;
 
+  /// Used internally to show notifications.
+  static final AwesomeNotifications _notifications = AwesomeNotifications();
+
+  /// Used internally to persist data to disk.
+  static SharedPreferences? _preferences;
+
   /// Whether the user has given the app permission to show notifications
   static bool get hasPermission => hasPermissionNotifier.value;
   static final ValueNotifier<bool> hasPermissionNotifier = ValueNotifier(false);
 
-  /// Used internally to show notifications.
-  static final AwesomeNotifications _notifications = AwesomeNotifications();
+  /// Whether permission to show notifications has been requested at least once.
+  ///
+  /// We don't want to be too intrusive, so notification permission is only
+  /// requested when the user presses the play button for the first time ever.
+  static bool get hasRequestedPermission =>
+      _preferences?.getBool("metronome/hasRequestedPermission") ?? false;
+  static set hasRequestedPermission(bool value) =>
+      _preferences?.setBool("metronome/hasRequestedPermission", value);
 
-  /// Callback for when the user taps an action on the notification while the app is the background
+  /// Callback for when the user taps an action on the notification while the app is the background.
   @pragma("vm:entry-point")
-  static Future<void> _onActionReceived(
-    ReceivedAction action,
-  ) async {
+  static Future<void> _onActionReceived(ReceivedAction action) async {
     if (action.channelKey == "metronome-controls") {
       switch (action.buttonKeyPressed) {
         case "play":
@@ -34,6 +45,13 @@ class Notifications {
   static Future<void> initialize() async {
     if (isInitialized) return;
 
+    _preferences = await SharedPreferences.getInstance();
+
+    // Check permission
+    final allowedPermissions = await _notifications.checkPermissionList();
+    hasPermissionNotifier.value = allowedPermissions.isNotEmpty;
+
+    // Initialize AwesomeNotifications
     await _notifications.initialize(
       'resource://drawable/ic_notification',
       [
@@ -62,16 +80,18 @@ class Notifications {
       onActionReceivedMethod: _onActionReceived,
     );
 
-    final allowedPermissions = await _notifications.checkPermissionList();
-    hasPermissionNotifier.value = allowedPermissions.isNotEmpty;
-
     isInitialized = true;
   }
 
   /// Request permission to show notifications, if it has not been given already.
   static Future<bool> requestPermission() async {
-    hasPermissionNotifier.value = await _notifications.isNotificationAllowed();
+    if (!isInitialized) {
+      throw "The `Notifications` service hasn't been initialized. Call `initialize()` first.";
+    }
 
+    hasRequestedPermission = true;
+
+    hasPermissionNotifier.value = await _notifications.isNotificationAllowed();
     if (!hasPermission) {
       await _notifications.requestPermissionToSendNotifications();
       final allowedPermissions = await _notifications.checkPermissionList();
@@ -82,7 +102,7 @@ class Notifications {
 
   static Future<bool> shouldShowRationale() async {
     if (!isInitialized) {
-      throw "The `Notifications` plugin hasn't been initialized. Call `initialize()` first.";
+      throw "The `Notifications` service hasn't been initialized. Call `initialize()` first.";
     }
 
     final lockedPermissions =
@@ -92,6 +112,9 @@ class Notifications {
 
   /// Cancel all notifications
   static Future<void> cancelAll() async {
+    if (!isInitialized) {
+      throw "The `Notifications` service hasn't been initialized. Call `initialize()` first.";
+    }
     await _notifications.cancelAll();
   }
 
@@ -99,8 +122,10 @@ class Notifications {
     required NotificationContent content,
     List<NotificationActionButton>? actionButtons,
   }) async {
-    print("Creating");
-    if (!isInitialized || !hasPermission) return;
+    if (!isInitialized) {
+      throw "The `Notifications` service hasn't been initialized. Call `initialize()` first.";
+    }
+    if (!hasPermission) return;
 
     await _notifications.createNotification(
       content: content,
