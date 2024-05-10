@@ -22,7 +22,6 @@ class Metronome {
   Metronome._() {
     // Listen to app lifecycle
     AppLifecycleListener(
-      onStateChange: (value) => print("[DEBUG] $value"),
       onDetach: () async {
         // TODO: This doesn't work... The future never completes
         await Notifications.cancelAll();

@@ -40,7 +40,6 @@ class PlayButton extends StatelessWidget {
   }
 
   Future<void> _requestNotificationPermission(BuildContext context) async {
-    print(Notifications.hasRequestedPermission);
     if (!Notifications.hasPermission && !Notifications.hasRequestedPermission) {
       if (await Notifications.shouldShowRationale()) {
         if (!context.mounted) return;
