@@ -3,6 +3,7 @@ import 'package:musbx/metronome/count_display.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';
+import 'package:musbx/metronome/notification_indicator.dart';
 import 'package:musbx/metronome/play_button.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/subdivisions.dart';
@@ -56,6 +57,7 @@ class MetronomeScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         VolumeIndicator(),
+                        NotificationIndicator(),
                       ],
                     ),
                   )

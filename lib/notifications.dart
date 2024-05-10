@@ -1,4 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
 
 class Notifications {
@@ -6,7 +7,8 @@ class Notifications {
   static bool isInitialized = false;
 
   /// Whether the user has given the app permission to show notifications
-  static bool hasPermission = false;
+  static bool get hasPermission => hasPermissionNotifier.value;
+  static final ValueNotifier<bool> hasPermissionNotifier = ValueNotifier(false);
 
   /// Used internally to show notifications.
   static final AwesomeNotifications _notifications = AwesomeNotifications();
@@ -61,19 +63,19 @@ class Notifications {
     );
 
     final allowedPermissions = await _notifications.checkPermissionList();
-    hasPermission = allowedPermissions.isNotEmpty;
+    hasPermissionNotifier.value = allowedPermissions.isNotEmpty;
 
     isInitialized = true;
   }
 
   /// Request permission to show notifications, if it has not been given already.
   static Future<bool> requestPermission() async {
-    hasPermission = await _notifications.isNotificationAllowed();
+    hasPermissionNotifier.value = await _notifications.isNotificationAllowed();
 
     if (!hasPermission) {
       await _notifications.requestPermissionToSendNotifications();
       final allowedPermissions = await _notifications.checkPermissionList();
-      hasPermission = allowedPermissions.isNotEmpty;
+      hasPermissionNotifier.value = allowedPermissions.isNotEmpty;
     }
     return hasPermission;
   }
@@ -97,6 +99,7 @@ class Notifications {
     required NotificationContent content,
     List<NotificationActionButton>? actionButtons,
   }) async {
+    print("Creating");
     if (!isInitialized || !hasPermission) return;
 
     await _notifications.createNotification(
