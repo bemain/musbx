@@ -42,10 +42,14 @@ class PlayButton extends StatelessWidget {
     if (!Notifications.hasPermission) {
       if (await Notifications.shouldShowRationale()) {
         if (!context.mounted) return;
-        showDialog(
+        await showDialog(
           context: context,
           builder: (context) => const NotificationPermissionRationale(),
         );
+
+        if (Notifications.hasPermission) {
+          await Metronome.instance.updateNotification();
+        }
       }
     }
   }

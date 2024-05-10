@@ -94,44 +94,15 @@ class Notifications {
     await _notifications.cancelAll();
   }
 
-  static Future<void> createMetronomeQuickAccess() async {
+  static Future<void> create({
+    required NotificationContent content,
+    List<NotificationActionButton>? actionButtons,
+  }) async {
     if (!isInitialized || !hasPermission) return;
 
-    final bool isPlaying = Metronome.instance.isPlaying;
     await _notifications.createNotification(
-      content: NotificationContent(
-        id: 0,
-        channelKey: "metronome-controls",
-        title: 'Metronome',
-        summary: isPlaying ? "Playing" : "Paused",
-        body:
-            "${Metronome.instance.higher} beats • ${Metronome.instance.bpm} bpm",
-        color: Colors.transparent,
-        category: NotificationCategory.Service,
-        actionType: ActionType.KeepOnTop,
-        notificationLayout: NotificationLayout.Default,
-        showWhen: false,
-        autoDismissible: false,
-        locked: true,
-      ),
-      actionButtons: [
-        if (!isPlaying)
-          NotificationActionButton(
-            key: "play",
-            label: "Play",
-            actionType: ActionType.KeepOnTop,
-            autoDismissible: false,
-            showInCompactView: true,
-          ),
-        if (isPlaying)
-          NotificationActionButton(
-            key: "pause",
-            label: "Pause",
-            actionType: ActionType.KeepOnTop,
-            autoDismissible: false,
-            showInCompactView: true,
-          ),
-      ],
+      content: content,
+      actionButtons: actionButtons,
     );
   }
 }

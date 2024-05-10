@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
@@ -59,15 +60,13 @@ class Metronome {
   /// Does not actually update the playback. This needs to be done manually by calling [reset].
   int get bpm => bpmNotifier.value;
   set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
-  late final ValueNotifier<int> bpmNotifier = ValueNotifier(60)
-    ..addListener(_updateNotification);
+  late final ValueNotifier<int> bpmNotifier = ValueNotifier(60);
 
   /// The number of beats per bar.
   int get higher => higherNotifier.value;
   set higher(int value) => higherNotifier.value = value;
   late final ValueNotifier<int> higherNotifier = ValueNotifier(4)
-    ..addListener(reset)
-    ..addListener(_updateNotification);
+    ..addListener(reset);
 
   /// The number of notes each beat is divided into.
   int get subdivisions => subdivisionsNotifier.value;
@@ -83,7 +82,7 @@ class Metronome {
   bool get isPlaying => isPlayingNotifier.value;
   set isPlaying(bool value) => value ? play() : pause();
   late final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false)
-    ..addListener(_updateNotification);
+    ..addListener(updateNotification);
 
   /// The [AudioPlayer] used for playback.
   final AudioPlayer player = AudioPlayer()..setLoopMode(LoopMode.all);
@@ -119,6 +118,7 @@ class Metronome {
 
   /// Reset [count] and restart playback.
   Future<void> reset() async {
+    await updateNotification();
     loadAudioLock = _updateAudioSource(awaitBeforeLoading: loadAudioLock);
     await loadAudioLock;
   }
@@ -145,9 +145,41 @@ class Metronome {
     ));
   }
 
-  Future<void> _updateNotification() async {
-    if (!Notifications.hasPermission) return;
-    await Notifications.createMetronomeQuickAccess();
+  Future<void> updateNotification() async {
+    await Notifications.create(
+      content: NotificationContent(
+        id: 0,
+        channelKey: "metronome-controls",
+        title: 'Metronome',
+        summary: isPlaying ? "Playing" : "Paused",
+        body: "$higher beats • $bpm bpm",
+        color: Colors.transparent,
+        category: NotificationCategory.Service,
+        actionType: ActionType.KeepOnTop,
+        notificationLayout: NotificationLayout.Default,
+        showWhen: false,
+        autoDismissible: false,
+        locked: true,
+      ),
+      actionButtons: [
+        if (!isPlaying)
+          NotificationActionButton(
+            key: "play",
+            label: "Play",
+            actionType: ActionType.KeepOnTop,
+            autoDismissible: false,
+            showInCompactView: true,
+          ),
+        if (isPlaying)
+          NotificationActionButton(
+            key: "pause",
+            label: "Pause",
+            actionType: ActionType.KeepOnTop,
+            autoDismissible: false,
+            showInCompactView: true,
+          ),
+      ],
+    );
   }
 
   /// Trigger a vibration based on the current [count].
