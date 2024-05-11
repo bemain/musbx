@@ -26,7 +26,6 @@ class Higher extends StatelessWidget {
                   : () {
                       metronome.higher--;
                     },
-              color: Theme.of(context).colorScheme.primary,
               iconSize: 50,
               icon: const Icon(Icons.arrow_left_rounded),
             ),
@@ -46,7 +45,6 @@ class Higher extends StatelessWidget {
                   : () {
                       metronome.higher++;
                     },
-              color: Theme.of(context).colorScheme.primary,
               iconSize: 50,
               icon: const Icon(Icons.arrow_right_rounded),
             ),
