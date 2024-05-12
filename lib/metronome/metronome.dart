@@ -8,9 +8,9 @@ import 'package:just_audio/just_audio.dart';
 import 'package:musbx/notifications.dart';
 
 enum BeatSound {
-  accented("ping.mp3"),
-  primary("sticks_high.mp3"),
-  subdivision("sticks_low.mp3");
+  accented("beat_accented.mp3"),
+  primary("beat_primary.mp3"),
+  subdivision("beat_subdivision.mp3");
 
   const BeatSound(this.fileName);
 
@@ -146,7 +146,7 @@ class Metronome {
         return ClippingAudioSource(
           start: Duration.zero,
           end: Duration(microseconds: 60e6 ~/ (bpm * subdivisions)),
-          child: AudioSource.asset("assets/sounds/${beat.fileName}"),
+          child: AudioSource.asset("assets/sounds/metronome/${beat.fileName}"),
         );
       }),
     ));

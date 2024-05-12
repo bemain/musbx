@@ -40,8 +40,9 @@ class BpmTapper extends StatelessWidget {
 
     // Make sure sound has been loaded.
     if (soundId == null) {
-      rootBundle.load("assets/sounds/ping.wav").then((ByteData soundData) =>
-          _pool.load(soundData).then((value) => soundId = value));
+      rootBundle.load("assets/sounds/metronome/bpm_tapper.wav").then(
+          (ByteData soundData) =>
+              _pool.load(soundData).then((value) => soundId = value));
     }
 
     return Listener(
