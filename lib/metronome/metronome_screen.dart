@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/count_display.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
@@ -23,11 +24,11 @@ class MetronomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: DefaultAppBar(),
+    return Scaffold(
+      appBar: const DefaultAppBar(),
       body: Column(
         children: [
-          WidgetCard(
+          const WidgetCard(
             child: Column(
               children: [
                 Higher(),
@@ -41,14 +42,17 @@ class MetronomeScreen extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Align(
+                  const Align(
                     alignment: Alignment.topCenter,
                     child: CountDisplay(),
                   ),
                   Center(
-                    child: PlayButton(size: 150),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 150),
+                      child: const PlayButton(),
+                    ),
                   ),
-                  Align(
+                  const Align(
                     alignment: Alignment.bottomRight,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -62,7 +66,7 @@ class MetronomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          WidgetCard(
+          const WidgetCard(
             child: Column(
               children: [
                 Row(
@@ -76,7 +80,7 @@ class MetronomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 4.0),
+          const SizedBox(height: 4.0),
         ],
       ),
     );

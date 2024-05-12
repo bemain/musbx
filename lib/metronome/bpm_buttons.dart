@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/widgets.dart';
 
@@ -54,15 +55,24 @@ class BpmButtons extends StatelessWidget {
   }
 
   Widget buildBpmText(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: Metronome.instance.bpmNotifier,
-      builder: (c, int bpm, Widget? child) {
-        return Text(
-          "$bpm",
-          style: Theme.of(context).textTheme.displayMedium,
-          textAlign: TextAlign.center,
-        );
-      },
+    return SizedBox(
+      width: 90,
+      child: ValueListenableBuilder(
+        valueListenable: Metronome.instance.bpmNotifier,
+        builder: (c, int bpm, Widget? child) {
+          return NumberField<int>(
+            value: bpm,
+            style: Theme.of(context).textTheme.displayMedium,
+            min: Metronome.minBpm,
+            max: Metronome.maxBpm,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onSubmitted: (value) {
+              Metronome.instance.bpm = value;
+              Metronome.instance.reset();
+            },
+          );
+        },
+      ),
     );
   }
 }
