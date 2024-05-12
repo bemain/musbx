@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/notifications.dart';
 
 class NotificationIndicator extends StatelessWidget {
@@ -25,10 +26,16 @@ class NotificationIndicator extends StatelessWidget {
   Future<void> _requestPermission(BuildContext context) async {
     if (await Notifications.shouldShowRationale()) {
       if (!context.mounted) return;
-      await showDialog(
+      final bool mayRequestPermission = await showDialog(
         context: context,
         builder: (context) => const NotificationPermissionRationale(),
       );
+      if (!mayRequestPermission) return;
+    }
+
+    await Notifications.requestPermission();
+    if (Notifications.hasPermission && Metronome.instance.isPlaying) {
+      await Metronome.instance.updateNotification();
     }
   }
 }
