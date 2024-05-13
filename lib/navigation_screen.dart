@@ -4,6 +4,7 @@ import 'package:musbx/custom_icons.dart';
 import 'package:musbx/metronome/metronome_screen.dart';
 import 'package:musbx/music_player/music_player_screen.dart';
 import 'package:musbx/tuner/tuner_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NavigationScreen extends StatefulWidget {
   /// Navigation screen offering a bottom bar for switching between the different screens.
@@ -14,12 +15,29 @@ class NavigationScreen extends StatefulWidget {
 }
 
 class NavigationScreenState extends State<NavigationScreen> {
-  int currentIndex = 1;
+  SharedPreferences? _preferences;
+
+  int get currentIndex => _currentIndex;
+  set currentIndex(int value) {
+    _currentIndex = value;
+    _preferences?.setInt("openPage", value);
+  }
+
+  int _currentIndex = 1;
+
   final PageController controller = PageController(initialPage: 1);
 
   @override
   void initState() {
     super.initState();
+
+    () async {
+      // Restore last open page
+      _preferences = await SharedPreferences.getInstance();
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        controller.jumpToPage(_preferences?.getInt("openPage") ?? currentIndex);
+      });
+    }();
 
     // Setup in-app review
     AdvancedInAppReview()
@@ -50,9 +68,6 @@ class NavigationScreenState extends State<NavigationScreen> {
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
           controller.jumpToPage(index);
-          setState(() {
-            currentIndex = index;
-          });
         },
         selectedIndex: currentIndex,
         destinations: const [
