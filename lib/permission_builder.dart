@@ -79,19 +79,19 @@ class PermissionBuilderState extends State<PermissionBuilder>
 
   @override
   Widget build(BuildContext context) {
-    if (status == null) return const LoadingScreen(text: "");
+    if (status == null) return const LoadingPage(text: "");
 
     if (status == PermissionStatus.granted) {
       WidgetsBinding.instance
           .addPostFrameCallback((_) => widget.onPermissionGranted());
-      return InfoScreen(
+      return InfoPage(
         icon: widget.permissionGrantedIcon ?? const CircularProgressIndicator(),
         text: "Access to the ${widget.permissionName} granted.",
       );
     }
 
     if (status == PermissionStatus.permanentlyDenied) {
-      return buildPermissionDeniedScreen(
+      return buildPermissionDeniedPage(
         additionalInfoText:
             "You need to give this permission from the System Settings.",
         buttonText: "Open Settings",
@@ -99,7 +99,7 @@ class PermissionBuilderState extends State<PermissionBuilder>
       );
     }
 
-    return buildPermissionDeniedScreen(
+    return buildPermissionDeniedPage(
       buttonText: "Request permission",
       onButtonPressed: requestPermission,
     );
@@ -126,7 +126,7 @@ class PermissionBuilderState extends State<PermissionBuilder>
     }
   }
 
-  Widget buildPermissionDeniedScreen({
+  Widget buildPermissionDeniedPage({
     String? additionalInfoText,
     required String buttonText,
     required void Function() onButtonPressed,

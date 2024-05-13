@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/navigation_screen.dart';
+import 'package:musbx/navigation_page.dart';
 import 'package:musbx/notifications.dart';
 import 'package:musbx/theme.dart';
 
@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
           showValueIndicator: ShowValueIndicator.always,
         ),
       ),
-      home: const NavigationScreen(),
+      home: const NavigationPage(),
     );
   }
 }

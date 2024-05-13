@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/screen/widget_card.dart';
+import 'package:musbx/page/widget_card.dart';
 
 class CardList extends StatelessWidget {
   const CardList({super.key, required this.children});

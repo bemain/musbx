@@ -49,8 +49,8 @@ class ContinuousButton extends StatelessWidget {
   }
 }
 
-class InfoScreen extends StatelessWidget {
-  const InfoScreen({Key? key, required this.icon, required this.text})
+class InfoPage extends StatelessWidget {
+  const InfoPage({Key? key, required this.icon, required this.text})
       : super(key: key);
 
   final Widget icon;
@@ -65,28 +65,28 @@ class InfoScreen extends StatelessWidget {
   }
 }
 
-class ErrorScreen extends StatelessWidget {
-  const ErrorScreen({Key? key, required this.text}) : super(key: key);
+class ErrorPage extends StatelessWidget {
+  const ErrorPage({Key? key, required this.text}) : super(key: key);
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
-    return InfoScreen(
+    return InfoPage(
       icon: const Icon(Icons.error_rounded),
       text: text,
     );
   }
 }
 
-class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({Key? key, required this.text}) : super(key: key);
+class LoadingPage extends StatelessWidget {
+  const LoadingPage({Key? key, required this.text}) : super(key: key);
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
-    return InfoScreen(
+    return InfoPage(
       icon: const CircularProgressIndicator(),
       text: text,
     );

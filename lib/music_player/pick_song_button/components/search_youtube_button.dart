@@ -135,8 +135,8 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
     return FutureBuilder(
       future: _getVideosFromQuery(query),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const LoadingScreen(text: "Searching...");
-        if (snapshot.hasError) return const ErrorScreen(text: "Search failed");
+        if (!snapshot.hasData) return const LoadingPage(text: "Searching...");
+        if (snapshot.hasError) return const ErrorPage(text: "Search failed");
 
         List<YoutubeVideo> results = snapshot.data!;
         return ListView(

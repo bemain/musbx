@@ -19,16 +19,16 @@ import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
 import 'package:musbx/music_player/pick_song_button/components/action.dart';
-import 'package:musbx/screen/bottom_bar.dart';
-import 'package:musbx/screen/default_app_bar.dart';
-import 'package:musbx/screen/widget_card.dart';
+import 'package:musbx/page/bottom_bar.dart';
+import 'package:musbx/page/default_app_bar.dart';
+import 'package:musbx/page/widget_card.dart';
 import 'package:musbx/widgets.dart';
 
-/// The key of the [MusicPlayerScreen]. Can be used to show dialogs.
-final GlobalKey<MusicPlayerScreenState> musicPlayerScreenKey = GlobalKey();
+/// The key of the [MusicPlayerPage]. Can be used to show dialogs.
+final GlobalKey<MusicPlayerPageState> musicPlayerPageKey = GlobalKey();
 
-class MusicPlayerScreen extends StatefulWidget {
-  /// Screen that allows the user to select and play a song.
+class MusicPlayerPage extends StatefulWidget {
+  /// Page that allows the user to select and play a song.
   ///
   /// Includes:
   ///  - Label showing current song, and button to load a song from device.
@@ -38,13 +38,13 @@ class MusicPlayerScreen extends StatefulWidget {
   ///  - Slider and buttons for looping a section of the song.
   ///  - Controls for the Demixer.
   ///  - Controls for the Equalizer.
-  MusicPlayerScreen() : super(key: musicPlayerScreenKey);
+  MusicPlayerPage() : super(key: musicPlayerPageKey);
 
   @override
-  State<StatefulWidget> createState() => MusicPlayerScreenState();
+  State<StatefulWidget> createState() => MusicPlayerPageState();
 }
 
-class MusicPlayerScreenState extends State<MusicPlayerScreen>
+class MusicPlayerPageState extends State<MusicPlayerPage>
     with AutomaticKeepAliveClientMixin {
   static const String helpText =
       """Press the plus-button and load a song from your device or YouTube.
@@ -68,7 +68,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
       valueListenable: musicPlayer.stateNotifier,
       builder: (context, state, _) {
         return state == MusicPlayerState.idle
-            ? _buildWelcomeScreen(context)
+            ? _buildWelcomePage(context)
             : Scaffold(
                 body: ListView(
                   children: [
@@ -120,7 +120,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
     );
   }
 
-  Widget _buildWelcomeScreen(BuildContext context) {
+  Widget _buildWelcomePage(BuildContext context) {
     return Scaffold(
       appBar: const DefaultAppBar(helpText: helpText),
       floatingActionButton: _buildLoadSongButton(),

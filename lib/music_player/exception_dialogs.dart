@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
-import 'package:musbx/music_player/music_player_screen.dart';
+import 'package:musbx/music_player/music_player_page.dart';
 
 /// Show an exception dialog.
 ///
-/// This is only dependent on [MusicPlayerScreen]'s context, and can thus be
+/// This is only dependent on [MusicPlayerPage]'s context, and can thus be
 /// used in places where no local context is available, such as button callbacks.
 Future<void> showExceptionDialog(Widget dialog) async {
-  if (musicPlayerScreenKey.currentContext == null ||
-      !musicPlayerScreenKey.currentContext!.mounted) {
+  if (musicPlayerPageKey.currentContext == null ||
+      !musicPlayerPageKey.currentContext!.mounted) {
     return;
   }
 
   showDialog(
-    context: musicPlayerScreenKey.currentContext!,
+    context: musicPlayerPageKey.currentContext!,
     builder: (context) => dialog,
   );
 }

@@ -1,20 +1,20 @@
 import 'package:advanced_in_app_review/advanced_in_app_review.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
-import 'package:musbx/metronome/metronome_screen.dart';
-import 'package:musbx/music_player/music_player_screen.dart';
-import 'package:musbx/tuner/tuner_screen.dart';
+import 'package:musbx/metronome/metronome_page.dart';
+import 'package:musbx/music_player/music_player_page.dart';
+import 'package:musbx/tuner/tuner_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class NavigationScreen extends StatefulWidget {
-  /// Navigation screen offering a bottom bar for switching between the different screens.
-  const NavigationScreen({super.key});
+class NavigationPage extends StatefulWidget {
+  /// Navigation page offering a bottom bar for switching between the different pages.
+  const NavigationPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => NavigationScreenState();
+  State<StatefulWidget> createState() => NavigationPageState();
 }
 
-class NavigationScreenState extends State<NavigationScreen> {
+class NavigationPageState extends State<NavigationPage> {
   SharedPreferences? _preferences;
 
   int get currentIndex => _currentIndex;
@@ -60,9 +60,9 @@ class NavigationScreenState extends State<NavigationScreen> {
           });
         },
         children: [
-          const MetronomeScreen(),
-          MusicPlayerScreen(),
-          const TunerScreen(),
+          const MetronomePage(),
+          MusicPlayerPage(),
+          const TunerPage(),
         ],
       ),
       bottomNavigationBar: NavigationBar(

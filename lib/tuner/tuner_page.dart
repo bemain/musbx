@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/permission_builder.dart';
-import 'package:musbx/screen/card_list.dart';
-import 'package:musbx/screen/default_app_bar.dart';
+import 'package:musbx/page/card_list.dart';
+import 'package:musbx/page/default_app_bar.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/tuner/tuning_graph.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class TunerScreen extends StatefulWidget {
-  /// Screen that detects the pitch from the microphone and displays it.
+class TunerPage extends StatefulWidget {
+  /// Page that detects the pitch from the microphone and displays it.
   ///
   /// Includes:
   ///  - Gauge showing what note is being played and how out of tune it is.
   ///  - Graph showing how the tuning has changed over time.
-  const TunerScreen({super.key});
+  const TunerPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => TunerScreenState();
+  State<StatefulWidget> createState() => TunerPageState();
 }
 
-class TunerScreenState extends State<TunerScreen> {
+class TunerPageState extends State<TunerPage> {
   final Tuner tuner = Tuner.instance;
 
   @override
