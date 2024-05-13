@@ -1,22 +1,28 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:collection';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
-class ContinuousTextButton extends StatelessWidget {
+class ContinuousButton extends StatelessWidget {
   /// Button that can be held down to yield continuous presses.
-  const ContinuousTextButton({
+  const ContinuousButton({
     super.key,
-    required this.onPressed,
+    required this.onContinuousPress,
+    this.onContinuousPressEnd,
     this.interval = const Duration(milliseconds: 100),
     required this.child,
   });
 
   /// Callback for when this button is pressed.
-  final void Function()? onPressed;
+  final void Function()? onContinuousPress;
+
+  /// Callback for when the user stops pressing this button.
+  final void Function()? onContinuousPressEnd;
 
   /// Interval between callbacks if the button is held pressed.
   final Duration interval;
@@ -28,18 +34,17 @@ class ContinuousTextButton extends StatelessWidget {
     Timer timer = Timer(const Duration(), () {});
     return GestureDetector(
       onLongPressStart: (LongPressStartDetails details) {
-        timer = Timer.periodic(interval, (_) => onPressed?.call());
+        timer = Timer.periodic(interval, (_) => onContinuousPress?.call());
       },
       onLongPressUp: () {
         timer.cancel();
+        onContinuousPressEnd?.call();
       },
       onLongPressCancel: () {
         timer.cancel();
+        onContinuousPressEnd?.call();
       },
-      child: TextButton(
-        onPressed: onPressed,
-        child: child,
-      ),
+      child: child,
     );
   }
 }
@@ -156,4 +161,143 @@ Future<Directory> createTempDirectory(String name) async {
   var dir = Directory("${(await getTemporaryDirectory()).path}/$name/");
   await dir.create(recursive: true);
   return dir;
+}
+
+class ListNotifier<T> extends ChangeNotifier {
+  ListNotifier(this._value);
+
+  final List<T> _value;
+
+  /// The current value stored in this notifier.
+  UnmodifiableListView<T> get value => UnmodifiableListView(_value);
+
+  T operator [](int index) => _value[index];
+  operator []=(int index, T value) {
+    _value[index] = value;
+    notifyListeners();
+  }
+
+  void add(T element) {
+    _value.add(element);
+    notifyListeners();
+  }
+
+  void addAll(Iterable<T> iterable) {
+    _value.addAll(iterable);
+    notifyListeners();
+  }
+
+  bool remove(T element) {
+    final ret = _value.remove(element);
+    notifyListeners();
+    return ret;
+  }
+
+  T removeAt(int index) {
+    final ret = _value.removeAt(index);
+    notifyListeners();
+    return ret;
+  }
+}
+
+class ExpandedIcon extends StatelessWidget {
+  const ExpandedIcon(this.icon, {super.key});
+
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraint) => Icon(
+        icon,
+        size: constraint.biggest.shortestSide,
+      ),
+    );
+  }
+}
+
+class NumberField<T extends num> extends StatelessWidget {
+  NumberField({
+    super.key,
+    this.value,
+    this.min,
+    this.max,
+    required this.onSubmitted,
+    this.prefixWithSign = false,
+    this.style,
+    this.inputFormatters,
+  });
+
+  final T? value;
+  final T? min;
+  final T? max;
+
+  /// If `true`, automatically prefixes the value with the correct sign.
+  ///
+  /// When the user starts editing the value, the prefix is removed so that the sign can be edited.
+  final bool prefixWithSign;
+  final TextStyle? style;
+  final List<TextInputFormatter>? inputFormatters;
+
+  final void Function(T value)? onSubmitted;
+
+  late final TextEditingController controller = TextEditingController(
+    text: prefixWithSign ? value?.abs().toString() : value?.toString(),
+  );
+
+  /// Optional text prefix to place on the line before the input.
+  late final ValueNotifier<String?> prefixText =
+      ValueNotifier(!prefixWithSign || value == null
+          ? null
+          : value! >= 0
+              ? "+"
+              : "-");
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: prefixText,
+      builder: (context, child) => TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          prefixText: prefixText.value,
+          border: const UnderlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(vertical: 4.0),
+        ),
+        style: style,
+        textAlign: TextAlign.center,
+        textAlignVertical: TextAlignVertical.center,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(
+              r"^(-|-?\d+(?:\.\d*)?)$")), // Allow positive and negative decimal numbers, as well as just a minus sign
+          ...?inputFormatters,
+        ],
+        maxLines: 1,
+        enabled: onSubmitted != null,
+        onChanged: (value) {
+          /// Remove prefix and instead add the minus sign to the text, so that it can be edited.
+          if (prefixText.value == "-" && !value.startsWith("-")) {
+            controller.text = "-${controller.text}";
+          }
+          prefixText.value = null;
+        },
+        onSubmitted: (value) {
+          num? parsed = num.tryParse(value);
+          if (parsed == null) {
+            // Reset to the actual value
+            if (this.value != null) controller.text = this.value.toString();
+            return;
+          }
+
+          T clamped = parsed.clamp(
+            min ?? double.negativeInfinity,
+            max ?? double.infinity,
+          ) as T;
+          controller.text = clamped.toString();
+          onSubmitted?.call(clamped);
+        },
+      ),
+    );
+  }
 }

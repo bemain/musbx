@@ -17,6 +17,9 @@ class BpmSlider extends StatelessWidget {
           onChanged: (double value) {
             Metronome.instance.bpm = value.toInt();
           },
+          onChangeEnd: (double value) {
+            Metronome.instance.reset();
+          },
         );
       },
     );

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:soundpool/soundpool.dart';
 
@@ -39,17 +40,20 @@ class BpmTapper extends StatelessWidget {
 
     // Make sure sound has been loaded.
     if (soundId == null) {
-      rootBundle.load("assets/sounds/bpm_tapper.mp3").then(
+      rootBundle.load("assets/sounds/metronome/bpm_tapper.wav").then(
           (ByteData soundData) =>
               _pool.load(soundData).then((value) => soundId = value));
     }
 
     return Listener(
-      onPointerDown: (_) {
+      onPointerDown: (_) async {
         // Play sound
         if (soundId != null) _pool.play(soundId!);
-        // Vibrate
-        HapticFeedback.vibrate();
+
+        if (await FlutterVolumeController.getMute() == true) {
+          // Vibrate
+          HapticFeedback.vibrate();
+        }
 
         if (!stopwatch.isRunning || stopwatch.elapsed > resetDuration) {
           // Complete reset
@@ -61,23 +65,24 @@ class BpmTapper extends StatelessWidget {
         }
 
         // Stop metronome so it doesn't play sound while user is tapping
-        Metronome.instance.stop();
+        Metronome.instance.pause();
 
         // Add bpm
         tapBpms.add(60000 ~/ stopwatch.elapsedMilliseconds);
         // Only keep the last [tapsRemembered] taps
         tapBpms.removeRange(0, max(tapBpms.length - tapsRemembered, 0));
 
-        // Calculate average
+        // Update bpm
         Metronome.instance.bpm =
             tapBpms.reduce((a, b) => a + b) ~/ tapBpms.length;
+        Metronome.instance.reset();
 
         // Reset stopwatch
         stopwatch.reset();
       },
-      child: OutlinedButton(
+      child: IconButton.outlined(
         onPressed: () {},
-        child: const Padding(
+        icon: const Padding(
           padding: EdgeInsets.all(10.0),
           child: Icon(Icons.ads_click),
         ),

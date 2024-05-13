@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/navigation_screen.dart';
+import 'package:musbx/notifications.dart';
 import 'package:musbx/theme.dart';
 
 Future<void> main() async {
@@ -10,6 +11,7 @@ Future<void> main() async {
 
   // Create audio service
   await MusicPlayer.instance.initAudioService();
+  await Notifications.initialize();
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

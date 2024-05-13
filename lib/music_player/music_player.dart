@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
@@ -167,15 +166,14 @@ class MusicPlayer {
   /// This is used to make sure two processes don't try to load a song at the same time.
   /// Every process wanting to set [player]'s audio source must:
   ///  1. Create a future that first awaits [loadSongLock] and then sets [player]'s audio source.
-  ///  2. Overrite [loadSongLock] with the newly created future.
+  ///  2. Override [loadSongLock] with the newly created future.
   ///  3. Await the future it created.
   ///
   /// Here is an example of how that could be done:
   /// ```
   /// Future<void> loadAudioSource() async {
-  ///   Future<void>? awaitBeforeLoading = futureSongLoading;
-  ///   futureSongLoading = _loadAudioSource(awaitBeforeLoading);
-  ///   await futureSongLoading;
+  ///   loadSongLock = _loadAudioSource(loadSongLock);
+  ///   await loadSongLock;
   /// }
   ///
   /// Future<void> _loadAudioSource(Future<void>? awaitBeforeLoading) async {
@@ -191,8 +189,7 @@ class MusicPlayer {
   /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
   Future<void> loadSong(Song song) async {
     // Make sure no other process is currently setting the audio source
-    Future<void>? awaitBeforeLoading = loadSongLock;
-    loadSongLock = _loadSong(song, awaitBeforeLoading: awaitBeforeLoading);
+    loadSongLock = _loadSong(song, awaitBeforeLoading: loadSongLock);
     await loadSongLock;
   }
 
@@ -306,6 +303,13 @@ class MusicPlayer {
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
     songHistory.fetch();
+
+    // Listen to app lifecycle
+    AppLifecycleListener(
+      onInactive: () async {
+        await MusicPlayer.instance.saveSongPreferences();
+      },
+    );
 
     player.setVolume(0.5);
 
