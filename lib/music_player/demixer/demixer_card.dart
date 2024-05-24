@@ -131,6 +131,7 @@ Please update to the latest version to use the Demixer.""",
   }
 
   Widget buildLoading(BuildContext context) {
+    // TODO: Add "Cancel" button
     return SizedBox(
       height: 192,
       child: Stack(
@@ -152,8 +153,7 @@ Please update to the latest version to use the Demixer.""",
             Align(
               alignment: const Alignment(0, 0.3),
               child: ValueListenableBuilder(
-                valueListenable:
-                    musicPlayer.demixer.process!.stepProgressNotifier,
+                valueListenable: musicPlayer.demixer.process!.progressNotifier,
                 builder: (context, progress, child) => Text(
                     (progress == null) ? "" : "${(progress * 100).round()}%"),
               ),

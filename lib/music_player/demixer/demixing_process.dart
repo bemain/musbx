@@ -8,6 +8,7 @@ import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
+import 'package:musbx/process.dart';
 
 enum DemixingStep {
   /// The cache is being checked to see if stem files are available there.
@@ -32,32 +33,21 @@ enum DemixingStep {
   extracting,
 }
 
-class DemixingProcess {
-  /// A cancellable process that demixes [song].
-  DemixingProcess(Song song) {
-    future = demixSong(song);
-  }
+class DemixingProcess extends Process<Map<StemType, File>?> {
+  /// Upload, separate and download stem files for a [song].
+  ///
+  /// The stem files will be 16 bit wav files.
+  ///
+  /// TODO: Improve progress tracking for upload and download.
+  DemixingProcess(this.song);
 
-  /// Whether this job has been cancelled.
-  bool _cancelled = false;
-
-  /// The future that completes when the song is demixed.
-  late final Future<Map<StemType, File>?> future;
+  /// The song being demixed.
+  final Song song;
 
   /// The current step of the demixing process.
   DemixingStep get step => stepNotifier.value;
   final ValueNotifier<DemixingStep> stepNotifier =
       ValueNotifier(DemixingStep.checkingCache);
-
-  /// The progress of the current demixing [step], or `null` if [step] doesn't report progress.
-  /// Should be a fraction between 0 and 1.
-  double? get stepProgress => stepProgressNotifier.value;
-  final ValueNotifier<double?> stepProgressNotifier = ValueNotifier(null);
-
-  /// Queue this job for cancellation.
-  void cancel() {
-    _cancelled = true;
-  }
 
   /// Get stems from [songDirectory], if all stems (see [StemType]) were found with [fileExtension].
   Future<Map<StemType, File>?> getStemsInCache(
@@ -80,12 +70,8 @@ class DemixingProcess {
     return null;
   }
 
-  /// Upload, separate and download stem files for [song].
-  ///
-  /// The stem files will be 16 bit wav files.
-  ///
-  /// TODO: Improve progress tracking for upload and download.
-  Future<Map<StemType, File>?> demixSong(Song song) async {
+  @override
+  Future<Map<StemType, File>?> process() async {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
@@ -96,12 +82,12 @@ class DemixingProcess {
 
       // Cached files need to be converted to wav
       stepNotifier.value = DemixingStep.extracting;
-      stepProgressNotifier.value = 0;
+      progressNotifier.value = 0;
 
       for (final entry in cachedStemFiles.entries) {
         cachedStemFiles[entry.key] = await mp3ToWav(entry.value);
-        stepProgressNotifier.value = (stepProgress ?? 0) + 0.25;
-        if (_cancelled) return null;
+        progressNotifier.value = (progress ?? 0) + 0.25;
+        if (isCancelled) return null;
       }
 
       return cachedStemFiles;
@@ -111,7 +97,7 @@ class DemixingProcess {
 
     DemixerApiHost host = await MusbxApi.findDemixerHost();
 
-    if (_cancelled) return null;
+    if (isCancelled) return null;
 
     // Upload song to server
     stepNotifier.value = DemixingStep.uploading;
@@ -129,7 +115,7 @@ class DemixingProcess {
 
     String songId = response.songId;
 
-    if (_cancelled) return null;
+    if (isCancelled) return null;
 
     if (response.jobId != null) {
       // Wait for demixing job to complete
@@ -140,29 +126,29 @@ class DemixingProcess {
             error.message != "The requested Job does not exist") throw error;
       }).listen(null, cancelOnError: true);
       subscription.onData((response) {
-        if (_cancelled) {
+        if (isCancelled) {
           subscription.cancel();
         }
 
         if (response.progress == 100) {
           // The server is converting files to mp3
           stepNotifier.value = DemixingStep.compressing;
-          stepProgressNotifier.value = null;
+          progressNotifier.value = null;
         } else {
           // Update demixing progress
-          stepProgressNotifier.value = response.progress / 100;
+          progressNotifier.value = response.progress / 100;
         }
       });
 
       await subscription.asFuture();
-      stepProgressNotifier.value = null;
+      progressNotifier.value = null;
     }
 
-    if (_cancelled) return null;
+    if (isCancelled) return null;
 
     // Download stem files
     stepNotifier.value = DemixingStep.downloading;
-    stepProgressNotifier.value = 0;
+    progressNotifier.value = 0;
 
     Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
       StemType.values.map((stem) async {
@@ -170,24 +156,24 @@ class DemixingProcess {
           songId,
           stem,
         );
-        stepProgressNotifier.value = (stepProgress ?? 0) + 0.25;
+        progressNotifier.value = (progress ?? 0) + 0.25;
 
         return MapEntry(stem, file);
       }),
     ));
 
-    if (_cancelled) return null;
+    if (isCancelled) return null;
 
     // Convert files to wav
     stepNotifier.value = DemixingStep.extracting;
-    stepProgressNotifier.value = 0;
+    progressNotifier.value = 0;
 
     for (final entry in stemFiles.entries) {
       stemFiles[entry.key] = await mp3ToWav(entry.value);
 
-      stepProgressNotifier.value = (stepProgress ?? 0) + 0.25;
+      progressNotifier.value = (progress ?? 0) + 0.25;
 
-      if (_cancelled) return null;
+      if (isCancelled) return null;
     }
 
     return stemFiles;

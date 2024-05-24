@@ -75,7 +75,7 @@ class Demixer extends MusicPlayerComponent {
     stateNotifier.value = DemixerState.demixing;
 
     try {
-      process?.cancel();
+      process?.isCancelled = true;
       process = DemixingProcess(song);
 
       Map<StemType, File>? stemFiles = await process?.future;
@@ -130,7 +130,7 @@ class Demixer extends MusicPlayerComponent {
       if (enabled) {
         await demixCurrentSong();
       } else {
-        process?.cancel();
+        process?.isCancelled = true;
         stateNotifier.value = DemixerState.inactive;
       }
       return;

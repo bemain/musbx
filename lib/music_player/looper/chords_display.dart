@@ -15,13 +15,14 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: musicPlayer.looper.chordsNotifier,
-      builder: (context, chords, child) {
-        if (chords == null) {
+    return FutureBuilder(
+      future: musicPlayer.looper.chordsProcess?.future,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
           return const Center(child: LinearProgressIndicator());
         }
 
+        final Map<Duration, String> chords = snapshot.data!;
         return ValueListenableBuilder(
           valueListenable: musicPlayer.positionNotifier,
           builder: (context, position, child) {

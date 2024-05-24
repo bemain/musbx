@@ -5,7 +5,42 @@ import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
+import 'package:musbx/process.dart';
 import 'package:musbx/widgets.dart';
+
+class ChordIdentificationProcess extends Process<Map<Duration, String>> {
+  /// Perform chord identification on a [song].
+  ChordIdentificationProcess(this.song);
+
+  /// The song being analyzed.
+  final Song song;
+
+  @override
+  Future<Map<Duration, String>> process() async {
+    final ChordsApiHost host = await MusbxApi.findChordsHost();
+
+    // TODO: Maybe throw when cancelled, to avoid returning dummy data.
+    if (isCancelled) return {};
+
+    Map chords;
+    if (song.source is FileSource) {
+      chords = await host.analyzeFile(
+        (song.source as FileSource).file,
+      );
+    } else {
+      chords = await host.analyzeYoutubeSong(
+        (song.source as YoutubeSource).youtubeId,
+      );
+    }
+
+    if (isCancelled) return {};
+
+    return chords.map((key, value) => MapEntry(
+          Duration(milliseconds: (double.parse(key) * 1000).toInt()),
+          value,
+        ));
+  }
+}
 
 /// A component for [MusicPlayer] that is used to loop a section of a song.
 class Looper extends MusicPlayerComponent {
@@ -15,8 +50,9 @@ class Looper extends MusicPlayerComponent {
   final ValueNotifier<LoopSection> sectionNotifier =
       ValueNotifier(LoopSection());
 
-  Map<Duration, String>? get chords => chordsNotifier.value;
-  ValueNotifier<Map<Duration, String>?> chordsNotifier = ValueNotifier(null);
+  /// The chords of the current song,
+  /// or `null` if no song has been loaded or the song hasn't been analyzed yet.
+  ChordIdentificationProcess? chordsProcess;
 
   @override
   void initialize(MusicPlayer musicPlayer) {
@@ -37,12 +73,13 @@ class Looper extends MusicPlayerComponent {
       }
     });
 
-    // When the song changes, begin chord detection.
+    // When the song changes, begin chord identification.
     musicPlayer.songNotifier.addListener(() async {
-      chordsNotifier.value = null;
+      chordsProcess = null;
+      final Song? song = musicPlayer.song;
+      if (song == null) return;
 
-      final Song? song = MusicPlayer.instance.song;
-      if (song != null) await analyzeSong(song);
+      chordsProcess = ChordIdentificationProcess(song);
     });
   }
 
@@ -54,25 +91,6 @@ class Looper extends MusicPlayerComponent {
         (enabled) ? section.end.inMilliseconds : duration.inMilliseconds,
       ),
     );
-  }
-
-  /// Perform chord detection on a [song].
-  Future<void> analyzeSong(Song song) async {
-    final ChordsApiHost host = await MusbxApi.findChordsHost();
-    Map chords;
-    if (song.source is FileSource) {
-      chords = await host.analyzeFile(
-        (song.source as FileSource).file,
-      );
-    } else {
-      chords = await host.analyzeYoutubeSong(
-        (song.source as YoutubeSource).youtubeId,
-      );
-    }
-    chordsNotifier.value = chords.map((key, value) => MapEntry(
-          Duration(milliseconds: (double.parse(key) * 1000).toInt()),
-          value,
-        ));
   }
 
   /// Load settings from a [json] map.
