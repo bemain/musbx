@@ -33,7 +33,7 @@ class MusbxApi {
 
   /// The servers hosting the Musbx API.
   static final List<String> _hostUrls = [
-    // "192.168.100.162:4242",
+    "192.168.100.200:4242",
     "brunnby.homeip.net:4242",
     "musbx.agardh.se:4242",
   ];

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/musbx_api/chords_api.dart';
+import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
+import 'package:musbx/music_player/song.dart';
+import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/widgets.dart';
 
 /// A component for [MusicPlayer] that is used to loop a section of a song.
@@ -11,9 +15,12 @@ class Looper extends MusicPlayerComponent {
   final ValueNotifier<LoopSection> sectionNotifier =
       ValueNotifier(LoopSection());
 
+  Map<Duration, String>? get chords => chordsNotifier.value;
+  ValueNotifier<Map<Duration, String>?> chordsNotifier = ValueNotifier(null);
+
   @override
   void initialize(MusicPlayer musicPlayer) {
-    // When loopSection changes, trigger ssek
+    // When loopSection changes, trigger seek
     sectionNotifier.addListener(() async {
       if (!enabled) return;
       if (musicPlayer.position < section.start ||
@@ -29,6 +36,14 @@ class Looper extends MusicPlayerComponent {
         await musicPlayer.seek(musicPlayer.position);
       }
     });
+
+    // When the song changes, begin chord detection.
+    musicPlayer.songNotifier.addListener(() async {
+      chordsNotifier.value = null;
+
+      final Song? song = MusicPlayer.instance.song;
+      if (song != null) await analyzeSong(song);
+    });
   }
 
   /// Clamp [position] to between [section.start] and [section.end], or between 0 and [duration] if this component is not [enabled].
@@ -39,6 +54,25 @@ class Looper extends MusicPlayerComponent {
         (enabled) ? section.end.inMilliseconds : duration.inMilliseconds,
       ),
     );
+  }
+
+  /// Perform chord detection on a [song].
+  Future<void> analyzeSong(Song song) async {
+    final ChordsApiHost host = await MusbxApi.findChordsHost();
+    Map chords;
+    if (song.source is FileSource) {
+      chords = await host.analyzeFile(
+        (song.source as FileSource).file,
+      );
+    } else {
+      chords = await host.analyzeYoutubeSong(
+        (song.source as YoutubeSource).youtubeId,
+      );
+    }
+    chordsNotifier.value = chords.map((key, value) => MapEntry(
+          Duration(milliseconds: (double.parse(key) * 1000).toInt()),
+          value,
+        ));
   }
 
   /// Load settings from a [json] map.

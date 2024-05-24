@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/looper/chords_display.dart';
 import 'package:musbx/music_player/looper/loop_slider.dart';
 import 'package:musbx/music_player/looper/looper.dart';
 import 'package:musbx/music_player/music_player.dart';
@@ -80,6 +81,7 @@ class LoopCard extends StatelessWidget {
         ],
       ),
       LoopSlider(),
+      const ChordsDisplay(),
     ]);
   }
 
