@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
 
+class Cancelled implements Exception {
+  /// Exception thrown when a process has been cancelled early.
+  const Cancelled([this.msg]);
+
+  final String? msg;
+
+  @override
+  String toString() => msg ?? 'This process has been cancelled';
+}
+
 /// A helper class for handling lengthy tasks.
 /// Features progress tracking, cancellation and automatic error handling.
 abstract class Process<T extends Object> extends ChangeNotifier {
@@ -51,4 +61,12 @@ abstract class Process<T extends Object> extends ChangeNotifier {
 
   /// The method that this process executes.
   Future<T> process();
+
+  /// If this process has been cancelled, throw a [Cancelled] error.
+  ///
+  /// Should be called periodically between asynchronous operations to introduce
+  /// "breakpoints" where the process can be cancelled.
+  void breakIfCancelled() {
+    if (isCancelled) throw const Cancelled();
+  }
 }

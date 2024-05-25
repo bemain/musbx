@@ -87,7 +87,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
       for (final entry in cachedStemFiles.entries) {
         cachedStemFiles[entry.key] = await mp3ToWav(entry.value);
         progressNotifier.value = (progress ?? 0) + 0.25;
-        if (isCancelled) return {};
+        breakIfCancelled();
       }
 
       return cachedStemFiles;
@@ -97,7 +97,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
     DemixerApiHost host = await MusbxApi.findDemixerHost();
 
-    if (isCancelled) return {};
+    breakIfCancelled();
 
     // Upload song to server
     stepNotifier.value = DemixingStep.uploading;
@@ -115,7 +115,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
     String songId = response.songId;
 
-    if (isCancelled) return {};
+    breakIfCancelled();
 
     if (response.jobId != null) {
       // Wait for demixing job to complete
@@ -144,7 +144,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
       progressNotifier.value = null;
     }
 
-    if (isCancelled) return {};
+    breakIfCancelled();
 
     // Download stem files
     stepNotifier.value = DemixingStep.downloading;
@@ -162,7 +162,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
       }),
     ));
 
-    if (isCancelled) return {};
+    breakIfCancelled();
 
     // Convert files to wav
     stepNotifier.value = DemixingStep.extracting;
@@ -173,7 +173,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
       progressNotifier.value = (progress ?? 0) + 0.25;
 
-      if (isCancelled) return {};
+      breakIfCancelled();
     }
 
     return stemFiles;

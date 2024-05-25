@@ -15,8 +15,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, String>> {
   Future<Map<Duration, String>> process() async {
     final ChordsApiHost host = await MusbxApi.findChordsHost();
 
-    // TODO: Maybe throw when cancelled, to avoid returning dummy data.
-    if (isCancelled) return {};
+    breakIfCancelled();
 
     Map chords;
     if (song.source is FileSource) {
@@ -29,7 +28,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, String>> {
       );
     }
 
-    if (isCancelled) return {};
+    breakIfCancelled();
 
     return chords.map((key, value) => MapEntry(
           Duration(milliseconds: (double.parse(key) * 1000).toInt()),

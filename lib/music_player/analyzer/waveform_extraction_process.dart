@@ -31,6 +31,8 @@ class WaveformExtractionProcess extends Process<Waveform> {
       return await JustWaveform.parse(outFile);
     }
 
+    breakIfCancelled();
+
     // Perform extraction
     final progressStream = JustWaveform.extract(
       audioInFile: inFile,
@@ -39,6 +41,8 @@ class WaveformExtractionProcess extends Process<Waveform> {
     );
 
     await for (var event in progressStream) {
+      breakIfCancelled();
+
       progressNotifier.value = event.progress;
       if (event.waveform != null) return event.waveform!;
     }
