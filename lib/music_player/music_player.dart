@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/music_player/analyzer/analyzer.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/musbx_api/youtube_api.dart';
@@ -160,6 +161,9 @@ class MusicPlayer {
 
   /// Component for isolating or music specific instruments of the song.
   final Demixer demixer = Demixer();
+
+  /// Component for analyzing the current song, including chord identification and waveform analysis.
+  final Analyzer analyzer = Analyzer();
 
   /// The process currently loading a song, or `null` if no song has been loaded.
   ///
@@ -360,6 +364,7 @@ class MusicPlayer {
     looper.initialize(this);
     equalizer.initialize(this);
     demixer.initialize(this);
+    analyzer.initialize(this);
   }
 
   /// Initialize the audio service for [audioHandler] to enable interaction

@@ -16,8 +16,12 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: musicPlayer.looper.chordsProcess?.future,
+      future: musicPlayer.analyzer.chordsProcess?.future,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(child: Icon(Icons.error_outline));
+        }
+
         if (!snapshot.hasData) {
           return const Center(child: LinearProgressIndicator());
         }

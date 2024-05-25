@@ -1,46 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/musbx_api/chords_api.dart';
-import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
-import 'package:musbx/music_player/song.dart';
-import 'package:musbx/music_player/song_source.dart';
-import 'package:musbx/process.dart';
 import 'package:musbx/widgets.dart';
-
-class ChordIdentificationProcess extends Process<Map<Duration, String>> {
-  /// Perform chord identification on a [song].
-  ChordIdentificationProcess(this.song);
-
-  /// The song being analyzed.
-  final Song song;
-
-  @override
-  Future<Map<Duration, String>> process() async {
-    final ChordsApiHost host = await MusbxApi.findChordsHost();
-
-    // TODO: Maybe throw when cancelled, to avoid returning dummy data.
-    if (isCancelled) return {};
-
-    Map chords;
-    if (song.source is FileSource) {
-      chords = await host.analyzeFile(
-        (song.source as FileSource).file,
-      );
-    } else {
-      chords = await host.analyzeYoutubeSong(
-        (song.source as YoutubeSource).youtubeId,
-      );
-    }
-
-    if (isCancelled) return {};
-
-    return chords.map((key, value) => MapEntry(
-          Duration(milliseconds: (double.parse(key) * 1000).toInt()),
-          value,
-        ));
-  }
-}
 
 /// A component for [MusicPlayer] that is used to loop a section of a song.
 class Looper extends MusicPlayerComponent {
@@ -49,10 +10,6 @@ class Looper extends MusicPlayerComponent {
   set section(LoopSection section) => sectionNotifier.value = section;
   final ValueNotifier<LoopSection> sectionNotifier =
       ValueNotifier(LoopSection());
-
-  /// The chords of the current song,
-  /// or `null` if no song has been loaded or the song hasn't been analyzed yet.
-  ChordIdentificationProcess? chordsProcess;
 
   @override
   void initialize(MusicPlayer musicPlayer) {
@@ -71,15 +28,6 @@ class Looper extends MusicPlayerComponent {
           musicPlayer.position > section.end) {
         await musicPlayer.seek(musicPlayer.position);
       }
-    });
-
-    // When the song changes, begin chord identification.
-    musicPlayer.songNotifier.addListener(() async {
-      chordsProcess = null;
-      final Song? song = musicPlayer.song;
-      if (song == null) return;
-
-      chordsProcess = ChordIdentificationProcess(song);
     });
   }
 
