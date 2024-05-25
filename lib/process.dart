@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 class Cancelled implements Exception {
@@ -13,6 +15,11 @@ class Cancelled implements Exception {
 /// A helper class for handling lengthy tasks.
 /// Features progress tracking, cancellation and automatic error handling.
 abstract class Process<T extends Object> extends ChangeNotifier {
+  Process() {
+    // Begin executing the future.
+    future;
+  }
+
   /// The future that completes with this task.
   late final Future<T> future = _processAndReportErrors();
 
