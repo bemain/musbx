@@ -33,7 +33,7 @@ enum DemixingStep {
   extracting,
 }
 
-class DemixingProcess extends Process<Map<StemType, File>?> {
+class DemixingProcess extends Process<Map<StemType, File>> {
   /// Upload, separate and download stem files for a [song].
   ///
   /// The stem files will be 16 bit wav files.
@@ -71,7 +71,7 @@ class DemixingProcess extends Process<Map<StemType, File>?> {
   }
 
   @override
-  Future<Map<StemType, File>?> process() async {
+  Future<Map<StemType, File>> process() async {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
@@ -87,7 +87,7 @@ class DemixingProcess extends Process<Map<StemType, File>?> {
       for (final entry in cachedStemFiles.entries) {
         cachedStemFiles[entry.key] = await mp3ToWav(entry.value);
         progressNotifier.value = (progress ?? 0) + 0.25;
-        if (isCancelled) return null;
+        if (isCancelled) return {};
       }
 
       return cachedStemFiles;
@@ -97,7 +97,7 @@ class DemixingProcess extends Process<Map<StemType, File>?> {
 
     DemixerApiHost host = await MusbxApi.findDemixerHost();
 
-    if (isCancelled) return null;
+    if (isCancelled) return {};
 
     // Upload song to server
     stepNotifier.value = DemixingStep.uploading;
@@ -115,7 +115,7 @@ class DemixingProcess extends Process<Map<StemType, File>?> {
 
     String songId = response.songId;
 
-    if (isCancelled) return null;
+    if (isCancelled) return {};
 
     if (response.jobId != null) {
       // Wait for demixing job to complete
@@ -144,7 +144,7 @@ class DemixingProcess extends Process<Map<StemType, File>?> {
       progressNotifier.value = null;
     }
 
-    if (isCancelled) return null;
+    if (isCancelled) return {};
 
     // Download stem files
     stepNotifier.value = DemixingStep.downloading;
@@ -162,7 +162,7 @@ class DemixingProcess extends Process<Map<StemType, File>?> {
       }),
     ));
 
-    if (isCancelled) return null;
+    if (isCancelled) return {};
 
     // Convert files to wav
     stepNotifier.value = DemixingStep.extracting;
@@ -173,7 +173,7 @@ class DemixingProcess extends Process<Map<StemType, File>?> {
 
       progressNotifier.value = (progress ?? 0) + 0.25;
 
-      if (isCancelled) return null;
+      if (isCancelled) return {};
     }
 
     return stemFiles;

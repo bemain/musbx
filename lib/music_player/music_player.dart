@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/analyzer/analyzer.dart';
+import 'package:musbx/music_player/analyzer/waveform_extraction_process.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/pick_song_button/components/search_youtube_button.dart';
@@ -99,6 +100,9 @@ class MusicPlayer {
             "[SONG HISTORY] Deleting cached stem files for song ${entry.value.id}");
         await stemsDirectory.delete(recursive: true);
       }
+      final File waveformFile =
+          await WaveformExtractionProcess.getWaveformFile(entry.value);
+      if (await waveformFile.exists()) await waveformFile.delete();
     },
   );
 
@@ -158,7 +162,7 @@ class MusicPlayer {
   /// Component for isolating or music specific instruments of the song.
   final Demixer demixer = Demixer();
 
-  /// Component for analyzing the current song, including chord identification and waveform analysis.
+  /// Component for analyzing the current song, including chord identification and waveform extraction.
   final Analyzer analyzer = Analyzer();
 
   /// The process currently loading a song, or `null` if no song has been loaded.
