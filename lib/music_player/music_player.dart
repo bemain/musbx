@@ -9,9 +9,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/analyzer/analyzer.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/musbx_api/demixer_api.dart';
-import 'package:musbx/music_player/musbx_api/youtube_api.dart';
 import 'package:musbx/music_player/pick_song_button/components/search_youtube_button.dart';
-import 'package:musbx/music_player/pick_song_button/components/upload_file_button.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
@@ -88,13 +86,11 @@ class MusicPlayer {
     toJson: (value) => value.toJson(),
     historyFileName: "song_history",
     onEntryRemoved: (entry) async {
+      // TODO: Reorganize cached files to per song instead of per component
       // Remove cached files
       if (entry.value.source is YoutubeSource) {
-        final String videoId = (entry.value.source as YoutubeSource).youtubeId;
-        for (String extension in allowedExtensions) {
-          File file = await YoutubeApiHost.getYoutubeFile(videoId, extension);
-          if (await file.exists()) await file.delete();
-        }
+        final File file = (entry.value.source as YoutubeSource).cacheFile;
+        if (await file.exists()) await file.delete();
       }
       final Directory stemsDirectory =
           await DemixerApiHost.getSongDirectory(entry.value.id);
