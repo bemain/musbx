@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// A helper class for handling lengthy tasks.
 /// Features progress tracking, cancellation and automatic error handling.
-abstract class Process<T> {
+abstract class Process<T extends Object> extends ChangeNotifier {
   /// The future that completes with this task.
   late final Future<T> future = _processAndReportErrors();
 
@@ -11,22 +11,38 @@ abstract class Process<T> {
   double? get progress => progressNotifier.value;
   final ValueNotifier<double?> progressNotifier = ValueNotifier(null);
 
+  /// Whether this process is still active.
+  bool get isActive => !(hasResult || hasError || isCancelled);
+
+  /// Whether this process has completed with a result.
+  bool get hasResult => result != null;
+
+  /// The result that this process produced.
+  /// `null` if the process hasn't compelted yet.
+  T? get result => resultNotifier.value;
+  late final ValueNotifier<T?> resultNotifier = ValueNotifier(null)
+    ..addListener(notifyListeners);
+
   /// Whether this process has encountered an error.
   bool get hasError => error != null;
 
   /// The error encountered by this process, if any.
   Object? get error => errorNotifier.value;
-  final ValueNotifier<Object?> errorNotifier = ValueNotifier(null);
+  late final ValueNotifier<Object?> errorNotifier = ValueNotifier(null)
+    ..addListener(notifyListeners);
 
   /// Whether this process has been cancelled.
   bool get isCancelled => isCancelledNotifier.value;
   set isCancelled(bool value) => isCancelledNotifier.value = value;
-  final ValueNotifier<bool> isCancelledNotifier = ValueNotifier(false);
+  late final ValueNotifier<bool> isCancelledNotifier = ValueNotifier(false)
+    ..addListener(notifyListeners);
 
   /// Start the [process] and catch any errors that occur.
   Future<T> _processAndReportErrors() async {
     try {
-      return await process();
+      final T res = await process();
+      resultNotifier.value = res;
+      return res;
     } catch (e) {
       errorNotifier.value = e;
       rethrow;
