@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/song_source.dart';
@@ -55,6 +57,10 @@ class Song {
   /// The media item for this song, provided to [MusicPlayerAudioHandler] when
   /// this song is played.
   final MediaItem mediaItem;
+
+  /// The directory where files relating to this song are cached.
+  late final Future<Directory> cacheDirectory =
+      createTempDirectory("songs/$id");
 
   @override
   String toString() {

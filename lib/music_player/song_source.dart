@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/musbx_api/musbx_api.dart';
+import 'package:musbx/music_player/musbx_api/youtube_api.dart';
+import 'package:musbx/music_player/pick_song_button/components/upload_file_button.dart';
 import 'package:musbx/widgets.dart';
 
 /// Where the audio for a song is loaded from.
@@ -15,8 +18,8 @@ abstract class SongSource {
   /// - `type` [String] The type of the source.
   ///
   /// Depending on the type, the map will contain some additional keys. \
-  /// "youtube" [String] `youtubeId`: The id of the Youtube song. \
-  /// "file" [String] `path`: The path to the file.
+  /// "youtube": `youtubeId` [String] The id of the Youtube song. \
+  /// "file": `path` [String] The path to the file.
   Map<String, dynamic> toJson();
 
   /// Try to create a [SongSource] from a json map.
@@ -88,11 +91,26 @@ class YoutubeSource implements SongSource {
 
   @override
   Future<AudioSource> toAudioSource() async {
-    File file = await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
+    File? file = await _getAudioFromCache();
+    file ??= await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
       youtubeId,
     );
+
     cacheFile = file;
     return AudioSource.file(file.path);
+  }
+
+  Future<File?> _getAudioFromCache() async {
+    for (final String extension in allowedExtensions) {
+      final File file =
+          await YoutubeApiHost.getYoutubeFile(youtubeId, extension);
+      if (await file.exists()) {
+        debugPrint(
+            "[YOUTUBE] Using cached audio for video with id '$youtubeId'");
+        return file;
+      }
+    }
+    return null;
   }
 
   @override

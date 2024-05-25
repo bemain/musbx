@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:just_waveform/just_waveform.dart';
-import 'package:musbx/music_player/analyzer/analyzer.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/process.dart';
@@ -16,7 +15,7 @@ class WaveformExtractionProcess extends Process<Waveform> {
 
   /// Get the file were the waveform for [song] is saved.
   static Future<File> getWaveformFile(Song song) async =>
-      File("${(await Analyzer.analyzerDirectory).path}/${song.id}.wave");
+      File("${(await song.cacheDirectory).path}/waveform.wave");
 
   @override
   Future<Waveform> process() async {

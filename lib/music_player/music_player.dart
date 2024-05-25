@@ -7,9 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/analyzer/analyzer.dart';
-import 'package:musbx/music_player/analyzer/waveform_extraction_process.dart';
 import 'package:musbx/music_player/audio_handler.dart';
-import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/pick_song_button/components/search_youtube_button.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
@@ -87,22 +85,11 @@ class MusicPlayer {
     toJson: (value) => value.toJson(),
     historyFileName: "song_history",
     onEntryRemoved: (entry) async {
-      // TODO: Reorganize cached files to per song instead of per component
       // Remove cached files
-      if (entry.value.source is YoutubeSource) {
-        final File file = (entry.value.source as YoutubeSource).cacheFile;
-        if (await file.exists()) await file.delete();
-      }
-      final Directory stemsDirectory =
-          await DemixerApiHost.getSongDirectory(entry.value.id);
-      if (await stemsDirectory.exists()) {
-        debugPrint(
-            "[SONG HISTORY] Deleting cached stem files for song ${entry.value.id}");
-        await stemsDirectory.delete(recursive: true);
-      }
-      final File waveformFile =
-          await WaveformExtractionProcess.getWaveformFile(entry.value);
-      if (await waveformFile.exists()) await waveformFile.delete();
+      debugPrint(
+          "[SONG HISTORY] Deleting cached files for song ${entry.value.id}");
+      final Directory directory = await entry.value.cacheDirectory;
+      if (await directory.exists()) directory.delete(recursive: true);
     },
   );
 
@@ -258,7 +245,7 @@ class MusicPlayer {
   ///
   /// If no preferences could be found for the song, do nothing.
   Future<void> loadSongPreferences(Song song) async {
-    var json = await _songPreferences.load(song.id);
+    var json = await _songPreferences.load(song);
     if (json == null) return;
 
     int? position = tryCast<int>(json["position"]);
@@ -293,7 +280,7 @@ class MusicPlayer {
   Future<void> saveSongPreferences() async {
     if (song == null) return;
 
-    await _songPreferences.save(song!.id, {
+    await _songPreferences.save(song!, {
       "position": position.inMilliseconds,
       "slowdowner": slowdowner.saveSettingsToJson(),
       "looper": looper.saveSettingsToJson(),

@@ -1,11 +1,8 @@
-import 'dart:io';
-
 import 'package:musbx/music_player/analyzer/chord_identification_process.dart';
 import 'package:musbx/music_player/analyzer/waveform_extraction_process.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/music_player/song.dart';
-import 'package:musbx/widgets.dart';
 
 /// A component for [MusicPlayer] that is used to analyze the current song,
 /// including chord identification and waveform extraction.
@@ -17,10 +14,6 @@ class Analyzer extends MusicPlayerComponent {
   /// The waveform extracted from the current song,
   /// or `null` if no song has been loaded.
   WaveformExtractionProcess? waveformProcess;
-
-  /// The directory where files are saved.
-  static final Future<Directory> analyzerDirectory =
-      createTempDirectory("analyzer");
 
   @override
   void initialize(MusicPlayer musicPlayer) {

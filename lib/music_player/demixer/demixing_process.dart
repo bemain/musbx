@@ -49,21 +49,21 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   final ValueNotifier<DemixingStep> stepNotifier =
       ValueNotifier(DemixingStep.checkingCache);
 
-  /// Get stems from [songDirectory], if all stems (see [StemType]) were found with [fileExtension].
+  /// Get stems for [song], if all stems (see [StemType]) were found with the correct [fileExtension].
   Future<Map<StemType, File>?> getStemsInCache(
-    Directory songDirectory, {
+    Song song, {
     String fileExtension = "mp3",
   }) async {
+    Directory directory = await DemixerApiHost.getStemsDirectory(song);
     List<File> stemFiles = StemType.values
-        .map(
-            (stem) => File("${songDirectory.path}/${stem.name}.$fileExtension"))
+        .map((stem) => File("${directory.path}/${stem.name}.$fileExtension"))
         .toList();
     if ((await Future.wait(stemFiles.map((stem) => stem.exists())))
         .every((value) => value)) {
       // All stems were found in the cache.
       return {
         for (final stem in StemType.values)
-          stem: File("${songDirectory.path}/${stem.name}.$fileExtension")
+          stem: File("${directory.path}/${stem.name}.$fileExtension")
       };
     }
 
@@ -75,8 +75,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
-    Directory songDirectory = await DemixerApiHost.getSongDirectory(song.id);
-    Map<StemType, File>? cachedStemFiles = await getStemsInCache(songDirectory);
+    Map<StemType, File>? cachedStemFiles = await getStemsInCache(song);
     if (cachedStemFiles != null) {
       debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
 
@@ -112,8 +111,6 @@ class DemixingProcess extends Process<Map<StemType, File>> {
         (song.source as YoutubeSource).youtubeId,
       );
     }
-
-    String songId = response.songId;
 
     breakIfCancelled();
 
@@ -153,7 +150,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
       StemType.values.map((stem) async {
         File file = await host.downloadStem(
-          songId,
+          song,
           stem,
         );
         progressNotifier.value = (progress ?? 0) + 0.25;
@@ -180,15 +177,15 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   }
 }
 
-/// Convert [file] from mp3 to 16 bit pcm wav.
-Future<File> mp3ToWav(File file) async {
+/// Convert [inFile] from mp3 to 16 bit pcm wav.
+Future<File> mp3ToWav(File inFile) async {
   /// File name without extension
-  String fileName = file.path.split("/").last.split(".").first;
-  String outputDirectoryPath = (await DemixerApiHost.demixerDirectory).path;
+  String fileName = inFile.path.split("/").last.split(".").first;
+  String outputDirectory = (await DemixerApiHost.extractedFilesDirectory).path;
 
   // Use ffmpeg to convert files to wav
   String arguments =
-      "-y -i ${file.path} -bitexact -acodec pcm_s16le $outputDirectoryPath/$fileName.wav";
+      "-y -i ${inFile.path} -bitexact -acodec pcm_s16le $outputDirectory/$fileName.wav";
   final session = await FFmpegKit.execute(arguments);
   ReturnCode? returnCode = await session.getReturnCode();
 

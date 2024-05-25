@@ -159,7 +159,7 @@ class Demixer extends MusicPlayerComponent {
 
     if (enabled) {
       // Load wav files
-      Directory directory = await DemixerApiHost.demixerDirectory;
+      Directory directory = await DemixerApiHost.extractedFilesDirectory;
       Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
           MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
 
