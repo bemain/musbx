@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:musbx/music_player/musbx_api/chords_api.dart';
 import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/music_player/song.dart';
@@ -11,21 +15,41 @@ class ChordIdentificationProcess extends Process<Map<Duration, String>> {
   /// The song being analyzed.
   final Song song;
 
+  /// The file where the chords for this [song] are cached.
+  Future<File> get cacheFile async =>
+      File("${(await song.cacheDirectory).path}/chords.json");
+
   @override
   Future<Map<Duration, String>> process() async {
-    final ChordsApiHost host = await MusbxApi.findChordsHost();
+    Map? chords;
+    // Check cache
+    File cache = await cacheFile;
+    if (await cache.exists()) {
+      try {
+        chords = jsonDecode(await cache.readAsString()) as Map;
+      } catch (e) {
+        debugPrint("[ANALYZER] Malformed chords file: '${cache.path}'");
+      }
+    }
 
     breakIfCancelled();
 
-    Map chords;
-    if (song.source is FileSource) {
-      chords = await host.analyzeFile(
-        (song.source as FileSource).file,
-      );
-    } else {
-      chords = await host.analyzeYoutubeSong(
-        (song.source as YoutubeSource).youtubeId,
-      );
+    if (chords == null) {
+      // Perform chords identification
+      final ChordsApiHost host = await MusbxApi.findChordsHost();
+
+      if (song.source is FileSource) {
+        chords = await host.analyzeFile(
+          (song.source as FileSource).file,
+        );
+      } else {
+        chords = await host.analyzeYoutubeSong(
+          (song.source as YoutubeSource).youtubeId,
+        );
+      }
+
+      // Save to cache
+      await cache.writeAsString(jsonEncode(chords));
     }
 
     breakIfCancelled();
