@@ -1,26 +1,50 @@
 import 'dart:math';
 
+/// A set of pitches that are a whole number of octaves apart, e.g. "C" or "F♯".
+enum PitchClass {
+  a("A"),
+  bFlat("A♯", "B♭"),
+  b("B", "C♭", true),
+  c("B♯", "C"),
+  dFlat("C♯", "D♭"),
+  d("D"),
+  eFlat("D♯", "E♭"),
+  e("E", "F♭", true),
+  f("E♯", "F"),
+  gFlat("F♯", "G♭"),
+  g("G"),
+  aFlat("G♯", "A♭");
+
+  const PitchClass(this.sharpName, [String? flatName, bool preferSharp = false])
+      : flatName = flatName ?? sharpName,
+        name = preferSharp ? sharpName : (flatName ?? sharpName);
+
+  /// The preferred name of this pitch class.
+  final String name;
+
+  /// The name of this pitch class with a flat ♭ (or no) accidental.
+  final String flatName;
+
+  /// The name of this pitch class with a sharp ♯ (or no) accidental.
+  final String sharpName;
+
+  /// Parse [string] as a pitch class.
+  /// Returns `null` if [string] is not a valid pitch class.
+  static PitchClass? tryParse(String string) {
+    final String trimmed = string.replaceAll("b", "♭").replaceAll("#", "♯");
+    return PitchClass.values
+        .where(
+          (pitch) => pitch.flatName == trimmed || pitch.sharpName == trimmed,
+        )
+        .firstOrNull;
+  }
+}
+
 /// Representation of a musical note, with a given pitch.
 class Note {
   /// The frequency of A4, in Hz. Used as a reference for all other notes.
   /// Defaults to 440 Hz.
   static double a4frequency = 440;
-
-  /// Names of all notes, starting with A.
-  static const List<String> noteNames = [
-    "A",
-    "B♭",
-    "B",
-    "C",
-    "D♭",
-    "D",
-    "E♭",
-    "E",
-    "F",
-    "G♭",
-    "G",
-    "A♭",
-  ];
 
   /// Create note from a given [frequency] in Hz.
   /// [frequency] must be greater than 0.
@@ -43,9 +67,12 @@ class Note {
   /// Number of whole cents between this note and A4.
   int get centsFromA4 => (1200 * _diffFromA4).round();
 
+  /// The pitch class that is closest to this frequency.
+  PitchClass get pitchClass =>
+      PitchClass.values[(semitonesFromA4 - 12 * octavesFromA4) % 12];
+
   /// The name of this note, e.g C3.
-  String get name =>
-      "${noteNames[(semitonesFromA4 - 12 * octavesFromA4) % 12]}${octavesFromA4 + 4}";
+  String get name => "${pitchClass.flatName}${octavesFromA4 + 4}";
 
   /// The number of cents between this [frequency] and the closest semitone.
   double get pitchOffset => centsFromA4 - semitonesFromA4 * 100;
