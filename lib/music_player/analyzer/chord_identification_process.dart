@@ -2,13 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/chord.dart';
 import 'package:musbx/music_player/musbx_api/chords_api.dart';
 import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/process.dart';
 
-class ChordIdentificationProcess extends Process<Map<Duration, String>> {
+class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   /// Perform chord identification on a [song].
   ChordIdentificationProcess(this.song);
 
@@ -20,7 +21,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, String>> {
       File("${(await song.cacheDirectory).path}/chords.json");
 
   @override
-  Future<Map<Duration, String>> process() async {
+  Future<Map<Duration, Chord?>> process() async {
     Map? chords;
     // Check cache
     File cache = await cacheFile;
@@ -56,7 +57,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, String>> {
 
     return chords.map((key, value) => MapEntry(
           Duration(milliseconds: (double.parse(key) * 1000).toInt()),
-          value,
+          Chord.tryParse(value),
         ));
   }
 }

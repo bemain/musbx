@@ -111,6 +111,17 @@ class Chord {
     );
   }
 
+  /// Transpose this chord a number of semitones.
+  Chord transposed(int semitones) {
+    return Chord(
+      root.transposed(semitones),
+      quality,
+      extension: extension,
+      alterations: alterations,
+      bassNote: bassNote.transposed(semitones),
+    );
+  }
+
   @override
   String toString() {
     return "${root.name}${quality.abbreviation}"

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/chord.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class ChordsDisplay extends StatefulWidget {
@@ -15,24 +16,19 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: musicPlayer.analyzer.chordsProcess?.future,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Center(child: Icon(Icons.error_outline));
-        }
-
-        if (!snapshot.hasData) {
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.analyzer.chordsNotifier,
+      builder: (context, chords, child) {
+        if (chords == null) {
           return const Center(child: LinearProgressIndicator());
         }
 
-        final Map<Duration, String> chords = snapshot.data!;
         return ValueListenableBuilder(
           valueListenable: musicPlayer.positionNotifier,
           builder: (context, position, child) {
             Duration minDuration = position - durationShown;
             Duration maxDuration = position + durationShown;
-            List<MapEntry<Duration, String>> shownChords = chords.entries
+            List<MapEntry<Duration, Chord?>> shownChords = chords.entries
                 .where((e) => e.key > minDuration && e.key < maxDuration)
                 .toList();
             return Stack(
@@ -48,7 +44,7 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
                         (e.key - position).inMilliseconds /
                             (durationShown.inMilliseconds),
                         0),
-                    child: Text(e.value),
+                    child: Text("${e.value ?? ""}"),
                   );
                 }),
               ],

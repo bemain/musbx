@@ -38,6 +38,11 @@ enum PitchClass {
         )
         .firstOrNull;
   }
+
+  /// Transpose this pitch class a number of semitones.
+  PitchClass transposed(int semitones) {
+    return PitchClass.values[(index + semitones) % PitchClass.values.length];
+  }
 }
 
 /// Representation of a musical note, with a given pitch.
