@@ -6,27 +6,29 @@ enum PitchClass {
   bFlat("A♯", "B♭"),
   b("B", "C♭", true),
   c("B♯", "C"),
-  dFlat("C♯", "D♭"),
+  dFlat("C♯", "D♭", true),
   d("D"),
   eFlat("D♯", "E♭"),
   e("E", "F♭", true),
   f("E♯", "F"),
-  gFlat("F♯", "G♭"),
+  gFlat("F♯", "G♭", true),
   g("G"),
   aFlat("G♯", "A♭");
 
-  const PitchClass(this.sharpName, [String? flatName, bool preferSharp = false])
-      : flatName = flatName ?? sharpName,
-        name = preferSharp ? sharpName : (flatName ?? sharpName);
-
-  /// The preferred name of this pitch class.
-  final String name;
+  const PitchClass(
+    this.sharpAbbreviation, [
+    String? flatName,
+    this._preferSharp = false,
+  ]) : flatAbbreviation = flatName ?? sharpAbbreviation;
 
   /// The name of this pitch class with a flat ♭ (or no) accidental.
-  final String flatName;
+  final String flatAbbreviation;
 
   /// The name of this pitch class with a sharp ♯ (or no) accidental.
-  final String sharpName;
+  final String sharpAbbreviation;
+
+  /// Whether [sharpAbbreviation] is preferred over [flatAbbreviation] for the default string representation.
+  final bool _preferSharp;
 
   /// Parse [string] as a pitch class.
   /// Returns `null` if [string] is not a valid pitch class.
@@ -34,7 +36,9 @@ enum PitchClass {
     final String trimmed = string.replaceAll("b", "♭").replaceAll("#", "♯");
     return PitchClass.values
         .where(
-          (pitch) => pitch.flatName == trimmed || pitch.sharpName == trimmed,
+          (pitch) =>
+              pitch.flatAbbreviation == trimmed ||
+              pitch.sharpAbbreviation == trimmed,
         )
         .firstOrNull;
   }
@@ -43,6 +47,9 @@ enum PitchClass {
   PitchClass transposed(int semitones) {
     return PitchClass.values[(index + semitones) % PitchClass.values.length];
   }
+
+  @override
+  String toString() => _preferSharp ? sharpAbbreviation : flatAbbreviation;
 }
 
 /// Representation of a musical note, with a given pitch.
@@ -77,7 +84,7 @@ class Note {
       PitchClass.values[(semitonesFromA4 - 12 * octavesFromA4) % 12];
 
   /// The name of this note, e.g C3.
-  String get name => "${pitchClass.flatName}${octavesFromA4 + 4}";
+  String get name => "$pitchClass${octavesFromA4 + 4}";
 
   /// The number of cents between this [frequency] and the closest semitone.
   double get pitchOffset => centsFromA4 - semitonesFromA4 * 100;

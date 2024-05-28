@@ -10,6 +10,17 @@ enum ChordQuality {
   const ChordQuality(this.abbreviation);
 
   final String abbreviation;
+
+  /// Parse [string] as a chord quality.
+  /// Returns `null` if [string] is not a valid chord quality.
+  static ChordQuality? tryParse(String string) {
+    return ChordQuality.values
+        .where((element) => element.abbreviation == string)
+        .firstOrNull;
+  }
+
+  @override
+  String toString() => abbreviation;
 }
 
 enum ChordExtension {
@@ -50,6 +61,9 @@ enum ChordExtension {
         )
         .firstOrNull;
   }
+
+  @override
+  String toString() => abbreviation;
 }
 
 class Chord {
@@ -88,8 +102,7 @@ class Chord {
     RegExpMatch match = matches.elementAt(0);
     if (match.groupCount < 2) return null;
 
-    final String rootName = match.group(1)!;
-    final PitchClass? root = PitchClass.tryParse(rootName);
+    final PitchClass? root = PitchClass.tryParse(match.group(1)!);
     if (root == null) return null;
 
     final String? quality = match.group(2);
@@ -98,15 +111,12 @@ class Chord {
     final String? alterations = match.group(6);
     final String? bassName = match.group(9);
 
-    final matchedQualities = ChordQuality.values.where(
-      (element) => element.name == quality,
-    );
-
     return Chord(
       root,
-      matchedQualities.isNotEmpty ? matchedQualities.first : ChordQuality.major,
+      (quality == null ? null : ChordQuality.tryParse(quality)) ??
+          ChordQuality.major,
       extension: extension == null ? null : ChordExtension.tryParse(extension),
-      alterations: alterations,
+      alterations: alterations?.replaceAll("b", "♭").replaceAll("#", "♯"),
       bassNote: bassName == null ? null : PitchClass.tryParse(bassName),
     );
   }
@@ -124,9 +134,9 @@ class Chord {
 
   @override
   String toString() {
-    return "${root.name}${quality.abbreviation}"
-        "${extension?.abbreviation ?? ""}"
+    return "$root$quality"
+        "${extension ?? ""}"
         "${alterations ?? ""}"
-        "${bassNote != root ? "/${bassNote.name}" : ""}";
+        "${bassNote != root ? "/$bassNote" : ""}";
   }
 }
