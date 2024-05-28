@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/chord.dart';
+import 'package:musbx/model/chord.dart';
 import 'package:musbx/music_player/musbx_api/chords_api.dart';
 import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/music_player/song.dart';

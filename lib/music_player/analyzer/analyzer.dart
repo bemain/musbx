@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/music_player/analyzer/chord_identification_process.dart';
 import 'package:musbx/music_player/analyzer/waveform_extraction_process.dart';
-import 'package:musbx/music_player/chord.dart';
+import 'package:musbx/model/chord.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/music_player/song.dart';

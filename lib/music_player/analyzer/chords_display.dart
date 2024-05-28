@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/chord.dart';
+import 'package:musbx/model/chord.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class ChordsDisplay extends StatefulWidget {
