@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/model/chord.dart';
+import 'package:musbx/music_player/analyzer/chord_symbol.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class ChordsDisplay extends StatefulWidget {
@@ -32,19 +33,20 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
                 .where((e) => e.key > minDuration && e.key < maxDuration)
                 .toList();
             return Stack(
-              alignment: Alignment.center,
+              alignment: Alignment.bottomCenter,
               children: [
                 const Align(
                   alignment: Alignment.center,
                   child: Icon(Icons.circle, color: Colors.grey),
                 ),
                 ...shownChords.map((e) {
+                  final Chord? chord = e.value;
                   return Align(
                     alignment: Alignment(
                         (e.key - position).inMilliseconds /
                             (durationShown.inMilliseconds),
                         0),
-                    child: Text("${e.value ?? ""}"),
+                    child: chord == null ? null : ChordSymbol(chord: chord),
                   );
                 }),
               ],

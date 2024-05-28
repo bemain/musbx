@@ -46,7 +46,8 @@ enum ChordExtension {
   /// Whether the seventh (if any) is a major seventh.
   final bool isMajor;
 
-  String get abbreviation => "${isMajor ? "maj" : ""}$degree";
+  String get abbreviation =>
+      (isMajor && degree == 7) ? "Δ" : "${isMajor ? "Δ" : ""}$degree";
 
   /// Parse [string] as a chord extension.
   /// Returns `null` if [string] is not a valid chord extension.
