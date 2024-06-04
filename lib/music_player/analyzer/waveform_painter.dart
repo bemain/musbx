@@ -8,7 +8,7 @@ class WaveformPainter extends CustomPainter {
     required this.waveform,
     required this.start,
     required this.duration,
-    Color waveColor = Colors.blue,
+    Color color = Colors.blue,
     this.scale = 1.0,
     this.strokeWidth = 5.0,
     this.pixelsPerStep = 8.0,
@@ -16,7 +16,7 @@ class WaveformPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeWidth
           ..strokeCap = StrokeCap.round
-          ..color = waveColor;
+          ..color = color;
 
   final double scale;
   final double strokeWidth;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_waveform/just_waveform.dart';
 import 'package:musbx/music_player/analyzer/chord_identification_process.dart';
 import 'package:musbx/music_player/analyzer/waveform_extraction_process.dart';
 import 'package:musbx/model/chord.dart';
@@ -19,23 +20,31 @@ class Analyzer extends MusicPlayerComponent {
   final ValueNotifier<Map<Duration, Chord?>?> chordsNotifier =
       ValueNotifier(null);
 
-  /// The waveform extracted from the current song,
+  /// The process extracting the waveform from the current song,
   /// or `null` if no song has been loaded.
   WaveformExtractionProcess? waveformProcess;
+
+  /// The waveform extracted from the current song,
+  /// or `null` if no song has been loaded.
+  Waveform? get waveform => waveformNotifier.value;
+  final ValueNotifier<Waveform?> waveformNotifier = ValueNotifier(null);
 
   @override
   void initialize(MusicPlayer musicPlayer) {
     // When the song changes, begin analyzing.
     musicPlayer.songNotifier.addListener(() {
-      chordsProcess = null;
-      waveformProcess = null;
+      chordsNotifier.value = null;
+      waveformNotifier.value = null;
 
       final Song? song = musicPlayer.song;
       if (song == null) return;
 
       chordsProcess = ChordIdentificationProcess(song)
         ..addListener(_updateChords);
-      waveformProcess = WaveformExtractionProcess(song);
+      waveformProcess = WaveformExtractionProcess(song)
+        ..addListener(() {
+          waveformNotifier.value = waveformProcess?.result;
+        });
     });
 
     musicPlayer.slowdowner.pitchSemitonesNotifier.addListener(_updateChords);
