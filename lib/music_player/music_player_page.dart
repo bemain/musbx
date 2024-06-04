@@ -123,7 +123,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
   Widget _buildWelcomePage(BuildContext context) {
     return Scaffold(
       appBar: const DefaultAppBar(helpText: helpText),
-      floatingActionButton: _buildLoadSongButton(),
+      floatingActionButton: _buildLoadSongButton(heroTag: "welcome-speed-dial"),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -164,12 +164,13 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
     );
   }
 
-  Widget _buildLoadSongButton() {
+  Widget _buildLoadSongButton({Object? heroTag}) {
     final List<Song> songHistory = musicPlayer.songHistory
         .sorted(ascending: true)
       ..remove(musicPlayer.song);
 
     return SpeedDial(
+      heroTag: heroTag,
       children: [
         ...(songHistory).map(_buildHistoryItem).toList(),
         if (songHistory.isNotEmpty) SpeedDialSpacer(),

@@ -14,6 +14,7 @@ class SpeedDial extends StatefulWidget {
   /// An expandable [FloatingActionButton] that shows [children] when pressed.
   const SpeedDial({
     super.key,
+    this.heroTag,
     this.child,
     this.expandedChild,
     this.expandedLabel,
@@ -26,6 +27,11 @@ class SpeedDial extends StatefulWidget {
     required this.children,
     this.animationDuration = const Duration(milliseconds: 300),
   });
+
+  /// The tag to apply to the button's [Hero] widget.
+  ///
+  /// Copied from [FloatingActionButton].
+  final Object? heroTag;
 
   /// Child of the primary [FloatingActionButton].
   final Widget? child;
@@ -93,6 +99,7 @@ class SpeedDialState extends State<SpeedDial>
       opacity: _isOpen ? 0 : 1,
       child: FloatingActionButton(
         key: _key,
+        heroTag: widget.heroTag,
         onPressed: _open,
         foregroundColor: widget.foregroundColor,
         backgroundColor: widget.backgroundColor,
