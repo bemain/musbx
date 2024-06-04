@@ -177,7 +177,9 @@ class MusicPlayer {
   /// }
   ///
   /// Future<void> _loadAudioSource(Future<void>? awaitBeforeLoading) async {
-  ///   await awaitBeforeLoading;
+  ///   try { // This needs to be done in a `try` block. Otherwise when one load fails, all the following ones will fail, too.
+  ///     await awaitBeforeLoading;
+  ///   } catch (_) {}
   ///   await player.setAudioSource(...)
   /// }
   ///
@@ -199,7 +201,10 @@ class MusicPlayer {
     Song song, {
     Future<void>? awaitBeforeLoading,
   }) async {
-    await awaitBeforeLoading;
+    try {
+      await awaitBeforeLoading;
+    } catch (_) {}
+
     await pause();
     stateNotifier.value = MusicPlayerState.loadingAudio;
 

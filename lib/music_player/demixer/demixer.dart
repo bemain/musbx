@@ -152,7 +152,9 @@ class Demixer extends MusicPlayerComponent {
   Future<void> _loadAudioSource({
     Future<void>? awaitBeforeLoading,
   }) async {
-    await awaitBeforeLoading;
+    try {
+      await awaitBeforeLoading;
+    } catch (_) {}
 
     MusicPlayer musicPlayer = MusicPlayer.instance;
     Duration position = musicPlayer.position;
