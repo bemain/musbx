@@ -28,6 +28,7 @@ Future<void> pickYoutubeSong(BuildContext context) async {
     await musicPlayer.loadVideo(video);
     return;
   } catch (error) {
+    debugPrint("[YOUTUBE] $error");
     showExceptionDialog(
       const YoutubeUnavailableDialog(),
     );
