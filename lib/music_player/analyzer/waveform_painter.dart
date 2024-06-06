@@ -8,20 +8,16 @@ class WaveformPainter extends CustomPainter {
     required this.waveform,
     required this.start,
     required this.duration,
-    Color color = Colors.blue,
-    this.scale = 1.0,
+    this.color = Colors.blue,
+    this.amplitude = 1.0,
     this.strokeWidth = 5.0,
     this.pixelsPerStep = 8.0,
-  }) : wavePaint = Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth
-          ..strokeCap = StrokeCap.round
-          ..color = color;
+  });
 
-  final double scale;
+  final double amplitude;
   final double strokeWidth;
   final double pixelsPerStep;
-  final Paint wavePaint;
+  final Color color;
   final Waveform waveform;
   final Duration start;
   final Duration duration;
@@ -29,6 +25,12 @@ class WaveformPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (duration == Duration.zero) return;
+
+    final Paint wavePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..color = color;
 
     double width = size.width;
     double height = size.height;
@@ -60,10 +62,10 @@ class WaveformPainter extends CustomPainter {
 
   double normalize(int s, double height) {
     if (waveform.flags == 0) {
-      final y = 32768 + (scale * s).clamp(-32768.0, 32767.0).toDouble();
+      final y = 32768 + (amplitude * s).clamp(-32768.0, 32767.0).toDouble();
       return height - 1 - y * height / 65536;
     } else {
-      final y = 128 + (scale * s).clamp(-128.0, 127.0).toDouble();
+      final y = 128 + (amplitude * s).clamp(-128.0, 127.0).toDouble();
       return height - 1 - y * height / 256;
     }
   }

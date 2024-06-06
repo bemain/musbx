@@ -17,7 +17,7 @@ class AnalyzerCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const ChordsDisplay(),
-          WaveformWidget(),
+          Expanded(child: WaveformWidget()),
         ],
       ),
     );
