@@ -11,8 +11,6 @@ class ChordsDisplay extends StatefulWidget {
 }
 
 class _ChordsDisplayState extends State<ChordsDisplay> {
-  static const Duration durationShown = Duration(seconds: 5);
-
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
@@ -26,35 +24,38 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
           }
 
           return ValueListenableBuilder(
-            valueListenable: musicPlayer.positionNotifier,
-            builder: (context, position, child) {
-              Duration minDuration = position - durationShown;
-              Duration maxDuration = position + durationShown;
-              List<MapEntry<Duration, Chord?>> shownChords = chords.entries
-                  .where((e) => e.key > minDuration && e.key < maxDuration)
-                  .toList();
-              return Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  const Align(
-                    alignment: Alignment.center,
-                    child: Icon(Icons.circle, color: Colors.grey),
-                  ),
-                  ...shownChords.map((e) {
-                    final Chord? chord = e.value;
-                    return chord == null
-                        ? const SizedBox()
-                        : Positioned(
-                            left: ((e.key - position).inMilliseconds /
-                                        (durationShown.inMilliseconds * 2) +
-                                    0.5) *
-                                constraints.maxWidth,
-                            child: ChordSymbol(chord: chord),
-                          );
-                  }),
-                ],
-              );
-            },
+            valueListenable: musicPlayer.analyzer.durationShownNotifier,
+            builder: (context, durationShown, child) => ValueListenableBuilder(
+              valueListenable: musicPlayer.positionNotifier,
+              builder: (context, position, child) {
+                Duration minDuration = position - durationShown * 0.5;
+                Duration maxDuration = position + durationShown * 0.5;
+                List<MapEntry<Duration, Chord?>> shownChords = chords.entries
+                    .where((e) => e.key > minDuration && e.key < maxDuration)
+                    .toList();
+                return Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    const Align(
+                      alignment: Alignment.center,
+                      child: Icon(Icons.circle, color: Colors.grey),
+                    ),
+                    ...shownChords.map((e) {
+                      final Chord? chord = e.value;
+                      return chord == null
+                          ? const SizedBox()
+                          : Positioned(
+                              left: ((e.key - position).inMilliseconds /
+                                          (durationShown.inMilliseconds) +
+                                      0.5) *
+                                  constraints.maxWidth,
+                              child: ChordSymbol(chord: chord),
+                            );
+                    }),
+                  ],
+                );
+              },
+            ),
           );
         },
       ),

@@ -10,6 +10,11 @@ import 'package:musbx/music_player/song.dart';
 /// A component for [MusicPlayer] that is used to analyze the current song,
 /// including chord identification and waveform extraction.
 class Analyzer extends MusicPlayerComponent {
+  /// The duration window around the current position shown by widgets.
+  Duration get durationShown => durationShownNotifier.value;
+  final ValueNotifier<Duration> durationShownNotifier =
+      ValueNotifier(const Duration(seconds: 5));
+
   /// The process analyzing the chords of the current song,
   /// or `null` if no song has been loaded.
   ChordIdentificationProcess? chordsProcess;

@@ -9,6 +9,7 @@ class WaveformWidget extends StatelessWidget {
 
   /// Whether the MusicPlayer was playing before the user began changing the position.
   static bool wasPlayingBeforeChange = false;
+  static Duration durationShownBeforeChange = Duration.zero;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class WaveformWidget extends StatelessWidget {
             // TODO: Remove stuttering when dragging
             if (details.delta.dx.abs() < 0.0) return;
             musicPlayer.seek(musicPlayer.position -
-                const Duration(seconds: 5) * (details.delta.dx / 64));
+                musicPlayer.analyzer.durationShown * (details.delta.dx / 128));
           }),
           onHorizontalDragEnd: (_) {
             if (wasPlayingBeforeChange) musicPlayer.play();
@@ -36,19 +37,29 @@ class WaveformWidget extends StatelessWidget {
           onHorizontalDragCancel: () {
             if (wasPlayingBeforeChange) musicPlayer.play();
           },
+          onScaleStart: (_) {
+            durationShownBeforeChange = musicPlayer.analyzer.durationShown;
+          },
+          onScaleUpdate: (details) {
+            musicPlayer.analyzer.durationShownNotifier.value =
+                durationShownBeforeChange * (1 / details.scale);
+          },
           child: ValueListenableBuilder(
-            valueListenable: musicPlayer.positionNotifier,
-            builder: (context, position, child) {
-              return CustomPaint(
-                painter: WaveformPainter(
-                  waveform: waveform,
-                  start: position - const Duration(seconds: 5),
-                  duration: const Duration(seconds: 10),
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                size: const Size(double.infinity, 100.0),
-              );
-            },
+            valueListenable: musicPlayer.analyzer.durationShownNotifier,
+            builder: (context, duraionShown, child) => ValueListenableBuilder(
+              valueListenable: musicPlayer.positionNotifier,
+              builder: (context, position, child) {
+                return CustomPaint(
+                  painter: WaveformPainter(
+                    waveform: waveform,
+                    start: position - duraionShown * 0.5,
+                    duration: duraionShown,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  size: const Size(double.infinity, 100.0),
+                );
+              },
+            ),
           ),
         );
       },
