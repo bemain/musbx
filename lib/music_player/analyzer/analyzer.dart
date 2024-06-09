@@ -6,12 +6,18 @@ import 'package:musbx/model/chord.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_component.dart';
 import 'package:musbx/music_player/song.dart';
+import 'package:musbx/widgets.dart';
 
 /// A component for [MusicPlayer] that is used to analyze the current song,
 /// including chord identification and waveform extraction.
 class Analyzer extends MusicPlayerComponent {
+  static const Duration minDurationShown = Duration(seconds: 5);
+  static const Duration maxDurationShown = Duration(seconds: 10);
+
   /// The duration window around the current position shown by widgets.
   Duration get durationShown => durationShownNotifier.value;
+  set durationShown(Duration value) => durationShownNotifier.value =
+      value.clamp(minDurationShown, maxDurationShown);
   final ValueNotifier<Duration> durationShownNotifier =
       ValueNotifier(const Duration(seconds: 5));
 

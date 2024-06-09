@@ -34,7 +34,7 @@ class AnalyzerCard extends StatelessWidget {
               musicPlayer.analyzer.durationShown * dx * scaleSpeed);
 
           // Zoom
-          musicPlayer.analyzer.durationShownNotifier.value =
+          musicPlayer.analyzer.durationShown =
               durationShownBeforeChange * (1 / details.scale);
         },
         onScaleEnd: (_) {
