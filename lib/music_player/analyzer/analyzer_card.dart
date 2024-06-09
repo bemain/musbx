@@ -24,7 +24,6 @@ class AnalyzerCard extends StatelessWidget {
           musicPlayer.pause();
         },
         onHorizontalDragUpdate: musicPlayer.nullIfNoSongElse((details) {
-          // TODO: Remove stuttering when dragging
           if (details.delta.dx.abs() < 0.0) return;
           musicPlayer.seek(musicPlayer.position -
               musicPlayer.analyzer.durationShown * (details.delta.dx / 128));
