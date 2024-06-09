@@ -4,7 +4,7 @@ import 'package:musbx/music_player/analyzer/waveform_widget.dart';
 import 'package:musbx/music_player/music_player.dart';
 
 class AnalyzerCard extends StatelessWidget {
-  AnalyzerCard({super.key});
+  AnalyzerCard({super.key, this.scaleSpeed = 1 / 256});
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
@@ -14,32 +14,31 @@ class AnalyzerCard extends StatelessWidget {
   /// The duration shown before the user began zooming.
   static Duration durationShownBeforeChange = Duration.zero;
 
+  /// The speed at which the widget scales.
+  final double scaleSpeed;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 128,
       child: GestureDetector(
-        onHorizontalDragStart: (_) {
+        onScaleStart: (_) {
+          durationShownBeforeChange = musicPlayer.analyzer.durationShown;
           wasPlayingBeforeChange = musicPlayer.isPlaying;
           musicPlayer.pause();
         },
-        onHorizontalDragUpdate: musicPlayer.nullIfNoSongElse((details) {
-          if (details.delta.dx.abs() < 0.0) return;
-          musicPlayer.seek(musicPlayer.position -
-              musicPlayer.analyzer.durationShown * (details.delta.dx / 128));
-        }),
-        onHorizontalDragEnd: (_) {
-          if (wasPlayingBeforeChange) musicPlayer.play();
-        },
-        onHorizontalDragCancel: () {
-          if (wasPlayingBeforeChange) musicPlayer.play();
-        },
-        onScaleStart: (_) {
-          durationShownBeforeChange = musicPlayer.analyzer.durationShown;
-        },
         onScaleUpdate: (details) {
+          // Seek
+          final double dx = details.focalPointDelta.dx;
+          musicPlayer.seek(musicPlayer.position -
+              musicPlayer.analyzer.durationShown * dx * scaleSpeed);
+
+          // Zoom
           musicPlayer.analyzer.durationShownNotifier.value =
               durationShownBeforeChange * (1 / details.scale);
+        },
+        onScaleEnd: (_) {
+          if (wasPlayingBeforeChange) musicPlayer.play();
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
