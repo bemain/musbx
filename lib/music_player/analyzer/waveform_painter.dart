@@ -8,23 +8,40 @@ class WaveformPainter extends CustomPainter {
     required this.waveform,
     required this.start,
     required this.duration,
+    this.padding = 2.0,
     this.color = Colors.blue,
     this.amplitude = 1.0,
-    this.strokeWidth = 5.0,
-    this.pixelsPerStep = 8.0,
+    this.waveformPixelsPerStep = 16.0,
   });
 
-  final double amplitude;
-  final double strokeWidth;
-  final double pixelsPerStep;
-  final Color color;
   final Waveform waveform;
+
   final Duration start;
   final Duration duration;
+
+  final double amplitude;
+
+  /// The number of waveform pixels per step.
+  /// A smaller value gives greater accuracy.
+  final double waveformPixelsPerStep;
+
+  /// The number of empty pixels between each step.
+  final double padding;
+
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (duration == Duration.zero) return;
+
+    final double width = size.width;
+    final double height = size.height;
+
+    final waveformPixelsPerWindow = waveform.positionToPixel(duration).toInt();
+    final waveformPixelsPerDevicePixel = waveformPixelsPerWindow / width;
+
+    final double strokeWidth =
+        width / waveformPixelsPerWindow * waveformPixelsPerStep - padding;
 
     final Paint wavePaint = Paint()
       ..style = PaintingStyle.stroke
@@ -32,12 +49,6 @@ class WaveformPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..color = color;
 
-    double width = size.width;
-    double height = size.height;
-
-    final waveformPixelsPerWindow = waveform.positionToPixel(duration).toInt();
-    final waveformPixelsPerDevicePixel = waveformPixelsPerWindow / width;
-    final waveformPixelsPerStep = waveformPixelsPerDevicePixel * pixelsPerStep;
     final sampleOffset = waveform.positionToPixel(start);
     final sampleStart = -sampleOffset % waveformPixelsPerStep;
     for (var i = sampleStart.toDouble();
