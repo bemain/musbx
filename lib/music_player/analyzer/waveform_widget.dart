@@ -18,15 +18,17 @@ class WaveformWidget extends StatelessWidget {
 
         return ValueListenableBuilder(
           valueListenable: musicPlayer.analyzer.durationShownNotifier,
-          builder: (context, duraionShown, child) => ValueListenableBuilder(
+          builder: (context, durationShown, child) => ValueListenableBuilder(
             valueListenable: musicPlayer.positionNotifier,
             builder: (context, position, child) {
               return CustomPaint(
                 painter: WaveformPainter(
                   waveform: waveform,
-                  start: position - duraionShown * 0.5,
-                  duration: duraionShown,
-                  color: Theme.of(context).colorScheme.primary,
+                  position: position,
+                  duration: durationShown,
+                  activeColor: Theme.of(context).colorScheme.primary,
+                  inactiveColor:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.24),
                 ),
                 size: const Size(double.infinity, 100.0),
               );
