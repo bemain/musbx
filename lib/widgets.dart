@@ -301,3 +301,15 @@ class NumberField<T extends num> extends StatelessWidget {
     );
   }
 }
+
+extension ClampDuration on Duration {
+  /// Clamp this to between [lowerLimit] and [upperLimit].
+  Duration clamp(Duration lowerLimit, Duration upperLimit) {
+    return Duration(
+      microseconds: inMicroseconds.clamp(
+        lowerLimit.inMicroseconds,
+        upperLimit.inMicroseconds,
+      ),
+    );
+  }
+}

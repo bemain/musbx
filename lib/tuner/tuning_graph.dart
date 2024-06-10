@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/tuner/note.dart';
+import 'package:musbx/model/note.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class TuningGraph extends StatelessWidget {

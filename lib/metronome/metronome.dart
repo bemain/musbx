@@ -109,7 +109,9 @@ class Metronome {
   /// }
   ///
   /// Future<void> _loadAudioSource(Future<void>? awaitBeforeLoading) async {
-  ///   await awaitBeforeLoading;
+  ///   try { // This needs to be done in a `try` block. Otherwise when one load fails, all the following ones will fail, too.
+  //    await awaitBeforeLoading;
+  //  } catch (_) {}
   ///   await player.setAudioSource(...)
   /// }
   ///
@@ -131,7 +133,9 @@ class Metronome {
 
   /// Awaits [awaitBeforeLoading] and then updates the [player]'s audio source.
   Future<void> _updateAudioSource({Future<void>? awaitBeforeLoading}) async {
-    await awaitBeforeLoading;
+    try {
+      await awaitBeforeLoading;
+    } catch (_) {}
 
     await player.setAudioSource(ConcatenatingAudioSource(
       useLazyPreparation: true,

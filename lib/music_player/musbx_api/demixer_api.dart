@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:http_parser/http_parser.dart';
 import 'package:musbx/music_player/musbx_api/musbx_api.dart';
+import 'package:musbx/music_player/song.dart';
 import 'package:musbx/widgets.dart';
 import 'package:http/http.dart' as http;
 
@@ -46,14 +47,15 @@ enum StemType {
 class DemixerApiHost extends MusbxApiHost {
   DemixerApiHost(super.address, {super.https});
 
-  /// The directory where demixer saves files.
-  static final Future<Directory> demixerDirectory =
-      createTempDirectory("demixer");
+  /// The directory where stems for a [song] are saved.
+  static Future<Directory> getStemsDirectory(Song song) async {
+    final dir = Directory("${(await song.cacheDirectory).path}/stems");
+    await dir.create(recursive: true);
+    return dir;
+  }
 
-  /// The directory where stems for song with name [songId] are saved.
-  /// Will be a subdirectory of [demixerDirectory].
-  static Future<Directory> getSongDirectory(String songId) async =>
-      createTempDirectory("demixer/$songId");
+  static final Future<Directory> extractedFilesDirectory =
+      createTempDirectory("demixer/extracted");
 
   /// Upload a local [file] to the server.
   ///
@@ -137,13 +139,13 @@ class DemixerApiHost extends MusbxApiHost {
     }
   }
 
-  /// Download a [stem] for song with id [songId].
+  /// Download a [stem] for a [song].
   Future<File> downloadStem(
-    String songId,
+    Song song,
     StemType stem, {
     StemFileType fileType = StemFileType.mp3,
   }) async {
-    var response = await get("/stem/$songId/${stem.name}", headers: {
+    var response = await get("/stem/${song.id}/${stem.name}", headers: {
       "FileType": fileType.name,
     });
     if (response.statusCode != 200) {
@@ -162,8 +164,8 @@ class DemixerApiHost extends MusbxApiHost {
     assert(extension == fileType.name,
         "The returned stem file ('$fileName') was not of the requested type (.${fileType.name}).");
 
-    File file = File(
-        "${(await getSongDirectory(songId)).path}/${stem.name}.$extension");
+    File file =
+        File("${(await getStemsDirectory(song)).path}/${stem.name}.$extension");
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }

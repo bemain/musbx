@@ -6,7 +6,6 @@ import 'package:musbx/music_player/musbx_api/musbx_api.dart';
 import 'package:musbx/music_player/musbx_api/youtube_api.dart';
 import 'package:musbx/music_player/pick_song_button/components/upload_file_button.dart';
 import 'package:musbx/widgets.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// Where the audio for a song is loaded from.
 abstract class SongSource {
@@ -19,8 +18,8 @@ abstract class SongSource {
   /// - `type` [String] The type of the source.
   ///
   /// Depending on the type, the map will contain some additional keys. \
-  /// "youtube" [String] `youtubeId`: The id of the Youtube song. \
-  /// "file" [String] `path`: The path to the file.
+  /// "youtube": `youtubeId` [String] The id of the Youtube song. \
+  /// "file": `path` [String] The path to the file.
   Map<String, dynamic> toJson();
 
   /// Try to create a [SongSource] from a json map.
@@ -86,10 +85,32 @@ class YoutubeSource implements SongSource {
   /// The id of the Youtube song.
   final String youtubeId;
 
+  /// The file where the audio to this Youtube song is cached.
+  /// Not set until [toAudioSource] has been called.
+  late File cacheFile;
+
   @override
   Future<AudioSource> toAudioSource() async {
-    Uri uri = await getYoutubeAudio(youtubeId);
-    return AudioSource.uri(uri);
+    File? file = await _getAudioFromCache();
+    file ??= await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
+      youtubeId,
+    );
+
+    cacheFile = file;
+    return AudioSource.file(file.path);
+  }
+
+  Future<File?> _getAudioFromCache() async {
+    for (final String extension in allowedExtensions) {
+      final File file =
+          await YoutubeApiHost.getYoutubeFile(youtubeId, extension);
+      if (await file.exists()) {
+        debugPrint(
+            "[YOUTUBE] Using cached audio for video with id '$youtubeId'");
+        return file;
+      }
+    }
+    return null;
   }
 
   @override
@@ -97,57 +118,4 @@ class YoutubeSource implements SongSource {
         "type": "youtube",
         "youtubeId": youtubeId,
       };
-
-  /// Get the audio of a YouTube video.
-  ///
-  /// Tries to download the audio file using the [MusbxApi].
-  /// If that fails, uses [YoutubeExplode] to stream the audio instead (not on iOS).
-  ///
-  /// If the device is on a cellular network, prefers stream over downloading to minimize data usage.
-  static Future<Uri> getYoutubeAudio(String videoId) async {
-    // Use cached audio, if available
-    for (String extension in allowedExtensions) {
-      File file = await YoutubeApiHost.getYoutubeFile(videoId, extension);
-      if (await file.exists()) {
-        debugPrint(
-            "[YOUTUBE] Using cached audio '${file.path}' for YouTube song $videoId");
-        return file.uri;
-      }
-    }
-
-    if (Platform.isIOS) return await downloadYoutubeAudio(videoId);
-
-    if (await isOnCellular()) {
-      try {
-        return await getYoutubeAudioStream(videoId); // Try using YoutubeExplode
-      } catch (error) {
-        debugPrint(
-            "[YOUTUBE] YoutubeExplode is not available, falling back to the Demixer API");
-        return await downloadYoutubeAudio(videoId);
-      }
-    }
-
-    try {
-      return await downloadYoutubeAudio(videoId); // Try using the Demixer API
-    } catch (error) {
-      debugPrint(
-          "[YOUTUBE] Demixer API is not available, falling back to YoutubeExplode");
-      return await getYoutubeAudioStream(videoId);
-    }
-  }
-
-  /// Download the audio of a Youtube video using the [MusbxApi].
-  static Future<Uri> downloadYoutubeAudio(String videoId) async {
-    File file = await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
-      videoId,
-    );
-    return Uri.file(file.path);
-  }
-
-  static Future<Uri> getYoutubeAudioStream(String videoId) async {
-    StreamManifest manifest =
-        await YoutubeExplode().videos.streams.getManifest(videoId);
-    AudioOnlyStreamInfo streamInfo = manifest.audioOnly.withHighestBitrate();
-    return streamInfo.url;
-  }
 }
