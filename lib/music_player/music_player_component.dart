@@ -30,7 +30,7 @@ abstract class MusicPlayerComponent {
   /// and never expect a specific key to exist in [json].
   @mustCallSuper
   void loadSettingsFromJson(Map<String, dynamic> json) {
-    enabled = tryCast<bool>(json["enabled"]) ?? enabled;
+    enabled = tryCast<bool>(json["enabled"]) ?? true;
   }
 
   /// Save settings for a song to a json map.

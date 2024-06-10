@@ -81,9 +81,7 @@ class Analyzer extends MusicPlayerComponent {
     super.loadSettingsFromJson(json);
 
     int? durationShown = tryCast<int>(json["durationShown"]);
-    if (durationShown != null) {
-      this.durationShown = Duration(milliseconds: durationShown);
-    }
+    this.durationShown = Duration(milliseconds: durationShown ?? 5000);
   }
 
   /// Save settings for a song to a json map.

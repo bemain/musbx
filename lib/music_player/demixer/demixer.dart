@@ -206,13 +206,14 @@ class Demixer extends MusicPlayerComponent {
     super.loadSettingsFromJson(json);
 
     for (Stem stem in stems) {
-      Map<String, dynamic> stemData = json[stem.type.name];
+      Map<String, dynamic>? stemData =
+          tryCast<Map<String, dynamic>>(json[stem.type.name]);
 
-      bool? enabled = tryCast<bool>(stemData["enabled"]);
-      if (enabled != null) stem.enabled = enabled;
+      bool? enabled = tryCast<bool>(stemData?["enabled"]);
+      stem.enabled = enabled ?? true;
 
-      double? volume = tryCast<double>(stemData["volume"]);
-      if (volume != null) stem.volume = volume;
+      double? volume = tryCast<double>(stemData?["volume"]);
+      stem.volume = volume ?? 0.5;
     }
   }
 

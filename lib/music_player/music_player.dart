@@ -206,7 +206,7 @@ class MusicPlayer {
     // Load audio
     await player.setAudioSource(await song.source.toAudioSource());
 
-    // Update songTitle
+    // Update song
     songNotifier.value = song;
     // Reset loopSection
     looper.section = LoopSection(end: duration);
@@ -247,42 +247,32 @@ class MusicPlayer {
     ));
   }
 
-  /// Load preferences for the song with [songId].
+  /// Load preferences for a [song]].
   ///
   /// If no preferences could be found for the song, do nothing.
   Future<void> loadSongPreferences(Song song) async {
-    var json = await _songPreferences.load(song);
-    if (json == null) return;
+    final Map json = await _songPreferences.load(song) ?? {};
 
     int? position = tryCast<int>(json["position"]);
     if (position != null && position < duration.inMilliseconds) {
       seek(Duration(milliseconds: position));
     }
 
-    var slowdownerSettings = tryCast<Map<String, dynamic>>(json["slowdowner"]);
-    if (slowdownerSettings != null) {
-      slowdowner.loadSettingsFromJson(slowdownerSettings);
-    }
-
-    var looperSettings = tryCast<Map<String, dynamic>>(json["looper"]);
-    if (looperSettings != null) {
-      looper.loadSettingsFromJson(looperSettings);
-    }
-
-    var equalizerSettings = tryCast<Map<String, dynamic>>(json["equalizer"]);
-    if (equalizerSettings != null) {
-      equalizer.loadSettingsFromJson(equalizerSettings);
-    }
-
-    var demixerSettings = tryCast<Map<String, dynamic>>(json["demixer"]);
-    if (demixerSettings != null) {
-      demixer.loadSettingsFromJson(demixerSettings);
-    }
-
-    var analyzerSettings = tryCast<Map<String, dynamic>>(json["analyzer"]);
-    if (analyzerSettings != null) {
-      analyzer.loadSettingsFromJson(analyzerSettings);
-    }
+    slowdowner.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["slowdowner"]) ?? {},
+    );
+    looper.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
+    );
+    equalizer.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
+    );
+    demixer.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["demixer"]) ?? {},
+    );
+    analyzer.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
+    );
   }
 
   /// Save preferences for the current song.

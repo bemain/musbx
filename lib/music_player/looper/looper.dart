@@ -52,29 +52,28 @@ class Looper extends MusicPlayerComponent {
   void loadSettingsFromJson(Map<String, dynamic> json) {
     super.loadSettingsFromJson(json);
 
-    int? start = tryCast<int>(json["start"]);
-    int? end = tryCast<int>(json["end"]);
+    Duration start = Duration(milliseconds: tryCast<int>(json["start"]) ?? 0);
+    Duration end = Duration(
+      milliseconds: tryCast<int>(json["end"]) ??
+          MusicPlayer.instance.duration.inMilliseconds,
+    );
 
-    if (end != null && end < (start ?? 0)) {
-      debugPrint(
-          "[LOOPER] Invalid LoopSection, start (${start ?? 0}) > end ($end)");
+    if (end < start) {
+      debugPrint("[LOOPER] Invalid LoopSection, start ($start) > end ($end)");
       return;
     }
-    if (start != null && start < 0) {
+    if (start < Duration.zero) {
       debugPrint("[LOOPER] Invalid LoopSection, start ($start) < 0");
       return;
     }
-    if (end != null && end > section.end.inMilliseconds) {
+    if (end > MusicPlayer.instance.duration) {
       debugPrint(
-        "[LOOPER] Invalid LoopSection, end ($end) > duration (${section.end.inMilliseconds})",
+        "[LOOPER] Invalid LoopSection, end ($end) > duration (${MusicPlayer.instance.duration})",
       );
       return;
     }
 
-    section = LoopSection(
-      start: (start == null) ? section.start : Duration(milliseconds: start),
-      end: (end == null) ? section.end : Duration(milliseconds: end),
-    );
+    section = LoopSection(start: start, end: end);
   }
 
   /// Save settings for a song to a json map.
