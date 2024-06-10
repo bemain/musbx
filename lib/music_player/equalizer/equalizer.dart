@@ -47,27 +47,28 @@ class Equalizer extends MusicPlayerComponent {
   /// Load settings from a [json] map.
   ///
   /// [json] can contain the following key-value pairs (beyond `enabled`):
-  ///  - `gain` [Map<int, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
+  ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
   void loadSettingsFromJson(Map<String, dynamic> json) async {
     super.loadSettingsFromJson(json);
 
-    tryCast<Map>(json["gain"])?.forEach((index_, gain_) {
-      int? index = int.tryParse(tryCast<String>(index_) ?? "");
-      double? gain = tryCast<double>(gain_);
-      if (index != null && gain != null && index < parameters!.bands.length) {
-        parameters!.bands[index].setGain(gain.clamp(
-          parameters!.minDecibels,
-          parameters!.maxDecibels,
-        ));
-      }
-    });
+    final double defaultGain =
+        (parameters!.minDecibels + parameters!.maxDecibels) / 2;
+
+    final Map? gains = tryCast<Map>(json["gain"]);
+    for (var i = 0; i < parameters!.bands.length; i++) {
+      final double gain = tryCast<double>(gains?["$i"]) ?? defaultGain;
+      parameters!.bands[i].setGain(gain.clamp(
+        parameters!.minDecibels,
+        parameters!.maxDecibels,
+      ));
+    }
   }
 
   /// Save settings for a song to a json map.
   ///
   /// Saves the following key-value pairs (beyond `enabled`):
-  ///  - `gain` [Map<int, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
+  ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
   Map<String, dynamic> saveSettingsToJson() {
     return {

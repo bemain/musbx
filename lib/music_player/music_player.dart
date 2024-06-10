@@ -6,11 +6,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/music_player/analyzer/analyzer.dart';
 import 'package:musbx/music_player/audio_handler.dart';
-import 'package:musbx/music_player/musbx_api/demixer_api.dart';
-import 'package:musbx/music_player/musbx_api/youtube_api.dart';
 import 'package:musbx/music_player/pick_song_button/components/search_youtube_button.dart';
-import 'package:musbx/music_player/pick_song_button/components/upload_file_button.dart';
 import 'package:musbx/music_player/pick_song_button/youtube_api/video.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/equalizer/equalizer.dart';
@@ -88,20 +86,10 @@ class MusicPlayer {
     historyFileName: "song_history",
     onEntryRemoved: (entry) async {
       // Remove cached files
-      if (entry.value.source is YoutubeSource) {
-        final String videoId = (entry.value.source as YoutubeSource).youtubeId;
-        for (String extension in allowedExtensions) {
-          File file = await YoutubeApiHost.getYoutubeFile(videoId, extension);
-          if (await file.exists()) await file.delete();
-        }
-      }
-      final Directory stemsDirectory =
-          await DemixerApiHost.getSongDirectory(entry.value.id);
-      if (await stemsDirectory.exists()) {
-        debugPrint(
-            "[SONG HISTORY] Deleting cached stem files for song ${entry.value.id}");
-        await stemsDirectory.delete(recursive: true);
-      }
+      debugPrint(
+          "[SONG HISTORY] Deleting cached files for song ${entry.value.id}");
+      final Directory directory = await entry.value.cacheDirectory;
+      if (await directory.exists()) directory.delete(recursive: true);
     },
   );
 
@@ -113,7 +101,9 @@ class MusicPlayer {
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {
-    await player.seek(looper.clampPosition(position, duration: duration));
+    position = looper.clampPosition(position, duration: duration);
+    positionNotifier.value = position;
+    await player.seek(position);
     await audioHandler.seek(position);
   }
 
@@ -160,6 +150,9 @@ class MusicPlayer {
 
   /// Component for isolating or music specific instruments of the song.
   final Demixer demixer = Demixer();
+
+  /// Component for analyzing the current song, including chord identification and waveform extraction.
+  final Analyzer analyzer = Analyzer();
 
   /// The process currently loading a song, or `null` if no song has been loaded.
   ///
@@ -214,7 +207,7 @@ class MusicPlayer {
     // Load audio
     await player.setAudioSource(await song.source.toAudioSource());
 
-    // Update songTitle
+    // Update song
     songNotifier.value = song;
     // Reset loopSection
     looper.section = LoopSection(end: duration);
@@ -255,37 +248,32 @@ class MusicPlayer {
     ));
   }
 
-  /// Load preferences for the song with [songId].
+  /// Load preferences for a [song]].
   ///
   /// If no preferences could be found for the song, do nothing.
   Future<void> loadSongPreferences(Song song) async {
-    var json = await _songPreferences.load(song.id);
-    if (json == null) return;
+    final Map json = await _songPreferences.load(song) ?? {};
 
     int? position = tryCast<int>(json["position"]);
     if (position != null && position < duration.inMilliseconds) {
       seek(Duration(milliseconds: position));
     }
 
-    var slowdownerSettings = tryCast<Map<String, dynamic>>(json["slowdowner"]);
-    if (slowdownerSettings != null) {
-      slowdowner.loadSettingsFromJson(slowdownerSettings);
-    }
-
-    var looperSettings = tryCast<Map<String, dynamic>>(json["looper"]);
-    if (looperSettings != null) {
-      looper.loadSettingsFromJson(looperSettings);
-    }
-
-    var equalizerSettings = tryCast<Map<String, dynamic>>(json["equalizer"]);
-    if (equalizerSettings != null) {
-      equalizer.loadSettingsFromJson(equalizerSettings);
-    }
-
-    var demixerSetttings = tryCast<Map<String, dynamic>>(json["demixer"]);
-    if (demixerSetttings != null) {
-      demixer.loadSettingsFromJson(demixerSetttings);
-    }
+    slowdowner.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["slowdowner"]) ?? {},
+    );
+    looper.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
+    );
+    equalizer.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
+    );
+    demixer.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["demixer"]) ?? {},
+    );
+    analyzer.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
+    );
   }
 
   /// Save preferences for the current song.
@@ -294,12 +282,13 @@ class MusicPlayer {
   Future<void> saveSongPreferences() async {
     if (song == null) return;
 
-    await _songPreferences.save(song!.id, {
+    await _songPreferences.save(song!, {
       "position": position.inMilliseconds,
       "slowdowner": slowdowner.saveSettingsToJson(),
       "looper": looper.saveSettingsToJson(),
       "equalizer": equalizer.saveSettingsToJson(),
       "demixer": demixer.saveSettingsToJson(),
+      "analyzer": analyzer.saveSettingsToJson(),
     });
   }
 
@@ -339,7 +328,7 @@ class MusicPlayer {
       }
 
       // Update position
-      positionNotifier.value = position;
+      if (isPlaying) positionNotifier.value = position;
     });
 
     // duration
@@ -365,6 +354,7 @@ class MusicPlayer {
     looper.initialize(this);
     equalizer.initialize(this);
     demixer.initialize(this);
+    analyzer.initialize(this);
   }
 
   /// Initialize the audio service for [audioHandler] to enable interaction

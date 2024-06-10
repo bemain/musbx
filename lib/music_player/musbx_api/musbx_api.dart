@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:musbx/keys.dart';
+import 'package:musbx/music_player/musbx_api/chords_api.dart';
 import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/musbx_api/youtube_api.dart';
 
@@ -30,11 +31,12 @@ class MusbxApi {
   static const MusbxApiVersion version = MusbxApiVersion(
     youtubeApiVersion: "1",
     demixerApiVersion: "2",
+    chordsApiVersion: "1",
   );
 
   /// The servers hosting the Musbx API.
   static final List<String> _hostUrls = [
-    // "192.168.100.162:4242",
+    // "192.168.100.104:4242",
     "brunnby.homeip.net:4242",
     "musbx.agardh.se:4242",
   ];
@@ -94,12 +96,41 @@ class MusbxApi {
         ? const OutOfDateException()
         : const NoHostAvailableException();
   }
+
+  /// Find a host that is available and whose ChordsApi version matches [version].
+  ///
+  /// Throws if no such host was found.
+  static Future<ChordsApiHost> findChordsHost() async {
+    /// Whether at least one host is available.
+    bool hostAvailable = false;
+
+    for (String hostUrl in _hostUrls) {
+      ChordsApiHost host = ChordsApiHost(hostUrl);
+      try {
+        MusbxApiVersion hostVersion = await host.getVersion();
+        if (hostVersion.chordsApiVersion == version.chordsApiVersion) {
+          return host;
+        }
+
+        debugPrint(
+            "[DEMIXER] The host's ChordsApi version (${hostVersion.chordsApiVersion}) does not match the app's ChordsApi version (${version.chordsApiVersion}): $host");
+        hostAvailable = true;
+      } catch (_) {
+        debugPrint("[DEMIXER] Host is not available: $host");
+      }
+    }
+
+    throw hostAvailable
+        ? const OutOfDateException()
+        : const NoHostAvailableException();
+  }
 }
 
 class MusbxApiVersion {
   const MusbxApiVersion({
     required this.youtubeApiVersion,
     required this.demixerApiVersion,
+    required this.chordsApiVersion,
   });
 
   /// The version of the Youtube API.
@@ -108,11 +139,15 @@ class MusbxApiVersion {
   /// The version of the Demixer API.
   final String demixerApiVersion;
 
+  /// The version of the Chords API.
+  final String chordsApiVersion;
+
   @override
   bool operator ==(Object other) {
     return other is MusbxApiVersion &&
         other.youtubeApiVersion == youtubeApiVersion &&
-        other.demixerApiVersion == demixerApiVersion;
+        other.demixerApiVersion == demixerApiVersion &&
+        other.chordsApiVersion == chordsApiVersion;
   }
 
   @override
@@ -171,6 +206,7 @@ abstract class MusbxApiHost {
     return MusbxApiVersion(
       youtubeApiVersion: json["youtube"],
       demixerApiVersion: json["demixer"],
+      chordsApiVersion: json["chords"],
     );
   }
 

@@ -75,7 +75,7 @@ class Demixer extends MusicPlayerComponent {
     stateNotifier.value = DemixerState.demixing;
 
     try {
-      process?.cancel();
+      process?.isCancelled = true;
       process = DemixingProcess(song);
 
       Map<StemType, File>? stemFiles = await process?.future;
@@ -130,7 +130,7 @@ class Demixer extends MusicPlayerComponent {
       if (enabled) {
         await demixCurrentSong();
       } else {
-        process?.cancel();
+        process?.isCancelled = true;
         stateNotifier.value = DemixerState.inactive;
       }
       return;
@@ -161,7 +161,7 @@ class Demixer extends MusicPlayerComponent {
 
     if (enabled) {
       // Load wav files
-      Directory directory = await DemixerApiHost.demixerDirectory;
+      Directory directory = await DemixerApiHost.extractedFilesDirectory;
       Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
           MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
 
@@ -206,13 +206,14 @@ class Demixer extends MusicPlayerComponent {
     super.loadSettingsFromJson(json);
 
     for (Stem stem in stems) {
-      Map<String, dynamic> stemData = json[stem.type.name];
+      Map<String, dynamic>? stemData =
+          tryCast<Map<String, dynamic>>(json[stem.type.name]);
 
-      bool? enabled = tryCast<bool>(stemData["enabled"]);
-      if (enabled != null) stem.enabled = enabled;
+      bool? enabled = tryCast<bool>(stemData?["enabled"]);
+      stem.enabled = enabled ?? true;
 
-      double? volume = tryCast<double>(stemData["volume"]);
-      if (volume != null) stem.volume = volume;
+      double? volume = tryCast<double>(stemData?["volume"]);
+      stem.volume = volume ?? 0.5;
     }
   }
 
