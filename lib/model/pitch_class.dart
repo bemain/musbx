@@ -15,9 +15,9 @@ enum PitchClass {
 
   const PitchClass(
     this.sharpAbbreviation, [
-    String? flatName,
+    String? flatAbbreviation,
     this._preferSharp = false,
-  ]) : flatAbbreviation = flatName ?? sharpAbbreviation;
+  ]) : flatAbbreviation = flatAbbreviation ?? sharpAbbreviation;
 
   /// The name of this pitch class with a flat ♭ (or no) accidental.
   final String flatAbbreviation;
