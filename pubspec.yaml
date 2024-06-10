@@ -56,13 +56,13 @@ dependencies:
   connectivity_plus: ^5.0.2
   async: ^2.11.0
   ffmpeg_kit_flutter: ^6.0.3
+  just_waveform: ^0.0.5
 
   # Tuner
   pitch_detector_dart: ^0.0.2
   flutter_audio_capture: ^1.1.6
   mic_stream: ^0.6.5
   gauges: ^1.0.0
-  just_waveform: ^0.0.5
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
