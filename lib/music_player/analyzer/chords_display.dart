@@ -40,15 +40,15 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
                     children: [
                       ...shownChords.map((e) {
                         final Chord? chord = e.value;
-                        return chord == null
-                            ? const SizedBox()
-                            : Positioned(
-                                left: ((e.key - position).inMilliseconds /
-                                            (durationShown.inMilliseconds) +
-                                        0.5) *
-                                    constraints.maxWidth,
-                                child: ChordSymbol(chord: chord),
-                              );
+                        return Positioned(
+                          left: ((e.key - position).inMilliseconds /
+                                      (durationShown.inMilliseconds) +
+                                  0.5) *
+                              constraints.maxWidth,
+                          child: chord == null
+                              ? const SizedBox()
+                              : ChordSymbol(chord: chord),
+                        );
                       }),
                     ],
                   );
