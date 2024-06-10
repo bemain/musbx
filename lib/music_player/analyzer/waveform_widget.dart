@@ -9,6 +9,8 @@ class WaveformWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (musicPlayer.isLoading) return const SizedBox();
+
     return ValueListenableBuilder(
       valueListenable: musicPlayer.analyzer.waveformNotifier,
       builder: (context, waveform, child) {
