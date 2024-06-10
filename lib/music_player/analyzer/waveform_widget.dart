@@ -13,7 +13,13 @@ class WaveformWidget extends StatelessWidget {
       valueListenable: musicPlayer.analyzer.waveformNotifier,
       builder: (context, waveform, child) {
         if (waveform == null) {
-          return const CircularProgressIndicator();
+          return const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              Text("Analyzing..."),
+            ],
+          );
         }
 
         return ValueListenableBuilder(
