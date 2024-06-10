@@ -198,6 +198,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
                 await musicPlayer.loadSong(song);
                 return;
               } catch (error) {
+                debugPrint("[MUSIC PLAYER] $error");
                 showExceptionDialog(
                   song.source is YoutubeSource
                       ? const YoutubeUnavailableDialog()

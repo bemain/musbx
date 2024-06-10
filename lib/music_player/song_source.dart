@@ -87,7 +87,7 @@ class YoutubeSource implements SongSource {
 
   /// The file where the audio to this Youtube song is cached.
   /// Not set until [toAudioSource] has been called.
-  late final File cacheFile;
+  late File cacheFile;
 
   @override
   Future<AudioSource> toAudioSource() async {
