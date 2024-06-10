@@ -135,8 +135,7 @@ class PositionSlider extends StatelessWidget {
           loopSection.start.inMilliseconds / duration.inMilliseconds,
       highlightEnd: loopSection.end.inMilliseconds / duration.inMilliseconds,
       activeHighlightColor: Theme.of(context).colorScheme.primary,
-      inactiveHighlightColor:
-          Theme.of(context).colorScheme.primary.withOpacity(0.24),
+      inactiveHighlightColor: Theme.of(context).colorScheme.surfaceVariant,
     );
   }
 }
