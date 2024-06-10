@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
 
-/// The most common `higher` values
-final List<int> commonHighers = [1, 2, 3, 4, 5, 6, 7];
-
 class Higher extends StatelessWidget {
   /// Displays and features buttons for changing the [Metronome]'s key signature.
   const Higher({super.key, this.size = 64.0});
@@ -26,6 +23,7 @@ class Higher extends StatelessWidget {
                   : () {
                       metronome.higher--;
                     },
+              color: Theme.of(context).colorScheme.primary,
               iconSize: 50,
               icon: const Icon(Icons.arrow_left_rounded),
             ),
@@ -45,6 +43,7 @@ class Higher extends StatelessWidget {
                   : () {
                       metronome.higher++;
                     },
+              color: Theme.of(context).colorScheme.primary,
               iconSize: 50,
               icon: const Icon(Icons.arrow_right_rounded),
             ),
