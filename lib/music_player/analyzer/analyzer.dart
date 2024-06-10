@@ -75,22 +75,26 @@ class Analyzer extends MusicPlayerComponent {
   /// Load settings from a [json] map.
   ///
   /// [json] can contain the following key-value pairs (beyond `enabled`):
-  ///  - `start` [int] The start position of the section being looped, in milliseconds.
-  ///  - `end` [int] The end position of the section being looped, in milliseconds.
+  ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
   void loadSettingsFromJson(Map<String, dynamic> json) {
     super.loadSettingsFromJson(json);
+
+    int? durationShown = tryCast<int>(json["durationShown"]);
+    if (durationShown != null) {
+      this.durationShown = Duration(milliseconds: durationShown);
+    }
   }
 
   /// Save settings for a song to a json map.
   ///
   /// Saves the following key-value pairs (beyond `enabled`):
-  ///  - `start` [int] The start position of the section being looped, in milliseconds.
-  ///  - `end` [int] The end position of the section being looped, in milliseconds.
+  ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
   Map<String, dynamic> saveSettingsToJson() {
     return {
       ...super.saveSettingsToJson(),
+      "durationShown": durationShown.inMilliseconds,
     };
   }
 }

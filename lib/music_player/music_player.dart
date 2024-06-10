@@ -274,9 +274,14 @@ class MusicPlayer {
       equalizer.loadSettingsFromJson(equalizerSettings);
     }
 
-    var demixerSetttings = tryCast<Map<String, dynamic>>(json["demixer"]);
-    if (demixerSetttings != null) {
-      demixer.loadSettingsFromJson(demixerSetttings);
+    var demixerSettings = tryCast<Map<String, dynamic>>(json["demixer"]);
+    if (demixerSettings != null) {
+      demixer.loadSettingsFromJson(demixerSettings);
+    }
+
+    var analyzerSettings = tryCast<Map<String, dynamic>>(json["analyzer"]);
+    if (analyzerSettings != null) {
+      analyzer.loadSettingsFromJson(analyzerSettings);
     }
   }
 
@@ -292,6 +297,7 @@ class MusicPlayer {
       "looper": looper.saveSettingsToJson(),
       "equalizer": equalizer.saveSettingsToJson(),
       "demixer": demixer.saveSettingsToJson(),
+      "analyzer": analyzer.saveSettingsToJson(),
     });
   }
 
