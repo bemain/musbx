@@ -101,8 +101,9 @@ class MusicPlayer {
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {
+    position = looper.clampPosition(position, duration: duration);
     positionNotifier.value = position;
-    await player.seek(looper.clampPosition(position, duration: duration));
+    await player.seek(position);
     await audioHandler.seek(position);
   }
 
