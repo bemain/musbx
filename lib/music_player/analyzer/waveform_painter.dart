@@ -72,7 +72,7 @@ class WaveformPainter extends CustomPainter {
     }
 
     final Path activeArea = Path()
-      ..addRect(Rect.fromLTWH(0, 0, width / 2, height));
+      ..addRect(Rect.fromLTRB(-100, 0, width / 2, height));
 
     canvas.drawPath(
       Path.combine(PathOperation.intersect, activePath, activeArea),
@@ -86,7 +86,7 @@ class WaveformPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant WaveformPainter oldDelegate) {
-    return false;
+    return true;
   }
 
   double normalize(int s, double height) {
