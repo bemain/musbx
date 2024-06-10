@@ -3,10 +3,13 @@ import 'package:musbx/model/chord.dart';
 
 class ChordSymbol extends StatefulWidget {
   /// Widget displaying a musical [chord].
-  const ChordSymbol({super.key, required this.chord});
+  const ChordSymbol({super.key, required this.chord, this.color});
 
   /// The chord being displayed.
   final Chord chord;
+
+  /// The color of the symbol.
+  final Color? color;
 
   @override
   State<StatefulWidget> createState() => _ChordSymbolState();
@@ -78,7 +81,7 @@ class _ChordSymbolState extends State<ChordSymbol> {
         ),
         child: Text(
           text,
-          style: style,
+          style: style?.copyWith(color: widget.color),
           textScaler: textScaler,
         ),
       ),

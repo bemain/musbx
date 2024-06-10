@@ -47,7 +47,12 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
                               constraints.maxWidth,
                           child: chord == null
                               ? const SizedBox()
-                              : ChordSymbol(chord: chord),
+                              : ChordSymbol(
+                                  chord: chord,
+                                  color: e.key <= position
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
+                                ),
                         );
                       }),
                     ],
