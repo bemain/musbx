@@ -57,11 +57,11 @@ class BpmButtons extends StatelessWidget {
   Widget buildBpmText(BuildContext context) {
     return SizedBox(
       width: 90,
-      child: ValueListenableBuilder(
-        valueListenable: Metronome.instance.bpmNotifier,
-        builder: (c, int bpm, Widget? child) {
+      child: ListenableBuilder(
+        listenable: Metronome.instance.bpmNotifier,
+        builder: (context, Widget? child) {
           return NumberField<int>(
-            value: bpm,
+            value: Metronome.instance.bpm,
             style: Theme.of(context).textTheme.displayMedium,
             min: Metronome.minBpm,
             max: Metronome.maxBpm,

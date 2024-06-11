@@ -11,12 +11,12 @@ class Subdivisions extends StatelessWidget {
   Widget build(BuildContext context) {
     final Metronome metronome = Metronome.instance;
 
-    return ValueListenableBuilder(
-      valueListenable: metronome.subdivisionsNotifier,
-      builder: (context, subdivisions, child) {
+    return ListenableBuilder(
+      listenable: metronome.subdivisionsNotifier,
+      builder: (context, child) {
         return SegmentedButton<int>(
           showSelectedIcon: false,
-          selected: {subdivisions},
+          selected: {metronome.subdivisions},
           onSelectionChanged: (value) {
             metronome.subdivisions = value.single;
           },

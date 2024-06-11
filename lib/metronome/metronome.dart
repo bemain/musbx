@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/notifications.dart';
+import 'package:musbx/persistent_value.dart';
 
 enum BeatSound {
   accented("beat_accented.mp3"),
@@ -66,19 +67,21 @@ class Metronome {
   /// Does not actually update the playback. This needs to be done manually by calling [reset].
   int get bpm => bpmNotifier.value;
   set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
-  late final ValueNotifier<int> bpmNotifier = ValueNotifier(60);
+  late final PersistentValue<int> bpmNotifier =
+      PersistentValue("metronome/bpm", initialValue: 60);
 
   /// The number of beats per bar.
   int get higher => higherNotifier.value;
   set higher(int value) => higherNotifier.value = value;
-  late final ValueNotifier<int> higherNotifier = ValueNotifier(4)
-    ..addListener(reset);
+  late final PersistentValue<int> higherNotifier =
+      PersistentValue("metronome/higher", initialValue: 4)..addListener(reset);
 
   /// The number of notes each beat is divided into.
   int get subdivisions => subdivisionsNotifier.value;
   set subdivisions(int value) => subdivisionsNotifier.value = value;
-  late final ValueNotifier<int> subdivisionsNotifier = ValueNotifier(1)
-    ..addListener(reset);
+  late final PersistentValue<int> subdivisionsNotifier =
+      PersistentValue("metronome/subdivisions", initialValue: 1)
+        ..addListener(reset);
 
   /// The count of the current beat. Ranges from 0 to [higher] - 1.
   int get count => countNotifier.value;
@@ -110,8 +113,8 @@ class Metronome {
   ///
   /// Future<void> _loadAudioSource(Future<void>? awaitBeforeLoading) async {
   ///   try { // This needs to be done in a `try` block. Otherwise when one load fails, all the following ones will fail, too.
-  //    await awaitBeforeLoading;
-  //  } catch (_) {}
+  ///     await awaitBeforeLoading;
+  ///   } catch (_) {}
   ///   await player.setAudioSource(...)
   /// }
   ///

@@ -11,14 +11,14 @@ class Higher extends StatelessWidget {
   Widget build(BuildContext context) {
     final Metronome metronome = Metronome.instance;
 
-    return ValueListenableBuilder(
-      valueListenable: metronome.higherNotifier,
-      builder: (context, higher, child) {
+    return ListenableBuilder(
+      listenable: metronome.higherNotifier,
+      builder: (context, child) {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              onPressed: higher <= 1
+              onPressed: metronome.higher <= 1
                   ? null
                   : () {
                       metronome.higher--;
@@ -30,7 +30,7 @@ class Higher extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                "$higher",
+                "${metronome.higher}",
                 style: Theme.of(context)
                     .textTheme
                     .displayLarge
@@ -38,7 +38,7 @@ class Higher extends StatelessWidget {
               ),
             ),
             IconButton(
-              onPressed: higher >= 7
+              onPressed: metronome.higher >= 7
                   ? null
                   : () {
                       metronome.higher++;
