@@ -43,7 +43,7 @@ Future<void> pickYoutubeSong(BuildContext context) async {
 final HistoryHandler<String> youtubeSearchHistory = HistoryHandler<String>(
   fromJson: (json) => json as String,
   toJson: (value) => value,
-  historyFileName: "youtube_search_history",
+  historyFileName: "search_history",
   maxEntries: 10,
 );
 
