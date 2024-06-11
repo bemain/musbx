@@ -168,7 +168,7 @@ class Metronome {
         summary: isPlaying ? "Playing" : "Paused",
         body: "$higher ${higher == 1 ? "beat" : "beats"} • $bpm bpm",
         color: Colors.transparent,
-        category: NotificationCategory.Service,
+        category: NotificationCategory.Transport,
         actionType: ActionType.Default,
         notificationLayout: NotificationLayout.Default,
         showWhen: false,
