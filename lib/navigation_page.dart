@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/music_player/music_player_page.dart';
+import 'package:musbx/persistent_value.dart';
 import 'package:musbx/tuner/tuner_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class NavigationPage extends StatefulWidget {
   /// Navigation page offering a bottom bar for switching between the different pages.
@@ -15,15 +15,10 @@ class NavigationPage extends StatefulWidget {
 }
 
 class NavigationPageState extends State<NavigationPage> {
-  SharedPreferences? _preferences;
-
-  int get currentIndex => _currentIndex;
-  set currentIndex(int value) {
-    _currentIndex = value;
-    _preferences?.setInt("openPage", value);
-  }
-
-  int _currentIndex = 1;
+  final PersistentValue<int> currentIndex = PersistentValue(
+    "openPage",
+    initialValue: 1,
+  );
 
   final PageController controller = PageController(initialPage: 1);
 
@@ -33,9 +28,8 @@ class NavigationPageState extends State<NavigationPage> {
 
     () async {
       // Restore last open page
-      _preferences = await SharedPreferences.getInstance();
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        controller.jumpToPage(_preferences?.getInt("openPage") ?? currentIndex);
+        controller.jumpToPage(currentIndex.value);
       });
     }();
 
@@ -56,7 +50,7 @@ class NavigationPageState extends State<NavigationPage> {
         physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (index) {
           setState(() {
-            currentIndex = index;
+            currentIndex.value = index;
           });
         },
         children: [
@@ -69,7 +63,7 @@ class NavigationPageState extends State<NavigationPage> {
         onDestinationSelected: (int index) {
           controller.jumpToPage(index);
         },
-        selectedIndex: currentIndex,
+        selectedIndex: currentIndex.value,
         destinations: const [
           NavigationDestination(
             label: "Metronome",

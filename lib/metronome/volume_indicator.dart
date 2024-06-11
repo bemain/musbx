@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_volume_controller/flutter_volume_controller.dart';
+import 'package:musbx/metronome/metronome.dart';
 
 class VolumeIndicator extends StatefulWidget {
   const VolumeIndicator({super.key});
@@ -9,33 +9,26 @@ class VolumeIndicator extends StatefulWidget {
 }
 
 class _VolumeIndicatorState extends State<VolumeIndicator> {
-  bool isMute = false;
-
-  @override
-  void initState() {
-    FlutterVolumeController.addListener((value) {
-      setState(() {
-        isMute = value == 0;
-      });
-    });
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    FlutterVolumeController.removeListener();
-    super.dispose();
-  }
+  final Metronome metronome = Metronome.instance;
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () async {
-        await FlutterVolumeController.toggleMute();
-        isMute = await FlutterVolumeController.getMute() ?? false;
-        setState(() {});
+    return StreamBuilder(
+      stream: metronome.player.volumeStream,
+      builder: (context, snapshot) {
+        final isMuted = metronome.player.volume == 0.0;
+
+        return IconButton(
+          onPressed: () async {
+            metronome.player.setVolume(isMuted ? 1.0 : 0.0);
+            setState(() {});
+          },
+          color: Theme.of(context).colorScheme.onBackground,
+          isSelected: isMuted,
+          icon: const Icon(Icons.volume_up),
+          selectedIcon: const Icon(Icons.vibration),
+        );
       },
-      icon: Icon(isMute ? Icons.vibration : Icons.volume_up),
     );
   }
 }

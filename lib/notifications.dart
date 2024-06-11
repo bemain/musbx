@@ -1,7 +1,7 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:musbx/persistent_value.dart';
 
 class Notifications {
   /// Whether the notification plugin has been initialized by running [initialize].
@@ -9,9 +9,6 @@ class Notifications {
 
   /// Used internally to show notifications.
   static final AwesomeNotifications _notifications = AwesomeNotifications();
-
-  /// Used internally to persist data to disk.
-  static SharedPreferences? _preferences;
 
   /// Whether the user has given the app permission to show notifications
   static bool get hasPermission => hasPermissionNotifier.value;
@@ -21,10 +18,10 @@ class Notifications {
   ///
   /// We don't want to be too intrusive, so notification permission is only
   /// requested when the user presses the play button for the first time ever.
-  static bool get hasRequestedPermission =>
-      _preferences?.getBool("metronome/hasRequestedPermission") ?? false;
-  static set hasRequestedPermission(bool value) =>
-      _preferences?.setBool("metronome/hasRequestedPermission", value);
+  static PersistentValue<bool> hasRequestedPermission = PersistentValue(
+    "metronome/hasRequestedPermission",
+    initialValue: false,
+  );
 
   /// Callback for when the user taps an action on the notification while the app is the background.
   @pragma("vm:entry-point")
@@ -44,8 +41,6 @@ class Notifications {
   /// Initialize the notifications service.
   static Future<void> initialize() async {
     if (isInitialized) return;
-
-    _preferences = await SharedPreferences.getInstance();
 
     // Check permission
     final allowedPermissions = await _notifications.checkPermissionList();
@@ -89,7 +84,7 @@ class Notifications {
       throw "The `Notifications` service hasn't been initialized. Call `initialize()` first.";
     }
 
-    hasRequestedPermission = true;
+    hasRequestedPermission.value = true;
 
     hasPermissionNotifier.value = await _notifications.isNotificationAllowed();
     if (!hasPermission) {

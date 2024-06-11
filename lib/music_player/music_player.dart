@@ -39,7 +39,7 @@ enum MusicPlayerState {
 class MusicPlayer {
   // Only way to access is through [instance].
   MusicPlayer._() {
-    _init();
+    _initialize();
   }
 
   /// The instance of this singleton.
@@ -293,7 +293,7 @@ class MusicPlayer {
   }
 
   /// Listen for changes from [player].
-  void _init() {
+  void _initialize() {
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
     songHistory.fetch();

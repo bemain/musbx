@@ -45,7 +45,7 @@ class NotificationPermissionRationale extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Notifications.hasRequestedPermission = true;
+    Notifications.hasRequestedPermission.value = true;
 
     return AlertDialog(
       title: const Text("Enable notifications"),

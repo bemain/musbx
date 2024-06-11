@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/notifications.dart';
 
@@ -36,7 +35,7 @@ class Metronome {
       index ??= 0;
       countNotifier.value = (index) ~/ subdivisions;
 
-      if (await FlutterVolumeController.getMute() == true) {
+      if (player.volume == 0) {
         // Vibrate
         if (index == 0) {
           HapticFeedback.vibrate();

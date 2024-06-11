@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:musbx/launch_handler.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/navigation_page.dart';
 import 'package:musbx/notifications.dart';
+import 'package:musbx/persistent_value.dart';
 import 'package:musbx/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await PersistentValue.initialize();
 
   // Create audio service
   await MusicPlayer.instance.initAudioService();
@@ -15,6 +19,8 @@ Future<void> main() async {
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  LaunchHandler.initialize();
 
   // Generate themes
   await generateThemes(onThemesGenerated: (lightTheme, darkTheme) {

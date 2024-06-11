@@ -30,8 +30,8 @@ class HistoryHandler<T> extends ChangeNotifier {
   final void Function(MapEntry<DateTime, T> entry)? onEntryRemoved;
 
   /// The file where song history is saved.
-  Future<File> get _historyFile async => File(
-      "${(await getApplicationDocumentsDirectory()).path}/$historyFileName.json");
+  Future<File> get _historyFile async =>
+      File("${(await getTemporaryDirectory()).path}/$historyFileName.json");
 
   /// The history entries, with the previously loaded songs and the time they were loaded.
   final Map<DateTime, T> history = {};

@@ -83,7 +83,7 @@ class UploadSongButton extends SpeedDialChild {
   }
 
   void pushPermissionBuilder(BuildContext context) async {
-    // On Android sdk 33 or greater, use of granular permissionss is required
+    // On Android sdk 33 or greater, use of granular permissions is required
     final bool useGranularPermissions = !Platform.isAndroid
         ? false
         : (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 33;
