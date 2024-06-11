@@ -73,6 +73,19 @@ android {
             signingConfig signingConfigs.release
         }
     }
+
+    // (BeMain) Added 'free' flavor
+    flavorDimensions "default"
+
+    productFlavors {
+        premium {
+            dimension "default"
+        }
+        free {
+            dimension "default"
+            applicationIdSuffix ".free"
+        }
+    }
 }
 
 flutter {
