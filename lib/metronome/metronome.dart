@@ -36,7 +36,8 @@ class Metronome {
       index ??= 0;
       countNotifier.value = (index) ~/ subdivisions;
 
-      if (player.volume == 0) {
+      // TODO: Vibration doesn't work when [higher] equals 1.
+      if (player.volume == 0.0) {
         // Vibrate
         if (index == 0) {
           HapticFeedback.vibrate();
@@ -165,7 +166,7 @@ class Metronome {
         channelKey: "metronome-controls",
         title: 'Metronome',
         summary: isPlaying ? "Playing" : "Paused",
-        body: "$higher beats • $bpm bpm",
+        body: "$higher ${higher == 1 ? "beat" : "beats"} • $bpm bpm",
         color: Colors.transparent,
         category: NotificationCategory.Service,
         actionType: ActionType.Default,
