@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -58,7 +59,9 @@ class InfoButton extends StatelessWidget {
             applicationIcon: const Padding(
               padding: EdgeInsets.only(top: 8.0),
               child: ImageIcon(
-                AssetImage("assets/splash/splash.png"),
+                AssetImage(appFlavor == "free"
+                    ? "assets/splash/free/splash.png"
+                    : "assets/splash/premium/splash.png"),
                 size: 64.0,
                 color: Color(0xff0f58cf),
               ),

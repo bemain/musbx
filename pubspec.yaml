@@ -86,30 +86,6 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
 
-# To apply changes to the icon configuration, run:
-# `dart run flutter_launcher_icons`
-flutter_launcher_icons:
-  android: true
-  min_sdk_android: 24
-  ios: true
-  image_path_ios: "assets/logo/ios.png"
-  remove_alpha_ios: true
-  image_path: "assets/logo/logo.png"
-  adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/logo/adaptive_foreground.png"
-  adaptive_icon_monochrome: "assets/logo/adaptive_monochrome.png"
-
-# To apply changes to the splash screen configuration, run:
-# `dart run flutter_native_splash:create`
-flutter_native_splash:
-  color: "#ffffff"
-  color_dark: "#1a1a1a"
-  image: assets/splash/splash.png
-  android_12:
-    image: assets/splash/splash_android12.png
-
-  ios: true
-  web: false
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -124,7 +100,12 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/splash/splash.png
+    - path: assets/splash/free/splash.png
+      flavors:
+        - free
+    - path: assets/splash/premium/splash.png
+      flavors:
+        - premium
     # Music player
     - assets/images/arrow.png
     # Metronome

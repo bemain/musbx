@@ -4,6 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/music_player/analyzer/analyzer.dart';
@@ -19,6 +20,8 @@ import 'package:musbx/music_player/history_handler.dart';
 import 'package:musbx/music_player/song_preferences.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/widgets.dart';
+
+const int freeSongsPerWeek = 2;
 
 /// The state of [MusicPlayer].
 enum MusicPlayerState {
@@ -183,6 +186,15 @@ class MusicPlayer {
   ///
   /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
   Future<void> loadSong(Song song) async {
+    if (appFlavor == "free") {
+      final List<Song> songsThisWeek = songHistory.history.entries
+          .where((entry) =>
+              entry.key.difference(DateTime.now()) < const Duration(days: 7))
+          .map((e) => e.value)
+          .toList();
+      print(songsThisWeek);
+    }
+
     // Make sure no other process is currently setting the audio source
     loadSongLock = _loadSong(song, awaitBeforeLoading: loadSongLock);
     await loadSongLock;

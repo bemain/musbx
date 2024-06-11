@@ -1,0 +1,11 @@
+# To apply changes to the splash screen configuration, run:
+# `dart run flutter_native_splash:create --flavors free,premium`
+flutter_native_splash:
+  color: "#ffffff"
+  color_dark: "#1a1a1a"
+  image: assets/splash/premium/splash.png
+  android_12:
+    image: assets/splash/premium/splash_android12.png
+
+  ios: true
+  web: false
