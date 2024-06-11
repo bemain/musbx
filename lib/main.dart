@@ -53,7 +53,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Musician's Toolbox",
+      title: appFlavor == "free"
+          ? "Musician's Toolbox (Free)"
+          : "Musician's Toolbox",
       theme: lightTheme.copyWith(
         textTheme: GoogleFonts.interTextTheme(lightTheme.textTheme),
         sliderTheme: lightTheme.sliderTheme.copyWith(

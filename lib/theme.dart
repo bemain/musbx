@@ -1,7 +1,9 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-const Color defaultSeed = Color(0xff578cff);
+const Color defaultSeed =
+    appFlavor == "free" ? Color(0xff217821) : Color(0xff578cff);
 
 Future<void> generateThemes({
   required Function(ThemeData light, ThemeData dark) onThemesGenerated,
