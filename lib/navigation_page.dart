@@ -1,4 +1,3 @@
-import 'package:advanced_in_app_review/advanced_in_app_review.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/metronome/metronome_page.dart';
@@ -26,20 +25,10 @@ class NavigationPageState extends State<NavigationPage> {
   void initState() {
     super.initState();
 
-    () async {
-      // Restore last open page
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        controller.jumpToPage(currentIndex.value);
-      });
-    }();
-
-    // Setup in-app review
-    AdvancedInAppReview()
-        .setMinDaysBeforeRemind(7)
-        .setMinDaysAfterInstall(7)
-        .setMinLaunchTimes(5)
-        .setMinSecondsBeforeShowDialog(4)
-        .monitor();
+    // Restore last open page
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      controller.jumpToPage(currentIndex.value);
+    });
   }
 
   @override
