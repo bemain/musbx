@@ -29,11 +29,11 @@ This project follows (since Sep 25 2023) the [Conventional commits](https://www.
 A commit message should be structured as follows:
 
 ```
-<type>[optional scope]: <description>
+<type>[(scope)]: <description>
 
-[optional body]
+[body]
 
-[optional footer(s)]
+[footer(s)]
 ```
 
 A commit that has a footer `BREAKING CHANGE`:, or appends a ! after the type/scope, introduces a breaking API change. 
@@ -45,16 +45,16 @@ The footer `Fixes <issue number>` can be used to reference a GitHub issue.
 A branch should be named as follows:
 
 ```
-[area]/[issue reference]/<description>
+feat/[area]/[issue reference]/<description>
 ```
 
-Example `area`s: `demixer`, `tuner`, `theme`, `music-player`.
+Example `area`s: `demixer`, `tuner`, `music-player`.
 
 The `description` should use dashes (`-`) to separate words.
 
 Here's a complete example: 
 ```
-music-player/issue72/configure-audio-session
+feat/music-player/issue72/configure-audio-session
 ```
 
 ## Privacy policy
