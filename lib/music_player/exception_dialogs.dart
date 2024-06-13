@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/music_player_page.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 /// Show an exception dialog.
 ///
@@ -16,6 +19,50 @@ Future<void> showExceptionDialog(Widget dialog) async {
     context: musicPlayerPageKey.currentContext!,
     builder: (context) => dialog,
   );
+}
+
+class MusicPlayerAccessRestrictedDialog extends StatelessWidget {
+  const MusicPlayerAccessRestrictedDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: const Icon(Icons.star),
+      title: const Text("Upgrade"),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+              """You have reached your weekly usage quota for the Music player. 
+
+Upgrade to the Premium version of the app to get:"""),
+          SizedBox(height: 8),
+          Text(" ★ Unlimited access to the Music player"),
+          Text(" ★ An ad-free experience"),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text("Dismiss"),
+        ),
+        FilledButton(
+          onPressed: () {
+            launchUrlString(
+              Platform.isAndroid
+                  ? "market://details?id=se.agardh.musbx"
+                  : "https://apps.apple.com/app/id1670009655",
+              mode: LaunchMode.externalApplication,
+            );
+          },
+          child: const Text("Upgrade"),
+        ),
+      ],
+    );
+  }
 }
 
 class UnsupportedFileExtensionDialog extends StatelessWidget {

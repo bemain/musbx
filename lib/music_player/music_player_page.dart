@@ -179,6 +179,11 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
       onExpandedPressed: MusicPlayer.instance.isLoading
           ? null
           : () async {
+              if (musicPlayer.isAccessRestricted) {
+                showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
+                return;
+              }
+
               await pickYoutubeSong(context);
             },
       expandedChild: const Icon(Icons.search),
@@ -192,11 +197,16 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
       onPressed: musicPlayer.isLoading
           ? null
           : (event) async {
+              if (musicPlayer.isAccessRestricted &&
+                  !musicPlayer.songsPlayedThisWeek.contains(song)) {
+                showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
+                return;
+              }
+
               MusicPlayerState prevState = musicPlayer.state;
               musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
               try {
                 await musicPlayer.loadSong(song);
-                return;
               } catch (error) {
                 debugPrint("[MUSIC PLAYER] $error");
                 showExceptionDialog(
@@ -206,7 +216,6 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
                 );
                 // Restore state
                 musicPlayer.stateNotifier.value = prevState;
-                return;
               }
             },
       label: ConstrainedBox(

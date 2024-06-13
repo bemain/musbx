@@ -21,8 +21,6 @@ import 'package:musbx/music_player/song_preferences.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/widgets.dart';
 
-const int freeSongsPerWeek = 2;
-
 /// The state of [MusicPlayer].
 enum MusicPlayerState {
   /// The player has been initialized, but no audio has been loaded.
@@ -95,6 +93,23 @@ class MusicPlayer {
       if (await directory.exists()) directory.delete(recursive: true);
     },
   );
+
+  /// The number of songs the user can play each week on the 'free' flavor of the app.
+  static const int freeSongsPerWeek = 2;
+
+  /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
+  List<Song> get songsPlayedThisWeek => songHistory.history.entries
+      .where((entry) =>
+          entry.key.difference(DateTime.now()) < const Duration(days: 7))
+      .map((e) => e.value)
+      .toList();
+
+  /// Whether the user's access to the [MusicPlayer] has been restricted
+  /// because the number of [freeSongsPerWeek] has been reached.
+  ///
+  /// This is only ever `true` on the 'free' flavor of the app.
+  bool get isAccessRestricted =>
+      appFlavor == "free" && songsPlayedThisWeek.length >= freeSongsPerWeek;
 
   /// Start or resume playback.
   Future<void> play() async => await player.play();
@@ -186,13 +201,8 @@ class MusicPlayer {
   ///
   /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
   Future<void> loadSong(Song song) async {
-    if (appFlavor == "free") {
-      final List<Song> songsThisWeek = songHistory.history.entries
-          .where((entry) =>
-              entry.key.difference(DateTime.now()) < const Duration(days: 7))
-          .map((e) => e.value)
-          .toList();
-      print(songsThisWeek);
+    if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
+      throw "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.";
     }
 
     // Make sure no other process is currently setting the audio source
