@@ -255,9 +255,7 @@ class MusicPlayer {
     final Map json = await _songPreferences.load(song) ?? {};
 
     int? position = tryCast<int>(json["position"]);
-    if (position != null && position < duration.inMilliseconds) {
-      seek(Duration(milliseconds: position));
-    }
+    seek(Duration(milliseconds: position ?? 0));
 
     slowdowner.loadSettingsFromJson(
       tryCast<Map<String, dynamic>>(json["slowdowner"]) ?? {},
