@@ -16,7 +16,7 @@ class EqualizerCard extends StatelessWidget {
         valueListenable: musicPlayer.equalizer.enabledNotifier,
         builder: (context, enabled, child) {
           return SizedBox(
-            height: 256,
+            height: 212,
             child: Column(children: [
               CardHeader(
                 title: "Equalizer",
@@ -29,19 +29,22 @@ class EqualizerCard extends StatelessWidget {
               Expanded(
                 child: EqualizerSliders(),
               ),
-              const Stack(
-                alignment: Alignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text("Bass"),
-                  ),
-                  Text("Mid-range"),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text("Treble"),
-                  ),
-                ],
+              DefaultTextStyle.merge(
+                style: Theme.of(context).textTheme.bodySmall,
+                child: const Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("Bass"),
+                    ),
+                    Text("Mid-range"),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text("Treble"),
+                    ),
+                  ],
+                ),
               ),
             ]),
           );

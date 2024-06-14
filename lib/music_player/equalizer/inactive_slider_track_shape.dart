@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 /// A [SliderTrackShape] that looks like the inactive part of [Slider]'s default track.
@@ -47,5 +49,30 @@ class InactiveSliderTrackShape extends SliderTrackShape
       RRect.fromRectAndRadius(trackRect, trackRadius),
       paint,
     );
+  }
+
+  @override
+  Rect getPreferredRect({
+    required RenderBox parentBox,
+    Offset offset = Offset.zero,
+    required SliderThemeData sliderTheme,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+  }) {
+    final double thumbWidth =
+        sliderTheme.thumbShape!.getPreferredSize(isEnabled, isDiscrete).width;
+    final double overlayWidth =
+        sliderTheme.overlayShape!.getPreferredSize(isEnabled, isDiscrete).width;
+    final double trackHeight = sliderTheme.trackHeight!;
+    assert(overlayWidth >= 0);
+    assert(trackHeight >= 0);
+
+    final double trackLeft = offset.dx + thumbWidth / 2;
+    final double trackTop =
+        offset.dy + (parentBox.size.height - trackHeight) / 2;
+    final double trackRight = trackLeft + parentBox.size.width - thumbWidth;
+    final double trackBottom = trackTop + trackHeight;
+    return Rect.fromLTRB(min(trackLeft, trackRight), trackTop,
+        max(trackLeft, trackRight), trackBottom);
   }
 }
