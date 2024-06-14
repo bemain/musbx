@@ -20,7 +20,7 @@ class AnalyzerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 128,
+      height: 92,
       child: GestureDetector(
         onScaleStart: (_) {
           durationShownBeforeChange = musicPlayer.analyzer.durationShown;

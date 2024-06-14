@@ -15,31 +15,36 @@ class EqualizerCard extends StatelessWidget {
       builder: (context, parameters, child) => ValueListenableBuilder(
         valueListenable: musicPlayer.equalizer.enabledNotifier,
         builder: (context, enabled, child) {
-          return Column(children: [
-            CardHeader(
-              title: "Equalizer",
-              enabled: enabled,
-              onEnabledChanged: (value) {
-                musicPlayer.equalizer.enabled = value;
-              },
-              onResetPressed: musicPlayer.equalizer.resetGain,
-            ),
-            EqualizerSliders(),
-            const Stack(
-              alignment: Alignment.center,
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text("Bass"),
-                ),
-                Text("Mid-range"),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text("Treble"),
-                ),
-              ],
-            ),
-          ]);
+          return SizedBox(
+            height: 256,
+            child: Column(children: [
+              CardHeader(
+                title: "Equalizer",
+                enabled: enabled,
+                onEnabledChanged: (value) {
+                  musicPlayer.equalizer.enabled = value;
+                },
+                onResetPressed: musicPlayer.equalizer.resetGain,
+              ),
+              Expanded(
+                child: EqualizerSliders(),
+              ),
+              const Stack(
+                alignment: Alignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text("Bass"),
+                  ),
+                  Text("Mid-range"),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text("Treble"),
+                  ),
+                ],
+              ),
+            ]),
+          );
         },
       ),
     );
