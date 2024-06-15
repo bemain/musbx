@@ -11,6 +11,7 @@ import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/navigation_page.dart';
 import 'package:musbx/notifications.dart';
 import 'package:musbx/persistent_value.dart';
+import 'package:musbx/purchases.dart';
 import 'package:musbx/theme.dart';
 
 Future<void> main() async {
@@ -34,6 +35,7 @@ Future<void> main() async {
 
   // Google Ads
   unawaited(MobileAds.instance.initialize());
+  await Purchases.intialize();
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
