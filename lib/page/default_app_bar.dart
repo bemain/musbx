@@ -64,7 +64,7 @@ class InfoButton extends StatelessWidget {
                     : "assets/splash/premium/splash.png"),
                 size: 64.0,
                 color:
-                    appFlavor == "free" ? Color(0xff217821) : Color(0xff578cff),
+                    appFlavor == "free" ? Color(0xff217821) : Color(0xff0f58cf),
               ),
             ),
             applicationVersion: "Version ${packageInfo?.version}",
