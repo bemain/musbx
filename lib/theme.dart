@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 const Color defaultSeed =
-    appFlavor == "free" ? Color(0xff217821) : Color(0xff578cff);
+    appFlavor == "free" ? Colors.green : Color(0xff578cff);
 
 Future<void> generateThemes({
   required Function(ThemeData light, ThemeData dark) onThemesGenerated,
@@ -18,7 +18,8 @@ Future<void> generateThemes({
   );
 
   // Get color schemes
-  var corePalette = await DynamicColorPlugin.getCorePalette();
+  var corePalette =
+      appFlavor == "free" ? null : await DynamicColorPlugin.getCorePalette();
   final ColorScheme lightScheme = corePalette?.toColorScheme() ?? lightDefault;
   final ColorScheme darkScheme =
       corePalette?.toColorScheme(brightness: Brightness.dark) ?? darkDefault;

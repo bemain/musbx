@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:musbx/theme.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -64,7 +63,8 @@ class InfoButton extends StatelessWidget {
                     ? "assets/splash/free/splash.png"
                     : "assets/splash/premium/splash.png"),
                 size: 64.0,
-                color: defaultSeed,
+                color:
+                    appFlavor == "free" ? Color(0xff217821) : Color(0xff578cff),
               ),
             ),
             applicationVersion: "Version ${packageInfo?.version}",

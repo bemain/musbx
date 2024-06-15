@@ -1,5 +1,5 @@
 # To apply changes to the splash screen configuration, run:
-# `dart run flutter_native_splash:create`
+# `dart run flutter_native_splash:create --flavors free,premium`
 flutter_native_splash:
   color: "#ffffff"
   color_dark: "#1a1a1a"
