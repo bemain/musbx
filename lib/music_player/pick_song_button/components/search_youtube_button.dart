@@ -87,8 +87,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   Widget buildSuggestions(BuildContext context) {
     if (youtubeSearchHistory.history.isEmpty) {
       // Help text
-      return Container(
-        constraints: const BoxConstraints.expand(),
+      return Padding(
         padding: const EdgeInsets.all(15),
         child: Text(
           "Enter a search phrase or paste a URL to a video on YouTube.",
