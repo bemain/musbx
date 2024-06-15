@@ -1,11 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="se.agardh.musbx"
-    xmlns:tools="http://schemas.android.com/tools" >
+    package="se.agardh.musbx">
    <application
         android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        tools:node="merge"
         android:usesCleartextTraffic="true"> <!-- Required by just_audio package. -->
         <!-- android:name has been overwritten by audio_service package. -->
         <activity
@@ -44,6 +42,10 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
+        <!-- Added by google_mobile_ads package. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-5107868608906815~4670226689"/>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
