@@ -208,9 +208,13 @@ class MusicPlayer {
     }
 
     if (appFlavor == "free") {
-      // Show interstitial ad
-      final InterstitialAd? interstitialAd = await loadInterstitialAd();
-      interstitialAd?.show();
+      try {
+        // Show interstitial ad
+        final InterstitialAd? interstitialAd = await loadInterstitialAd();
+        interstitialAd?.show();
+      } catch (e) {
+        debugPrint("[ADS] Failed to load interstitial ad: $e");
+      }
     }
 
     // Make sure no other process is currently setting the audio source
