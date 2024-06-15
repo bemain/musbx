@@ -97,7 +97,7 @@ class MusicPlayer {
   );
 
   /// The number of songs the user can play each week on the 'free' flavor of the app.
-  static const int freeSongsPerWeek = 2;
+  static const int freeSongsPerWeek = 3;
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
   List<Song> get songsPlayedThisWeek => songHistory.history.entries
