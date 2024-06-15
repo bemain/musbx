@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
+import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_page.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -26,20 +27,35 @@ class MusicPlayerAccessRestrictedDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return const FreeAccessRestrictedDialog(
+      reason:
+          "You have used your ${MusicPlayer.freeSongsPerWeek} weekly songs.",
+    );
+  }
+}
+
+class FreeAccessRestrictedDialog extends StatelessWidget {
+  const FreeAccessRestrictedDialog({super.key, required this.reason});
+
+  /// Text explaining why access was restricted.
+  final String reason;
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
       icon: const Icon(Icons.star),
       title: const Text("Upgrade"),
-      content: const Column(
+      content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-              """You have reached your weekly usage quota for the Music player. 
+          Text("""$reason 
 
 Upgrade to the Premium version of the app to get:"""),
-          SizedBox(height: 8),
-          Text(" ★ Unlimited access to the Music player"),
-          Text(" ★ An ad-free experience"),
+          const SizedBox(height: 8),
+          const Text(" ★ Unlimited songs"),
+          const Text(" ★ Full access to AI-powered Demixing"),
+          const Text(" ★ An ad-free experience"),
         ],
       ),
       actions: [
