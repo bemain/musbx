@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -89,4 +90,46 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     // Start loading.
     bannerAd.load();
   }
+}
+
+/// Load an interstitial ad.
+Future<InterstitialAd?> loadInterstitialAd() async {
+  /// The AdMob ad unit to show.
+  final String adUnitId = kDebugMode
+      // Test interstitial ad units, provided by Google
+      ? Platform.isAndroid
+          ? "ca-app-pub-3940256099942544/1033173712"
+          : "ca-app-pub-3940256099942544/4411468910"
+      // Real ad units
+      : Platform.isAndroid
+          ? "ca-app-pub-5107868608906815/5388751299"
+          : "ca-app-pub-5107868608906815/3177520920";
+
+  Completer<InterstitialAd?> completer = Completer();
+
+  await InterstitialAd.load(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+              onAdShowedFullScreenContent: (ad) {},
+              onAdImpression: (ad) {},
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                debugPrint("[ADS] InterstitialAd failed to show: $error");
+                ad.dispose();
+              },
+              onAdDismissedFullScreenContent: (ad) {
+                ad.dispose();
+              },
+              onAdClicked: (ad) {});
+
+          completer.complete(ad);
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          debugPrint("[ADS] InterstitialAd failed to load: $error");
+        },
+      ));
+
+  return await completer.future;
 }

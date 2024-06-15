@@ -5,8 +5,10 @@ import 'package:audio_session/audio_session.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musbx/ads.dart';
 import 'package:musbx/music_player/analyzer/analyzer.dart';
 import 'package:musbx/music_player/audio_handler.dart';
 import 'package:musbx/music_player/pick_song_button/components/search_youtube_button.dart';
@@ -203,6 +205,12 @@ class MusicPlayer {
   Future<void> loadSong(Song song) async {
     if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
       throw "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.";
+    }
+
+    if (appFlavor == "free") {
+      // Show interstitial ad
+      final InterstitialAd? interstitialAd = await loadInterstitialAd();
+      interstitialAd?.show();
     }
 
     // Make sure no other process is currently setting the audio source
