@@ -128,6 +128,7 @@ Future<InterstitialAd?> loadInterstitialAd() async {
         },
         onAdFailedToLoad: (LoadAdError error) {
           debugPrint("[ADS] InterstitialAd failed to load: $error");
+          completer.completeError(error);
         },
       ));
 
