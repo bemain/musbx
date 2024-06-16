@@ -169,7 +169,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
     return await YoutubeDataApi.search(query, type: "video", maxResults: 50);
   }
 
-  /// Result item, showing a [YouTubeVideo]'s title, channel and thumbnail.
+  /// Result item, showing a [YoutubeVideo]'s title, channel and thumbnail.
   Widget listItem(BuildContext context, YoutubeVideo video) {
     HtmlUnescape htmlUnescape = HtmlUnescape();
 
@@ -178,39 +178,24 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
         close(context, video);
       },
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: Image.network(
-                  video.thumbnails.small.url,
-                  width: 100,
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      htmlUnescape.convert(video.title),
-                      softWrap: true,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: Text(
-                        htmlUnescape.convert(video.channelTitle),
-                        softWrap: true,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],
+        child: ListTile(
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: Image.network(
+              video.thumbnails.medium.url,
+              width: 100.0,
+              fit: BoxFit.cover,
+            ),
+          ),
+          title: Text(
+            htmlUnescape.convert(video.title),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            htmlUnescape.convert(video.channelTitle),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ),
