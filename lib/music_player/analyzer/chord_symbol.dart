@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/model/chord.dart';
 
 class ChordSymbol extends StatefulWidget {
@@ -16,11 +17,14 @@ class ChordSymbol extends StatefulWidget {
 }
 
 class _ChordSymbolState extends State<ChordSymbol> {
+  late final TextTheme textTheme =
+      GoogleFonts.andikaTextTheme(Theme.of(context).textTheme);
+
   @override
   Widget build(BuildContext context) {
     return RichText(
       text: TextSpan(
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: textTheme.bodyMedium,
         children: [
           ...widget.chord.root.toString().characters.map(_buildChar),
           _buildChar("${widget.chord.quality}"),
@@ -39,18 +43,15 @@ class _ChordSymbolState extends State<ChordSymbol> {
     );
   }
 
-  WidgetSpan _buildChar(String char, {bool superscript = false}) =>
+  InlineSpan _buildChar(String char, {bool superscript = false}) =>
       switch (char) {
         "♭" => _buildSpan(
-            char,
+            "♭",
             superscript: superscript,
-            textScaler: const TextScaler.linear(1.3),
-            offsetFraction: 1 / 16,
           ),
         "♯" => _buildSpan(
-            char,
+            "♯",
             superscript: superscript,
-            offsetFraction: -1 / 6,
           ),
         _ => _buildSpan(
             char,
@@ -58,15 +59,12 @@ class _ChordSymbolState extends State<ChordSymbol> {
           ),
       };
 
-  WidgetSpan _buildSpan(
+  InlineSpan _buildSpan(
     String text, {
     bool superscript = false,
-    TextScaler? textScaler,
-    double? offsetFraction,
   }) {
-    final TextStyle? style = superscript
-        ? Theme.of(context).textTheme.labelSmall
-        : Theme.of(context).textTheme.bodyMedium;
+    final TextStyle? style =
+        superscript ? textTheme.labelSmall : textTheme.bodyMedium;
 
     return WidgetSpan(
       baseline: TextBaseline.alphabetic,
@@ -74,16 +72,9 @@ class _ChordSymbolState extends State<ChordSymbol> {
           ? PlaceholderAlignment.aboveBaseline
           : PlaceholderAlignment.bottom,
       style: style,
-      child: Transform.translate(
-        offset: Offset(
-          0.0,
-          (style?.fontSize ?? 14) * (offsetFraction ?? 0),
-        ),
-        child: Text(
-          text,
-          style: style?.copyWith(color: widget.color),
-          textScaler: textScaler,
-        ),
+      child: Text(
+        text,
+        style: style?.copyWith(color: widget.color),
       ),
     );
   }
