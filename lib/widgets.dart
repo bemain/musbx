@@ -267,7 +267,9 @@ class NumberField<T extends num> extends StatelessWidget {
         style: style,
         textAlign: TextAlign.center,
         textAlignVertical: TextAlignVertical.center,
-        keyboardType: TextInputType.number,
+        keyboardType:
+            const TextInputType.numberWithOptions(signed: true, decimal: true),
+        textInputAction: TextInputAction.done,
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(
               r"^(-|-?\d+(?:\.\d*)?)$")), // Allow positive and negative decimal numbers, as well as just a minus sign

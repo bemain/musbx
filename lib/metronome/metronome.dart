@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,9 @@ class Metronome {
   Metronome._() {
     // Listen to app lifecycle
     AppLifecycleListener(
+      onHide: () async {
+        if (isPlaying) await updateNotification();
+      },
       onDetach: () async {
         // TODO: This doesn't work... The future never completes
         await Notifications.cancelAll();
@@ -173,6 +177,7 @@ class Metronome {
         notificationLayout: NotificationLayout.Default,
         showWhen: false,
         autoDismissible: false,
+        displayOnForeground: Platform.isIOS ? false : true,
       ),
       actionButtons: [
         if (!isPlaying)

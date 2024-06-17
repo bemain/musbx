@@ -13,13 +13,14 @@ import 'package:musbx/widgets.dart';
 class Analyzer extends MusicPlayerComponent {
   static const Duration minDurationShown = Duration(seconds: 5);
   static const Duration maxDurationShown = Duration(seconds: 10);
+  static const Duration defaultDurationShown = Duration(seconds: 8);
 
   /// The duration window around the current position shown by widgets.
   Duration get durationShown => durationShownNotifier.value;
   set durationShown(Duration value) => durationShownNotifier.value =
       value.clamp(minDurationShown, maxDurationShown);
   final ValueNotifier<Duration> durationShownNotifier =
-      ValueNotifier(const Duration(seconds: 5));
+      ValueNotifier(defaultDurationShown);
 
   /// The process analyzing the chords of the current song,
   /// or `null` if no song has been loaded.
@@ -81,7 +82,9 @@ class Analyzer extends MusicPlayerComponent {
     super.loadSettingsFromJson(json);
 
     int? durationShown = tryCast<int>(json["durationShown"]);
-    this.durationShown = Duration(milliseconds: durationShown ?? 5000);
+    this.durationShown = Duration(
+      milliseconds: durationShown ?? defaultDurationShown.inMilliseconds,
+    );
   }
 
   /// Save settings for a song to a json map.

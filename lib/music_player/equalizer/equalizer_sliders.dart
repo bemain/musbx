@@ -30,21 +30,18 @@ class EqualizerSliders extends StatelessWidget {
           fillColor:
               enabled ? Theme.of(context).colorScheme.inversePrimary : null,
         ),
-        child: AspectRatio(
-          aspectRatio: 16 / 11,
-          child: SliderTheme(
-            data: Theme.of(context).sliderTheme.copyWith(
-                  trackShape: InactiveSliderTrackShape(),
-                ),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                for (var band
-                    in equalizer.parameters?.bands ?? List.filled(5, null))
-                  buildSlider(band: band, enabled: enabled),
-              ],
-            ),
+        child: SliderTheme(
+          data: Theme.of(context).sliderTheme.copyWith(
+                trackShape: InactiveSliderTrackShape(),
+              ),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              for (var band
+                  in equalizer.parameters?.bands ?? List.filled(5, null))
+                buildSlider(band: band, enabled: enabled),
+            ],
           ),
         ),
       ),

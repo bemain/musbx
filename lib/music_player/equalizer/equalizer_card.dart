@@ -15,31 +15,39 @@ class EqualizerCard extends StatelessWidget {
       builder: (context, parameters, child) => ValueListenableBuilder(
         valueListenable: musicPlayer.equalizer.enabledNotifier,
         builder: (context, enabled, child) {
-          return Column(children: [
-            CardHeader(
-              title: "Equalizer",
-              enabled: enabled,
-              onEnabledChanged: (value) {
-                musicPlayer.equalizer.enabled = value;
-              },
-              onResetPressed: musicPlayer.equalizer.resetGain,
-            ),
-            EqualizerSliders(),
-            const Stack(
-              alignment: Alignment.center,
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text("Bass"),
+          return SizedBox(
+            height: 212,
+            child: Column(children: [
+              CardHeader(
+                title: "Equalizer",
+                enabled: enabled,
+                onEnabledChanged: (value) {
+                  musicPlayer.equalizer.enabled = value;
+                },
+                onResetPressed: musicPlayer.equalizer.resetGain,
+              ),
+              Expanded(
+                child: EqualizerSliders(),
+              ),
+              DefaultTextStyle.merge(
+                style: Theme.of(context).textTheme.bodySmall,
+                child: const Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("Bass"),
+                    ),
+                    Text("Mid-range"),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text("Treble"),
+                    ),
+                  ],
                 ),
-                Text("Mid-range"),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text("Treble"),
-                ),
-              ],
-            ),
-          ]);
+              ),
+            ]),
+          );
         },
       ),
     );

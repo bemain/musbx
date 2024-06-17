@@ -52,6 +52,8 @@ class Equalizer extends MusicPlayerComponent {
   void loadSettingsFromJson(Map<String, dynamic> json) async {
     super.loadSettingsFromJson(json);
 
+    if (Platform.isIOS) return;
+
     final double defaultGain =
         (parameters!.minDecibels + parameters!.maxDecibels) / 2;
 

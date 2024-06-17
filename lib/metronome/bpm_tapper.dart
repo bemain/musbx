@@ -68,7 +68,9 @@ class BpmTapper extends StatelessWidget {
         Metronome.instance.pause();
 
         // Add bpm
-        tapBpms.add(60000 ~/ stopwatch.elapsedMilliseconds);
+        if (stopwatch.elapsed > Duration.zero) {
+          tapBpms.add(60000 ~/ stopwatch.elapsedMilliseconds);
+        }
         // Only keep the last [tapsRemembered] taps
         tapBpms.removeRange(0, max(tapBpms.length - tapsRemembered, 0));
 

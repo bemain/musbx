@@ -44,7 +44,7 @@ class WaveformWidget extends StatelessWidget {
                       ? surfaceColor.withOpacity(0.12)
                       : Theme.of(context).colorScheme.surfaceVariant,
                 ),
-                size: const Size(double.infinity, 100.0),
+                size: const Size(double.infinity, 64.0),
               );
             },
           ),

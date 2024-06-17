@@ -45,7 +45,7 @@ class EqualizerOverlayPainter extends CustomPainter {
     }
 
     /// How much the [Slider]'s track is padded
-    const double sliderTrackPadding = 24;
+    const double sliderTrackPadding = 12;
 
     /// The actual height of the [Slider]'s track (and thus the maximum height of the overlay)
     final double actualHeight = size.height - sliderTrackPadding * 2;

@@ -56,10 +56,13 @@ class Notifications {
           channelName: "Quick Access",
           channelDescription:
               "Control the Metronome directly from your notifications drawer",
+          channelShowBadge: false,
           importance: NotificationImportance.Default,
+          locked: true,
           enableLights: false,
           enableVibration: false,
           playSound: false,
+          onlyAlertOnce: true,
         ),
       ],
       channelGroups: [
