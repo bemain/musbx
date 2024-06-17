@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:musbx/purchases.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -56,13 +56,14 @@ class InfoButton extends StatelessWidget {
 
           showAboutDialog(
             context: context,
-            applicationIcon: const Padding(
-              padding: EdgeInsets.only(top: 8.0),
+            applicationIcon: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
               child: ImageIcon(
-                AssetImage("assets/splash/splash.png"),
+                const AssetImage("assets/splash/splash.png"),
                 size: 64.0,
-                color:
-                    appFlavor == "free" ? Color(0xff217821) : Color(0xff0f58cf),
+                color: Purchases.hasPremium
+                    ? const Color(0xff0f58cf)
+                    : const Color(0xff217821),
               ),
             ),
             applicationVersion: "Version ${packageInfo?.version}",

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:musbx/music_player/card_header.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
@@ -8,6 +7,7 @@ import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/song_source.dart';
+import 'package:musbx/purchases.dart';
 import 'package:musbx/widgets.dart';
 
 class DemixerCard extends StatelessWidget {
@@ -323,7 +323,7 @@ class StemControlsState extends State<StemControls> {
                         .every((stem) => !stem.enabled))
                 ? null
                 : (bool? value) {
-                    if (appFlavor == "free" &&
+                    if (!Purchases.hasPremium &&
                         widget.stem.type != StemType.vocals) {
                       showAccessRestrictedDialog(context);
                       return;
@@ -344,7 +344,7 @@ class StemControlsState extends State<StemControls> {
               (!musicPlayer.demixer.isReady || !widget.stem.enabled)
                   ? null
                   : (double value) {
-                      if (appFlavor == "free" &&
+                      if (!Purchases.hasPremium &&
                           widget.stem.type != StemType.vocals) {
                         showAccessRestrictedDialog(context);
                         return;
@@ -356,7 +356,8 @@ class StemControlsState extends State<StemControls> {
                     },
             ),
             onChangeEnd: (value) {
-              if (appFlavor == "free" && widget.stem.type != StemType.vocals) {
+              if (!Purchases.hasPremium &&
+                  widget.stem.type != StemType.vocals) {
                 return;
               }
               widget.stem.volume = value;

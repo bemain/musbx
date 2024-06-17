@@ -1,10 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/music_player_page.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:musbx/purchases.dart';
 
 /// Show an exception dialog.
 ///
@@ -66,13 +64,11 @@ Upgrade to the Premium version of the app to get:"""),
           child: const Text("Dismiss"),
         ),
         FilledButton(
-          onPressed: () {
-            launchUrlString(
-              Platform.isAndroid
-                  ? "market://details?id=se.agardh.musbx"
-                  : "https://apps.apple.com/app/id1670009655",
-              mode: LaunchMode.externalApplication,
-            );
+          onPressed: () async {
+            final res = await Purchases.buyPremium();
+            print("[DEBUG] $res");
+
+            if (context.mounted) Navigator.of(context).pop();
           },
           child: const Text("Upgrade"),
         ),

@@ -4,7 +4,6 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
@@ -21,6 +20,7 @@ import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/history_handler.dart';
 import 'package:musbx/music_player/song_preferences.dart';
 import 'package:musbx/music_player/song_source.dart';
+import 'package:musbx/purchases.dart';
 import 'package:musbx/widgets.dart';
 
 /// The state of [MusicPlayer].
@@ -111,7 +111,7 @@ class MusicPlayer {
   ///
   /// This is only ever `true` on the 'free' flavor of the app.
   bool get isAccessRestricted =>
-      appFlavor == "free" && songsPlayedThisWeek.length >= freeSongsPerWeek;
+      !Purchases.hasPremium && songsPlayedThisWeek.length >= freeSongsPerWeek;
 
   /// Start or resume playback.
   Future<void> play() async => await player.play();
@@ -207,7 +207,7 @@ class MusicPlayer {
       throw "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.";
     }
 
-    if (appFlavor == "free") {
+    if (!Purchases.hasPremium) {
       try {
         // Show interstitial ad
         final InterstitialAd? interstitialAd = await loadInterstitialAd();
