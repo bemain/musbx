@@ -24,9 +24,6 @@ import 'package:musbx/page/default_app_bar.dart';
 import 'package:musbx/page/widget_card.dart';
 import 'package:musbx/widgets.dart';
 
-/// The key of the [MusicPlayerPage]. Can be used to show dialogs.
-final GlobalKey<MusicPlayerPageState> musicPlayerPageKey = GlobalKey();
-
 class MusicPlayerPage extends StatefulWidget {
   /// Page that allows the user to select and play a song.
   ///
@@ -38,7 +35,7 @@ class MusicPlayerPage extends StatefulWidget {
   ///  - Slider and buttons for looping a section of the song.
   ///  - Controls for the Demixer.
   ///  - Controls for the Equalizer.
-  MusicPlayerPage() : super(key: musicPlayerPageKey);
+  const MusicPlayerPage({super.key});
 
   @override
   State<StatefulWidget> createState() => MusicPlayerPageState();

@@ -7,9 +7,12 @@ import 'package:musbx/persistent_value.dart';
 import 'package:musbx/purchases.dart';
 import 'package:musbx/tuner/tuner_page.dart';
 
+/// The key of the [MusicPlayerPage]. Can be used to show dialogs.
+final GlobalKey<NavigationPageState> navigationPageKey = GlobalKey();
+
 class NavigationPage extends StatefulWidget {
   /// Navigation page offering a bottom bar for switching between the different pages.
-  const NavigationPage({super.key});
+  NavigationPage() : super(key: navigationPageKey);
 
   @override
   State<StatefulWidget> createState() => NavigationPageState();
@@ -52,10 +55,10 @@ class NavigationPageState extends State<NavigationPage> {
                   currentIndex.value = index;
                 });
               },
-              children: [
-                const MetronomePage(),
+              children: const [
+                MetronomePage(),
                 MusicPlayerPage(),
-                const TunerPage(),
+                TunerPage(),
               ],
             ),
             bottomNavigationBar: NavigationBar(

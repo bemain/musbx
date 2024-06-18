@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
           showValueIndicator: ShowValueIndicator.always,
         ),
       ),
-      home: const NavigationPage(),
+      home: NavigationPage(),
     );
   }
 }
