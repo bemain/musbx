@@ -33,23 +33,22 @@ class MusicPlayerAccessRestrictedDialog extends StatelessWidget {
 }
 
 class FreeAccessRestrictedDialog extends StatelessWidget {
-  const FreeAccessRestrictedDialog({super.key, required this.reason});
+  const FreeAccessRestrictedDialog({super.key, this.reason});
 
   /// Text explaining why access was restricted.
-  final String reason;
+  final String? reason;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       icon: const Icon(Icons.star),
-      title: const Text("Upgrade"),
+      title: const Text("Get Premium"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("""$reason 
-
-Upgrade to the Premium version of the app to get:"""),
+          Text(
+              "${reason == null ? "" : "$reason\n\n"}Upgrade to the Premium version of Musician's Toolbox to get:"),
           const SizedBox(height: 8),
           const Text(" ★ Unlimited songs"),
           const Text(" ★ Full access to AI-powered Demixing"),
@@ -65,8 +64,7 @@ Upgrade to the Premium version of the app to get:"""),
         ),
         FilledButton(
           onPressed: () async {
-            final res = await Purchases.buyPremium();
-            print("[DEBUG] $res");
+            await Purchases.buyPremium();
 
             if (context.mounted) Navigator.of(context).pop();
           },

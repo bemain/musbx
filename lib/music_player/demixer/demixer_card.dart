@@ -372,7 +372,7 @@ class StemControlsState extends State<StemControls> {
     await showExceptionDialog(
       const FreeAccessRestrictedDialog(
         reason:
-            "The full capabilities of the Demixer are not available on the Free version of Musician's Toolbox.",
+            "The full capabilities of the Demixer are not available on the Free version of the app.",
       ),
     );
   }
