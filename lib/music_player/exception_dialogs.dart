@@ -84,6 +84,30 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
   }
 }
 
+class PremiumPurchasedDialog extends StatelessWidget {
+  const PremiumPurchasedDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: const Icon(Icons.verified),
+      title: const Text("Processing purchase"),
+      content: const Text(
+          """Thank you for supporting Musician's Toolbox by upgrading to Premium! 
+
+Your purchase is processing and premium features will soon be activated. Please note that this can take up to 5 minutes."""),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text("Close"),
+        )
+      ],
+    );
+  }
+}
+
 class FreemiumTransitionDialog extends StatelessWidget {
   const FreemiumTransitionDialog({super.key});
 
