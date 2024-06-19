@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:advanced_in_app_review/advanced_in_app_review.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:musbx/launch_handler.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/navigation_page.dart';
 import 'package:musbx/notifications.dart';
 import 'package:musbx/persistent_value.dart';
+import 'package:musbx/purchases.dart';
 import 'package:musbx/theme.dart';
 
 Future<void> main() async {
@@ -27,6 +31,10 @@ Future<void> main() async {
       .setMinLaunchTimes(5)
       .setMinSecondsBeforeShowDialog(4)
       .monitor();
+
+  // Google Ads
+  unawaited(MobileAds.instance.initialize());
+  await Purchases.intialize();
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -66,7 +74,7 @@ class MyApp extends StatelessWidget {
           showValueIndicator: ShowValueIndicator.always,
         ),
       ),
-      home: const NavigationPage(),
+      home: NavigationPage(),
     );
   }
 }

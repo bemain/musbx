@@ -3,8 +3,11 @@ import 'package:musbx/music_player/card_header.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
 import 'package:musbx/music_player/demixer/stem.dart';
+import 'package:musbx/music_player/exception_dialogs.dart';
+import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/song_source.dart';
+import 'package:musbx/purchases.dart';
 import 'package:musbx/widgets.dart';
 
 class DemixerCard extends StatelessWidget {
@@ -320,6 +323,12 @@ class StemControlsState extends State<StemControls> {
                         .every((stem) => !stem.enabled))
                 ? null
                 : (bool? value) {
+                    if (!Purchases.hasPremium &&
+                        widget.stem.type != StemType.vocals) {
+                      showAccessRestrictedDialog(context);
+                      return;
+                    }
+
                     if (value != null) widget.stem.enabled = value;
                   },
           ),
@@ -334,14 +343,37 @@ class StemControlsState extends State<StemControls> {
             onChanged: musicPlayer.nullIfNoSongElse(
               (!musicPlayer.demixer.isReady || !widget.stem.enabled)
                   ? null
-                  : (double value) => setState(() {
+                  : (double value) {
+                      if (!Purchases.hasPremium &&
+                          widget.stem.type != StemType.vocals) {
+                        showAccessRestrictedDialog(context);
+                        return;
+                      }
+
+                      setState(() {
                         volume = value;
-                      }),
+                      });
+                    },
             ),
-            onChangeEnd: (value) => widget.stem.volume = value,
+            onChangeEnd: (value) {
+              if (!Purchases.hasPremium &&
+                  widget.stem.type != StemType.vocals) {
+                return;
+              }
+              widget.stem.volume = value;
+            },
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> showAccessRestrictedDialog(BuildContext context) async {
+    await showExceptionDialog(
+      const FreeAccessRestrictedDialog(
+        reason:
+            "The full capabilities of the Demixer are not available on the Free version of the app.",
+      ),
     );
   }
 }

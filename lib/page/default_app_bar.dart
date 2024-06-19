@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/music_player/exception_dialogs.dart';
+import 'package:musbx/purchases.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -22,10 +24,28 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      title: const Text("Musician's toolbox"),
-      actions: [InfoButton(child: (helpText == null) ? null : Text(helpText!))],
-      scrolledUnderElevation: scrolledUnderElevation,
+    return ValueListenableBuilder(
+      valueListenable: Purchases.hasPremiumNotifier,
+      builder: (context, hasPremium, child) => AppBar(
+        title: const Text("Musician's toolbox"),
+        actions: [
+          if (!hasPremium)
+            IconButton(
+              onPressed: () {
+                if (!context.mounted) return;
+                showDialog(
+                  context: context,
+                  builder: (context) => const FreeAccessRestrictedDialog(),
+                );
+              },
+              icon: const Icon(Icons.star_border),
+            ),
+          InfoButton(
+            child: (helpText == null) ? null : Text(helpText!),
+          ),
+        ],
+        scrolledUnderElevation: scrolledUnderElevation,
+      ),
     );
   }
 }
