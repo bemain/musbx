@@ -113,16 +113,17 @@ Future<InterstitialAd?> loadInterstitialAd() async {
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           ad.fullScreenContentCallback = FullScreenContentCallback(
-              onAdShowedFullScreenContent: (ad) {},
-              onAdImpression: (ad) {},
-              onAdFailedToShowFullScreenContent: (ad, error) {
-                debugPrint("[ADS] InterstitialAd failed to show: $error");
-                ad.dispose();
-              },
-              onAdDismissedFullScreenContent: (ad) {
-                ad.dispose();
-              },
-              onAdClicked: (ad) {});
+            onAdShowedFullScreenContent: (ad) {},
+            onAdImpression: (ad) {},
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              debugPrint("[ADS] InterstitialAd failed to show: $error");
+              ad.dispose();
+            },
+            onAdDismissedFullScreenContent: (ad) {
+              ad.dispose();
+            },
+            onAdClicked: (ad) {},
+          );
 
           completer.complete(ad);
         },

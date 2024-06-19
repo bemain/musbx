@@ -203,11 +203,11 @@ class MusicPlayer {
   ///
   /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
   Future<void> loadSong(Song song) async {
-    if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
-      throw "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.";
-    }
-
     if (!Purchases.hasPremium) {
+      if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
+        throw "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.";
+      }
+
       try {
         // Show interstitial ad
         final InterstitialAd? interstitialAd = await loadInterstitialAd();
