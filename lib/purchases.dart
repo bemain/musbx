@@ -50,7 +50,16 @@ class Purchases {
         }
         break;
 
-      default:
+      case PurchaseStatus.canceled:
+      case PurchaseStatus.error:
+        switch (purchase.productID) {
+          case _premiumID:
+            debugPrint(
+                "[PURCHASES] Buying Premium failed: ${purchase.error ?? "Cancelled"}");
+            showExceptionDialog(const PremiumPurchaseFailedDialog());
+            break;
+        }
+        break;
     }
 
     if (purchase.pendingCompletePurchase) {

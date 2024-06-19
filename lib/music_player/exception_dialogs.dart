@@ -73,9 +73,8 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            await Purchases.buyPremium();
-
-            if (context.mounted) Navigator.of(context).pop();
+            Purchases.buyPremium();
+            Navigator.of(context).pop();
           },
           child: const Text("Upgrade"),
         ),
@@ -103,6 +102,35 @@ Your purchase is processing and premium features will soon be activated. Please 
           },
           child: const Text("Close"),
         )
+      ],
+    );
+  }
+}
+
+class PremiumPurchaseFailedDialog extends StatelessWidget {
+  const PremiumPurchaseFailedDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: const Icon(Icons.new_releases),
+      title: const Text("Purchase failed"),
+      content: const Text(
+          """An error occured during your purchase, and your account has not been charged. Please try again in a few moments."""),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text("Dismiss"),
+        ),
+        FilledButton(
+          onPressed: () async {
+            Purchases.buyPremium();
+            Navigator.of(context).pop();
+          },
+          child: const Text("Try again"),
+        ),
       ],
     );
   }
