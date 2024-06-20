@@ -35,6 +35,7 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
+  pod 'Google-Mobile-Ads-SDK' # (BeMain) Added by google_mobile_ads package
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 

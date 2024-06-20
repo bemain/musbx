@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
@@ -43,14 +45,19 @@ class Purchases {
         break;
 
       case PurchaseStatus.pending:
+        // On iOS, the pending status is emitted immediately when the native payment dialog opens.
+        // On Android, it is emitted once the user has paid but the payment hasn't been verified yet.s
         switch (purchase.productID) {
           case _premiumID:
-            showExceptionDialog(const PremiumPurchasedDialog());
+            if (Platform.isAndroid) {
+              showExceptionDialog(const PremiumPurchasedDialog());
+            }
             break;
         }
         break;
 
       case PurchaseStatus.canceled:
+        break;
       case PurchaseStatus.error:
         switch (purchase.productID) {
           case _premiumID:
