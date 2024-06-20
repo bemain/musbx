@@ -43,11 +43,11 @@ class NavigationPageState extends State<NavigationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Scaffold(
-            body: PageView(
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: PageView(
               controller: controller,
               physics: const NeverScrollableScrollPhysics(),
               onPageChanged: (index) {
@@ -61,30 +61,40 @@ class NavigationPageState extends State<NavigationPage> {
                 TunerPage(),
               ],
             ),
-            bottomNavigationBar: NavigationBar(
-              onDestinationSelected: (int index) {
-                controller.jumpToPage(index);
-              },
-              selectedIndex: currentIndex.value,
-              destinations: const [
-                NavigationDestination(
-                  label: "Metronome",
-                  icon: Icon(CustomIcons.metronome),
-                ),
-                NavigationDestination(
-                  label: "Music player",
-                  icon: Icon(Icons.music_note),
-                ),
-                NavigationDestination(
-                  label: "Tuner",
-                  icon: Icon(CustomIcons.tuning_fork),
-                ),
-              ],
-            ),
           ),
-        ),
-        if (!Purchases.hasPremium) const BannerAdWidget(),
-      ],
+        ],
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // TODO: Remove bottom padding caused by SafeArea, which leaves a big space between the NavigationBar and the banner ad.
+          NavigationBar(
+            onDestinationSelected: (int index) {
+              controller.jumpToPage(index);
+            },
+            selectedIndex: currentIndex.value,
+            destinations: const [
+              NavigationDestination(
+                label: "Metronome",
+                icon: Icon(CustomIcons.metronome),
+              ),
+              NavigationDestination(
+                label: "Music player",
+                icon: Icon(Icons.music_note),
+              ),
+              NavigationDestination(
+                label: "Tuner",
+                icon: Icon(CustomIcons.tuning_fork),
+              ),
+            ],
+          ),
+          if (!Purchases.hasPremium)
+            const SafeArea(
+              top: false,
+              child: BannerAdWidget(),
+            ),
+        ],
+      ),
     );
   }
 }
