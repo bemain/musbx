@@ -64,21 +64,21 @@ class PositionSlider extends StatelessWidget {
                     ))),
           child: Slider(
             activeColor: loopEnabled
-                ? Theme.of(context).colorScheme.background.withOpacity(0.24)
+                ? Theme.of(context).colorScheme.surface.withOpacity(0.24)
                 : null,
             inactiveColor: loopEnabled
-                ? Theme.of(context).colorScheme.background.withOpacity(0.24)
+                ? Theme.of(context).colorScheme.surface.withOpacity(0.24)
                 : null,
             thumbColor: Theme.of(context).colorScheme.primary,
-            overlayColor: MaterialStateProperty.resolveWith((states) {
+            overlayColor: WidgetStateProperty.resolveWith((states) {
               final colors = Theme.of(context).colorScheme;
-              if (states.contains(MaterialState.dragged)) {
+              if (states.contains(WidgetState.dragged)) {
                 return colors.primary.withOpacity(0.12);
               }
-              if (states.contains(MaterialState.hovered)) {
+              if (states.contains(WidgetState.hovered)) {
                 return colors.primary.withOpacity(0.08);
               }
-              if (states.contains(MaterialState.focused)) {
+              if (states.contains(WidgetState.focused)) {
                 return colors.primary.withOpacity(0.12);
               }
 
@@ -135,7 +135,7 @@ class PositionSlider extends StatelessWidget {
           loopSection.start.inMilliseconds / duration.inMilliseconds,
       highlightEnd: loopSection.end.inMilliseconds / duration.inMilliseconds,
       activeHighlightColor: Theme.of(context).colorScheme.primary,
-      inactiveHighlightColor: Theme.of(context).colorScheme.surfaceVariant,
+      inactiveHighlightColor: Theme.of(context).colorScheme.surfaceContainerHighest,
     );
   }
 }

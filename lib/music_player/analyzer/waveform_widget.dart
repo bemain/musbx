@@ -42,7 +42,7 @@ class WaveformWidget extends StatelessWidget {
                       : Theme.of(context).colorScheme.primary,
                   inactiveColor: musicPlayer.isLoading
                       ? surfaceColor.withOpacity(0.12)
-                      : Theme.of(context).colorScheme.surfaceVariant,
+                      : Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
                 size: const Size(double.infinity, 64.0),
               );

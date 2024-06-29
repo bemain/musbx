@@ -151,7 +151,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
               child: Image.asset(
                 "assets/images/arrow.png",
                 width: 100,
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 64.0),
