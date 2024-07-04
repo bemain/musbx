@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -25,10 +24,10 @@ class Tuner {
   static const double inTuneThreshold = 10;
 
   /// The amount of recorded data per sample, in bytes.
-  late final int bufferSize;
+  late int bufferSize;
 
   /// The sample rate of the recording.
-  late final double sampleRate;
+  late double sampleRate;
 
   /// Whether the Tuner has been initialized or not.
   /// If true, [noteStream] has been created.
@@ -47,14 +46,18 @@ class Tuner {
   /// Creates the [noteStream] for detecting pitch from the microphone.
   ///
   /// Assumes permission to access the microphone has already been given.
-  Future<void> initialize() async {
-    Stream<List<double>> audioStream = await (Platform.isIOS
-        ? audioStreamUsingFlutterAudioCapture()
-        : audioStreamUsingMicStream());
+  void initialize() {
+    if (initialized) return;
+    print("[DEBUG] Initialize");
 
-    final PitchDetector pitchDetector = PitchDetector(sampleRate, bufferSize);
-    final Stream<PitchDetectorResult> pitchStream =
-        audioStream.map(pitchDetector.getPitch);
+    Stream<List<double>> audioStream = audioStreamUsingFlutterAudioCapture();
+
+    final Stream<PitchDetectorResult> pitchStream = audioStream.asyncMap(
+      (List<double> samples) => PitchDetector(
+        audioSampleRate: sampleRate,
+        bufferSize: bufferSize,
+      ).getPitchFromFloatBuffer(samples),
+    );
 
     noteStream = pitchStream.map((result) {
       if (result.pitched) {
@@ -66,38 +69,39 @@ class Tuner {
         }
       }
       return null;
-    });
+    }).asBroadcastStream();
 
     initialized = true;
   }
 
+  final StreamController controller = StreamController<List<double>>();
+
+  static const int defaultSampleRate = 16000;
+  static const int defaultBufferSize = 640;
+
   /// Uses the package flutter_audio_capture to record audio to a stream.
   ///
   /// The returned list contains [double]s between 0 and 255.
-  Future<Stream<List<double>>> audioStreamUsingFlutterAudioCapture() async {
-    const int defaultSampleRate = 16000;
-    const int defaultBufferSize = 640;
-
+  Stream<List<double>> audioStreamUsingFlutterAudioCapture() {
     late final StreamController<List<double>> audioStreamController;
 
-    void startRecording() async {
-      await _audioCapture.start(
-        (dynamic obj) {
-          Float64List buffer = Float64List.fromList(obj.cast<double>());
-          audioStreamController.add(buffer.toList());
-        },
-        (Object error, StackTrace stackTrace) {
-          throw "TUNER: Unable to capture audio from microphone";
-        },
-        waitForFirstDataOnAndroid: false,
-        waitForFirstDataOnIOS: false,
-        sampleRate: defaultSampleRate,
-        bufferSize: defaultBufferSize,
-      );
-    }
-
     audioStreamController = StreamController<List<double>>.broadcast(
-      onListen: startRecording,
+      onListen: () async {
+        await _audioCapture.init();
+        await _audioCapture.start(
+          (Float32List obj) {
+            Float64List buffer = Float64List.fromList(obj.cast<double>());
+            audioStreamController.add(buffer.toList());
+          },
+          (Object error, StackTrace stackTrace) {
+            throw "TUNER: Unable to capture audio from microphone";
+          },
+          waitForFirstDataOnAndroid: false,
+          waitForFirstDataOnIOS: false,
+          sampleRate: defaultSampleRate,
+          bufferSize: defaultBufferSize,
+        );
+      },
       onCancel: _audioCapture.stop,
     );
 
@@ -111,16 +115,27 @@ class Tuner {
   /// Uses the package mic_stream to record audio to a stream.
   ///
   /// The returned list contains [double]s between 0 and 255.
-  Future<Stream<List<double>>> audioStreamUsingMicStream() async {
-    final Stream<Uint8List>? audioStream = await MicStream.microphone();
-    if (audioStream == null) {
-      throw "TUNER: Unable to capture audio from microphone";
-    }
-    sampleRate = await MicStream.sampleRate!;
-    bufferSize = await MicStream.bufferSize!;
+  Stream<List<double>> audioStreamUsingMicStream() {
+    final Stream<Uint8List> audioStream = MicStream.microphone(
+      channelConfig: ChannelConfig.CHANNEL_IN_MONO,
+      audioFormat: AudioFormat.ENCODING_PCM_8BIT,
+    );
 
-    return audioStream.map((List<int> audioSample) =>
-        audioSample.map((value) => value.toDouble()).toList());
+    return audioStream.asyncMap((Uint8List samples) async {
+      print("[DEBUG] Samples");
+      sampleRate = (await MicStream.sampleRate).toDouble();
+      bufferSize = await MicStream.bufferSize;
+
+      final int bitDepth = await MicStream.bitDepth;
+
+      return switch (bitDepth) {
+        8 => samples.buffer.asInt8List(),
+        16 => samples.buffer.asInt16List(),
+        _ => throw "Unsupported `bitDepth`: $bitDepth",
+      }
+          .map((e) => e.toDouble())
+          .toList();
+    });
   }
 
   /// Calculate the average of the last [averageNotesN] frequencies.

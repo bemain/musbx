@@ -33,8 +33,8 @@ class TunerPageState extends State<TunerPage> {
           permissionDeniedIcon: const Icon(Icons.mic_off_rounded, size: 128),
           permissionGrantedIcon: const Icon(Icons.mic_rounded, size: 128),
           onPermissionGranted: () async {
-            await tuner.initialize();
-            if (mounted) setState(() {});
+            tuner.initialize();
+            setState(() {});
           });
     }
     return StreamBuilder(
