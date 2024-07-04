@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:flutter_audio_capture/flutter_audio_capture.dart';
 import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/model/note.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
@@ -14,8 +13,6 @@ class Tuner {
 
   /// The instance of this singleton.
   static final Tuner instance = Tuner._();
-
-  final FlutterAudioCapture _audioCapture = FlutterAudioCapture();
 
   /// The number of notes to take average of.
   static const int averageNotesN = 15;
@@ -48,11 +45,8 @@ class Tuner {
   /// Assumes permission to access the microphone has already been given.
   void initialize() {
     if (initialized) return;
-    print("[DEBUG] Initialize");
 
-    Stream<List<double>> audioStream = audioStreamUsingFlutterAudioCapture();
-
-    final Stream<PitchDetectorResult> pitchStream = audioStream.asyncMap(
+    final Stream<PitchDetectorResult> pitchStream = getAudioStream().asyncMap(
       (List<double> samples) => PitchDetector(
         audioSampleRate: sampleRate,
         bufferSize: bufferSize,
@@ -74,55 +68,16 @@ class Tuner {
     initialized = true;
   }
 
-  final StreamController controller = StreamController<List<double>>();
-
-  static const int defaultSampleRate = 16000;
-  static const int defaultBufferSize = 640;
-
-  /// Uses the package flutter_audio_capture to record audio to a stream.
-  ///
-  /// The returned list contains [double]s between 0 and 255.
-  Stream<List<double>> audioStreamUsingFlutterAudioCapture() {
-    late final StreamController<List<double>> audioStreamController;
-
-    audioStreamController = StreamController<List<double>>.broadcast(
-      onListen: () async {
-        await _audioCapture.init();
-        await _audioCapture.start(
-          (Float32List obj) {
-            Float64List buffer = Float64List.fromList(obj.cast<double>());
-            audioStreamController.add(buffer.toList());
-          },
-          (Object error, StackTrace stackTrace) {
-            throw "TUNER: Unable to capture audio from microphone";
-          },
-          waitForFirstDataOnAndroid: false,
-          waitForFirstDataOnIOS: false,
-          sampleRate: defaultSampleRate,
-          bufferSize: defaultBufferSize,
-        );
-      },
-      onCancel: _audioCapture.stop,
-    );
-
-    sampleRate = _audioCapture.actualSampleRate ?? defaultSampleRate.toDouble();
-    bufferSize = defaultBufferSize;
-
-    return audioStreamController.stream.map((List<double> audioSample) =>
-        audioSample.map((value) => (value / 2 + 0.5) * 255).toList());
-  }
-
   /// Uses the package mic_stream to record audio to a stream.
   ///
   /// The returned list contains [double]s between 0 and 255.
-  Stream<List<double>> audioStreamUsingMicStream() {
+  Stream<List<double>> getAudioStream() {
     final Stream<Uint8List> audioStream = MicStream.microphone(
       channelConfig: ChannelConfig.CHANNEL_IN_MONO,
       audioFormat: AudioFormat.ENCODING_PCM_8BIT,
     );
 
     return audioStream.asyncMap((Uint8List samples) async {
-      print("[DEBUG] Samples");
       sampleRate = (await MicStream.sampleRate).toDouble();
       bufferSize = await MicStream.bufferSize;
 
