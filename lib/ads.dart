@@ -94,7 +94,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     );
 
     // Start loading.
-    bannerAd.load();
+    await bannerAd.load();
   }
 }
 

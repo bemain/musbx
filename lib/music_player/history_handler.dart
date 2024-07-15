@@ -61,7 +61,7 @@ class HistoryHandler<T> extends ChangeNotifier {
       try {
         value = fromJson(entry.value);
       } catch (e) {
-        debugPrint("$e");
+        debugPrint("[HISTORY] $e");
       }
       if (date != null && value != null) history[date] = value;
     }

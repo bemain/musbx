@@ -4,7 +4,6 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/ads.dart';
@@ -202,16 +201,17 @@ class MusicPlayer {
   /// Load a [song].
   ///
   /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
-  Future<void> loadSong(Song song) async {
-    if (!Purchases.hasPremium) {
+  ///
+  /// If premium hasn't been unlocked and [ignoreFreeLimit] is `false`, shows an ad before loading the song.
+  Future<void> loadSong(Song song, {bool ignoreFreeLimit = false}) async {
+    if (!Purchases.hasPremium && !ignoreFreeLimit) {
       if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
         throw "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.";
       }
 
       try {
         // Show interstitial ad
-        final InterstitialAd? interstitialAd = await loadInterstitialAd();
-        interstitialAd?.show();
+        (await loadInterstitialAd())?.show();
       } catch (e) {
         debugPrint("[ADS] Failed to load interstitial ad: $e");
       }
@@ -328,7 +328,12 @@ class MusicPlayer {
   void _initialize() {
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
-    songHistory.fetch();
+    songHistory.fetch().then((_) {
+      // Load most recent song
+      if (songHistory.history.isNotEmpty) {
+        loadSong(songHistory.sorted().first, ignoreFreeLimit: true);
+      }
+    });
 
     // Listen to app lifecycle
     AppLifecycleListener(

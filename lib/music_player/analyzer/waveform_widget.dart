@@ -9,7 +9,9 @@ class WaveformWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (musicPlayer.isLoading) return const SizedBox();
+    if (musicPlayer.isLoading || musicPlayer.state == MusicPlayerState.idle) {
+      return const SizedBox(); // TODO: Show dummy waveform when no song
+    }
 
     return ValueListenableBuilder(
       valueListenable: musicPlayer.analyzer.waveformNotifier,
