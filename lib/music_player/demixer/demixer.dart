@@ -140,9 +140,8 @@ class Demixer extends MusicPlayerComponent {
     if (musicPlayer.song == null) return;
 
     // Make sure no other process is currently setting the audio source
-    Future<void>? awaitBeforeLoading = musicPlayer.loadSongLock;
     musicPlayer.loadSongLock = _loadAudioSource(
-      awaitBeforeLoading: awaitBeforeLoading,
+      awaitBeforeLoading: musicPlayer.loadSongLock,
     );
     await musicPlayer.loadSongLock;
   }
