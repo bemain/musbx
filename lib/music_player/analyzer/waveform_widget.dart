@@ -29,8 +29,7 @@ class WaveformWidget extends StatelessWidget {
           builder: (context, durationShown, child) => ValueListenableBuilder(
             valueListenable: musicPlayer.positionNotifier,
             builder: (context, position, child) {
-              final Color surfaceColor =
-                  Theme.of(context).colorScheme.onSurface;
+              final Color onSurface = Theme.of(context).colorScheme.onSurface;
 
               return CustomPaint(
                 painter: WaveformPainter(
@@ -38,10 +37,10 @@ class WaveformWidget extends StatelessWidget {
                   position: position,
                   duration: durationShown,
                   activeColor: musicPlayer.isLoading
-                      ? surfaceColor.withOpacity(0.38)
+                      ? onSurface.withOpacity(0.38)
                       : Theme.of(context).colorScheme.primary,
                   inactiveColor: musicPlayer.isLoading
-                      ? surfaceColor.withOpacity(0.12)
+                      ? onSurface.withOpacity(0.12)
                       : Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
                 size: const Size(double.infinity, 64.0),

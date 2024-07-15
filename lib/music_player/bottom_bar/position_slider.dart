@@ -55,31 +55,32 @@ class PositionSlider extends StatelessWidget {
         ),
         SliderTheme(
           data: Theme.of(context).sliderTheme.copyWith(
-              trackShape: !loopEnabled
-                  ? null
-                  : musicPlayer.nullIfNoSongElse(_buildSliderTrackShape(
-                      context,
-                      duration,
-                      loopSection,
-                    ))),
+                trackShape: !loopEnabled
+                    ? null
+                    : musicPlayer.nullIfNoSongElse(_buildSliderTrackShape(
+                        context,
+                        duration,
+                        loopSection,
+                      )),
+              ),
           child: Slider(
             activeColor: loopEnabled
-                ? Theme.of(context).colorScheme.surface.withOpacity(0.24)
+                ? Theme.of(context).colorScheme.surfaceContainer
                 : null,
             inactiveColor: loopEnabled
-                ? Theme.of(context).colorScheme.surface.withOpacity(0.24)
+                ? Theme.of(context).colorScheme.surfaceContainer
                 : null,
             thumbColor: Theme.of(context).colorScheme.primary,
             overlayColor: WidgetStateProperty.resolveWith((states) {
               final colors = Theme.of(context).colorScheme;
               if (states.contains(WidgetState.dragged)) {
-                return colors.primary.withOpacity(0.12);
+                return colors.primary.withOpacity(0.1);
               }
               if (states.contains(WidgetState.hovered)) {
                 return colors.primary.withOpacity(0.08);
               }
               if (states.contains(WidgetState.focused)) {
-                return colors.primary.withOpacity(0.12);
+                return colors.primary.withOpacity(0.1);
               }
 
               return Colors.transparent;
@@ -135,7 +136,8 @@ class PositionSlider extends StatelessWidget {
           loopSection.start.inMilliseconds / duration.inMilliseconds,
       highlightEnd: loopSection.end.inMilliseconds / duration.inMilliseconds,
       activeHighlightColor: Theme.of(context).colorScheme.primary,
-      inactiveHighlightColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      inactiveHighlightColor:
+          Theme.of(context).colorScheme.surfaceContainerHighest,
     );
   }
 }
