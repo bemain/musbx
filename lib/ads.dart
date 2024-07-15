@@ -59,10 +59,16 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   /// Load a banner ad.
   Future<void> _loadAd() async {
-    _adSize = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-        MediaQuery.of(context).size.width.truncate());
+    try {
+      _adSize = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+          MediaQuery.of(context).size.width.truncate());
+    } catch (e) {
+      debugPrint("[ADS] Unable to get height of anchored banner: $e");
+      return;
+    }
+
     if (_adSize == null) {
-      debugPrint('[ADS] Unable to get height of anchored banner.');
+      debugPrint("[ADS] Unable to get height of anchored banner.");
       return;
     }
 

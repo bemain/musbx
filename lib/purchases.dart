@@ -8,7 +8,7 @@ class Purchases {
   static final InAppPurchase _inAppPurchase = InAppPurchase.instance;
 
   /// Whether the payment platform is ready and available.
-  static late final bool isAvailable;
+  static bool isAvailable = false;
 
   /// ID of the 'premium' product.
   static const String _premiumID = "premium";
@@ -18,7 +18,13 @@ class Purchases {
   static final ValueNotifier<bool> hasPremiumNotifier = ValueNotifier(false);
 
   static Future<void> intialize() async {
-    isAvailable = await _inAppPurchase.isAvailable();
+    try {
+      isAvailable = await _inAppPurchase.isAvailable();
+    } catch (e) {
+      debugPrint("[PURCHASES] An error occured during intialization: $e");
+      isAvailable = false;
+    }
+
     if (!isAvailable) return;
 
     _inAppPurchase.purchaseStream.listen((newPurchases) async {
