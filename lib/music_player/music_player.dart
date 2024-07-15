@@ -74,6 +74,8 @@ class MusicPlayer {
 
   /// The history of previously loaded songs.
   final HistoryHandler<Song> songHistory = HistoryHandler<Song>(
+    historyFileName: "song_history",
+    maxEntries: 8,
     fromJson: (json) {
       if (json is! Map<String, dynamic>) {
         throw "[SONG HISTORY] Incorrectly formatted entry in history file: ($json)";
@@ -85,7 +87,6 @@ class MusicPlayer {
       return song;
     },
     toJson: (value) => value.toJson(),
-    historyFileName: "song_history",
     onEntryRemoved: (entry) async {
       // Remove cached files
       debugPrint(
