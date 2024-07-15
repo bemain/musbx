@@ -107,8 +107,8 @@ extension StringCasingExtension on String {
 /// Whether the phone is connected to a mobile network.
 Future<bool> isOnCellular() async {
   final connectivity = await (Connectivity().checkConnectivity());
-  return connectivity != ConnectivityResult.wifi &&
-      connectivity != ConnectivityResult.ethernet;
+  return !connectivity.contains(ConnectivityResult.wifi) &&
+      !connectivity.contains(ConnectivityResult.ethernet);
 }
 
 class MeasureSizeRenderObject extends RenderProxyBox {
