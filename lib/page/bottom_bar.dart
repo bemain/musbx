@@ -25,7 +25,7 @@ class BottomBar extends StatelessWidget {
             top: Radius.circular(12.0),
           ),
         ),
-        color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         elevation: 3.0,
         margin: EdgeInsets.zero,
         child: Padding(

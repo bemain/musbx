@@ -17,17 +17,19 @@ Future<void> generateThemes({
 
   // Get color schemes
   var corePalette = await DynamicColorPlugin.getCorePalette();
-  final ColorScheme lightScheme = corePalette?.toColorScheme() ?? lightDefault;
-  final ColorScheme darkScheme =
-      corePalette?.toColorScheme(brightness: Brightness.dark) ?? darkDefault;
+
+  final (ColorScheme? lightScheme, ColorScheme? darkScheme) = (
+    corePalette?.toColorScheme(),
+    corePalette?.toColorScheme(brightness: Brightness.dark),
+  );
 
   // Create themes
   final ThemeData lightTheme = ThemeData.from(
-    colorScheme: lightScheme,
+    colorScheme: lightScheme ?? lightDefault,
     useMaterial3: true,
   );
   final ThemeData darkTheme = ThemeData.from(
-    colorScheme: darkScheme,
+    colorScheme: darkScheme ?? darkDefault,
     useMaterial3: true,
   );
 
