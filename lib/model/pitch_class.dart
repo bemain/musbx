@@ -19,14 +19,17 @@ enum PitchClass {
     this._preferSharp = false,
   ]) : flatAbbreviation = flatAbbreviation ?? sharpAbbreviation;
 
+  /// Whether [sharpAbbreviation] is preferred over [flatAbbreviation] for the default [abbreviation].
+  final bool _preferSharp;
+
   /// The name of this pitch class with a flat ♭ (or no) accidental.
   final String flatAbbreviation;
 
   /// The name of this pitch class with a sharp ♯ (or no) accidental.
   final String sharpAbbreviation;
 
-  /// Whether [sharpAbbreviation] is preferred over [flatAbbreviation] for the default string representation.
-  final bool _preferSharp;
+  String get abbreviation =>
+      _preferSharp ? sharpAbbreviation : flatAbbreviation;
 
   /// Parse [string] as a pitch class.
   /// Returns `null` if [string] is not a valid pitch class.
@@ -47,5 +50,5 @@ enum PitchClass {
   }
 
   @override
-  String toString() => _preferSharp ? sharpAbbreviation : flatAbbreviation;
+  String toString() => abbreviation;
 }
