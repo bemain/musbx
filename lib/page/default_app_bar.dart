@@ -10,7 +10,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   const DefaultAppBar({
     super.key,
     this.helpText,
-    this.scrolledUnderElevation = 0.0,
+    this.scrolledUnderElevation,
   }) : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   /// A short text explaining how to use the screen. Displayed in the about dialog.
@@ -28,6 +28,8 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
       valueListenable: Purchases.hasPremiumNotifier,
       builder: (context, hasPremium, child) => AppBar(
         title: const Text("Musician's toolbox"),
+        forceMaterialTransparency: true,
+        scrolledUnderElevation: scrolledUnderElevation,
         actions: [
           if (!hasPremium)
             IconButton(
@@ -44,7 +46,6 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: (helpText == null) ? null : Text(helpText!),
           ),
         ],
-        scrolledUnderElevation: scrolledUnderElevation,
       ),
     );
   }

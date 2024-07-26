@@ -329,10 +329,15 @@ class MusicPlayer {
   void _initialize() {
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
-    songHistory.fetch().then((_) {
+    songHistory.fetch().then((_) async {
       // Load most recent song
       if (songHistory.history.isNotEmpty) {
-        loadSong(songHistory.sorted().first, ignoreFreeLimit: true);
+        try {
+          await loadSong(songHistory.sorted().first, ignoreFreeLimit: true);
+        } catch (error) {
+          debugPrint("[MUSIC PLAYER] $error");
+          stateNotifier.value = MusicPlayerState.idle;
+        }
       }
     });
 
