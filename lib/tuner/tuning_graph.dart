@@ -7,17 +7,17 @@ import 'package:musbx/model/note.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class TuningGraph extends StatelessWidget {
-  /// Graph showing how the tuning of [noteHistory] has changed over time.
-  const TuningGraph({super.key, required this.noteHistory});
+  /// Graph showing how the tuning of [frequencyHistory] has changed over time.
+  const TuningGraph({super.key, required this.frequencyHistory});
 
-  /// The notes to display.
-  final List<Note> noteHistory;
+  /// The frequencies to display.
+  final List<double> frequencyHistory;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: TuningGraphPainter(
-        noteHistory: noteHistory,
+        frequencyHistory: frequencyHistory,
         lineColor: Theme.of(context).colorScheme.primary,
         textColor: Theme.of(context).colorScheme.onSurface,
         inTuneColor:
@@ -38,20 +38,20 @@ enum TextPlacement {
   /// At the bottom of the graph.
   bottom,
 
-  /// Relative to the note line. Above the line if the Note is too low and below otherwise.
+  /// Relative to the note line. Above the line if the frequency is too low and below otherwise.
   relative,
 }
 
 class TuningGraphPainter extends CustomPainter {
-  /// Paints a line showing the tuning of the notes in [noteHistory].
+  /// Paints a line showing the tuning of the frequencies in [frequencyHistory].
   ///
-  /// Displays text showing the names of the Notes.
+  /// Displays text showing the names of the closest [Note]s.
   /// Highlights the section where the tone is in tune in green.
   TuningGraphPainter({
     this.continuous = false,
     this.inTuneColor = Colors.green,
     this.newNotePadding = 5,
-    required this.noteHistory,
+    required this.frequencyHistory,
     required this.lineColor,
     this.lineWidth = 4.0,
     this.renderTextThreshold = 15,
@@ -60,23 +60,23 @@ class TuningGraphPainter extends CustomPainter {
     this.textOffset = 15.0,
   }) : textColor = textColor ?? lineColor;
 
-  /// Whether to render the notes as a continuous line.
+  /// Whether to render the frequencies as a continuous line.
   /// Otherwise renders them as points.
   final bool continuous;
 
-  /// The color used for the segment indicating where the note is in tune.
+  /// The color used for the segment indicating where the frequency is in tune.
   final Color inTuneColor;
 
   /// How many empty pixels to put between notes of different names.
   final int newNotePadding;
 
-  /// The notes to render.
-  final List<Note> noteHistory;
+  /// The frequencies to render.
+  final List<double> frequencyHistory;
 
-  /// The color used when rendering the notes.
+  /// The color used when rendering the frequencies.
   final Color lineColor;
 
-  /// The width used when rendering the notes.
+  /// The width used when rendering the frequencies.
   final double lineWidth;
 
   /// The color of the text displaying the note name.
@@ -95,7 +95,7 @@ class TuningGraphPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant TuningGraphPainter oldDelegate) {
-    return noteHistory != oldDelegate.noteHistory;
+    return frequencyHistory != oldDelegate.frequencyHistory;
   }
 
   @override
@@ -113,78 +113,97 @@ class TuningGraphPainter extends CustomPainter {
         ),
         inTunePaint);
 
-    final List<Note> notes =
-        noteHistory.sublist(max(0, noteHistory.length - size.width.toInt()));
-    drawNotes(canvas, size, notes);
+    final List<double> frequencies = frequencyHistory
+        .sublist(max(0, frequencyHistory.length - size.width.toInt()));
+    drawFrequencies(canvas, size, frequencies);
   }
 
-  /// Split the notes into smaller chunks, by name.
-  List<List<Note>> splitNotesByName(List<Note> notes) {
-    final List<List<Note>> notesByName = [];
-    List<Note> chunk = [];
-    for (Note note in notes) {
-      if (chunk.isEmpty || note.name == chunk.first.name) {
-        chunk.add(note);
+  /// Split the [frequencies] into smaller chunks, where all frequencies in one chunk are closest to the same [Note].
+  List<List<double>> splitFrequenciesByNote(List<double> frequencies) {
+    final List<List<double>> frequenciesByNote = [];
+    List<double> chunk = [];
+    for (double frequency in frequencies) {
+      final Note note = Note.fromFrequency(
+        frequency,
+        temperament: Tuner.instance.temperament,
+      );
+      if (chunk.isEmpty ||
+          note.abbreviation ==
+              Note.fromFrequency(
+                chunk.first,
+                temperament: Tuner.instance.temperament,
+              ).abbreviation) {
+        chunk.add(frequency);
       } else {
-        notesByName.add(chunk);
-        chunk = [note];
+        frequenciesByNote.add(chunk);
+        chunk = [frequency];
       }
     }
-    notesByName.add(chunk);
-    return notesByName;
+    frequenciesByNote.add(chunk);
+    return frequenciesByNote;
   }
 
-  /// Draw the note line and text labels.
-  void drawNotes(Canvas canvas, Size size, List<Note> notes) {
-    Paint notePaint = Paint()
+  /// Draw the frequency line and text labels.
+  void drawFrequencies(Canvas canvas, Size size, List<double> frequencies) {
+    Paint paint = Paint()
       ..color = lineColor
       ..strokeWidth = lineWidth
       ..strokeCap = StrokeCap.round;
 
     int index = 0;
-    for (List<Note> notes in splitNotesByName(notes).reversed) {
-      Note? lastNote;
+    for (List<double> frequencyChunk
+        in splitFrequenciesByNote(frequencies).reversed) {
+      double? lastFrequency;
       List<Offset> offsets = [];
-      for (Note note in notes.reversed) {
+      for (double frequency in frequencyChunk.reversed) {
         if (index <= size.width.toInt()) {
-          offsets.add(calculatePointOffset(index, note, size));
+          offsets.add(calculatePointOffset(
+            index,
+            Tuner.instance.calculatePitchOffset(frequency),
+            size,
+          ));
           index++;
 
-          lastNote = note;
+          lastFrequency = frequency;
         }
       }
 
-      if (offsets.isEmpty || lastNote == null) return;
+      if (offsets.isEmpty || lastFrequency == null) return;
 
       canvas.drawPoints(
         continuous ? PointMode.polygon : PointMode.points,
         offsets,
-        notePaint,
+        paint,
       );
       index += newNotePadding;
 
       if (offsets.length >= renderTextThreshold) {
-        drawText(canvas, size, lastNote, offsets.last);
+        drawText(canvas, size, lastFrequency, offsets.last);
       }
     }
   }
 
-  Offset calculatePointOffset(int index, Note note, Size canvasSize) {
+  Offset calculatePointOffset(int index, double pitchOffset, Size canvasSize) {
     return Offset(
       canvasSize.width - index,
-      canvasSize.height / 2 - canvasSize.height * note.pitchOffset / 100,
+      canvasSize.height / 2 - canvasSize.height * pitchOffset / 100,
     );
   }
 
-  /// Draw text displaying the [lastNote]'s name, above or below the line.
+  /// Draw text displaying the name of the [Note] closest to [frequency], above or below the line.
   void drawText(
     Canvas canvas,
     Size canvasSize,
-    Note lastNote,
-    Offset notePosition,
+    double frequency,
+    Offset frequencyPosition,
   ) {
+    final Note note = Note.fromFrequency(
+      frequency,
+      temperament: Tuner.instance.temperament,
+    );
+
     TextSpan span = TextSpan(
-      text: lastNote.name,
+      text: note.abbreviation,
       style: TextStyle(color: textColor),
     );
     TextPainter textPainter = TextPainter(
@@ -194,7 +213,12 @@ class TuningGraphPainter extends CustomPainter {
     textPainter.layout(maxWidth: canvasSize.width);
     textPainter.paint(
       canvas,
-      calculateTextOffset(canvasSize, textPainter, lastNote, notePosition),
+      calculateTextOffset(
+        canvasSize,
+        textPainter,
+        frequency - note.frequency,
+        frequencyPosition,
+      ),
     );
   }
 
@@ -202,23 +226,22 @@ class TuningGraphPainter extends CustomPainter {
   Offset calculateTextOffset(
     Size canvasSize,
     TextPainter textPainter,
-    Note lastNote,
-    Offset notePosition,
+    double pitchOffset,
+    Offset frequencyPosition,
   ) {
     switch (textPlacement) {
       case TextPlacement.relative:
-        return notePosition.translate(
+        return frequencyPosition.translate(
           0,
-          (lastNote.pitchOffset > 0)
-              ? textOffset
-              : -(textPainter.height + textOffset),
+          (pitchOffset > 0) ? textOffset : -(textPainter.height + textOffset),
         );
 
       case TextPlacement.top:
-        return Offset(notePosition.dx, 0);
+        return Offset(frequencyPosition.dx, 0);
 
       case TextPlacement.bottom:
-        return Offset(notePosition.dx, canvasSize.height - textPainter.height);
+        return Offset(
+            frequencyPosition.dx, canvasSize.height - textPainter.height);
     }
   }
 }

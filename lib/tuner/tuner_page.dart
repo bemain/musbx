@@ -38,17 +38,17 @@ class TunerPageState extends State<TunerPage> {
           });
     }
     return StreamBuilder(
-      stream: tuner.noteStream,
+      stream: tuner.frequencyStream,
       builder: (context, snapshot) => Scaffold(
         appBar: const DefaultAppBar(),
         body: CardList(
           children: [
             TunerGauge(
-              note: (tuner.noteHistory.isNotEmpty)
-                  ? tuner.noteHistory.last
+              frequency: (tuner.frequencyHistory.isNotEmpty)
+                  ? tuner.frequencyHistory.last
                   : null,
             ),
-            TuningGraph(noteHistory: tuner.noteHistory),
+            TuningGraph(frequencyHistory: tuner.frequencyHistory),
           ],
         ),
       ),

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/model/note.dart';
+import 'package:musbx/model/temperament.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitch_detector_dart/pitch_detector_result.dart';
 
@@ -15,9 +16,9 @@ class Tuner {
   static final Tuner instance = Tuner._();
 
   /// The number of notes to take average of.
-  static const int averageNotesN = 15;
+  static const int averageFrequenciesN = 15;
 
-  /// How many cents off a Note can be to be considered in tune.
+  /// How many cents off a frequency can be to be considered in tune.
   static const double inTuneThreshold = 10;
 
   /// The amount of recorded data per sample, in bytes.
@@ -27,20 +28,22 @@ class Tuner {
   late double sampleRate;
 
   /// Whether the Tuner has been initialized or not.
-  /// If true, [noteStream] has been created.
+  /// If true, [frequencyStream] has been created.
   bool initialized = false;
 
-  /// The previous frequencies detected, unfiltered.
-  final List<double> _frequencyHistory = [];
+  Temperament temperament = const EqualTemperament();
 
-  /// The previous notes detected, averaged and filtered.
-  final List<Note> noteHistory = [];
+  /// The previous frequencies detected, unfiltered.
+  final List<double> _rawFrequencyHistory = [];
+
+  /// The previous frequencies detected, averaged and filtered.
+  final List<double> frequencyHistory = [];
 
   /// The current note detected, or null if no pitch could be detected.
-  late final Stream<Note?> noteStream;
+  late final Stream<double?> frequencyStream;
 
   /// Initialize the Tuner.
-  /// Creates the [noteStream] for detecting pitch from the microphone.
+  /// Creates the [frequencyStream] for detecting pitch from the microphone.
   ///
   /// Assumes permission to access the microphone has already been given.
   void initialize() {
@@ -53,14 +56,14 @@ class Tuner {
       ).getPitchFromFloatBuffer(samples),
     );
 
-    noteStream = pitchStream.map((result) {
-      if (result.pitched) {
-        _frequencyHistory.add(result.pitch);
-        Note? avgNote = _getAverageNote();
-        if (avgNote != null) {
-          noteHistory.add(avgNote);
-          return avgNote;
-        }
+    frequencyStream = pitchStream.map((result) {
+      if (!result.pitched) return null;
+
+      _rawFrequencyHistory.add(result.pitch);
+      double? avgFrequency = _getAverageFrequency();
+      if (avgFrequency != null) {
+        frequencyHistory.add(avgFrequency);
+        return avgFrequency;
       }
       return null;
     }).asBroadcastStream();
@@ -93,18 +96,30 @@ class Tuner {
     });
   }
 
-  /// Calculate the average of the last [averageNotesN] frequencies.
-  Note? _getAverageNote() {
-    List<double> previousFrequencies = _frequencyHistory
-        // Only the [averageNotesN] last entries
-        .sublist(max(0, _frequencyHistory.length - averageNotesN))
+  /// Calculate the average of the last [averageFrequenciesN] frequencies.
+  double? _getAverageFrequency() {
+    List<double> previousFrequencies = _rawFrequencyHistory
+        // Only the [averageFrequenciesN] last entries
+        .sublist(max(0, _rawFrequencyHistory.length - averageFrequenciesN))
         // Only frequencies close to the current
-        .where((frequency) => (frequency - _frequencyHistory.last).abs() < 10)
+        .where(
+            (frequency) => (frequency - _rawFrequencyHistory.last).abs() < 10)
         .toList();
 
-    if (previousFrequencies.length <= averageNotesN / 3) return null;
+    if (previousFrequencies.length <= averageFrequenciesN / 3) return null;
 
-    return Note.fromFrequency(previousFrequencies.reduce((a, b) => a + b) /
-        previousFrequencies.length);
+    return previousFrequencies.reduce((a, b) => a + b) /
+        previousFrequencies.length;
+  }
+
+  /// Calculate how many cents off [frequency] is from its closest [Note].
+  double calculatePitchOffset(double frequency) {
+    return 1200 *
+        log(frequency /
+            Note.fromFrequency(
+              frequency,
+              temperament: temperament,
+            ).frequency) /
+        log(2);
   }
 }

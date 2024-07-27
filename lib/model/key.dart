@@ -54,10 +54,10 @@ class Key {
     return Key(tonic.transposed(semitones), type);
   }
 
-  String get abbreviation => "$tonic${type.abbreviation}";
+  String get abbreviation => "${tonic.abbreviation}${type.abbreviation}";
 
   @override
-  String toString() => "Key($tonic, ${type.abbreviation})";
+  String toString() => "Key(${tonic.abbreviation}, ${type.abbreviation})";
 }
 
 enum Accidental {

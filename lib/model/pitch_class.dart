@@ -1,8 +1,5 @@
 /// A set of pitches that are a whole number of octaves apart, e.g. "C" or "F♯".
 enum PitchClass {
-  a("A"),
-  bFlat("A♯", "B♭"),
-  b("B", "C♭", true),
   c("B♯", "C"),
   dFlat("C♯", "D♭", true),
   d("D"),
@@ -11,7 +8,10 @@ enum PitchClass {
   f("E♯", "F"),
   gFlat("F♯", "G♭", true),
   g("G"),
-  aFlat("G♯", "A♭");
+  aFlat("G♯", "A♭"),
+  a("A"),
+  bFlat("A♯", "B♭"),
+  b("B", "C♭", true);
 
   const PitchClass(
     this.sharpAbbreviation, [

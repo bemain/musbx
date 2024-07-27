@@ -5,22 +5,22 @@ import 'package:musbx/model/note.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class TunerGauge extends StatelessWidget {
-  /// Gauge for showing how out of tune [note] is.
+  /// Gauge for showing how out of tune [frequency] is.
   ///
-  /// Includes labels displaying the name of [note]
+  /// Includes labels displaying the name of the note closest to [frequency]
   /// and how many cents out of tune it is.
   ///
-  /// If [note] is `null`, instead displays a "listening" label.
-  const TunerGauge({super.key, required this.note});
+  /// If [frequency] is `null`, instead displays a "listening" label.
+  const TunerGauge({super.key, required this.frequency});
 
-  /// The note to display. Shows how out of tune it is and what note it is.
-  final Note? note;
+  /// The frequency to display.
+  final double? frequency;
 
   @override
   Widget build(BuildContext context) {
-    return (note == null)
+    return (frequency == null)
         ? buildListeningGauge(context)
-        : buildGaugeAndText(context, note!);
+        : buildGaugeAndText(context);
   }
 
   /// Build gauge with "listening" text.
@@ -41,12 +41,19 @@ class TunerGauge extends StatelessWidget {
     );
   }
 
-  /// Build gage showing [note]'s name and tuning.
-  Widget buildGaugeAndText(BuildContext context, Note note) {
+  /// Build gage showing [frequency]'s name and tuning.
+  Widget buildGaugeAndText(BuildContext context) {
+    if (frequency == null) return const SizedBox();
+    final Note note = Note.fromFrequency(
+      frequency!,
+      temperament: Tuner.instance.temperament,
+    );
+    final double pitchOffset = Tuner.instance.calculatePitchOffset(frequency!);
+
     ColorScheme scheme = Theme.of(context).colorScheme;
 
     // If note is in tune, make needle green
-    List<Color> needleColors = (note.pitchOffset.abs() < Tuner.inTuneThreshold)
+    List<Color> needleColors = (pitchOffset < Tuner.inTuneThreshold)
         ? [
             Colors.lightGreen.harmonizeWith(scheme.primary),
             Colors.green.harmonizeWith(scheme.primary),
@@ -67,7 +74,7 @@ class TunerGauge extends StatelessWidget {
           child: Align(
             alignment: const Alignment(-0.55, 0.7),
             child: Text(
-              note.name,
+              note.abbreviation,
               style: Theme.of(context).textTheme.displayMedium,
             ),
           ),
@@ -76,16 +83,16 @@ class TunerGauge extends StatelessWidget {
           child: Align(
             alignment: const Alignment(0.6, 0.7),
             child: Text(
-              (note.pitchOffset.toInt().isNegative)
-                  ? "${note.pitchOffset.toInt()}¢"
-                  : "+${note.pitchOffset.toInt()}¢",
+              (pitchOffset.toInt().isNegative)
+                  ? "${pitchOffset.toInt()}¢"
+                  : "+${pitchOffset.toInt()}¢",
               style: Theme.of(context).textTheme.displaySmall,
             ),
           ),
         ),
         buildGauge(context, [
           RadialNeedlePointer(
-            value: note.pitchOffset,
+            value: pitchOffset,
             thicknessStart: 20,
             thicknessEnd: 0,
             length: 0.8,
