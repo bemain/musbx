@@ -1,6 +1,7 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:gauges/gauges.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/model/note.dart';
 import 'package:musbx/tuner/tuner.dart';
 
@@ -75,7 +76,8 @@ class TunerGauge extends StatelessWidget {
             alignment: const Alignment(-0.55, 0.7),
             child: Text(
               note.abbreviation,
-              style: Theme.of(context).textTheme.displayMedium,
+              style: GoogleFonts.andikaTextTheme(Theme.of(context).textTheme)
+                  .displayMedium,
             ),
           ),
         ),

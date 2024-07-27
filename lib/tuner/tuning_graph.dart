@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/model/note.dart';
 import 'package:musbx/tuner/tuner.dart';
 
@@ -19,7 +20,8 @@ class TuningGraph extends StatelessWidget {
       painter: TuningGraphPainter(
         frequencyHistory: frequencyHistory,
         lineColor: Theme.of(context).colorScheme.primary,
-        textColor: Theme.of(context).colorScheme.onSurface,
+        textStyle:
+            GoogleFonts.andikaTextTheme(Theme.of(context).textTheme).bodyMedium,
         inTuneColor:
             Colors.green.harmonizeWith(Theme.of(context).colorScheme.primary),
         textPlacement: TextPlacement.top,
@@ -55,10 +57,10 @@ class TuningGraphPainter extends CustomPainter {
     required this.lineColor,
     this.lineWidth = 4.0,
     this.renderTextThreshold = 15,
-    Color? textColor,
+    this.textStyle,
     this.textPlacement = TextPlacement.relative,
     this.textOffset = 15.0,
-  }) : textColor = textColor ?? lineColor;
+  });
 
   /// Whether to render the frequencies as a continuous line.
   /// Otherwise renders them as points.
@@ -80,7 +82,7 @@ class TuningGraphPainter extends CustomPainter {
   final double lineWidth;
 
   /// The color of the text displaying the note name.
-  final Color textColor;
+  final TextStyle? textStyle;
 
   /// Where to place the text.
   final TextPlacement textPlacement;
@@ -204,7 +206,7 @@ class TuningGraphPainter extends CustomPainter {
 
     TextSpan span = TextSpan(
       text: note.abbreviation,
-      style: TextStyle(color: textColor),
+      style: textStyle ?? TextStyle(color: lineColor),
     );
     TextPainter textPainter = TextPainter(
       text: span,
