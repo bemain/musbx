@@ -125,16 +125,10 @@ class TuningGraphPainter extends CustomPainter {
     final List<List<double>> frequenciesByNote = [];
     List<double> chunk = [];
     for (double frequency in frequencies) {
-      final Note note = Note.fromFrequency(
-        frequency,
-        temperament: Tuner.instance.temperament,
-      );
+      final Note note = Tuner.instance.getClosestNote(frequency);
       if (chunk.isEmpty ||
           note.abbreviation ==
-              Note.fromFrequency(
-                chunk.first,
-                temperament: Tuner.instance.temperament,
-              ).abbreviation) {
+              Tuner.instance.getClosestNote(frequency).abbreviation) {
         chunk.add(frequency);
       } else {
         frequenciesByNote.add(chunk);
@@ -161,7 +155,7 @@ class TuningGraphPainter extends CustomPainter {
         if (index <= size.width.toInt()) {
           offsets.add(calculatePointOffset(
             index,
-            Tuner.instance.calculatePitchOffset(frequency),
+            Tuner.instance.getPitchOffset(frequency),
             size,
           ));
           index++;
@@ -199,10 +193,7 @@ class TuningGraphPainter extends CustomPainter {
     double frequency,
     Offset frequencyPosition,
   ) {
-    final Note note = Note.fromFrequency(
-      frequency,
-      temperament: Tuner.instance.temperament,
-    );
+    final Note note = Tuner.instance.getClosestNote(frequency);
 
     TextSpan span = TextSpan(
       text: note.abbreviation,

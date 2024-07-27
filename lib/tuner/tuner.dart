@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/model/note.dart';
 import 'package:musbx/model/temperament.dart';
@@ -31,7 +32,24 @@ class Tuner {
   /// If true, [frequencyStream] has been created.
   bool initialized = false;
 
-  Temperament temperament = const EqualTemperament();
+  /// The frequency of A4, in Hz. Used as a reference for all other notes.
+  ///
+  /// Defaults to 440 Hz.
+  ///
+  /// See [Note.a4frequency].
+  double get a4frequency => a4frequencyNotifier.value;
+  set a4frequency(double value) => a4frequencyNotifier.value = value;
+  final ValueNotifier<double> a4frequencyNotifier = ValueNotifier(440);
+
+  /// The temperament that notes are tuned to.
+  ///
+  /// Defaults to [EqualTemperament].
+  ///
+  /// See [Note.temperament].
+  Temperament get temperament => temperamentNotifier.value;
+  set temperament(Temperament value) => temperamentNotifier.value = value;
+  final ValueNotifier<Temperament> temperamentNotifier =
+      ValueNotifier(const EqualTemperament());
 
   /// The previous frequencies detected, unfiltered.
   final List<double> _rawFrequencyHistory = [];
@@ -112,14 +130,15 @@ class Tuner {
         previousFrequencies.length;
   }
 
-  /// Calculate how many cents off [frequency] is from its closest [Note].
-  double calculatePitchOffset(double frequency) {
-    return 1200 *
-        log(frequency /
-            Note.fromFrequency(
-              frequency,
-              temperament: temperament,
-            ).frequency) /
-        log(2);
+  Note getClosestNote(double frequency) {
+    return Note.fromFrequency(
+      frequency,
+      a4frequency: a4frequency,
+      temperament: temperament,
+    );
   }
+
+  /// Calculate how many cents off [frequency] is from its closest [Note].
+  double getPitchOffset(double frequency) =>
+      1200 * log(frequency / getClosestNote(frequency).frequency) / log(2);
 }

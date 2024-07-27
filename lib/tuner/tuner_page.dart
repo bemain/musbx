@@ -37,19 +37,25 @@ class TunerPageState extends State<TunerPage> {
             setState(() {});
           });
     }
-    return StreamBuilder(
-      stream: tuner.frequencyStream,
-      builder: (context, snapshot) => Scaffold(
-        appBar: const DefaultAppBar(),
-        body: CardList(
-          children: [
-            TunerGauge(
-              frequency: (tuner.frequencyHistory.isNotEmpty)
-                  ? tuner.frequencyHistory.last
-                  : null,
+    return ValueListenableBuilder(
+      valueListenable: tuner.a4frequencyNotifier,
+      builder: (context, a4frequency, child) => ValueListenableBuilder(
+        valueListenable: tuner.temperamentNotifier,
+        builder: (context, temperament, child) => StreamBuilder(
+          stream: tuner.frequencyStream,
+          builder: (context, snapshot) => Scaffold(
+            appBar: const DefaultAppBar(),
+            body: CardList(
+              children: [
+                TunerGauge(
+                  frequency: (tuner.frequencyHistory.isNotEmpty)
+                      ? tuner.frequencyHistory.last
+                      : null,
+                ),
+                TuningGraph(frequencyHistory: tuner.frequencyHistory),
+              ],
             ),
-            TuningGraph(frequencyHistory: tuner.frequencyHistory),
-          ],
+          ),
         ),
       ),
     );

@@ -45,11 +45,8 @@ class TunerGauge extends StatelessWidget {
   /// Build gage showing [frequency]'s name and tuning.
   Widget buildGaugeAndText(BuildContext context) {
     if (frequency == null) return const SizedBox();
-    final Note note = Note.fromFrequency(
-      frequency!,
-      temperament: Tuner.instance.temperament,
-    );
-    final double pitchOffset = Tuner.instance.calculatePitchOffset(frequency!);
+    final Note note = Tuner.instance.getClosestNote(frequency!);
+    final double pitchOffset = Tuner.instance.getPitchOffset(frequency!);
 
     ColorScheme scheme = Theme.of(context).colorScheme;
 
