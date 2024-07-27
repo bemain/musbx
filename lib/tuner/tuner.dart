@@ -100,17 +100,18 @@ class Tuner {
 
     return audioStream.asyncMap((Uint8List samples) async {
       sampleRate = (await MicStream.sampleRate).toDouble();
-      bufferSize = await MicStream.bufferSize;
-
       final int bitDepth = await MicStream.bitDepth;
+      bufferSize = await MicStream.bufferSize ~/ (bitDepth / 8);
 
       return switch (bitDepth) {
-        8 => samples.buffer.asInt8List(),
-        16 => samples.buffer.asInt16List(),
+        8 => samples.buffer.asInt8List().map((e) => e.toDouble()).toList(),
+        16 => [
+            0,
+            for (var offset = 1; offset < samples.length; offset += 2)
+              (samples.buffer.asByteData().getUint16(offset) & 0xFF) - 128.0
+          ],
         _ => throw "Unsupported `bitDepth`: $bitDepth",
-      }
-          .map((e) => e.toDouble())
-          .toList();
+      };
     });
   }
 
