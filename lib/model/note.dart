@@ -1,41 +1,64 @@
-import 'dart:math';
-
+import 'package:flutter/material.dart';
 import 'package:musbx/model/pitch_class.dart';
+import 'package:musbx/model/temperament.dart';
 
-/// Representation of a musical note, with a given pitch.
+@immutable
 class Note {
+  /// Representation of a musical note, with a specific name and [octave].
+  const Note(
+    this.pitchClass,
+    this.octave, {
+    this.a4frequency = 440,
+    this.temperament = const EqualTemperament(),
+  });
+
+  /// The name of the note.
+  final PitchClass pitchClass;
+
+  /// The octave of the note, in [scientific pitch notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation).
+  final int octave;
+
   /// The frequency of A4, in Hz. Used as a reference for all other notes.
+  ///
   /// Defaults to 440 Hz.
-  static double a4frequency = 440;
+  final double a4frequency;
 
-  /// Create note from a given [frequency] in Hz.
-  /// [frequency] must be greater than 0.
-  Note.fromFrequency(this.frequency)
-      : assert(frequency > 0, "Frequency must be greater than 0");
+  /// The frequency of C0, which the scientific pitch notation begins at.
+  double get _c0frequency => a4frequency * temperament.frequencyRatio(-57);
 
-  factory Note.a4() => Note.fromFrequency(a4frequency);
+  /// The temperament that this note is tuned to.
+  ///
+  /// Defaults to [EqualTemperament].
+  final Temperament temperament;
+
+  /// Get the note closest to a specific [frequency].
+  factory Note.fromFrequency(
+    double frequency, {
+    double a4frequency = 440,
+    Temperament temperament = const EqualTemperament(),
+  }) {
+    assert(frequency > 0, "Frequency must be greater than 0");
+
+    final double c0frequency = a4frequency * temperament.frequencyRatio(-57);
+    final int scaleStep = temperament.scaleStep(frequency / c0frequency);
+    final int octave = (scaleStep / 12).floor();
+
+    return Note(
+      PitchClass.values[(scaleStep - 12 * octave) % 12],
+      octave,
+      a4frequency: a4frequency,
+      temperament: temperament,
+    );
+  }
 
   /// The frequency of this note, in Hz.
-  final double frequency;
+  double get frequency =>
+      _c0frequency * temperament.frequencyRatio(octave * 12 + pitchClass.index);
 
-  double get _diffFromA4 => log(frequency / a4frequency) / log(2);
+  String get abbreviation => "${pitchClass.abbreviation}$octave";
 
-  /// Number of whole octaves between this note and A4.
-  int get octavesFromA4 => _diffFromA4.round();
-
-  /// Number of whole semitones between this note and A4.
-  int get semitonesFromA4 => (12 * _diffFromA4).round();
-
-  /// Number of whole cents between this note and A4.
-  int get centsFromA4 => (1200 * _diffFromA4).round();
-
-  /// The pitch class that is closest to this frequency.
-  PitchClass get pitchClass =>
-      PitchClass.values[(semitonesFromA4 - 12 * octavesFromA4) % 12];
-
-  /// The name of this note, e.g C3.
-  String get name => "$pitchClass${octavesFromA4 + 4}";
-
-  /// The number of cents between this [frequency] and the closest semitone.
-  double get pitchOffset => centsFromA4 - semitonesFromA4 * 100;
+  @override
+  String toString() {
+    return "Note(${pitchClass.abbreviation}, $octave)";
+  }
 }
