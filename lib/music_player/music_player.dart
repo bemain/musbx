@@ -265,7 +265,7 @@ class MusicPlayer {
   Future<void> loadFile(PlatformFile file) async {
     await loadSong(Song(
       id: file.path!.hashCode.toString(),
-      title: file.name,
+      title: file.name.split(".").first,
       source: FileSource(file.path!),
     ));
   }

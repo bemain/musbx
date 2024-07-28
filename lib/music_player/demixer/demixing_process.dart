@@ -150,6 +150,9 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
       StemType.values.map((stem) async {
         File file = await host.downloadStem(
+          // When dimixing files, [song.id] is not the same as the id of the song on the API ([response.songId]).
+          // Thus we need to pass it as well, which is ugly. TODO: Fix this.
+          response.songId,
           song,
           stem,
         );

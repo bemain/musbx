@@ -141,11 +141,12 @@ class DemixerApiHost extends MusbxApiHost {
 
   /// Download a [stem] for a [song].
   Future<File> downloadStem(
+    String songId,
     Song song,
     StemType stem, {
     StemFileType fileType = StemFileType.mp3,
   }) async {
-    var response = await get("/stem/${song.id}/${stem.name}", headers: {
+    var response = await get("/stem/$songId/${stem.name}", headers: {
       "FileType": fileType.name,
     });
     if (response.statusCode != 200) {
