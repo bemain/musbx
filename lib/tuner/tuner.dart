@@ -7,7 +7,6 @@ import 'package:mic_stream/mic_stream.dart';
 import 'package:musbx/model/note.dart';
 import 'package:musbx/model/temperament.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
-import 'package:pitch_detector_dart/pitch_detector_result.dart';
 
 /// Singleton for detecting what pitch is being played.
 class Tuner {
@@ -28,9 +27,8 @@ class Tuner {
   /// The sample rate of the recording.
   late double sampleRate;
 
-  /// Whether the Tuner has been initialized or not.
-  /// If true, [frequencyStream] has been created.
-  bool initialized = false;
+  /// Whether permission to access the microphone has been given.
+  bool hasPermission = false;
 
   /// The frequency of A4, in Hz. Used as a reference for all other notes.
   ///
@@ -57,24 +55,16 @@ class Tuner {
   /// The previous frequencies detected, averaged and filtered.
   final List<double> frequencyHistory = [];
 
-  /// The current note detected, or null if no pitch could be detected.
-  late final Stream<double?> frequencyStream;
-
-  /// Initialize the Tuner.
-  /// Creates the [frequencyStream] for detecting pitch from the microphone.
+  /// The current frequency detected, or null if no frequency could be detected.
   ///
-  /// Assumes permission to access the microphone has already been given.
-  void initialize() {
-    if (initialized) return;
-
-    final Stream<PitchDetectorResult> pitchStream = getAudioStream().asyncMap(
-      (List<double> samples) => PitchDetector(
+  /// Throws if permission to access the microphone has not been given.
+  Stream<double?> get frequencyStream {
+    return audioStream.asyncMap((samples) async {
+      final result = await PitchDetector(
         audioSampleRate: sampleRate,
         bufferSize: bufferSize,
-      ).getPitchFromFloatBuffer(samples),
-    );
+      ).getPitchFromFloatBuffer(samples);
 
-    frequencyStream = pitchStream.map((result) {
       if (!result.pitched) return null;
 
       _rawFrequencyHistory.add(result.pitch);
@@ -84,15 +74,13 @@ class Tuner {
         return avgFrequency;
       }
       return null;
-    }).asBroadcastStream();
-
-    initialized = true;
+    });
   }
 
   /// Uses the package mic_stream to record audio to a stream.
   ///
-  /// The returned list contains [double]s between 0 and 255.
-  Stream<List<double>> getAudioStream() {
+  /// The returned list contains [double]s between -128 and 127.
+  Stream<List<double>> get audioStream {
     final Stream<Uint8List> audioStream = MicStream.microphone(
       channelConfig: ChannelConfig.CHANNEL_IN_MONO,
       audioFormat: AudioFormat.ENCODING_PCM_8BIT,

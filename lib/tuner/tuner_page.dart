@@ -24,7 +24,7 @@ class TunerPageState extends State<TunerPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (!tuner.initialized) {
+    if (!tuner.hasPermission) {
       return PermissionBuilder(
           permission: Permission.microphone,
           permissionName: "microphone",
@@ -33,8 +33,9 @@ class TunerPageState extends State<TunerPage> {
           permissionDeniedIcon: const Icon(Icons.mic_off_rounded, size: 128),
           permissionGrantedIcon: const Icon(Icons.mic_rounded, size: 128),
           onPermissionGranted: () async {
-            tuner.initialize();
-            setState(() {});
+            setState(() {
+              tuner.hasPermission = true;
+            });
           });
     }
     return ValueListenableBuilder(
