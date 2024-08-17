@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/demixer/demixer_card.dart';
 import 'package:musbx/music_player/equalizer/equalizer_card.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
@@ -44,7 +43,7 @@ class MusicPlayerPage extends StatefulWidget {
 class MusicPlayerPageState extends State<MusicPlayerPage>
     with AutomaticKeepAliveClientMixin {
   static const String helpText =
-      """Press the plus-button and load a song from your device or YouTube.
+      """Press the plus-button and load a song from your device or by searching.
 
 - Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.
 - Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
@@ -72,7 +71,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
                     const DefaultAppBar(
                       scrolledUnderElevation: 0.0,
                       helpText:
-                          """Press the plus-button and load a song from your device or YouTube.
+                          """Press the plus-button and load a song from your device or by searching.
 
 - Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.
 - Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
@@ -184,7 +183,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
               await pickYoutubeSong(context);
             },
       expandedChild: const Icon(Icons.search),
-      expandedLabel: const Text("Search YouTube"),
+      expandedLabel: const Text("Search"),
       child: const Icon(Icons.add),
     );
   }
@@ -233,7 +232,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
       return const Icon(Icons.file_present);
     }
     if (song.source is YoutubeSource) {
-      return const Icon(CustomIcons.youtube);
+      return const Icon(Icons.youtube_searched_for);
     }
 
     return null;

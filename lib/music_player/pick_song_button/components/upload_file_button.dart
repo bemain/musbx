@@ -46,7 +46,7 @@ class UploadSongButton extends SpeedDialChild {
             },
       backgroundColor: Theme.of(context).colorScheme.primary,
       foregroundColor: Theme.of(context).colorScheme.onPrimary,
-      label: const Text("Upload from device"),
+      label: const Text("Upload"),
       child: const Icon(Icons.upload),
     );
 

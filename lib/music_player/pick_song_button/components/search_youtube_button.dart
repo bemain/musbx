@@ -49,7 +49,7 @@ final HistoryHandler<String> youtubeSearchHistory = HistoryHandler<String>(
 
 /// [SearchDelegate] for searching for a song on Youtube.
 class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
-  YoutubeSearchDelegate() : super(searchFieldLabel: "Search YouTube");
+  YoutubeSearchDelegate() : super(searchFieldLabel: "Search for song");
 
   @override
   Widget? buildLeading(BuildContext context) {
@@ -74,7 +74,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   List<Widget>? buildActions(BuildContext context) {
     return [
       IconButton(
-        onPressed: () {
+        onPressed: query == "" ? null : () {
           query = "";
         },
         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -89,13 +89,16 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
       // Help text
       return Padding(
         padding: const EdgeInsets.all(15),
-        child: Text(
-          "Enter a search phrase or paste a URL to a video on YouTube.",
-          style: Theme.of(context)
-              .textTheme
-              .bodyLarge
-              ?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color),
-          textAlign: TextAlign.center,
+        child: SizedBox(
+          width: double.infinity,
+          child: Text(
+            "Enter a search phrase or paste a URL.",
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge
+                ?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color),
+            textAlign: TextAlign.center,
+          ),
         ),
       );
     }
