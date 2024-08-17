@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/card_header.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
@@ -312,6 +313,13 @@ class StemControlsState extends State<StemControls> {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Icon(
+            getStemIcon(widget.stem.type),
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         Checkbox(
           value: widget.stem.enabled,
           onChanged: musicPlayer.nullIfNoSongElse(
@@ -331,10 +339,6 @@ class StemControlsState extends State<StemControls> {
                     if (value != null) widget.stem.enabled = value;
                   },
           ),
-        ),
-        SizedBox(
-          width: 46,
-          child: Text(widget.stem.type.name.toCapitalized()),
         ),
         Expanded(
           child: Slider(
@@ -365,6 +369,17 @@ class StemControlsState extends State<StemControls> {
         ),
       ],
     );
+  }
+
+  IconData getStemIcon(StemType stem) {
+    return switch (stem) {
+      StemType.vocals => CustomIcons.microphone,
+      StemType.piano => Icons.piano,
+      StemType.guitar => CustomIcons.guitar_head,
+      StemType.bass => CustomIcons.bass_head,
+      StemType.drums => CustomIcons.snare,
+      StemType.other => Icons.music_note,
+    };
   }
 
   Future<void> showAccessRestrictedDialog(BuildContext context) async {
