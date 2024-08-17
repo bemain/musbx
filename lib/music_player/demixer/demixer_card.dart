@@ -311,6 +311,11 @@ class StemControlsState extends State<StemControls> {
 
   @override
   Widget build(BuildContext context) {
+    /// Whether all other stems are disabled
+    final bool allOtherStemsDisabled = musicPlayer.demixer.stems
+        .where((stem) => stem != widget.stem)
+        .every((stem) => !stem.enabled);
+
     return Row(
       children: [
         Padding(
@@ -320,24 +325,33 @@ class StemControlsState extends State<StemControls> {
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-        Checkbox(
-          value: widget.stem.enabled,
-          onChanged: musicPlayer.nullIfNoSongElse(
-            (!musicPlayer.demixer.isReady ||
-                    // All other stems are disabled
-                    musicPlayer.demixer.stems
-                        .where((stem) => stem != widget.stem)
-                        .every((stem) => !stem.enabled))
-                ? null
-                : (bool? value) {
-                    if (!Purchases.hasPremium &&
-                        widget.stem.type != StemType.vocals) {
-                      showAccessRestrictedDialog(context);
-                      return;
-                    }
+        GestureDetector(
+          onLongPress:
+              musicPlayer.nullIfNoSongElse((!musicPlayer.demixer.isReady)
+                  ? null
+                  : () {
+                      if (!Purchases.hasPremium) return;
 
-                    if (value != null) widget.stem.enabled = value;
-                  },
+                      for (Stem stem in musicPlayer.demixer.stems) {
+                        stem.enabled = allOtherStemsDisabled;
+                      }
+                      widget.stem.enabled = !allOtherStemsDisabled;
+                    }),
+          child: Checkbox(
+            value: widget.stem.enabled,
+            onChanged: musicPlayer.nullIfNoSongElse(
+              (!musicPlayer.demixer.isReady || allOtherStemsDisabled)
+                  ? null
+                  : (bool? value) {
+                      if (!Purchases.hasPremium &&
+                          widget.stem.type != StemType.vocals) {
+                        showAccessRestrictedDialog(context);
+                        return;
+                      }
+
+                      if (value != null) widget.stem.enabled = value;
+                    },
+            ),
           ),
         ),
         Expanded(
