@@ -38,9 +38,11 @@ class SeparationResponse {
 
 /// The stems that can be requested from the server.
 enum StemType {
-  drums,
-  bass,
   vocals,
+  piano,
+  guitar,
+  bass,
+  drums,
   other,
 }
 

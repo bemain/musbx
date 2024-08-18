@@ -155,7 +155,10 @@ class MusbxApiVersion {
 }
 
 abstract class MusbxApiHost {
-  static const Map<String, String> authHeaders = {"Authorization": musbxApiKey};
+  static const Map<String, String> authHeaders = {
+    "Authorization": musbxApiKey,
+    "Model": "htdemucs_6s",
+  };
 
   MusbxApiHost(this.address, {this.https = false});
 

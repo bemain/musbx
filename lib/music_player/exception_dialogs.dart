@@ -268,14 +268,14 @@ class YoutubeUnavailableDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("YouTube unavailable"),
+      title: const Text("Search unavailable"),
       content: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(CustomIcons.youtube, size: 128),
           SizedBox(height: 15),
           Text(
-              "The YouTube service is currently unavailable. Please try again later.")
+              "The Search service is currently unavailable. Please try again later.")
         ],
       ),
       actions: [

@@ -7,8 +7,8 @@ import 'package:musbx/widgets.dart';
 
 /// The default album art.
 /// TODO: Make this a local asset.
-final Uri defaultAlbumArt = Uri.parse(
-    "https://github.com/BeMain/musbx/blob/main/assets/images/default_album_art.png?raw=true");
+final Uri defaultAlbumArt =
+    Uri.parse("https://bemain.github.io/musbx/default_album_art.png");
 
 class Song {
   /// Representation of a song, to be played by [MusicPlayer].

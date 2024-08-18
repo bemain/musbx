@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/card_header.dart';
 import 'package:musbx/music_player/demixer/demixer.dart';
 import 'package:musbx/music_player/demixer/demixing_process.dart';
@@ -55,10 +56,14 @@ class DemixerCard extends StatelessWidget {
                               stem.volume = Stem.defaultVolume;
                               stem.enabled = true;
                             }
+                            musicPlayer.demixer.onStemsChanged();
                           },
                   ),
                 ),
-                buildBody(context),
+                SizedBox(
+                  height: 288,
+                  child: buildBody(context),
+                ),
               ]);
             },
           );
@@ -90,50 +95,48 @@ class DemixerCard extends StatelessWidget {
   }
 
   Widget buildOutOfDate() {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 192),
-      child: const Center(
-        child: Column(children: [
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Icon(Icons.update_rounded, size: 96),
-          ),
-          Text(
-            """A newer version of the app is available. 
+    return const Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Icon(Icons.update_rounded, size: 96),
+        ),
+        Text(
+          """A newer version of the app is available. 
 Please update to the latest version to use the Demixer.""",
-            textAlign: TextAlign.center,
-          ),
-        ]),
-      ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
   Widget buildError() {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 192),
-        child: Column(children: [
-          const Icon(Icons.cloud_off_rounded, size: 96),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              """An error occurred while demixing. Please try again later.""",
-              textAlign: TextAlign.center,
-            ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.cloud_off_rounded, size: 96),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            """An error occurred while demixing. Please try again later.""",
+            textAlign: TextAlign.center,
           ),
-          OutlinedButton(
-            onPressed: () {
-              musicPlayer.demixer.enabled = false;
-              musicPlayer.demixer.enabled = true;
-            },
-            child: const Text("Retry"),
-          ),
-        ]),
-      ),
+        ),
+        OutlinedButton(
+          onPressed: () {
+            musicPlayer.demixer.enabled = false;
+            musicPlayer.demixer.enabled = true;
+          },
+          child: const Text("Retry"),
+        ),
+      ],
     );
   }
 
   Widget buildLoading(BuildContext context) {
+    if (musicPlayer.demixer.process == null) return const SizedBox(height: 192);
+
     // TODO: Add "Cancel" button
     return SizedBox(
       height: 192,
@@ -147,20 +150,26 @@ Please update to the latest version to use the Demixer.""",
               child: CircularProgressIndicator(),
             ),
           ),
-          if (musicPlayer.demixer.process != null)
-            ValueListenableBuilder(
+          Align(
+            alignment: const Alignment(0, -0.3),
+            child: ValueListenableBuilder(
               valueListenable: musicPlayer.demixer.process!.stepNotifier,
-              builder: (context, step, child) => buildLoadingText(context),
+              builder: (context, step, child) =>
+                  Text("${step.index + 1} / ${DemixingStep.values.length}"),
             ),
-          if (musicPlayer.demixer.process != null)
-            Align(
-              alignment: const Alignment(0, 0.3),
-              child: ValueListenableBuilder(
-                valueListenable: musicPlayer.demixer.process!.progressNotifier,
-                builder: (context, progress, child) => Text(
-                    (progress == null) ? "" : "${(progress * 100).round()}%"),
-              ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: musicPlayer.demixer.process!.stepNotifier,
+            builder: (context, step, child) => buildLoadingText(context),
+          ),
+          Align(
+            alignment: const Alignment(0, 0.3),
+            child: ValueListenableBuilder(
+              valueListenable: musicPlayer.demixer.process!.progressNotifier,
+              builder: (context, progress, child) => Text(
+                  (progress == null) ? "" : "${(progress * 100).round()}%"),
             ),
+          ),
         ],
       ),
     );
@@ -176,7 +185,7 @@ Please update to the latest version to use the Demixer.""",
       children: [
         ConstrainedBox(
           constraints:
-              BoxConstraints(maxWidth: (description == null) ? 192 : 96),
+              BoxConstraints(maxWidth: (description == null) ? 256 : 160),
           child: Text(
             title,
             maxLines: 1,
@@ -311,31 +320,52 @@ class StemControlsState extends State<StemControls> {
 
   @override
   Widget build(BuildContext context) {
+    /// Whether all other stems are disabled
+    final bool allOtherStemsDisabled = musicPlayer.demixer.stems
+        .where((stem) => stem != widget.stem)
+        .every((stem) => !stem.enabled);
+
     return Row(
       children: [
-        Checkbox(
-          value: widget.stem.enabled,
-          onChanged: musicPlayer.nullIfNoSongElse(
-            (!musicPlayer.demixer.isReady ||
-                    // All other stems are disabled
-                    musicPlayer.demixer.stems
-                        .where((stem) => stem != widget.stem)
-                        .every((stem) => !stem.enabled))
-                ? null
-                : (bool? value) {
-                    if (!Purchases.hasPremium &&
-                        widget.stem.type != StemType.vocals) {
-                      showAccessRestrictedDialog(context);
-                      return;
-                    }
-
-                    if (value != null) widget.stem.enabled = value;
-                  },
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Icon(
+            getStemIcon(widget.stem.type),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-        SizedBox(
-          width: 46,
-          child: Text(widget.stem.type.name.toCapitalized()),
+        GestureDetector(
+          onLongPress:
+              musicPlayer.nullIfNoSongElse((!musicPlayer.demixer.isReady)
+                  ? null
+                  : () {
+                      if (!Purchases.hasPremium) return;
+
+                      for (Stem stem in musicPlayer.demixer.stems) {
+                        stem.enabled = allOtherStemsDisabled;
+                      }
+                      widget.stem.enabled = !allOtherStemsDisabled;
+                      musicPlayer.demixer.onStemsChanged();
+                    }),
+          child: Checkbox(
+            value: widget.stem.enabled,
+            onChanged: musicPlayer.nullIfNoSongElse(
+              (!musicPlayer.demixer.isReady || allOtherStemsDisabled)
+                  ? null
+                  : (bool? value) {
+                      if (value == null) return;
+
+                      if (!Purchases.hasPremium &&
+                          widget.stem.type != StemType.vocals) {
+                        showAccessRestrictedDialog(context);
+                        return;
+                      }
+
+                      widget.stem.enabled = value;
+                      musicPlayer.demixer.onStemsChanged();
+                    },
+            ),
+          ),
         ),
         Expanded(
           child: Slider(
@@ -361,11 +391,23 @@ class StemControlsState extends State<StemControls> {
                 return;
               }
               widget.stem.volume = value;
+              musicPlayer.demixer.onStemsChanged();
             },
           ),
         ),
       ],
     );
+  }
+
+  IconData getStemIcon(StemType stem) {
+    return switch (stem) {
+      StemType.vocals => CustomIcons.microphone,
+      StemType.piano => Icons.piano,
+      StemType.guitar => CustomIcons.guitar_head,
+      StemType.bass => CustomIcons.bass_head,
+      StemType.drums => CustomIcons.snare,
+      StemType.other => Icons.music_note,
+    };
   }
 
   Future<void> showAccessRestrictedDialog(BuildContext context) async {
