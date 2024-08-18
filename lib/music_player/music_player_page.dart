@@ -47,7 +47,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
 
 - Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.
 - Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
-- Mute or isolate specific instruments using the Demixer.""";
+- Mute or isolate specific instruments using the Demixer. Long press to solo instrument.""";
 
   @override
   bool get wantKeepAlive => true;
