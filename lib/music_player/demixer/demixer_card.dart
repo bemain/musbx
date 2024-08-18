@@ -135,6 +135,8 @@ Please update to the latest version to use the Demixer.""",
   }
 
   Widget buildLoading(BuildContext context) {
+    if (musicPlayer.demixer.process == null) return const SizedBox(height: 192);
+
     // TODO: Add "Cancel" button
     return SizedBox(
       height: 192,
@@ -148,20 +150,26 @@ Please update to the latest version to use the Demixer.""",
               child: CircularProgressIndicator(),
             ),
           ),
-          if (musicPlayer.demixer.process != null)
-            ValueListenableBuilder(
+          Align(
+            alignment: const Alignment(0, -0.3),
+            child: ValueListenableBuilder(
               valueListenable: musicPlayer.demixer.process!.stepNotifier,
-              builder: (context, step, child) => buildLoadingText(context),
+              builder: (context, step, child) =>
+                  Text("${step.index + 1} / ${DemixingStep.values.length}"),
             ),
-          if (musicPlayer.demixer.process != null)
-            Align(
-              alignment: const Alignment(0, 0.3),
-              child: ValueListenableBuilder(
-                valueListenable: musicPlayer.demixer.process!.progressNotifier,
-                builder: (context, progress, child) => Text(
-                    (progress == null) ? "" : "${(progress * 100).round()}%"),
-              ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: musicPlayer.demixer.process!.stepNotifier,
+            builder: (context, step, child) => buildLoadingText(context),
+          ),
+          Align(
+            alignment: const Alignment(0, 0.3),
+            child: ValueListenableBuilder(
+              valueListenable: musicPlayer.demixer.process!.progressNotifier,
+              builder: (context, progress, child) => Text(
+                  (progress == null) ? "" : "${(progress * 100).round()}%"),
             ),
+          ),
         ],
       ),
     );
