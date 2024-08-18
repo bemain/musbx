@@ -61,7 +61,6 @@ class Demixer extends MusicPlayerComponent {
   void initialize(MusicPlayer musicPlayer) {
     musicPlayer.songNotifier.addListener(_onNewSongLoaded);
     enabledNotifier.addListener(_onEnabledToggle);
-    stemsNotifier.addListener(_onStemsChanged);
   }
 
   /// Demix [MusicPlayer]'s current song.
@@ -98,23 +97,12 @@ class Demixer extends MusicPlayerComponent {
     _onEnabledToggle();
   }
 
-  Future<void> _onStemsChanged() async {
+  /// Update the [MusicPlayer]'s audio source to reflect the current state.
+  /// This has to be called manually every time [stems] are changed.
+  Future<void> onStemsChanged() async {
     if (!isReady) return;
 
-    MusicPlayer musicPlayer = MusicPlayer.instance;
-    Song? song = musicPlayer.song;
-    if (song == null) return;
-
-    if (Platform.isIOS) {
-      // On iOS segments of the audio source are cached, so a full reload is required.
-      await _onEnabledToggle();
-      return;
-    }
-
-    // Ugly way to force just_audio to perform a new request to MixedAudioSource, so that changes to stems are detected.
-    Duration position = musicPlayer.position;
-    await musicPlayer.seek(position - const Duration(seconds: 1));
-    await musicPlayer.seek(position);
+    await _onEnabledToggle();
   }
 
   Future<void> _onNewSongLoaded() async {

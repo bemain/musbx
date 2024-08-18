@@ -56,6 +56,7 @@ class DemixerCard extends StatelessWidget {
                               stem.volume = Stem.defaultVolume;
                               stem.enabled = true;
                             }
+                            musicPlayer.demixer.onStemsChanged();
                           },
                   ),
                 ),
@@ -336,6 +337,7 @@ class StemControlsState extends State<StemControls> {
                         stem.enabled = allOtherStemsDisabled;
                       }
                       widget.stem.enabled = !allOtherStemsDisabled;
+                      musicPlayer.demixer.onStemsChanged();
                     }),
           child: Checkbox(
             value: widget.stem.enabled,
@@ -343,13 +345,16 @@ class StemControlsState extends State<StemControls> {
               (!musicPlayer.demixer.isReady || allOtherStemsDisabled)
                   ? null
                   : (bool? value) {
+                      if (value == null) return;
+
                       if (!Purchases.hasPremium &&
                           widget.stem.type != StemType.vocals) {
                         showAccessRestrictedDialog(context);
                         return;
                       }
 
-                      if (value != null) widget.stem.enabled = value;
+                      widget.stem.enabled = value;
+                      musicPlayer.demixer.onStemsChanged();
                     },
             ),
           ),
@@ -378,6 +383,7 @@ class StemControlsState extends State<StemControls> {
                 return;
               }
               widget.stem.volume = value;
+              musicPlayer.demixer.onStemsChanged();
             },
           ),
         ),
