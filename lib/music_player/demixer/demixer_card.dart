@@ -339,7 +339,8 @@ class StemControlsState extends State<StemControls> {
               musicPlayer.nullIfNoSongElse((!musicPlayer.demixer.isReady)
                   ? null
                   : () {
-                      if (!Purchases.hasPremium) return;
+                      if (!Purchases.hasPremium &&
+                          musicPlayer.song?.id != demoSong.id) return;
 
                       for (Stem stem in musicPlayer.demixer.stems) {
                         stem.enabled = allOtherStemsDisabled;
@@ -356,6 +357,7 @@ class StemControlsState extends State<StemControls> {
                       if (value == null) return;
 
                       if (!Purchases.hasPremium &&
+                          musicPlayer.song?.id != demoSong.id &&
                           widget.stem.type != StemType.vocals) {
                         showAccessRestrictedDialog(context);
                         return;
@@ -375,6 +377,7 @@ class StemControlsState extends State<StemControls> {
                   ? null
                   : (double value) {
                       if (!Purchases.hasPremium &&
+                          musicPlayer.song?.id != demoSong.id &&
                           widget.stem.type != StemType.vocals) {
                         showAccessRestrictedDialog(context);
                         return;
@@ -387,6 +390,7 @@ class StemControlsState extends State<StemControls> {
             ),
             onChangeEnd: (value) {
               if (!Purchases.hasPremium &&
+                  musicPlayer.song?.id != demoSong.id &&
                   widget.stem.type != StemType.vocals) {
                 return;
               }

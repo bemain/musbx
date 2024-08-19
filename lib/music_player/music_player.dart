@@ -22,6 +22,16 @@ import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/purchases.dart';
 import 'package:musbx/widgets.dart';
 
+/// The demo song loaded the first time the user launches the app.
+/// Access to this song is unrestricted.
+final Song demoSong = Song(
+  id: "demo",
+  title: "In Treble, Spilled Some Jazz Jam",
+  artist: "Erik Lagerstedt",
+  artUri: Uri.parse("https://bemain.github.io/musbx/demo_album_art.png"),
+  source: YoutubeSource("9ytqRUjYJ7s"),
+);
+
 /// The state of [MusicPlayer].
 enum MusicPlayerState {
   /// The player has been initialized, but no audio has been loaded.
@@ -330,14 +340,17 @@ class MusicPlayer {
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
     songHistory.fetch().then((_) async {
-      // Load most recent song
-      if (songHistory.history.isNotEmpty) {
-        try {
+      try {
+        if (songHistory.history.isNotEmpty) {
+          // Load most recent song
           await loadSong(songHistory.sorted().first, ignoreFreeLimit: true);
-        } catch (error) {
-          debugPrint("[MUSIC PLAYER] $error");
-          stateNotifier.value = MusicPlayerState.idle;
+        } else {
+          // Load demo song
+          await loadSong(demoSong, ignoreFreeLimit: true);
         }
+      } catch (error) {
+        debugPrint("[MUSIC PLAYER] $error");
+        stateNotifier.value = MusicPlayerState.idle;
       }
     });
 
