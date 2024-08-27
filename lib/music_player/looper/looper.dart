@@ -8,37 +8,26 @@ class Looper extends MusicPlayerComponent {
   /// The section being looped.
   LoopSection get section => sectionNotifier.value;
   set section(LoopSection section) => sectionNotifier.value = section;
-  final ValueNotifier<LoopSection> sectionNotifier =
-      ValueNotifier(LoopSection());
+  late final ValueNotifier<LoopSection> sectionNotifier =
+      ValueNotifier(LoopSection())..addListener(_setClip);
 
   @override
   void initialize(MusicPlayer musicPlayer) {
-    // When loopSection changes, trigger seek
-    sectionNotifier.addListener(() async {
-      if (!enabled) return;
-      if (musicPlayer.position < section.start ||
-          musicPlayer.position > section.end) {
-        await musicPlayer.seek(musicPlayer.position);
-      }
-    });
-
-    // When loopEnabled changes, trigger seek
-    enabledNotifier.addListener(() async {
-      if (musicPlayer.position < section.start ||
-          musicPlayer.position > section.end) {
-        await musicPlayer.seek(musicPlayer.position);
-      }
-    });
+    enabledNotifier.addListener(_setClip);
   }
 
-  /// Clamp [position] to between [section.start] and [section.end], or between 0 and [duration] if this component is not [enabled].
-  Duration clampPosition(Duration position, {required Duration duration}) {
-    return Duration(
-      milliseconds: position.inMilliseconds.clamp(
-        (enabled) ? section.start.inMilliseconds : 0,
-        (enabled) ? section.end.inMilliseconds : duration.inMilliseconds,
-      ),
-    );
+  /// Set the [MusicPlayer]'s clip to the currently looped [section],
+  /// or reset it if this component is disabled.
+  Future<void> _setClip() async {
+    final MusicPlayer musicPlayer = MusicPlayer.instance;
+    if (musicPlayer.state != MusicPlayerState.ready) return;
+
+    if (enabled) {
+      await musicPlayer.player.setClip(start: section.start, end: section.end);
+    } else {
+      // Reset
+      await musicPlayer.player.setClip();
+    }
   }
 
   /// Load settings from a [json] map.
