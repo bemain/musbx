@@ -43,6 +43,7 @@ class LoopCard extends StatelessWidget {
                   ),
                   end: musicPlayer.looper.section.end,
                 );
+                musicPlayer.looper.updateClip();
               }),
               icon: const Icon(Icons.arrow_circle_right_outlined),
             ),
@@ -70,6 +71,7 @@ class LoopCard extends StatelessWidget {
                     ),
                   ),
                 );
+                musicPlayer.looper.updateClip();
               }),
               icon: const Icon(Icons.arrow_circle_left_outlined),
             ),

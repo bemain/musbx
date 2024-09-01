@@ -6,19 +6,38 @@ import 'package:musbx/widgets.dart';
 /// A component for [MusicPlayer] that is used to loop a section of a song.
 class Looper extends MusicPlayerComponent {
   /// The section being looped.
+  ///
+  /// Note that this doesn't automatically set [MusicPlayer]'s actual clip.
+  /// To do that, call [updateClip].
   LoopSection get section => sectionNotifier.value;
   set section(LoopSection section) => sectionNotifier.value = section;
   late final ValueNotifier<LoopSection> sectionNotifier =
-      ValueNotifier(LoopSection())..addListener(_setClip);
+      ValueNotifier(LoopSection());
 
   @override
   void initialize(MusicPlayer musicPlayer) {
-    enabledNotifier.addListener(_setClip);
+    enabledNotifier.addListener(updateClip);
   }
 
   /// Set the [MusicPlayer]'s clip to the currently looped [section],
   /// or reset it if this component is disabled.
-  Future<void> _setClip() async {
+  Future<void> updateClip() async {
+    final MusicPlayer musicPlayer = MusicPlayer.instance;
+    // Make sure no other process is currently setting the audio source
+    musicPlayer.loadSongLock = _updateClip(
+      awaitBeforeLoading: musicPlayer.loadSongLock,
+    );
+    await musicPlayer.loadSongLock;
+  }
+
+  /// Awaits [awaitBeforeLoading] and updates [MusicPlayer]'s clip.
+  Future<void> _updateClip({
+    Future<void>? awaitBeforeLoading,
+  }) async {
+    try {
+      await awaitBeforeLoading;
+    } catch (_) {}
+
     final MusicPlayer musicPlayer = MusicPlayer.instance;
     if (musicPlayer.state != MusicPlayerState.ready) return;
 
@@ -80,7 +99,7 @@ class Looper extends MusicPlayerComponent {
   }
 }
 
-/// Representation of a sect by [Looper] to select what section of the song to loop.
+/// Representation of a section of a song.
 class LoopSection {
   LoopSection({
     this.start = Duration.zero,

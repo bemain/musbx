@@ -36,6 +36,9 @@ class LoopSlider extends StatelessWidget {
                         end: Duration(milliseconds: values.end.toInt()),
                       );
                     }),
+              onChangeEnd: (value) {
+                musicPlayer.looper.updateClip();
+              },
             );
           },
         ),
