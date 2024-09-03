@@ -70,6 +70,7 @@ dependencies:
   pitch_detector_dart: ^0.0.7
   mic_stream: ^0.7.1+2
   gauges: ^1.0.0 # TODO: Migrate away from this package
+  fftea: ^1.5.0
 
 
 dev_dependencies:

@@ -250,6 +250,7 @@ class MusicPlayer {
     await saveSongPreferences();
 
     // Load audio
+    // TODO: Try setting preload to false
     await player.setAudioSource(await song.source.toAudioSource());
 
     // Update song
