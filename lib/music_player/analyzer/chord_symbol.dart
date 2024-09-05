@@ -26,24 +26,24 @@ class _ChordSymbolState extends State<ChordSymbol> {
       text: TextSpan(
         style: textTheme.bodyMedium,
         children: [
-          ...widget.chord.root.toString().characters.map(_buildChar),
-          _buildChar("${widget.chord.quality}"),
+          _buildString(widget.chord.root.abbreviation),
+          _buildString("${widget.chord.quality}"),
           if (widget.chord.extension != null)
-            _buildChar(
+            _buildString(
               "${widget.chord.extension!}",
               superscript: true,
             ),
           if (widget.chord.alterations != null)
-            ...widget.chord.alterations!.characters.map((char) => _buildChar(
-                  char,
-                  superscript: true,
-                ))
+            _buildString(
+              widget.chord.alterations!,
+              superscript: true,
+            )
         ],
       ),
     );
   }
 
-  InlineSpan _buildChar(String char, {bool superscript = false}) =>
+  InlineSpan _buildString(String char, {bool superscript = false}) =>
       switch (char) {
         "♭" => _buildSpan(
             "♭",

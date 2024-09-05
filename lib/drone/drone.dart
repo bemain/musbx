@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/drone/drone_audio_source.dart';
-import 'package:musbx/model/note.dart';
-import 'package:musbx/model/pitch_class.dart';
+import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/temperament.dart';
 
 /// Singleton for playing drone tones.
@@ -15,7 +14,6 @@ class Drone {
 
   /// The [AudioPlayer] used internally to play audio.
   late final AudioPlayer _player = AudioPlayer()
-    ..setLoopMode(LoopMode.off)
     ..playingStream.listen((value) => isPlayingNotifier.value = value)
     ..currentIndexStream.listen((value) {
       if ((_player.audioSource is ConcatenatingAudioSource)) {
@@ -27,11 +25,11 @@ class Drone {
       }
     });
 
-  /// The [Note] at the root of the scale.
-  /// Used as a reference for all the drone tones.
-  Note get root => rootNotifier.value;
-  late final ValueNotifier<Note> rootNotifier =
-      ValueNotifier(Note(PitchClass.c, 4, temperament: temperament));
+  /// The [Pitch] at the root of the scale.
+  /// Used as a reference when selecting what pitches to present to the user.
+  Pitch get root => rootNotifier.value;
+  late final ValueNotifier<Pitch> rootNotifier =
+      ValueNotifier(const Pitch.a440());
 
   /// The temperament used for generating notes
   Temperament get temperament => temperamentNotifier.value;

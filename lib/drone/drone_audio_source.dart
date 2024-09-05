@@ -9,7 +9,7 @@ class DroneAudioSource extends StreamAudioSource {
     required this.frequencies,
     this.length = 1024 * 512,
     this.offset = 0,
-    this.amplitude = 256 * 64,
+    this.amplitude = 64 * 64,
     this.sampleRate = 44100,
   });
 
@@ -24,7 +24,7 @@ class DroneAudioSource extends StreamAudioSource {
   final int sampleRate;
 
   /// The amplitude of the generated waves.
-  /// Defaults to 2^14.
+  /// Defaults to 2^12.
   final double amplitude;
 
   /// The multiples of [length] to offset the generated wave with.

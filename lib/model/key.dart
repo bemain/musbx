@@ -1,3 +1,5 @@
+import 'package:musbx/model/accidental.dart';
+import 'package:musbx/model/chroma.dart';
 import 'package:musbx/model/pitch_class.dart';
 
 enum KeyType {
@@ -12,9 +14,6 @@ enum KeyType {
   final String abbreviation;
 
   final List<int> intervalPattern;
-
-  @override
-  String toString() => abbreviation;
 }
 
 /// Representation of a musical key.
@@ -43,7 +42,7 @@ class Key {
 
   /// The key parallel to this one.
   /// It contains the same [notes] as this, but has a different [tonic] and [type].
-  Key get parallelKey => switch (type) {
+  Key get parallel => switch (type) {
         KeyType.major => Key(tonic.transposed(-3), KeyType.minor),
         KeyType.minor => Key(tonic.transposed(3), KeyType.major),
       };
@@ -60,17 +59,6 @@ class Key {
   String toString() => "Key(${tonic.abbreviation}, ${type.abbreviation})";
 }
 
-enum Accidental {
-  sharp("♯"),
-  flat("♭"),
-  natural("♮");
-
-  /// The types of accidentals that a [KeySignature] can introduce.
-  const Accidental(this.abbreviation);
-
-  final String abbreviation;
-}
-
 class KeySignature {
   /// Representation of a musical key signature.
   ///
@@ -80,32 +68,32 @@ class KeySignature {
 
   factory KeySignature.fromKey(Key key) {
     PitchClass majorTonic =
-        key.type == KeyType.major ? key.tonic : key.parallelKey.tonic;
+        key.type == KeyType.major ? key.tonic : key.parallel.tonic;
     return KeySignature(
-      switch (majorTonic) {
-        PitchClass.c => 0,
-        PitchClass.g || PitchClass.f => 1,
-        PitchClass.d || PitchClass.bFlat => 2,
-        PitchClass.a || PitchClass.eFlat => 3,
-        PitchClass.e || PitchClass.aFlat => 4,
-        PitchClass.b || PitchClass.dFlat => 5,
-        PitchClass.gFlat => 6,
+      switch (majorTonic.chroma) {
+        Chroma.c => 0,
+        Chroma.g || Chroma.f => 1,
+        Chroma.d || Chroma.aSharp => 2,
+        Chroma.a || Chroma.dSharp => 3,
+        Chroma.e || Chroma.gSharp => 4,
+        Chroma.b || Chroma.cSharp => 5,
+        Chroma.fSharp => 6,
       },
-      switch (majorTonic) {
-        PitchClass.c => Accidental.natural,
-        PitchClass.g ||
-        PitchClass.d ||
-        PitchClass.a ||
-        PitchClass.e ||
-        PitchClass.b ||
-        PitchClass.gFlat =>
+      switch (majorTonic.chroma) {
+        Chroma.c => Accidental.natural,
+        Chroma.g ||
+        Chroma.d ||
+        Chroma.a ||
+        Chroma.e ||
+        Chroma.b ||
+        Chroma.fSharp =>
           Accidental.sharp,
-        PitchClass.f ||
-        PitchClass.bFlat ||
-        PitchClass.eFlat ||
-        PitchClass.aFlat ||
-        PitchClass.dFlat ||
-        PitchClass.gFlat =>
+        Chroma.f ||
+        Chroma.aSharp ||
+        Chroma.dSharp ||
+        Chroma.gSharp ||
+        Chroma.cSharp ||
+        Chroma.fSharp =>
           Accidental.flat,
       },
     );
@@ -117,24 +105,24 @@ class KeySignature {
   /// The number of accidentals that this key signature introduces.
   final int nAccidentals;
 
-  /// The notes that are altered by this key signature.
-  List<PitchClass> get alteredNotes => switch (accidental) {
+  /// The chromas that are altered by this key signature.
+  List<Chroma> get alteredChromas => switch (accidental) {
         Accidental.natural => [],
         Accidental.sharp => [
-            PitchClass.gFlat,
-            PitchClass.dFlat,
-            PitchClass.aFlat,
-            PitchClass.eFlat,
-            PitchClass.bFlat,
-            PitchClass.f
+            Chroma.fSharp,
+            Chroma.cSharp,
+            Chroma.gSharp,
+            Chroma.dSharp,
+            Chroma.aSharp,
+            Chroma.f
           ].sublist(0, nAccidentals),
         Accidental.flat => [
-            PitchClass.bFlat,
-            PitchClass.eFlat,
-            PitchClass.aFlat,
-            PitchClass.dFlat,
-            PitchClass.gFlat,
-            PitchClass.b
+            Chroma.aSharp,
+            Chroma.dSharp,
+            Chroma.gSharp,
+            Chroma.cSharp,
+            Chroma.fSharp,
+            Chroma.b
           ].sublist(0, nAccidentals),
       };
 

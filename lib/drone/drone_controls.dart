@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/drone/drone_player.dart';
-import 'package:musbx/model/note.dart';
+import 'package:musbx/model/pitch.dart';
 
 class DroneControls extends StatefulWidget {
   const DroneControls({super.key, this.radius = 150});
@@ -20,11 +20,7 @@ class DroneControlsState extends State<DroneControls> {
   @override
   Widget build(BuildContext context) {
     final List<DronePlayer> players = List.generate(12, (i) {
-      double frequency = Note(
-        drone.root.pitchClass.transposed(i),
-        drone.root.octave,
-        temperament: drone.temperament,
-      ).frequency;
+      double frequency = drone.root.transposed(i).frequency;
       return DronePlayer(frequency);
     });
 
@@ -59,9 +55,8 @@ class DroneControlsState extends State<DroneControls> {
     return ValueListenableBuilder(
         valueListenable: player.isPlayingNotifier,
         builder: (context, active, _) {
-          bool isReference =
-              (Note.fromFrequency(player.frequency).abbreviation ==
-                  drone.root.abbreviation);
+          bool isReference = (Pitch.closest(player.frequency).abbreviation ==
+              drone.root.abbreviation);
           Color buttonColor = isReference
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.primaryContainer;
@@ -83,7 +78,7 @@ class DroneControlsState extends State<DroneControls> {
                 }
               },
               child: Text(
-                Note.fromFrequency(player.frequency).abbreviation,
+                Pitch.closest(player.frequency).abbreviation,
                 style: TextStyle(
                   color: textColor,
                 ),

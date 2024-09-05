@@ -2,7 +2,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:gauges/gauges.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:musbx/model/note.dart';
+import 'package:musbx/model/pitch.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class TunerGauge extends StatelessWidget {
@@ -44,8 +44,7 @@ class TunerGauge extends StatelessWidget {
 
   /// Build gage showing [frequency]'s name and tuning.
   Widget buildGaugeAndText(BuildContext context) {
-    if (frequency == null) return const SizedBox();
-    final Note note = Tuner.instance.getClosestNote(frequency!);
+    final Pitch note = Tuner.instance.getClosestPitch(frequency!);
     final double pitchOffset = Tuner.instance.getPitchOffset(frequency!);
 
     ColorScheme scheme = Theme.of(context).colorScheme;
