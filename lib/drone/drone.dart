@@ -3,6 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:musbx/drone/drone_audio_source.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/temperament.dart';
+import 'package:musbx/widgets.dart';
 
 /// Singleton for playing drone tones.
 class Drone {
@@ -40,44 +41,30 @@ class Drone {
   List<double> get frequencies => List.unmodifiable(_frequencies);
   final List<double> _frequencies = [];
 
+  List<Pitch> get pitches => pitchesNotifier.value;
+  late final ListNotifier<Pitch> pitchesNotifier = ListNotifier([])
+    ..addListener(_onPitchesChanged);
+
   /// Whether the drone is playing.
   bool get isPlaying => isPlayingNotifier.value;
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 
-  /// Start playing a [frequency].
-  void play(double frequency) async {
-    if (_frequencies.contains(frequency)) return;
-
-    _frequencies.add(frequency);
-    _onFrequenciesChanged();
+  /// Start playing the current [pitches].
+  void play() async {
+    _player.play();
   }
 
-  /// Stop playing a [frequency].
-  void pause(double frequency) async {
-    if (!_frequencies.contains(frequency)) return;
-
-    _frequencies.removeWhere((element) => element == frequency);
-    _onFrequenciesChanged();
+  /// Pause playback.
+  void pause() async {
+    _player.pause();
   }
 
-  /// Stop playing all frequencies.
-  void pauseAll() async {
-    _frequencies.clear();
-    _onFrequenciesChanged();
-  }
-
-  /// Update [isPlaying] when a frequency is added or removed.
-  void _onFrequenciesChanged() async {
-    if (_frequencies.isEmpty) {
-      _player.pause();
-      return;
-    }
-
+  void _onPitchesChanged() async {
     // Hack: we use a concatenating audio source so that the current index changes.
+    // TODO: Implement locking
     await _player.setAudioSource(ConcatenatingAudioSource(children: [
       DroneAudioSource(frequencies: _frequencies),
       DroneAudioSource(frequencies: _frequencies, offset: 1),
     ]));
-    _player.play();
   }
 }

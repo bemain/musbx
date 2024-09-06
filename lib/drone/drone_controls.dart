@@ -1,9 +1,20 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Key;
 import 'package:musbx/drone/drone.dart';
-import 'package:musbx/drone/drone_player.dart';
+import 'package:musbx/model/key.dart';
 import 'package:musbx/model/pitch.dart';
+
+enum DroneButtonType {
+  /// This pitch is the current root
+  root,
+
+  /// This pitch belongs to the root's major key.
+  diatonic,
+
+  /// This pitch is not in the root's major key.
+  chromatic,
+}
 
 class DroneControls extends StatefulWidget {
   const DroneControls({super.key, this.radius = 150});
@@ -19,19 +30,14 @@ class DroneControlsState extends State<DroneControls> {
 
   @override
   Widget build(BuildContext context) {
-    final List<DronePlayer> players = List.generate(12, (i) {
-      double frequency = drone.root.transposed(i).frequency;
-      return DronePlayer(frequency);
-    });
+    final List<Pitch> pitches = List.generate(12, drone.root.transposed);
 
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) => SizedBox(
         height: constraints.maxWidth,
         child: Stack(alignment: Alignment.center, children: [
           buildResetButton(),
-          ...players.asMap().entries.map(
-                (entry) => buildDroneButton(entry.value, entry.key),
-              ),
+          for (final Pitch pitch in pitches) buildDroneButton(pitch),
         ]),
       ),
     );
@@ -41,7 +47,7 @@ class DroneControlsState extends State<DroneControls> {
     return ValueListenableBuilder(
       valueListenable: drone.isPlayingNotifier,
       builder: (context, isActive, _) => TextButton(
-        onPressed: !isActive ? null : drone.pauseAll,
+        onPressed: !isActive ? null : drone.pause,
         child: const Icon(
           Icons.pause_circle_rounded,
           size: 75,
@@ -50,35 +56,50 @@ class DroneControlsState extends State<DroneControls> {
     );
   }
 
-  Widget buildDroneButton(DronePlayer player, int index) {
+  Widget buildDroneButton(Pitch pitch) {
+    final int index = pitch.semitonesTo(drone.root).abs();
     final double angle = 2 * pi * index / 12 - pi / 2;
-    return ValueListenableBuilder(
-        valueListenable: player.isPlayingNotifier,
-        builder: (context, active, _) {
-          bool isReference = (Pitch.closest(player.frequency).abbreviation ==
-              drone.root.abbreviation);
-          Color buttonColor = isReference
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.primaryContainer;
-          Color textColor = isReference
-              ? Theme.of(context).colorScheme.onPrimary
-              : Theme.of(context).colorScheme.onPrimaryContainer;
+
+    final DroneButtonType type = pitch.pitchClass == drone.root.pitchClass
+        ? DroneButtonType.root
+        : Key.major(drone.root.pitchClass).notes.contains(pitch.pitchClass)
+            ? DroneButtonType.diatonic
+            : DroneButtonType.chromatic;
+
+    return ListenableBuilder(
+        listenable: drone.pitchesNotifier,
+        builder: (context, child) {
+          Color buttonColor = switch (type) {
+            DroneButtonType.root => Theme.of(context).colorScheme.primary,
+            DroneButtonType.diatonic =>
+              Theme.of(context).colorScheme.surfaceContainer,
+            DroneButtonType.chromatic =>
+              Theme.of(context).colorScheme.primaryContainer
+          };
+          Color textColor = switch (type) {
+            DroneButtonType.root => Theme.of(context).colorScheme.onPrimary,
+            DroneButtonType.diatonic => Theme.of(context).colorScheme.onSurface,
+            DroneButtonType.chromatic =>
+              Theme.of(context).colorScheme.onPrimaryContainer
+          };
+
+          final bool isPlaying = drone.pitches.contains(pitch);
 
           return Transform.translate(
             offset: Offset(cos(angle), sin(angle)) * widget.radius,
             child: FloatingActionButton(
-              elevation: active ? 0 : 6,
+              elevation: isPlaying ? 0 : 6,
               backgroundColor:
-                  active ? buttonColor.withOpacity(0.5) : buttonColor,
+                  isPlaying ? buttonColor.withOpacity(0.5) : buttonColor,
               onPressed: () {
-                if (active) {
-                  player.pause();
+                if (isPlaying) {
+                  drone.pitchesNotifier.remove(pitch);
                 } else {
-                  player.play();
+                  drone.pitchesNotifier.add(pitch);
                 }
               },
               child: Text(
-                Pitch.closest(player.frequency).abbreviation,
+                pitch.abbreviation,
                 style: TextStyle(
                   color: textColor,
                 ),
