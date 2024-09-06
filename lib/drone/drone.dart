@@ -37,7 +37,7 @@ class Drone {
       ValueNotifier(const EqualTemperament());
 
   /// The frequencies currently played.
-  List<double> get frequencies => _frequencies;
+  List<double> get frequencies => List.unmodifiable(_frequencies);
   final List<double> _frequencies = [];
 
   /// Whether the drone is playing.

@@ -34,9 +34,8 @@ class Key {
   final KeyType type;
 
   /// All the notes in this ḱey.
-  List<PitchClass> get notes => type.intervalPattern
-      .map((int interval) => tonic.transposed(interval))
-      .toList();
+  Iterable<PitchClass> get notes =>
+      type.intervalPattern.map((int interval) => tonic.transposed(interval));
 
   KeySignature get signature => KeySignature.fromKey(this);
 
@@ -106,7 +105,7 @@ class KeySignature {
   final int nAccidentals;
 
   /// The chromas that are altered by this key signature.
-  List<Chroma> get alteredChromas => switch (accidental) {
+  List<Chroma> get alteredChromas => List.unmodifiable(switch (accidental) {
         Accidental.natural => [],
         Accidental.sharp => [
             Chroma.fSharp,
@@ -124,7 +123,7 @@ class KeySignature {
             Chroma.fSharp,
             Chroma.b
           ].sublist(0, nAccidentals),
-      };
+      });
 
   @override
   String toString() {

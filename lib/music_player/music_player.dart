@@ -110,11 +110,10 @@ class MusicPlayer {
   static const int freeSongsPerWeek = 3;
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
-  List<Song> get songsPlayedThisWeek => songHistory.history.entries
+  Iterable<Song> get songsPlayedThisWeek => songHistory.history.entries
       .where((entry) =>
           entry.key.difference(DateTime.now()) < const Duration(days: 7))
-      .map((e) => e.value)
-      .toList();
+      .map((e) => e.value);
 
   /// Whether the user's access to the [MusicPlayer] has been restricted
   /// because the number of [freeSongsPerWeek] has been reached.
