@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:musbx/ads.dart';
 import 'package:musbx/music_player/analyzer/analyzer.dart';
 import 'package:musbx/music_player/audio_handler.dart';
@@ -337,6 +338,10 @@ class MusicPlayer {
 
   /// Listen for changes from [player].
   void _initialize() {
+    if (Platform.isLinux || Platform.isWindows) {
+      JustAudioMediaKit.ensureInitialized(linux: true, windows: true);
+    }
+
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
     songHistory.fetch().then((_) async {

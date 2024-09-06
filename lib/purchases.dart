@@ -18,6 +18,13 @@ class Purchases {
   static final ValueNotifier<bool> hasPremiumNotifier = ValueNotifier(false);
 
   static Future<void> intialize() async {
+    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isMacOS) {
+      debugPrint("[PURCHASES] The current platform is not supported");
+      isAvailable = false;
+      hasPremiumNotifier.value = true;
+      return;
+    }
+
     try {
       isAvailable = await _inAppPurchase.isAvailable();
     } catch (e) {
@@ -81,6 +88,8 @@ class Purchases {
   }
 
   static Future<bool> buyPremium() async {
+    if (!isAvailable) return false;
+
     final response = await _inAppPurchase.queryProductDetails({_premiumID});
     final ProductDetails? details = response.productDetails.firstOrNull;
     if (details == null) return false;
