@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone_controls.dart';
-import 'package:musbx/page/card_list.dart';
 import 'package:musbx/page/default_app_bar.dart';
+import 'package:musbx/page/widget_card.dart';
 
 class DronePage extends StatefulWidget {
   const DronePage({super.key});
@@ -15,8 +15,10 @@ class DronePageState extends State<DronePage> {
   Widget build(BuildContext context) {
     return const Scaffold(
       appBar: DefaultAppBar(),
-      body: CardList(children: [
-        DroneControls(),
+      body: Column(children: [
+        WidgetCard(
+          child: DroneControls(),
+        ),
       ]),
     );
   }
