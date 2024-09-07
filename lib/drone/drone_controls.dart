@@ -96,6 +96,7 @@ class DroneControlsState extends State<DroneControls> {
                   drone.pitchesNotifier.remove(pitch);
                 } else {
                   drone.pitchesNotifier.add(pitch);
+                  drone.play();
                 }
               },
               child: Text(

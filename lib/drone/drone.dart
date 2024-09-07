@@ -20,7 +20,9 @@ class Drone {
       if ((_player.audioSource is ConcatenatingAudioSource)) {
         final source = _player.audioSource as ConcatenatingAudioSource;
         source.add(DroneAudioSource(
-          frequencies: _frequencies,
+          frequencies: [
+            for (Pitch pitch in pitches) pitch.frequency,
+          ],
           offset: source.length,
         ));
       }
@@ -37,10 +39,6 @@ class Drone {
   final ValueNotifier<Temperament> temperamentNotifier =
       ValueNotifier(const EqualTemperament());
 
-  /// The frequencies currently played.
-  List<double> get frequencies => List.unmodifiable(_frequencies);
-  final List<double> _frequencies = [];
-
   List<Pitch> get pitches => pitchesNotifier.value;
   late final ListNotifier<Pitch> pitchesNotifier = ListNotifier([])
     ..addListener(_onPitchesChanged);
@@ -50,21 +48,22 @@ class Drone {
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 
   /// Start playing the current [pitches].
-  void play() async {
-    _player.play();
-  }
+  Future<void> play() => _player.play();
 
   /// Pause playback.
-  void pause() async {
-    _player.pause();
-  }
+  Future<void> pause() => _player.pause();
 
   void _onPitchesChanged() async {
+    if (pitches.isEmpty) return;
+    final List<double> frequencies = [
+      for (Pitch pitch in pitches) pitch.frequency,
+    ];
+
     // Hack: we use a concatenating audio source so that the current index changes.
     // TODO: Implement locking
     await _player.setAudioSource(ConcatenatingAudioSource(children: [
-      DroneAudioSource(frequencies: _frequencies),
-      DroneAudioSource(frequencies: _frequencies, offset: 1),
+      DroneAudioSource(frequencies: frequencies),
+      DroneAudioSource(frequencies: frequencies, offset: 1),
     ]));
   }
 }
