@@ -55,7 +55,7 @@ class DroneControlsState extends State<DroneControls> {
             listenable: drone.pitchesNotifier,
             builder: (context, child) {
               return Stack(alignment: Alignment.center, children: [
-                buildResetButton(),
+                if (pitches.isNotEmpty) buildResetButton(),
                 for (final Pitch pitch in pitches) buildDroneButton(pitch),
               ]);
             },
@@ -69,11 +69,7 @@ class DroneControlsState extends State<DroneControls> {
     return ValueListenableBuilder(
       valueListenable: drone.isPlayingNotifier,
       builder: (context, isPlaying, _) => IconButton(
-        onPressed: drone.pitches.isEmpty
-            ? null
-            : isPlaying
-                ? drone.pause
-                : drone.play,
+        onPressed: isPlaying ? drone.pause : drone.play,
         icon: Icon(
           isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
           size: 75,
