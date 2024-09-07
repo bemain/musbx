@@ -54,7 +54,11 @@ class Drone {
   Future<void> pause() => _player.pause();
 
   void _onPitchesChanged() async {
-    if (pitches.isEmpty) return;
+    if (pitches.isEmpty) {
+      pause();
+      return;
+    }
+
     final List<double> frequencies = [
       for (Pitch pitch in pitches) pitch.frequency,
     ];
