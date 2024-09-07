@@ -68,4 +68,14 @@ class Pitch {
   String toString() {
     return "Pitch(${pitchClass.abbreviation}, $octave, ${frequency}Hz)";
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is Pitch &&
+      pitchClass == other.pitchClass &&
+      octave == other.octave &&
+      frequency == other.frequency;
+
+  @override
+  int get hashCode => Object.hash(pitchClass, octave, frequency);
 }

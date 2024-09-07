@@ -154,4 +154,13 @@ class PitchClass {
         chroma.transposed(semitones),
         preferredAccidental: accidental,
       );
+
+  @override
+  bool operator ==(Object other) =>
+      other is PitchClass &&
+      naturalClass == other.naturalClass &&
+      accidental == other.accidental;
+
+  @override
+  int get hashCode => Object.hash(naturalClass, accidental);
 }

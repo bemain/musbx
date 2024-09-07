@@ -56,6 +56,13 @@ class Key {
 
   @override
   String toString() => "Key(${tonic.abbreviation}, ${type.abbreviation})";
+
+  @override
+  bool operator ==(Object other) =>
+      other is Key && tonic == other.tonic && type == other.type;
+
+  @override
+  int get hashCode => Object.hash(tonic, type);
 }
 
 class KeySignature {
@@ -129,4 +136,13 @@ class KeySignature {
   String toString() {
     return "KeySignature($nAccidentals, ${accidental.abbreviation})";
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is KeySignature &&
+      nAccidentals == other.nAccidentals &&
+      accidental == other.accidental;
+
+  @override
+  int get hashCode => Object.hash(nAccidentals, accidental);
 }

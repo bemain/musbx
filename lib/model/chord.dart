@@ -140,4 +140,17 @@ class Chord {
         "${alterations ?? ""}"
         "${bassNote != root ? "/$bassNote" : ""}";
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is Chord &&
+      root == other.root &&
+      quality == other.quality &&
+      extension == other.extension &&
+      alterations == other.alterations &&
+      bassNote == other.bassNote;
+
+  @override
+  int get hashCode =>
+      Object.hash(root, quality, extension, alterations, bassNote);
 }
