@@ -46,8 +46,8 @@ class DroneControlsState extends State<DroneControls> {
             drone.pitchesNotifier.clear();
           },
           onPanUpdate: (DragUpdateDetails details) {
-            Offset center = Offset(constraints.biggest.shortestSide / 2,
-                constraints.biggest.shortestSide / 2);
+            Offset center = Offset(
+                constraints.biggest.width / 2, constraints.biggest.height / 2);
             Offset a = details.localPosition - center;
             Offset b = (details.localPosition - details.delta) - center;
 
