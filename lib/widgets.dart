@@ -198,6 +198,11 @@ class ListNotifier<T> extends ChangeNotifier {
     notifyListeners();
     return ret;
   }
+
+  void clear() {
+    _value.clear();
+    notifyListeners();
+  }
 }
 
 class ExpandedIcon extends StatelessWidget {

@@ -33,14 +33,12 @@ class Pitch {
   }) {
     assert(frequency > 0, "Frequency must be greater than 0");
 
-    final int semitonesShifted =
-        temperament.scaleStep(frequency / tuning.frequency);
+    final int semitones = temperament.scaleStep(frequency / tuning.frequency);
+    Pitch transposed = tuning.transposed(semitones);
 
     return Pitch(
-      tuning.pitchClass.transposed(semitonesShifted),
-      tuning.octave +
-          ((tuning.pitchClass.chroma.semitonesFromC + semitonesShifted) / 12)
-              .floor(),
+      transposed.pitchClass,
+      transposed.octave,
       frequency,
     );
   }
@@ -59,7 +57,7 @@ class Pitch {
   }) {
     return Pitch(
       pitchClass.transposed(semitones),
-      octave + (pitchClass.chroma.semitonesFromC + semitones) ~/ 12,
+      octave + ((pitchClass.chroma.semitonesFromC + semitones) / 12).floor(),
       frequency * temperament.frequencyRatio(semitones),
     );
   }
