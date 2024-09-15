@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/drone/drone_audio_source.dart';
 import 'package:musbx/model/pitch.dart';
+import 'package:musbx/model/pitch_class.dart';
 import 'package:musbx/model/temperament.dart';
 import 'package:musbx/widgets.dart';
 
@@ -32,14 +33,15 @@ class Drone {
   static int minOctave = 2;
 
   /// The maximum octave of the [root].
-  static int maxOctave = 4;
+  static int maxOctave = 5;
 
   /// The [Pitch] at the root of the scale.
   /// Used as a reference when selecting what pitches to present to the user.
   Pitch get root => rootNotifier.value;
   set root(Pitch value) => rootNotifier.value = value;
   late final ValueNotifier<Pitch> rootNotifier =
-      ValueNotifier(const Pitch.a440())..addListener(_onPitchesChanged);
+      ValueNotifier(const Pitch(PitchClass.a(), 3, 220))
+        ..addListener(_onPitchesChanged);
 
   /// The temperament used for generating notes
   Temperament get temperament => temperamentNotifier.value;
