@@ -17,18 +17,18 @@ enum DroneButtonType {
   chromatic,
 }
 
-class DroneControls extends StatefulWidget {
+class DroneWheel extends StatefulWidget {
   /// A wheel with buttons that create drone tones in the chromatic scale starting from the [Drone]'s root.
-  const DroneControls({super.key, this.radius = 150});
+  const DroneWheel({super.key, this.radius = 150});
 
   /// The radius of the wheel.
   final double radius;
 
   @override
-  State<StatefulWidget> createState() => DroneControlsState();
+  State<StatefulWidget> createState() => DroneWheelState();
 }
 
-class DroneControlsState extends State<DroneControls> {
+class DroneWheelState extends State<DroneWheel> {
   final Drone drone = Drone.instance;
 
   /// The current rotation angle
