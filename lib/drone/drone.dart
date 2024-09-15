@@ -32,15 +32,20 @@ class Drone {
   /// Used as a reference when selecting what pitches to present to the user.
   Pitch get root => rootNotifier.value;
   late final ValueNotifier<Pitch> rootNotifier =
-      ValueNotifier(const Pitch.a440());
+      ValueNotifier(const Pitch.a440())..addListener(_onPitchesChanged);
 
   /// The temperament used for generating notes
   Temperament get temperament => temperamentNotifier.value;
   final ValueNotifier<Temperament> temperamentNotifier =
       ValueNotifier(const EqualTemperament());
 
-  List<Pitch> get pitches => pitchesNotifier.value;
-  late final ListNotifier<Pitch> pitchesNotifier = ListNotifier([])
+  /// The pitches that are currently playing.
+  Iterable<Pitch> get pitches => intervals.map(
+      (int interval) => root.transposed(interval, temperament: temperament));
+
+  /// The intervals relative to the [root] that are currently playing.
+  List<int> get intervals => intervalsNotifier.value;
+  late final ListNotifier<int> intervalsNotifier = ListNotifier([])
     ..addListener(_onPitchesChanged);
 
   /// Whether the drone is playing.
@@ -56,7 +61,7 @@ class Drone {
   Future<void>? loadAudioLock;
 
   void _onPitchesChanged() async {
-    if (pitches.isEmpty) {
+    if (intervals.isEmpty) {
       pause();
       return;
     }

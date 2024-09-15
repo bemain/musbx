@@ -7,7 +7,7 @@ class DroneAudioSource extends StreamAudioSource {
   /// An [AudioSource] that provides a drone tone with specific [frequencies].
   DroneAudioSource({
     required this.frequencies,
-    this.length = 1024 * 512,
+    this.length = 128 * 256,
     this.offset = 0,
     this.amplitude = 64 * 64,
     this.sampleRate = 44100,

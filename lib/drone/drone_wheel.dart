@@ -1,10 +1,9 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/material.dart' hide Key;
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/model/key.dart';
-import 'package:musbx/model/pitch.dart';
+import 'package:musbx/model/pitch_class.dart';
 
 enum DroneButtonType {
   /// This pitch is the current root.
@@ -36,15 +35,10 @@ class DroneWheelState extends State<DroneWheel> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Pitch> pitches = List.generate(12, drone.root.transposed);
-
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) => SizedBox.square(
         dimension: constraints.biggest.shortestSide,
         child: GestureDetector(
-          onPanStart: (details) {
-            drone.pitchesNotifier.clear();
-          },
           onPanUpdate: (DragUpdateDetails details) {
             Offset center = Offset(
                 constraints.biggest.width / 2, constraints.biggest.height / 2);
@@ -70,7 +64,7 @@ class DroneWheelState extends State<DroneWheel> {
             });
           },
           onPanEnd: (details) async {
-            // Easy way to center the root at the top
+            // Smoothly snap the root to the top
             for (int i = 0; i < 10; i++) {
               setState(() {
                 angle *= 0.5;
@@ -83,27 +77,30 @@ class DroneWheelState extends State<DroneWheel> {
             });
           },
           child: ListenableBuilder(
-            listenable: drone.pitchesNotifier,
-            builder: (context, child) {
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  if (drone.pitches.isNotEmpty)
-                    SizedBox.square(
-                      dimension: (widget.radius - 48) * 2,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          buildPlayButton(),
-                          const SizedBox(height: 4),
-                          buildResetButton(),
-                        ],
+            listenable: drone.rootNotifier,
+            builder: (context, child) => ListenableBuilder(
+              listenable: drone.intervalsNotifier,
+              builder: (context, child) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (drone.intervals.isNotEmpty)
+                      SizedBox.square(
+                        dimension: (widget.radius - 48) * 2,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            buildPlayButton(),
+                            const SizedBox(height: 4),
+                            buildResetButton(),
+                          ],
+                        ),
                       ),
-                    ),
-                  for (final Pitch pitch in pitches) buildPitchButton(pitch),
-                ],
-              );
-            },
+                    ...List.generate(12, buildPitchButton),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -126,20 +123,20 @@ class DroneWheelState extends State<DroneWheel> {
   Widget buildResetButton() {
     return OutlinedButton.icon(
       onPressed: () {
-        drone.pitchesNotifier.clear();
+        drone.intervalsNotifier.clear();
       },
       label: const Text("Reset"),
       icon: const Icon(Icons.refresh),
     );
   }
 
-  Widget buildPitchButton(Pitch pitch) {
-    final int index = pitch.semitonesTo(drone.root).abs();
-    final double buttonAngle = index * 2 * pi / 12 - pi / 2 + angle;
+  Widget buildPitchButton(int interval) {
+    final PitchClass pitchClass = drone.root.pitchClass.transposed(interval);
+    final double buttonAngle = interval * 2 * pi / 12 - pi / 2 + angle;
 
-    final DroneButtonType type = pitch.pitchClass == drone.root.pitchClass
+    final DroneButtonType type = interval == 0
         ? DroneButtonType.root
-        : Key.major(drone.root.pitchClass).notes.contains(pitch.pitchClass)
+        : KeyType.major.intervalPattern.contains(interval)
             ? DroneButtonType.diatonic
             : DroneButtonType.chromatic;
 
@@ -157,7 +154,7 @@ class DroneWheelState extends State<DroneWheel> {
       DroneButtonType.chromatic => Theme.of(context).colorScheme.onSurface
     };
 
-    final bool isPlaying = drone.pitches.contains(pitch);
+    final bool isPlaying = drone.intervals.contains(interval);
 
     return Transform.translate(
       offset: Offset(cos(buttonAngle), sin(buttonAngle)) * widget.radius,
@@ -167,14 +164,14 @@ class DroneWheelState extends State<DroneWheel> {
             isPlaying ? backgroundColor.withOpacity(0.5) : backgroundColor,
         onPressed: () {
           if (isPlaying) {
-            drone.pitchesNotifier.remove(pitch);
+            drone.intervalsNotifier.remove(interval);
           } else {
-            drone.pitchesNotifier.add(pitch);
+            drone.intervalsNotifier.add(interval);
             drone.play();
           }
         },
         child: Text(
-          pitch.pitchClass.abbreviation,
+          pitchClass.abbreviation,
           style: TextStyle(
             color: textColor,
           ),
