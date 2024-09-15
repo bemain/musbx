@@ -14,7 +14,10 @@ class DronePageState extends State<DronePage> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: DefaultAppBar(),
+      appBar: DefaultAppBar(
+        helpText:
+            "Press a note to play it. \nRotate the wheel to change the key.",
+      ),
       body: Column(children: [
         DroneWheel(),
         SizedBox(height: 16),
