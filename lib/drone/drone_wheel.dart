@@ -39,7 +39,10 @@ class DroneWheelState extends State<DroneWheel> {
         dimension: constraints.biggest.shortestSide,
         child: GestureDetector(
           onPanUpdate: (DragUpdateDetails details) {
-            Offset center = Offset(radius, radius);
+            Offset center = Offset(
+              constraints.biggest.shortestSide / 2,
+              constraints.biggest.shortestSide / 2,
+            );
             Offset a = details.localPosition - center;
             Offset b = (details.localPosition - details.delta) - center;
 
