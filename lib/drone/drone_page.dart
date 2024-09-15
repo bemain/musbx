@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/drone/drone_octave.dart';
 import 'package:musbx/drone/drone_wheel.dart';
 import 'package:musbx/page/default_app_bar.dart';
 
@@ -15,9 +16,9 @@ class DronePageState extends State<DronePage> {
     return const Scaffold(
       appBar: DefaultAppBar(),
       body: Column(children: [
-        Expanded(
-          child: DroneWheel(),
-        ),
+        DroneWheel(),
+        SizedBox(height: 16),
+        DroneOctave(),
       ]),
     );
   }

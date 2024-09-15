@@ -18,10 +18,7 @@ enum DroneButtonType {
 
 class DroneWheel extends StatefulWidget {
   /// A wheel with buttons that create drone tones in the chromatic scale starting from the [Drone]'s root.
-  const DroneWheel({super.key, this.radius = 150});
-
-  /// The radius of the wheel.
-  final double radius;
+  const DroneWheel({super.key});
 
   @override
   State<StatefulWidget> createState() => DroneWheelState();
@@ -35,13 +32,14 @@ class DroneWheelState extends State<DroneWheel> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, BoxConstraints constraints) => SizedBox.square(
+    return LayoutBuilder(builder: (context, BoxConstraints constraints) {
+      final double radius = constraints.biggest.shortestSide / 2 - 48;
+
+      return SizedBox.square(
         dimension: constraints.biggest.shortestSide,
         child: GestureDetector(
           onPanUpdate: (DragUpdateDetails details) {
-            Offset center = Offset(
-                constraints.biggest.width / 2, constraints.biggest.height / 2);
+            Offset center = Offset(radius, radius);
             Offset a = details.localPosition - center;
             Offset b = (details.localPosition - details.delta) - center;
 
@@ -86,7 +84,7 @@ class DroneWheelState extends State<DroneWheel> {
                   children: [
                     if (drone.intervals.isNotEmpty)
                       SizedBox.square(
-                        dimension: (widget.radius - 48) * 2,
+                        dimension: (radius - 48) * 2,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -96,15 +94,16 @@ class DroneWheelState extends State<DroneWheel> {
                           ],
                         ),
                       ),
-                    ...List.generate(12, buildPitchButton),
+                    ...List.generate(
+                        12, (index) => buildPitchButton(index, radius)),
                   ],
                 );
               },
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget buildPlayButton() {
@@ -130,7 +129,7 @@ class DroneWheelState extends State<DroneWheel> {
     );
   }
 
-  Widget buildPitchButton(int interval) {
+  Widget buildPitchButton(int interval, double radius) {
     final PitchClass pitchClass = drone.root.pitchClass.transposed(interval);
     final double buttonAngle = interval * 2 * pi / 12 - pi / 2 + angle;
 
@@ -157,7 +156,7 @@ class DroneWheelState extends State<DroneWheel> {
     final bool isPlaying = drone.intervals.contains(interval);
 
     return Transform.translate(
-      offset: Offset(cos(buttonAngle), sin(buttonAngle)) * widget.radius,
+      offset: Offset(cos(buttonAngle), sin(buttonAngle)) * radius,
       child: FloatingActionButton(
         elevation: isPlaying ? 0 : 6,
         backgroundColor:

@@ -31,6 +31,7 @@ class Drone {
   /// The [Pitch] at the root of the scale.
   /// Used as a reference when selecting what pitches to present to the user.
   Pitch get root => rootNotifier.value;
+  set root(Pitch value) => rootNotifier.value = value;
   late final ValueNotifier<Pitch> rootNotifier =
       ValueNotifier(const Pitch.a440())..addListener(_onPitchesChanged);
 
