@@ -53,18 +53,35 @@ class Drone {
   /// Pause playback.
   Future<void> pause() => _player.pause();
 
+  Future<void>? loadAudioLock;
+
   void _onPitchesChanged() async {
     if (pitches.isEmpty) {
       pause();
       return;
     }
 
+    // Make sure no other process is currently setting the audio source
+    loadAudioLock = _updateAudioSource(
+      awaitBeforeLoading: loadAudioLock,
+    );
+    await loadAudioLock;
+  }
+
+  /// Awaits [awaitBeforeLoading] and updates the audio source.
+  /// This is used to implement locking.
+  Future<void> _updateAudioSource({
+    Future<void>? awaitBeforeLoading,
+  }) async {
+    try {
+      await awaitBeforeLoading;
+    } catch (_) {}
+
     final List<double> frequencies = [
       for (Pitch pitch in pitches) pitch.frequency,
     ];
 
     // Hack: we use a concatenating audio source so that the current index changes.
-    // TODO: Implement locking
     await _player.setAudioSource(ConcatenatingAudioSource(children: [
       DroneAudioSource(frequencies: frequencies),
       DroneAudioSource(frequencies: frequencies, offset: 1),
