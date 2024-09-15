@@ -90,7 +90,7 @@ class NavigationPageState extends State<NavigationPage> {
               ),
               NavigationDestination(
                 label: "Drone",
-                icon: Icon(CustomIcons.sine_wave),
+                icon: Icon(Icons.volume_up),
               ),
             ],
           ),
