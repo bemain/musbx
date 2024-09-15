@@ -52,7 +52,13 @@ class DroneWheelState extends State<DroneWheel> {
               angle -= deltaAngle;
 
               final int semitones = -(12 * angle / (2 * pi)).round();
-              if (semitones != 0) {
+              final int targetSemitonesFromC0 = drone.root.octave * 12 +
+                  drone.root.pitchClass.semitonesFromC +
+                  semitones;
+
+              if (semitones != 0 &&
+                  targetSemitonesFromC0 >= Drone.minOctave * 12 &&
+                  targetSemitonesFromC0 <= Drone.maxOctave * 12 + 11) {
                 drone.rootNotifier.value = drone.root.transposed(
                   semitones,
                   temperament: drone.temperament,

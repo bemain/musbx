@@ -24,7 +24,7 @@ class DroneOctave extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  onPressed: drone.root.octave <= 2
+                  onPressed: drone.root.octave <= Drone.minOctave
                       ? null
                       : () {
                           drone.root = drone.root.transposed(-12);
@@ -44,7 +44,7 @@ class DroneOctave extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: drone.root.octave >= 5
+                  onPressed: drone.root.octave >= Drone.maxOctave
                       ? null
                       : () {
                           drone.root = drone.root.transposed(12);

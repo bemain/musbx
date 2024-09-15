@@ -28,6 +28,12 @@ class Drone {
       }
     });
 
+  /// The minimum octave of the [root].
+  static int minOctave = 2;
+
+  /// The maximum octave of the [root].
+  static int maxOctave = 4;
+
   /// The [Pitch] at the root of the scale.
   /// Used as a reference when selecting what pitches to present to the user.
   Pitch get root => rootNotifier.value;
