@@ -27,7 +27,7 @@ class Key {
   const Key.major(this.tonic) : type = KeyType.major;
   const Key.minor(this.tonic) : type = KeyType.minor;
 
-  /// The first note if this key, which provides a sense of arrival or rest.
+  /// The first note in this key, which provides a sense of arrival or rest.
   final PitchClass tonic;
 
   /// The type of this key, which describes the relationship between the [tonic] and the remaining [notes] in the key.

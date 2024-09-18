@@ -43,7 +43,7 @@ class Drone {
       ValueNotifier(const Pitch(PitchClass.a(), 3, 220))
         ..addListener(_onPitchesChanged);
 
-  /// The temperament used for generating notes
+  /// The temperament used for generating pitches
   Temperament get temperament => temperamentNotifier.value;
   final ValueNotifier<Temperament> temperamentNotifier =
       ValueNotifier(const EqualTemperament());

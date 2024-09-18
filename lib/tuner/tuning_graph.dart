@@ -125,9 +125,9 @@ class TuningGraphPainter extends CustomPainter {
     final List<List<double>> frequenciesByNote = [];
     List<double> chunk = [];
     for (double frequency in frequencies) {
-      final Pitch note = Tuner.instance.getClosestPitch(frequency);
+      final Pitch pitch = Tuner.instance.getClosestPitch(frequency);
       if (chunk.isEmpty ||
-          note.abbreviation ==
+          pitch.abbreviation ==
               Tuner.instance.getClosestPitch(chunk.first).abbreviation) {
         chunk.add(frequency);
       } else {
@@ -193,10 +193,10 @@ class TuningGraphPainter extends CustomPainter {
     double frequency,
     Offset frequencyPosition,
   ) {
-    final Pitch note = Tuner.instance.getClosestPitch(frequency);
+    final Pitch pitch = Tuner.instance.getClosestPitch(frequency);
 
     TextSpan span = TextSpan(
-      text: note.abbreviation,
+      text: pitch.abbreviation,
       style: textStyle ?? TextStyle(color: lineColor),
     );
     TextPainter textPainter = TextPainter(
@@ -209,7 +209,7 @@ class TuningGraphPainter extends CustomPainter {
       calculateTextOffset(
         canvasSize,
         textPainter,
-        frequency - note.frequency,
+        frequency - pitch.frequency,
         frequencyPosition,
       ),
     );

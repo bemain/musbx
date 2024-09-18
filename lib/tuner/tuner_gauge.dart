@@ -44,13 +44,13 @@ class TunerGauge extends StatelessWidget {
 
   /// Build gage showing [frequency]'s name and tuning.
   Widget buildGaugeAndText(BuildContext context) {
-    final Pitch note = Tuner.instance.getClosestPitch(frequency!);
+    final Pitch pitch = Tuner.instance.getClosestPitch(frequency!);
     final double pitchOffset = Tuner.instance.getPitchOffset(frequency!);
 
     ColorScheme scheme = Theme.of(context).colorScheme;
 
     // If note is in tune, make needle green
-    List<Color> needleColors = (pitchOffset < Tuner.inTuneThreshold)
+    List<Color> needleColors = (pitchOffset.abs() < Tuner.inTuneThreshold)
         ? [
             Colors.lightGreen.harmonizeWith(scheme.primary),
             Colors.green.harmonizeWith(scheme.primary),
@@ -71,7 +71,7 @@ class TunerGauge extends StatelessWidget {
           child: Align(
             alignment: const Alignment(-0.55, 0.7),
             child: Text(
-              note.abbreviation,
+              pitch.abbreviation,
               style: GoogleFonts.andikaTextTheme(Theme.of(context).textTheme)
                   .displayMedium,
             ),
