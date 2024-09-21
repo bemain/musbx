@@ -70,10 +70,7 @@ class DroneWheelState extends State<DroneWheel> {
               angle -= deltaAngle;
 
               if (semitones != 0) {
-                drone.rootNotifier.value = drone.root.transposed(
-                  semitones,
-                  temperament: drone.temperament,
-                );
+                drone.rootNotifier.value = drone.root.transposed(semitones);
                 angle += semitones * 2 * pi / 12;
               }
             });
