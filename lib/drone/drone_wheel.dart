@@ -18,7 +18,11 @@ enum DroneButtonType {
 
 class DroneWheel extends StatefulWidget {
   /// A wheel with buttons that create drone tones in the chromatic scale starting from the [Drone]'s root.
-  const DroneWheel({super.key});
+  const DroneWheel({super.key, this.elasticity = 2.0});
+
+  /// The strength of the contracting force applied when the wheel is at the minimum or maximum value,
+  /// and when the user lets go and the root moves to the top.
+  final double elasticity;
 
   @override
   State<StatefulWidget> createState() => DroneWheelState();
@@ -52,16 +56,20 @@ class DroneWheelState extends State<DroneWheel> {
             );
 
             setState(() {
-              angle -= deltaAngle;
-
               final int semitones = -(12 * angle / (2 * pi)).round();
               final int targetSemitonesFromC0 = drone.root.octave * 12 +
                   drone.root.pitchClass.semitonesFromC +
                   semitones;
 
-              if (semitones != 0 &&
-                  targetSemitonesFromC0 >= Drone.minOctave * 12 &&
-                  targetSemitonesFromC0 <= Drone.maxOctave * 12 + 11) {
+              if (targetSemitonesFromC0 < Drone.minOctave * 12 ||
+                  targetSemitonesFromC0 > Drone.maxOctave * 12 + 11) {
+                angle -= deltaAngle / (angle.abs() * widget.elasticity + 1);
+                return;
+              }
+
+              angle -= deltaAngle;
+
+              if (semitones != 0) {
                 drone.rootNotifier.value = drone.root.transposed(
                   semitones,
                   temperament: drone.temperament,
@@ -74,7 +82,7 @@ class DroneWheelState extends State<DroneWheel> {
             // Smoothly snap the root to the top
             for (int i = 0; i < 10; i++) {
               setState(() {
-                angle *= 0.5;
+                angle /= widget.elasticity;
               });
               await Future.delayed(const Duration(milliseconds: 10));
             }
