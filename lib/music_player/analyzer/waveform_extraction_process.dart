@@ -19,6 +19,12 @@ class WaveformExtractionProcess extends Process<Waveform> {
 
   @override
   Future<Waveform> process() async {
+    assert(
+      Platform.isAndroid || Platform.isIOS,
+      UnsupportedError(
+          "Waveform extraction is not supported on the current platform"),
+    );
+
     final File inFile = song.source is YoutubeSource
         ? (song.source as YoutubeSource).cacheFile
         : (song.source as FileSource).file;
