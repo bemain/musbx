@@ -75,18 +75,31 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
-    Map<StemType, File>? cachedStemFiles = await getStemsInCache(song);
+    /// Decompression using ffmpeg is only supported on some platforms.
+    /// When avaiable, use mp3, otherwise use wav.
+    final StemFileType fileType =
+        Platform.isAndroid || Platform.isIOS || Platform.isMacOS
+            ? StemFileType.mp3
+            : StemFileType.wav;
+
+    Map<StemType, File>? cachedStemFiles = await getStemsInCache(
+      song,
+      fileExtension: fileType.name,
+    );
     if (cachedStemFiles != null) {
       debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
 
-      // Cached files need to be converted to wav
-      stepNotifier.value = DemixingStep.extracting;
-      progressNotifier.value = 0;
+      if (fileType != StemFileType.wav) {
+        // Cached files need to be converted to wav
+        stepNotifier.value = DemixingStep.extracting;
+        progressNotifier.value = 0;
 
-      for (final entry in cachedStemFiles.entries) {
-        cachedStemFiles[entry.key] = await mp3ToWav(entry.value);
-        progressNotifier.value = (progress ?? 0) + 1 ~/ StemType.values.length;
-        breakIfCancelled();
+        for (final entry in cachedStemFiles.entries) {
+          cachedStemFiles[entry.key] = await mp3ToWav(entry.value);
+          progressNotifier.value =
+              (progress ?? 0) + 1 ~/ StemType.values.length;
+          breakIfCancelled();
+        }
       }
 
       return cachedStemFiles;
@@ -105,10 +118,12 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     if (song.source is FileSource) {
       response = await host.uploadFile(
         (song.source as FileSource).file,
+        desiredStemFilesType: fileType,
       );
     } else {
       response = await host.uploadYoutubeSong(
         (song.source as YoutubeSource).youtubeId,
+        desiredStemFilesType: fileType,
       );
     }
 
@@ -164,7 +179,10 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
     breakIfCancelled();
 
-    // Convert files to wav
+    // If the files are already in wav format, no conversion is required.
+    if (fileType == StemFileType.wav) return stemFiles;
+
+    // Otherwise, convert the files to wav
     stepNotifier.value = DemixingStep.extracting;
     progressNotifier.value = 0;
 

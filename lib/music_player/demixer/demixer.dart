@@ -150,13 +150,13 @@ class Demixer extends MusicPlayerComponent {
 
     if (enabled) {
       // Load wav files
-      Directory directory = await DemixerApiHost.extractedFilesDirectory;
-      Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
-          MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
+      Map<StemType, File>? files = process?.result;
+      assert(files != null,
+          "[DEMIXER] Trying to load demixed audio, but the dimixing process has not been completed.");
 
       // Enable mixed audio
       await musicPlayer.player.setAudioSource(
-        MixedAudioSource(files),
+        MixedAudioSource(files!),
         initialPosition: position,
       );
       await musicPlayer.player.setVolume(1.0);
