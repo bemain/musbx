@@ -4,12 +4,14 @@ import 'package:musbx/drone/drone_audio_source.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/pitch_class.dart';
 import 'package:musbx/model/temperament.dart';
-import 'package:musbx/widgets.dart';
+import 'package:musbx/persistent_value.dart';
 
 /// Singleton for playing drone tones.
 class Drone {
   // Only way to access is through [instance].
-  Drone._();
+  Drone._() {
+    _onPitchesChanged();
+  }
 
   /// The instance of this singleton.
   static final Drone instance = Drone._();
@@ -40,7 +42,10 @@ class Drone {
   Pitch get root => rootNotifier.value;
   set root(Pitch value) => rootNotifier.value = value;
   late final ValueNotifier<Pitch> rootNotifier =
-      ValueNotifier(const Pitch(PitchClass.a(), 3, 220))
+      TransformedPersistentValue<Pitch, String>("drone/roots",
+          initialValue: const Pitch(PitchClass.a(), 3, 220),
+          from: Pitch.parse,
+          to: (pitch) => pitch.abbreviation)
         ..addListener(_onPitchesChanged);
 
   /// The temperament used for generating pitches
@@ -53,9 +58,14 @@ class Drone {
       (int interval) => root.transposed(interval, temperament: temperament));
 
   /// The intervals relative to the [root] that are currently playing.
-  List<int> get intervals => intervalsNotifier.value;
-  late final ListNotifier<int> intervalsNotifier = ListNotifier([])
-    ..addListener(_onPitchesChanged);
+  List<int> get intervals => List.unmodifiable(intervalsNotifier.value);
+  set intervals(List<int> value) => intervalsNotifier.value = value;
+  late final ValueNotifier<List<int>> intervalsNotifier =
+      TransformedPersistentValue<List<int>, List<String>>("drone/intervals",
+          initialValue: [],
+          from: (strings) => [for (final s in strings) int.parse(s)],
+          to: (ints) => [for (final i in ints) "$i"])
+        ..addListener(_onPitchesChanged);
 
   /// Whether the drone is playing.
   bool get isPlaying => isPlayingNotifier.value;

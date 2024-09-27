@@ -136,7 +136,7 @@ class DroneWheelState extends State<DroneWheel> {
   Widget buildResetButton() {
     return OutlinedButton.icon(
       onPressed: () {
-        drone.intervalsNotifier.clear();
+        drone.intervalsNotifier.value = [];
       },
       label: const Text("Reset"),
       icon: const Icon(Icons.refresh),
@@ -177,9 +177,10 @@ class DroneWheelState extends State<DroneWheel> {
             isPlaying ? backgroundColor.withOpacity(0.5) : backgroundColor,
         onPressed: () {
           if (isPlaying) {
-            drone.intervalsNotifier.remove(interval);
+            drone.intervals =
+                drone.intervals.where((i) => i != interval).toList();
           } else {
-            drone.intervalsNotifier.add(interval);
+            drone.intervals = [...drone.intervals, interval];
             drone.play();
           }
         },

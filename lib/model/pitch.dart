@@ -43,7 +43,32 @@ class Pitch {
     );
   }
 
-  String get abbreviation => "${pitchClass.abbreviation}$octave";
+  /// Parse [string] as a pitch.
+  ///
+  /// Throws a [FormatException] if [string] is not a valid pitch.
+  static Pitch parse(String string) {
+    final Pitch? pitch = tryParse(string);
+    if (pitch == null) throw FormatException("$string is not a valid Pitch");
+    return pitch;
+  }
+
+  /// Parse [string] as a pitch class. [string] should be in the format "{note name}{octave}@{frequency}Hz", e.g. A#4@440Hz.
+  ///
+  /// Returns `null` if [string] is not a valid pitch class.
+  static Pitch? tryParse(String string) {
+    final match =
+        RegExp(r"^([A-G][b♭#♯]?)(\d+)@(\d+(\.\d+)?)(Hz)?$").firstMatch(string);
+    if (match == null || match.groupCount < 3) return null;
+
+    final PitchClass? pitchClass = PitchClass.tryParse(match.group(1)!);
+    final int? octave = int.tryParse(match.group(2)!);
+    final double? frequency = double.tryParse(match.group(3)!);
+    if (pitchClass == null || octave == null || frequency == null) return null;
+
+    return Pitch(pitchClass, octave, frequency);
+  }
+
+  String get abbreviation => "${pitchClass.abbreviation}$octave@${frequency}Hz";
 
   /// The number of semitones between this and [other].
   int semitonesTo(Pitch other) =>

@@ -118,9 +118,10 @@ class PitchClass {
   /// Throws a [FormatException] if [string] is not a valid pitch class.
   static PitchClass parse(String string) {
     final PitchClass? pitchClass = tryParse(string);
-    assert(pitchClass != null,
-        FormatException("$string is not a valid PitchClass"));
-    return pitchClass!;
+    if (pitchClass == null) {
+      throw FormatException("$string is not a valid PitchClass");
+    }
+    return pitchClass;
   }
 
   /// Parse [string] as a pitch class.
