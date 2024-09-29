@@ -33,11 +33,39 @@ class Key {
   /// The type of this key, which describes the relationship between the [tonic] and the remaining [notes] in the key.
   final KeyType type;
 
+  /// The type of accidental that this key signature introduces.
+  Accidental get accidental => switch (_majorParallel.tonic.chroma) {
+        Chroma.c => Accidental.natural,
+        Chroma.g ||
+        Chroma.d ||
+        Chroma.a ||
+        Chroma.e ||
+        Chroma.b ||
+        Chroma.fSharp =>
+          Accidental.sharp,
+        Chroma.f ||
+        Chroma.aSharp ||
+        Chroma.dSharp ||
+        Chroma.gSharp ||
+        Chroma.cSharp ||
+        Chroma.fSharp =>
+          Accidental.flat,
+      };
+
+  /// The number of accidentals that this key signature introduces.
+  int get nAccidentals => switch (_majorParallel.tonic.chroma) {
+        Chroma.c => 0,
+        Chroma.g || Chroma.f => 1,
+        Chroma.d || Chroma.aSharp => 2,
+        Chroma.a || Chroma.dSharp => 3,
+        Chroma.e || Chroma.gSharp => 4,
+        Chroma.b || Chroma.cSharp => 5,
+        Chroma.fSharp => 6,
+      };
+
   /// All the notes in this ḱey.
   Iterable<PitchClass> get notes =>
       type.intervalPattern.map((int interval) => tonic.transposed(interval));
-
-  KeySignature get signature => KeySignature.fromKey(this);
 
   /// The key parallel to this one.
   /// It contains the same [notes] as this, but has a different [tonic] and [type].
@@ -45,6 +73,9 @@ class Key {
         KeyType.major => Key(tonic.transposed(-3), KeyType.minor),
         KeyType.minor => Key(tonic.transposed(3), KeyType.major),
       };
+
+  /// Returns [this] if this is major, or [parallel] otherwise.
+  Key get _majorParallel => type == KeyType.major ? this : parallel;
 
   /// Transpose this key a number of semitones.
   /// This doesn't change the `Key`'s [type].
@@ -63,86 +94,4 @@ class Key {
 
   @override
   int get hashCode => Object.hash(tonic, type);
-}
-
-class KeySignature {
-  /// Representation of a musical key signature.
-  ///
-  /// A key signature is a set of sharp, flat, or natural symbols placed at the
-  /// beginning of a section of music, indicating persistent accidentals.
-  KeySignature(this.nAccidentals, this.accidental);
-
-  factory KeySignature.fromKey(Key key) {
-    PitchClass majorTonic =
-        key.type == KeyType.major ? key.tonic : key.parallel.tonic;
-    return KeySignature(
-      switch (majorTonic.chroma) {
-        Chroma.c => 0,
-        Chroma.g || Chroma.f => 1,
-        Chroma.d || Chroma.aSharp => 2,
-        Chroma.a || Chroma.dSharp => 3,
-        Chroma.e || Chroma.gSharp => 4,
-        Chroma.b || Chroma.cSharp => 5,
-        Chroma.fSharp => 6,
-      },
-      switch (majorTonic.chroma) {
-        Chroma.c => Accidental.natural,
-        Chroma.g ||
-        Chroma.d ||
-        Chroma.a ||
-        Chroma.e ||
-        Chroma.b ||
-        Chroma.fSharp =>
-          Accidental.sharp,
-        Chroma.f ||
-        Chroma.aSharp ||
-        Chroma.dSharp ||
-        Chroma.gSharp ||
-        Chroma.cSharp ||
-        Chroma.fSharp =>
-          Accidental.flat,
-      },
-    );
-  }
-
-  /// The type of accidental that this key signature introduces.
-  final Accidental accidental;
-
-  /// The number of accidentals that this key signature introduces.
-  final int nAccidentals;
-
-  /// The chromas that are altered by this key signature.
-  List<Chroma> get alteredChromas => List.unmodifiable(switch (accidental) {
-        Accidental.natural => [],
-        Accidental.sharp => [
-            Chroma.fSharp,
-            Chroma.cSharp,
-            Chroma.gSharp,
-            Chroma.dSharp,
-            Chroma.aSharp,
-            Chroma.f
-          ].sublist(0, nAccidentals),
-        Accidental.flat => [
-            Chroma.aSharp,
-            Chroma.dSharp,
-            Chroma.gSharp,
-            Chroma.cSharp,
-            Chroma.fSharp,
-            Chroma.b
-          ].sublist(0, nAccidentals),
-      });
-
-  @override
-  String toString() {
-    return "KeySignature($nAccidentals, ${accidental.abbreviation})";
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      other is KeySignature &&
-      nAccidentals == other.nAccidentals &&
-      accidental == other.accidental;
-
-  @override
-  int get hashCode => Object.hash(nAccidentals, accidental);
 }

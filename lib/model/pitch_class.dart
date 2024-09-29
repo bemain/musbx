@@ -1,5 +1,6 @@
 import 'package:musbx/model/accidental.dart';
 import 'package:musbx/model/chroma.dart';
+import 'package:musbx/model/key.dart';
 
 enum NaturalPitchClass {
   c("C", Chroma.c),
@@ -83,35 +84,42 @@ class PitchClass {
 
   /// Creates a pitch class with the given [chroma].
   ///
-  /// Tries using an accidental of the [preferredAccidental] type, and fallbacks
-  /// to [fallbackAccidental] if the given [chroma] could not be achieved with that accidental.
-  /// [preferredAccidental] and [fallbackAccidental] cannot be the same.
+  /// Tries using one of the [preferredAccidentals], and fallbacks to the most
+  /// common one (meaning the one whose key introduces the fewest alterations)
+  /// if the given [chroma] could not be achieved with any of the preferred accidentals.
   factory PitchClass.fromChroma(
     Chroma chroma, {
-    Accidental preferredAccidental = Accidental.natural,
-    Accidental? fallbackAccidental,
+    Accidental? preferredAccidental,
   }) {
-    fallbackAccidental ??= preferredAccidental != Accidental.natural
-        ? Accidental.natural
-        : Accidental.sharp;
-    assert(preferredAccidental != fallbackAccidental);
-
-    Accidental accidental = preferredAccidental;
-    NaturalPitchClass? natural;
-
-    for (accidental in [preferredAccidental, fallbackAccidental]) {
-      natural = NaturalPitchClass.values
+    if (preferredAccidental != null) {
+      NaturalPitchClass? preferredNatural = NaturalPitchClass.values
           .where((natural) =>
-              natural.chroma.semitonesFromC + accidental.alteration ==
+              natural.chroma.semitonesFromC + preferredAccidental.alteration ==
               chroma.semitonesFromC)
           .firstOrNull;
-      if (natural != null) break;
+
+      if (preferredNatural != null) {
+        return PitchClass(
+          preferredNatural,
+          preferredAccidental,
+        );
+      }
     }
 
-    assert(natural != null,
-        "The requested chroma $chroma could not be achieved using $preferredAccidental or $fallbackAccidental");
+    /// The accidental most commonly used for this pitch class,
+    /// meaning the one whose key introduces the fewest alterations.
+    final Accidental commonAccidental = switch (chroma.semitonesFromC) {
+      1 || 6 || 8 => Accidental.sharp,
+      3 || 10 => Accidental.flat,
+      _ => Accidental.natural,
+    };
 
-    return PitchClass(natural!, accidental);
+    return PitchClass(
+      NaturalPitchClass.values.firstWhere((natural) =>
+          natural.chroma.semitonesFromC + commonAccidental.alteration ==
+          chroma.semitonesFromC),
+      commonAccidental,
+    );
   }
 
   /// Parse [string] as a pitch class.
@@ -153,7 +161,7 @@ class PitchClass {
   /// Transpose this pitch class a number of semitones.
   PitchClass transposed(int semitones) => PitchClass.fromChroma(
         chroma.transposed(semitones),
-        preferredAccidental: accidental,
+        preferredAccidental: Key.major(this).accidental,
       );
 
   @override
