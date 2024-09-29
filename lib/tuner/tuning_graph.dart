@@ -127,8 +127,8 @@ class TuningGraphPainter extends CustomPainter {
     for (double frequency in frequencies) {
       final Pitch pitch = Tuner.instance.getClosestPitch(frequency);
       if (chunk.isEmpty ||
-          pitch.abbreviation ==
-              Tuner.instance.getClosestPitch(chunk.first).abbreviation) {
+          pitch.pitchClass ==
+              Tuner.instance.getClosestPitch(chunk.first).pitchClass) {
         chunk.add(frequency);
       } else {
         frequenciesByNote.add(chunk);
