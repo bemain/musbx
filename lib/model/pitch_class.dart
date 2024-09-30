@@ -2,6 +2,8 @@ import 'package:musbx/model/accidental.dart';
 import 'package:musbx/model/chroma.dart';
 import 'package:musbx/model/key.dart';
 
+/// The seven "natural" pitch classes are the ones represented by just a letter;
+/// A, B, C, D, E, F and G.
 enum NaturalPitchClass {
   c("C", Chroma.c),
   d("D", Chroma.d),
@@ -15,6 +17,7 @@ enum NaturalPitchClass {
 
   final String abbreviation;
 
+  /// The chroma that this pitch class belongs to.
   final Chroma chroma;
 }
 
@@ -24,7 +27,7 @@ class PitchClass {
   const PitchClass(this.naturalClass, [this.accidental = Accidental.natural]);
 
   /// The "natural" pitch class (the seven pitch classes represented by just a letter)
-  /// that makes the basis of this pitch class.
+  /// that is the basis of this pitch class.
   final NaturalPitchClass naturalClass;
 
   /// The accidental indicating the alteration of the [naturalClass].
@@ -84,9 +87,9 @@ class PitchClass {
 
   /// Creates a pitch class with the given [chroma].
   ///
-  /// Tries using one of the [preferredAccidentals], and fallbacks to the most
-  /// common one (meaning the one whose key introduces the fewest alterations)
-  /// if the given [chroma] could not be achieved with any of the preferred accidentals.
+  /// Tries using the [preferredAccidental], and fallbacks to the most
+  /// common one (meaning the one found in a key close to C in the circle of fifths)
+  /// if the given [chroma] could not be achieved using the preferred accidental.
   factory PitchClass.fromChroma(
     Chroma chroma, {
     Accidental? preferredAccidental,
@@ -107,7 +110,7 @@ class PitchClass {
     }
 
     /// The accidental most commonly used for this pitch class,
-    /// meaning the one whose key introduces the fewest alterations.
+    /// meaning the one found in a key close to C in the circle of fifths
     final Accidental commonAccidental = switch (chroma.semitonesFromC) {
       1 || 6 || 8 => Accidental.sharp,
       3 || 10 => Accidental.flat,

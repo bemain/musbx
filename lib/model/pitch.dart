@@ -52,7 +52,7 @@ class Pitch {
     return pitch;
   }
 
-  /// Parse [string] as a pitch class. [string] should be in the format "{note name}{octave}@{frequency}Hz", e.g. A#4@440Hz.
+  /// Parse [string] as a pitch class. See [abbreviation] for how the string should be formatted, e.g. A#4@440Hz.
   ///
   /// Returns `null` if [string] is not a valid pitch class.
   static Pitch? tryParse(String string) {
