@@ -75,11 +75,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  flutter_launcher_icons:
-    git:
-      url: https://github.com/fluttercommunity/flutter_launcher_icons.git
-      ref: master  # Newest version from GitHub is required to generate monochrome icons
-
+  flutter_launcher_icons: ^0.14.1
   flutter_native_splash: ^2.4.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
