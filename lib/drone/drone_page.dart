@@ -19,9 +19,11 @@ class DronePageState extends State<DronePage> {
             "Press a note to play it. \nRotate the wheel to change the key.",
       ),
       body: Column(children: [
+        Expanded(child: SizedBox()),
         DroneWheel(),
         SizedBox(height: 16),
         DroneOctave(),
+        SizedBox(height: 32),
       ]),
     );
   }

@@ -134,11 +134,10 @@ class DroneWheelState extends State<DroneWheel> {
   }
 
   Widget buildResetButton() {
-    return OutlinedButton.icon(
+    return IconButton(
       onPressed: () {
         drone.intervalsNotifier.value = [];
       },
-      label: const Text("Reset"),
       icon: const Icon(Icons.refresh),
     );
   }
