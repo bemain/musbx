@@ -1,13 +1,8 @@
-import 'dart:io';
-
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:mailto/mailto.dart';
 import 'package:musbx/custom_icons.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/navigation_page.dart';
 import 'package:musbx/purchases.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 /// Show an exception dialog.
 ///
@@ -133,71 +128,6 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
         ),
       ],
     );
-  }
-}
-
-class FreemiumTransitionDialog extends StatelessWidget {
-  const FreemiumTransitionDialog({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      icon: const Icon(Icons.star),
-      title: const Text("Upgrade for free"),
-      content: RichText(
-        text: TextSpan(
-          style: Theme.of(context).textTheme.bodyMedium,
-          children: [
-            const TextSpan(
-              text:
-                  "Musician's Toolbox has been converted into a free app with in-app upgrades. Since you already purchased the app, you can claim a promo code that unlocks all premium features by sending me an email at ",
-            ),
-            TextSpan(
-              text: "bemain.dev@gmail.com",
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () async {
-                  await sendEmail();
-
-                  if (context.mounted) Navigator.of(context).pop();
-                },
-            ),
-          ],
-        ),
-        textAlign: TextAlign.start,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text("Reject offer"),
-        ),
-        FilledButton(
-          onPressed: () async {
-            await sendEmail();
-
-            if (context.mounted) Navigator.of(context).pop();
-          },
-          child: const Text("Send email"),
-        )
-      ],
-    );
-  }
-
-  Future<bool> sendEmail() async {
-    return await launchUrlString("${Mailto(
-      to: ["bemain.dev@gmail.com"],
-      subject: "Musician's Toolbox, free promo code",
-      body:
-          """Please send me my free promo code for Musician's Toolbox, which will unlock all the premium features of the app. 
-
-My device is running ${Platform.isIOS ? "iOS" : "Android"}.
-
-""",
-    )}");
   }
 }
 

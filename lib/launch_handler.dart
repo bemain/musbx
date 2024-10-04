@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/persistent_value.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -35,6 +34,7 @@ class LaunchHandler {
   /// Called when the app is launched for the first time with a new version.
   static void onFirstLaunchWithVersion(PackageInfo info) async {
     final int buildNumber = int.parse(info.buildNumber);
+    // ignore: unused_local_variable
     final int? previousBuildNumber = lastVersionLaunched.value == "0"
         ? null
         : int.parse(lastVersionLaunched.value);
@@ -57,19 +57,6 @@ class LaunchHandler {
       final File searchHistory =
           File("${docsDir.path}/youtube_search_history.json");
       if (await searchHistory.exists()) await searchHistory.delete();
-    }
-
-    if (buildNumber >= 29) {
-      // Check if the user has bought the paid version of the app (before the freemium update)
-      // TODO: Remove this once all users have migrated.
-      if (previousBuildNumber != null && previousBuildNumber <= 28) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          showExceptionDialog(
-            const FreemiumTransitionDialog(),
-            barrierDismissible: false,
-          );
-        });
-      }
     }
   }
 }
