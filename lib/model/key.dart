@@ -1,3 +1,5 @@
+import 'package:musbx/model/accidental.dart';
+import 'package:musbx/model/chroma.dart';
 import 'package:musbx/model/pitch_class.dart';
 
 enum KeyType {
@@ -12,9 +14,6 @@ enum KeyType {
   final String abbreviation;
 
   final List<int> intervalPattern;
-
-  @override
-  String toString() => abbreviation;
 }
 
 /// Representation of a musical key.
@@ -28,25 +27,55 @@ class Key {
   const Key.major(this.tonic) : type = KeyType.major;
   const Key.minor(this.tonic) : type = KeyType.minor;
 
-  /// The first note if this key, which provides a sense of arrival or rest.
+  /// The first note in this key, which provides a sense of arrival or rest.
   final PitchClass tonic;
 
   /// The type of this key, which describes the relationship between the [tonic] and the remaining [notes] in the key.
   final KeyType type;
 
-  /// All the notes in this ḱey.
-  List<PitchClass> get notes => type.intervalPattern
-      .map((int interval) => tonic.transposed(interval))
-      .toList();
+  /// The type of accidental that this key signature introduces.
+  Accidental get accidental => switch (_majorParallel.tonic.chroma) {
+        Chroma.c => Accidental.natural,
+        Chroma.g ||
+        Chroma.d ||
+        Chroma.a ||
+        Chroma.e ||
+        Chroma.b ||
+        Chroma.fSharp =>
+          Accidental.sharp,
+        Chroma.f ||
+        Chroma.aSharp ||
+        Chroma.dSharp ||
+        Chroma.gSharp ||
+        Chroma.cSharp ||
+        Chroma.fSharp =>
+          Accidental.flat,
+      };
 
-  KeySignature get signature => KeySignature.fromKey(this);
+  /// The number of accidentals that this key signature introduces.
+  int get nAccidentals => switch (_majorParallel.tonic.chroma) {
+        Chroma.c => 0,
+        Chroma.g || Chroma.f => 1,
+        Chroma.d || Chroma.aSharp => 2,
+        Chroma.a || Chroma.dSharp => 3,
+        Chroma.e || Chroma.gSharp => 4,
+        Chroma.b || Chroma.cSharp => 5,
+        Chroma.fSharp => 6,
+      };
+
+  /// All the notes in this ḱey.
+  Iterable<PitchClass> get notes =>
+      type.intervalPattern.map((int interval) => tonic.transposed(interval));
 
   /// The key parallel to this one.
   /// It contains the same [notes] as this, but has a different [tonic] and [type].
-  Key get parallelKey => switch (type) {
+  Key get parallel => switch (type) {
         KeyType.major => Key(tonic.transposed(-3), KeyType.minor),
         KeyType.minor => Key(tonic.transposed(3), KeyType.major),
       };
+
+  /// Returns [this] if this is major, or [parallel] otherwise.
+  Key get _majorParallel => type == KeyType.major ? this : parallel;
 
   /// Transpose this key a number of semitones.
   /// This doesn't change the `Key`'s [type].
@@ -58,88 +87,11 @@ class Key {
 
   @override
   String toString() => "Key(${tonic.abbreviation}, ${type.abbreviation})";
-}
-
-enum Accidental {
-  sharp("♯"),
-  flat("♭"),
-  natural("♮");
-
-  /// The types of accidentals that a [KeySignature] can introduce.
-  const Accidental(this.abbreviation);
-
-  final String abbreviation;
-}
-
-class KeySignature {
-  /// Representation of a musical key signature.
-  ///
-  /// A key signature is a set of sharp, flat, or natural symbols placed at the
-  /// beginning of a section of music, indicating persistent accidentals.
-  KeySignature(this.nAccidentals, this.accidental);
-
-  factory KeySignature.fromKey(Key key) {
-    PitchClass majorTonic =
-        key.type == KeyType.major ? key.tonic : key.parallelKey.tonic;
-    return KeySignature(
-      switch (majorTonic) {
-        PitchClass.c => 0,
-        PitchClass.g || PitchClass.f => 1,
-        PitchClass.d || PitchClass.bFlat => 2,
-        PitchClass.a || PitchClass.eFlat => 3,
-        PitchClass.e || PitchClass.aFlat => 4,
-        PitchClass.b || PitchClass.dFlat => 5,
-        PitchClass.gFlat => 6,
-      },
-      switch (majorTonic) {
-        PitchClass.c => Accidental.natural,
-        PitchClass.g ||
-        PitchClass.d ||
-        PitchClass.a ||
-        PitchClass.e ||
-        PitchClass.b ||
-        PitchClass.gFlat =>
-          Accidental.sharp,
-        PitchClass.f ||
-        PitchClass.bFlat ||
-        PitchClass.eFlat ||
-        PitchClass.aFlat ||
-        PitchClass.dFlat ||
-        PitchClass.gFlat =>
-          Accidental.flat,
-      },
-    );
-  }
-
-  /// The type of accidental that this key signature introduces.
-  final Accidental accidental;
-
-  /// The number of accidentals that this key signature introduces.
-  final int nAccidentals;
-
-  /// The notes that are altered by this key signature.
-  List<PitchClass> get alteredNotes => switch (accidental) {
-        Accidental.natural => [],
-        Accidental.sharp => [
-            PitchClass.gFlat,
-            PitchClass.dFlat,
-            PitchClass.aFlat,
-            PitchClass.eFlat,
-            PitchClass.bFlat,
-            PitchClass.f
-          ].sublist(0, nAccidentals),
-        Accidental.flat => [
-            PitchClass.bFlat,
-            PitchClass.eFlat,
-            PitchClass.aFlat,
-            PitchClass.dFlat,
-            PitchClass.gFlat,
-            PitchClass.b
-          ].sublist(0, nAccidentals),
-      };
 
   @override
-  String toString() {
-    return "KeySignature($nAccidentals, ${accidental.abbreviation})";
-  }
+  bool operator ==(Object other) =>
+      other is Key && tonic == other.tonic && type == other.type;
+
+  @override
+  int get hashCode => Object.hash(tonic, type);
 }

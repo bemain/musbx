@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:mic_stream/mic_stream.dart';
-import 'package:musbx/model/note.dart';
+import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/temperament.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 
@@ -32,18 +32,16 @@ class Tuner {
 
   /// The frequency of A4, in Hz. Used as a reference for all other notes.
   ///
-  /// Defaults to 440 Hz.
-  ///
-  /// See [Note.a4frequency].
-  double get a4frequency => a4frequencyNotifier.value;
-  set a4frequency(double value) => a4frequencyNotifier.value = value;
-  final ValueNotifier<double> a4frequencyNotifier = ValueNotifier(440);
+  /// Defaults to [Pitch.a440].
+  Pitch get tuning => tuningNotifier.value;
+  set tuning(Pitch value) => tuningNotifier.value = value;
+  final ValueNotifier<Pitch> tuningNotifier = ValueNotifier(const Pitch.a440());
 
   /// The temperament that notes are tuned to.
   ///
   /// Defaults to [EqualTemperament].
   ///
-  /// See [Note.temperament].
+  /// See [Temperament].
   Temperament get temperament => temperamentNotifier.value;
   set temperament(Temperament value) => temperamentNotifier.value = value;
   final ValueNotifier<Temperament> temperamentNotifier =
@@ -74,7 +72,7 @@ class Tuner {
         return avgFrequency;
       }
       return null;
-    });
+    }).where((frequency) => frequency != null);
   }
 
   /// Uses the package mic_stream to record audio to a stream.
@@ -119,15 +117,22 @@ class Tuner {
         previousFrequencies.length;
   }
 
-  Note getClosestNote(double frequency) {
-    return Note.fromFrequency(
+  Pitch getClosestPitch(double frequency) {
+    return Pitch.closest(
       frequency,
-      a4frequency: a4frequency,
+      tuning: tuning,
       temperament: temperament,
     );
   }
 
-  /// Calculate how many cents off [frequency] is from its closest [Note].
-  double getPitchOffset(double frequency) =>
-      1200 * log(frequency / getClosestNote(frequency).frequency) / log(2);
+  /// Calculate how many cents off [frequency] is from its closest [Pitch].
+  double getPitchOffset(double frequency) {
+    final Pitch closest = getClosestPitch(frequency);
+
+    /// The frequency this note "should" have
+    final double targetFrequency = tuning.frequency *
+        temperament.frequencyRatio(tuning.semitonesTo(closest));
+
+    return 1200 * log(frequency / targetFrequency) / log(2);
+  }
 }

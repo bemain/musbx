@@ -35,14 +35,14 @@ enum DemixerState {
 class Demixer extends MusicPlayerComponent {
   /// The stems that songs are being separated into.
   List<Stem> get stems => stemsNotifier.value;
-  late final StemsNotifier stemsNotifier = StemsNotifier([
+  late final StemsNotifier stemsNotifier = StemsNotifier(List.unmodifiable([
     Stem(StemType.vocals),
     Stem(StemType.piano),
     Stem(StemType.guitar),
     Stem(StemType.bass),
     Stem(StemType.drums),
     Stem(StemType.other),
-  ]);
+  ]));
 
   /// The state of the Demixer.
   DemixerState get state => stateNotifier.value;

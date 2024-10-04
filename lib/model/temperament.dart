@@ -4,15 +4,15 @@ import 'package:flutter/cupertino.dart';
 
 @immutable
 abstract class Temperament {
-  /// Representation of a musical temperament, determining what frequencies notes are placed at.
+  /// Representation of a musical temperament, determining what frequencies pitches are placed at.
   const Temperament();
 
-  /// The ratio of the frequency between the note at [scaleStep] and the root of the scale.
-  /// Multiply with the frequency of the root to get the note's frequency.
+  /// The ratio of the frequency between the pitch at [scaleStep] and the root of the scale.
+  /// Multiply with the frequency of the root to get the pitch's frequency.
   double frequencyRatio(int scaleStep);
 
   /// The number of scale steps that fits within the given [frequencyRatio].
-  /// Pass a frequency divided by the frequency of the root note to get the note's degree.
+  /// Pass a frequency divided by the frequency of the root pitch to get the pitch's degree.
   int scaleStep(double frequencyRatio);
 }
 
@@ -31,7 +31,7 @@ class EqualTemperament extends Temperament {
 class PythagoreanTuning extends Temperament {
   const PythagoreanTuning();
 
-  /// The list of ratios used to determine the frequencies for the notes.
+  /// The list of ratios used to determine the frequencies for the pitches.
   static const List<double> _ratios = [
     1,
     256 / 243,

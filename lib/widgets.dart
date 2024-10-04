@@ -198,6 +198,11 @@ class ListNotifier<T> extends ChangeNotifier {
     notifyListeners();
     return ret;
   }
+
+  void clear() {
+    _value.clear();
+    notifyListeners();
+  }
 }
 
 class ExpandedIcon extends StatelessWidget {
@@ -313,5 +318,15 @@ extension ClampDuration on Duration {
         upperLimit.inMicroseconds,
       ),
     );
+  }
+}
+
+extension MapValueNotifier<T> on ValueNotifier<T> {
+  /// Create a new [ValueNotifier] by passing each value that this receives
+  /// through the [convert] method and then feeding that to the notifier.
+  ValueNotifier<S> map<S>(S Function(T) convert) {
+    final ValueNotifier<S> notifier = ValueNotifier<S>(convert(value));
+    addListener(() => notifier.value = convert(value));
+    return notifier;
   }
 }

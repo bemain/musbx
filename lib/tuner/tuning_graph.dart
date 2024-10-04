@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:musbx/model/note.dart';
+import 'package:musbx/model/pitch.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class TuningGraph extends StatelessWidget {
@@ -47,7 +47,7 @@ enum TextPlacement {
 class TuningGraphPainter extends CustomPainter {
   /// Paints a line showing the tuning of the frequencies in [frequencyHistory].
   ///
-  /// Displays text showing the names of the closest [Note]s.
+  /// Displays text showing the names of the closest [Pitch]s.
   /// Highlights the section where the tone is in tune in green.
   TuningGraphPainter({
     this.continuous = false,
@@ -120,15 +120,15 @@ class TuningGraphPainter extends CustomPainter {
     drawFrequencies(canvas, size, frequencies);
   }
 
-  /// Split the [frequencies] into smaller chunks, where all frequencies in one chunk are closest to the same [Note].
+  /// Split the [frequencies] into smaller chunks, where all frequencies in one chunk are closest to the same [Pitch].
   List<List<double>> splitFrequenciesByNote(List<double> frequencies) {
     final List<List<double>> frequenciesByNote = [];
     List<double> chunk = [];
     for (double frequency in frequencies) {
-      final Note note = Tuner.instance.getClosestNote(frequency);
+      final Pitch pitch = Tuner.instance.getClosestPitch(frequency);
       if (chunk.isEmpty ||
-          note.abbreviation ==
-              Tuner.instance.getClosestNote(frequency).abbreviation) {
+          pitch.pitchClass ==
+              Tuner.instance.getClosestPitch(chunk.first).pitchClass) {
         chunk.add(frequency);
       } else {
         frequenciesByNote.add(chunk);
@@ -186,17 +186,17 @@ class TuningGraphPainter extends CustomPainter {
     );
   }
 
-  /// Draw text displaying the name of the [Note] closest to [frequency], above or below the line.
+  /// Draw text displaying the name of the [Pitch] closest to [frequency], above or below the line.
   void drawText(
     Canvas canvas,
     Size canvasSize,
     double frequency,
     Offset frequencyPosition,
   ) {
-    final Note note = Tuner.instance.getClosestNote(frequency);
+    final Pitch pitch = Tuner.instance.getClosestPitch(frequency);
 
     TextSpan span = TextSpan(
-      text: note.abbreviation,
+      text: pitch.abbreviation,
       style: textStyle ?? TextStyle(color: lineColor),
     );
     TextPainter textPainter = TextPainter(
@@ -209,7 +209,7 @@ class TuningGraphPainter extends CustomPainter {
       calculateTextOffset(
         canvasSize,
         textPainter,
-        frequency - note.frequency,
+        frequency - pitch.frequency,
         frequencyPosition,
       ),
     );

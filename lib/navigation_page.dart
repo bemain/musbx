@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/ads.dart';
 import 'package:musbx/custom_icons.dart';
+import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/music_player/music_player_page.dart';
 import 'package:musbx/persistent_value.dart';
@@ -59,6 +60,7 @@ class NavigationPageState extends State<NavigationPage> {
                 MetronomePage(),
                 MusicPlayerPage(),
                 TunerPage(),
+                DronePage(),
               ],
             ),
           ),
@@ -85,6 +87,10 @@ class NavigationPageState extends State<NavigationPage> {
               NavigationDestination(
                 label: "Tuner",
                 icon: Icon(CustomIcons.tuning_fork),
+              ),
+              NavigationDestination(
+                label: "Drone",
+                icon: Icon(Icons.volume_up),
               ),
             ],
           ),
