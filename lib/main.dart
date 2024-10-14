@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:advanced_in_app_review/advanced_in_app_review.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,14 +22,6 @@ Future<void> main() async {
   await Notifications.initialize();
 
   LaunchHandler.initialize();
-
-  // Setup in-app review
-  AdvancedInAppReview()
-      .setMinDaysBeforeRemind(7)
-      .setMinDaysAfterInstall(7)
-      .setMinLaunchTimes(5)
-      .setMinSecondsBeforeShowDialog(4)
-      .monitor();
 
   // Google Ads
   unawaited(MobileAds.instance.initialize());
