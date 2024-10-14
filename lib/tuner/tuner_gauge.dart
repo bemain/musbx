@@ -71,7 +71,7 @@ class TunerGauge extends StatelessWidget {
           child: Align(
             alignment: const Alignment(-0.55, 0.7),
             child: Text(
-              pitch.pitchClass.abbreviation,
+              pitch.abbreviation,
               style: GoogleFonts.andikaTextTheme(Theme.of(context).textTheme)
                   .displayMedium,
             ),

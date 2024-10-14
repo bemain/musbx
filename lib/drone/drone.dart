@@ -45,7 +45,7 @@ class Drone {
       TransformedPersistentValue<Pitch, String>("drone/roots",
           initialValue: const Pitch(PitchClass.a(), 3, 220),
           from: Pitch.parse,
-          to: (pitch) => pitch.abbreviation)
+          to: (pitch) => pitch.toString())
         ..addListener(_onPitchesChanged);
 
   /// The temperament used for generating pitches

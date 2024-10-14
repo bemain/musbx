@@ -68,7 +68,7 @@ class Pitch {
     return Pitch(pitchClass, octave, frequency);
   }
 
-  String get abbreviation => "${pitchClass.abbreviation}$octave@${frequency}Hz";
+  String get abbreviation => "${pitchClass.abbreviation}$octave";
 
   /// The number of semitones between this and [other].
   int semitonesTo(Pitch other) =>
@@ -89,7 +89,7 @@ class Pitch {
 
   @override
   String toString() {
-    return "Pitch(${pitchClass.abbreviation}, $octave, ${frequency}Hz)";
+    return "${pitchClass.abbreviation}$octave@${frequency}Hz";
   }
 
   @override
