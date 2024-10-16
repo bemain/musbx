@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/notification_indicator.dart';
 import 'package:musbx/notifications.dart';
-import 'package:musbx/widgets.dart';
 
 class PlayButton extends StatelessWidget {
   /// Play / pause button to start or stop the [Metronome].
@@ -15,28 +14,30 @@ class PlayButton extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: Metronome.instance.isPlayingNotifier,
       builder: (context, bool isPlaying, child) {
-        final IconData icon =
-            isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded;
-
-        return IconButton(
-          onPressed: () {
-            if (isPlaying) {
-              Metronome.instance.pause();
-            } else {
-              Metronome.instance.play();
-              _requestNotificationPermission(context);
-            }
-          },
-          color: Theme.of(context).colorScheme.primary,
-          icon: size == null
-              ? ExpandedIcon(icon)
-              : Icon(
-                  icon,
-                  size: size,
-                ),
+        return GestureDetector(
+          onTap: () => _onPressed(context),
+          behavior: HitTestBehavior.opaque,
+          child: Center(
+            child: IconButton.filled(
+              onPressed: () => _onPressed(context),
+              iconSize: 75,
+              icon: Icon(
+                isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
+              ),
+            ),
+          ),
         );
       },
     );
+  }
+
+  void _onPressed(BuildContext context) {
+    if (Metronome.instance.isPlaying) {
+      Metronome.instance.pause();
+    } else {
+      Metronome.instance.play();
+      _requestNotificationPermission(context);
+    }
   }
 
   Future<void> _requestNotificationPermission(BuildContext context) async {

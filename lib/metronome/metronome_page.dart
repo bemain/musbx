@@ -10,7 +10,6 @@ import 'package:musbx/metronome/subdivisions.dart';
 import 'package:musbx/metronome/higher.dart';
 import 'package:musbx/metronome/volume_indicator.dart';
 import 'package:musbx/page/default_app_bar.dart';
-import 'package:musbx/page/widget_card.dart';
 
 class MetronomePage extends StatelessWidget {
   /// Page for controlling [Metronome], including:
@@ -23,35 +22,23 @@ class MetronomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const DefaultAppBar(),
+    return const Scaffold(
+      appBar: DefaultAppBar(),
       body: Column(
         children: [
-          const WidgetCard(
-            child: Column(
-              children: [
-                Higher(),
-                SizedBox(height: 8.0),
-                Subdivisions(),
-              ],
-            ),
-          ),
+          Higher(),
+          SizedBox(height: 8.0),
+          Subdivisions(),
+          SizedBox(height: 16.0),
+          CountDisplay(),
           Expanded(
-            child: WidgetCard(
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  const Align(
-                    alignment: Alignment.topCenter,
-                    child: CountDisplay(),
-                  ),
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 150),
-                      child: const PlayButton(),
-                    ),
-                  ),
-                  const Align(
+                  PlayButton(),
+                  Align(
                     alignment: Alignment.bottomRight,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -60,26 +47,20 @@ class MetronomePage extends StatelessWidget {
                         NotificationIndicator(),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
           ),
-          const WidgetCard(
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    BpmButtons(),
-                    BpmTapper(),
-                  ],
-                ),
-                BpmSlider(),
-              ],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              BpmButtons(),
+              BpmTapper(),
+            ],
           ),
-          const SizedBox(height: 4.0),
+          BpmSlider(),
+          SizedBox(height: 8.0),
         ],
       ),
     );
