@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:mic_stream/mic_stream.dart';
+import 'package:musbx/model/accidental.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/temperament.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
@@ -122,6 +123,7 @@ class Tuner {
       frequency,
       tuning: tuning,
       temperament: temperament,
+      preferredAccidental: Accidental.natural,
     );
   }
 

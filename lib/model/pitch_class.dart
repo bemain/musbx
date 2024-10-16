@@ -111,9 +111,10 @@ class PitchClass {
 
     /// The accidental most commonly used for this pitch class,
     /// meaning the one found in a key close to C in the circle of fifths
+    /// (which is ♮ for all natural pitch classes, and ♭ for all the others except F♯).
     final Accidental commonAccidental = switch (chroma.semitonesFromC) {
-      1 || 6 || 8 => Accidental.sharp,
-      3 || 10 => Accidental.flat,
+      6 => Accidental.sharp,
+      1 || 3 || 8 || 10 => Accidental.flat,
       _ => Accidental.natural,
     };
 
@@ -162,9 +163,13 @@ class PitchClass {
       "${naturalClass.abbreviation}${accidental == Accidental.natural ? "" : accidental.abbreviation}";
 
   /// Transpose this pitch class a number of semitones.
-  PitchClass transposed(int semitones) => PitchClass.fromChroma(
+  ///
+  /// Uses the [preferredAccidental] if one is required, and fallbacks to the one used by
+  /// the major key corresponding to this pitch class if not specified.
+  PitchClass transposed(int semitones, {Accidental? preferredAccidental}) =>
+      PitchClass.fromChroma(
         chroma.transposed(semitones),
-        preferredAccidental: Key.major(this).accidental,
+        preferredAccidental: preferredAccidental ?? Key.major(this).accidental,
       );
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/model/accidental.dart';
 import 'package:musbx/model/pitch_class.dart';
 import 'package:musbx/model/temperament.dart';
 
@@ -30,11 +31,15 @@ class Pitch {
     double frequency, {
     Pitch tuning = const Pitch.a440(),
     Temperament temperament = const EqualTemperament(),
+    Accidental? preferredAccidental,
   }) {
     assert(frequency > 0, "Frequency must be greater than 0");
 
     final int semitones = temperament.scaleStep(frequency / tuning.frequency);
-    Pitch transposed = tuning.transposed(semitones);
+    Pitch transposed = tuning.transposed(
+      semitones,
+      preferredAccidental: preferredAccidental,
+    );
 
     return Pitch(
       transposed.pitchClass,
@@ -79,9 +84,11 @@ class Pitch {
   Pitch transposed(
     int semitones, {
     Temperament temperament = const EqualTemperament(),
+    Accidental? preferredAccidental,
   }) {
     return Pitch(
-      pitchClass.transposed(semitones),
+      pitchClass.transposed(semitones,
+          preferredAccidental: preferredAccidental),
       octave + ((pitchClass.chroma.semitonesFromC + semitones) / 12).floor(),
       frequency * temperament.frequencyRatio(semitones),
     );
