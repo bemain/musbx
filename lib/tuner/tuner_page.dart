@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/permission_builder.dart';
-import 'package:musbx/page/card_list.dart';
 import 'package:musbx/page/default_app_bar.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
@@ -48,15 +47,24 @@ class TunerPageState extends State<TunerPage> {
             builder: (context, temperament, child) {
               return Scaffold(
                 appBar: const DefaultAppBar(),
-                body: CardList(
-                  children: [
-                    TunerGauge(
-                      frequency: (tuner.frequencyHistory.isNotEmpty)
-                          ? tuner.frequencyHistory.last
-                          : null,
-                    ),
-                    TuningGraph(frequencyHistory: tuner.frequencyHistory),
-                  ],
+                body: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TunerGauge(
+                          frequency: (tuner.frequencyHistory.isNotEmpty)
+                              ? tuner.frequencyHistory.last
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(height: 16.0),
+                      const Divider(),
+                      TuningGraph(frequencyHistory: tuner.frequencyHistory),
+                      const Divider(),
+                    ],
+                  ),
                 ),
               );
             }),

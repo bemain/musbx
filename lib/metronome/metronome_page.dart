@@ -24,16 +24,17 @@ class MetronomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       appBar: DefaultAppBar(),
-      body: Column(
-        children: [
-          Higher(),
-          SizedBox(height: 8.0),
-          Subdivisions(),
-          SizedBox(height: 16.0),
-          CountDisplay(),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
+      body: Padding(
+        padding: EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Higher(),
+            SizedBox(height: 8.0),
+            Subdivisions(),
+            SizedBox(height: 16.0),
+            CountDisplay(),
+            SizedBox(height: 8.0),
+            Expanded(
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -51,17 +52,17 @@ class MetronomePage extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              BpmButtons(),
-              BpmTapper(),
-            ],
-          ),
-          BpmSlider(),
-          SizedBox(height: 8.0),
-        ],
+            SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                BpmButtons(),
+                BpmTapper(),
+              ],
+            ),
+            BpmSlider(),
+          ],
+        ),
       ),
     );
   }
