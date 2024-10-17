@@ -24,44 +24,51 @@ class MetronomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       appBar: DefaultAppBar(),
-      body: Padding(
-        padding: EdgeInsets.all(8),
-        child: Column(
-          children: [
-            Higher(),
-            SizedBox(height: 8.0),
-            Subdivisions(),
-            SizedBox(height: 16.0),
-            CountDisplay(),
-            SizedBox(height: 8.0),
-            Expanded(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  PlayButton(),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        VolumeIndicator(),
-                        NotificationIndicator(),
-                      ],
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        right: false,
+        left: false,
+        child: Padding(
+          padding: EdgeInsets.all(8),
+          child: Column(
+            children: [
+              Higher(),
+              SizedBox(height: 8.0),
+              Subdivisions(),
+              Divider(),
+              CountDisplay(),
+              SizedBox(height: 8.0),
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PlayButton(),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          VolumeIndicator(),
+                          NotificationIndicator(),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+              ),
+              Divider(),
+              SizedBox(height: 8.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  BpmButtons(),
+                  BpmTapper(),
                 ],
               ),
-            ),
-            SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                BpmButtons(),
-                BpmTapper(),
-              ],
-            ),
-            BpmSlider(),
-          ],
+              BpmSlider(),
+            ],
+          ),
         ),
       ),
     );

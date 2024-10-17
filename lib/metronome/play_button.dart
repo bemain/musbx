@@ -18,11 +18,16 @@ class PlayButton extends StatelessWidget {
           onTap: () => _onPressed(context),
           behavior: HitTestBehavior.opaque,
           child: Center(
-            child: IconButton.filled(
-              onPressed: () => _onPressed(context),
-              iconSize: 75,
-              icon: Icon(
-                isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
+            child: SizedBox.square(
+              dimension: 91,
+              child: FittedBox(
+                child: IconButton.filled(
+                  onPressed: () => _onPressed(context),
+                  iconSize: 75,
+                  icon: Icon(
+                    isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                  ),
+                ),
               ),
             ),
           ),
