@@ -77,9 +77,9 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
 - Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
 - Mute or isolate specific instruments using the Demixer.""",
                     ),
-                    WidgetCard(child: SlowdownerCard()),
-                    WidgetCard(child: LoopCard()),
                     WidgetCard(child: DemixerCard()),
+                    WidgetCard(child: LoopCard()),
+                    WidgetCard(child: SlowdownerCard()),
                     if (Platform.isAndroid) WidgetCard(child: EqualizerCard()),
                     if (bottomBarSize != null)
                       SizedBox(height: bottomBarSize!.height + 4.0)
