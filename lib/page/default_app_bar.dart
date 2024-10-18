@@ -9,9 +9,13 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// [helpText] and general information about the app.
   const DefaultAppBar({
     super.key,
+    this.title,
     this.helpText,
     this.scrolledUnderElevation,
   }) : preferredSize = const Size.fromHeight(kToolbarHeight);
+
+  /// The primary widget displayed in the app bar.
+  final Widget? title;
 
   /// A short text explaining how to use the screen. Displayed in the about dialog.
   final String? helpText;
@@ -27,7 +31,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
     return ValueListenableBuilder(
       valueListenable: Purchases.hasPremiumNotifier,
       builder: (context, hasPremium, child) => AppBar(
-        title: const Text("Musician's toolbox"),
+        title: title,
         forceMaterialTransparency: true,
         scrolledUnderElevation: scrolledUnderElevation,
         actions: [

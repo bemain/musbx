@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/permission_builder.dart';
 import 'package:musbx/page/default_app_bar.dart';
+import 'package:musbx/permission_builder.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/tuner/tuning_graph.dart';
@@ -48,7 +48,7 @@ class TunerPageState extends State<TunerPage> {
               return Scaffold(
                 appBar: const DefaultAppBar(),
                 body: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
                   child: Column(
                     children: [
                       Padding(

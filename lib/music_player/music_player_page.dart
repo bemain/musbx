@@ -70,6 +70,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
                   children: [
                     const DefaultAppBar(
                       scrolledUnderElevation: 0.0,
+                      title: Text("Musician's Toolbox"),
                       helpText:
                           """Press the plus-button and load a song from your device or by searching.
 

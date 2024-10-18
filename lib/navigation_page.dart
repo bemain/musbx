@@ -86,11 +86,11 @@ class NavigationPageState extends State<NavigationPage> {
               ),
               NavigationDestination(
                 label: "Tuner",
-                icon: Icon(CustomIcons.tuning_fork),
+                icon: Icon(Icons.speed),
               ),
               NavigationDestination(
                 label: "Drone",
-                icon: Icon(Icons.volume_up),
+                icon: Icon(CustomIcons.tuning_fork),
               ),
             ],
           ),

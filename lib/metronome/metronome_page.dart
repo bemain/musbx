@@ -24,51 +24,46 @@ class MetronomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       appBar: DefaultAppBar(),
-      body: SafeArea(
-        top: true,
-        bottom: false,
-        right: false,
-        left: false,
-        child: Padding(
-          padding: EdgeInsets.all(8),
-          child: Column(
-            children: [
-              Higher(),
-              SizedBox(height: 8.0),
-              Subdivisions(),
-              Divider(),
-              CountDisplay(),
-              SizedBox(height: 8.0),
-              Expanded(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    PlayButton(),
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          VolumeIndicator(),
-                          NotificationIndicator(),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Divider(),
-              SizedBox(height: 8.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+      body: Padding(
+        padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
+        child: Column(
+          children: [
+            Higher(),
+            SizedBox(height: 8),
+            Subdivisions(),
+            SizedBox(height: 8),
+            Divider(),
+            SizedBox(height: 8),
+            CountDisplay(),
+            Expanded(
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  BpmButtons(),
-                  BpmTapper(),
+                  PlayButton(),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        VolumeIndicator(),
+                        NotificationIndicator(),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              BpmSlider(),
-            ],
-          ),
+            ),
+            Divider(),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                BpmButtons(),
+                BpmTapper(),
+              ],
+            ),
+            BpmSlider(),
+          ],
         ),
       ),
     );
