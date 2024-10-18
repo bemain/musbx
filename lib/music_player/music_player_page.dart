@@ -74,9 +74,9 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
                       helpText:
                           """Press the plus-button and load a song from your device or by searching.
 
-- Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.
+- Mute or isolate specific instruments using the Demixer.
 - Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
-- Mute or isolate specific instruments using the Demixer.""",
+- Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.""",
                     ),
                     WidgetCard(child: DemixerCard()),
                     WidgetCard(child: LoopCard()),
