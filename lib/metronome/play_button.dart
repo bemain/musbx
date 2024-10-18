@@ -19,9 +19,10 @@ class PlayButton extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           child: Center(
             child: SizedBox.square(
-              dimension: 91,
+              dimension: 150,
               child: FittedBox(
-                child: IconButton.filled(
+                child: IconButton(
+                  color: Theme.of(context).colorScheme.primary,
                   onPressed: () => _onPressed(context),
                   iconSize: 75,
                   icon: Icon(

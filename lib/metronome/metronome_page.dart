@@ -10,6 +10,7 @@ import 'package:musbx/metronome/subdivisions.dart';
 import 'package:musbx/metronome/higher.dart';
 import 'package:musbx/metronome/volume_indicator.dart';
 import 'package:musbx/page/default_app_bar.dart';
+import 'package:musbx/page/widget_card.dart';
 
 class MetronomePage extends StatelessWidget {
   /// Page for controlling [Metronome], including:
@@ -32,29 +33,35 @@ class MetronomePage extends StatelessWidget {
             SizedBox(height: 8),
             Subdivisions(),
             SizedBox(height: 8),
-            Divider(),
-            SizedBox(height: 8),
-            CountDisplay(),
             Expanded(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  PlayButton(),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        VolumeIndicator(),
-                        NotificationIndicator(),
-                      ],
-                    ),
+              child: WidgetCard(
+                child: Padding(
+                  padding:
+                      EdgeInsets.only(top: 16, bottom: 8, left: 8, right: 8),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: CountDisplay(),
+                      ),
+                      PlayButton(),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            VolumeIndicator(),
+                            NotificationIndicator(),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-            Divider(),
-            SizedBox(height: 8),
+            SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
