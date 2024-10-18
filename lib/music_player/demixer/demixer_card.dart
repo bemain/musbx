@@ -327,13 +327,6 @@ class StemControlsState extends State<StemControls> {
 
     return Row(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Icon(
-            getStemIcon(widget.stem.type),
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
         GestureDetector(
           onLongPress:
               musicPlayer.nullIfNoSongElse((!musicPlayer.demixer.isReady)
@@ -348,26 +341,26 @@ class StemControlsState extends State<StemControls> {
                       widget.stem.enabled = !allOtherStemsDisabled;
                       musicPlayer.demixer.onStemsChanged();
                     }),
-          child: Checkbox(
-            value: widget.stem.enabled,
-            onChanged: musicPlayer.nullIfNoSongElse(
-              (!musicPlayer.demixer.isReady || allOtherStemsDisabled)
-                  ? null
-                  : (bool? value) {
-                      if (value == null) return;
+          child: IconButton(
+              isSelected: widget.stem.enabled,
+              onPressed: musicPlayer.nullIfNoSongElse(
+                (!musicPlayer.demixer.isReady)
+                    ? null
+                    : () {
+                        if (allOtherStemsDisabled) return;
 
-                      if (!Purchases.hasPremium &&
-                          musicPlayer.song?.id != demoSong.id &&
-                          widget.stem.type != StemType.vocals) {
-                        showAccessRestrictedDialog(context);
-                        return;
-                      }
+                        if (!Purchases.hasPremium &&
+                            musicPlayer.song?.id != demoSong.id &&
+                            widget.stem.type != StemType.vocals) {
+                          showAccessRestrictedDialog(context);
+                          return;
+                        }
 
-                      widget.stem.enabled = value;
-                      musicPlayer.demixer.onStemsChanged();
-                    },
-            ),
-          ),
+                        widget.stem.enabled = !widget.stem.enabled;
+                        musicPlayer.demixer.onStemsChanged();
+                      },
+              ),
+              icon: Icon(getStemIcon(widget.stem.type))),
         ),
         Expanded(
           child: Slider(

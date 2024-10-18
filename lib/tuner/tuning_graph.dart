@@ -27,7 +27,7 @@ class TuningGraph extends StatelessWidget {
         textPlacement: TextPlacement.top,
         newNotePadding: 8,
       ),
-      size: const Size(0, 150),
+      size: const Size(double.infinity, 150),
     );
   }
 }

@@ -70,16 +70,17 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
                   children: [
                     const DefaultAppBar(
                       scrolledUnderElevation: 0.0,
+                      title: Text("Musician's Toolbox"),
                       helpText:
                           """Press the plus-button and load a song from your device or by searching.
 
-- Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.
+- Mute or isolate specific instruments using the Demixer.
 - Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
-- Mute or isolate specific instruments using the Demixer.""",
+- Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.""",
                     ),
-                    WidgetCard(child: SlowdownerCard()),
-                    WidgetCard(child: LoopCard()),
                     WidgetCard(child: DemixerCard()),
+                    WidgetCard(child: LoopCard()),
+                    WidgetCard(child: SlowdownerCard()),
                     if (Platform.isAndroid) WidgetCard(child: EqualizerCard()),
                     if (bottomBarSize != null)
                       SizedBox(height: bottomBarSize!.height + 4.0)

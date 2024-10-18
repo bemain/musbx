@@ -10,7 +10,6 @@ import 'package:musbx/metronome/subdivisions.dart';
 import 'package:musbx/metronome/higher.dart';
 import 'package:musbx/metronome/volume_indicator.dart';
 import 'package:musbx/page/default_app_bar.dart';
-import 'package:musbx/page/widget_card.dart';
 
 class MetronomePage extends StatelessWidget {
   /// Page for controlling [Metronome], including:
@@ -23,35 +22,25 @@ class MetronomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const DefaultAppBar(),
-      body: Column(
-        children: [
-          const WidgetCard(
-            child: Column(
-              children: [
-                Higher(),
-                SizedBox(height: 8.0),
-                Subdivisions(),
-              ],
-            ),
-          ),
-          Expanded(
-            child: WidgetCard(
+    return const Scaffold(
+      appBar: DefaultAppBar(),
+      body: Padding(
+        padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
+        child: Column(
+          children: [
+            Higher(),
+            SizedBox(height: 8),
+            Subdivisions(),
+            SizedBox(height: 8),
+            Divider(),
+            SizedBox(height: 8),
+            CountDisplay(),
+            Expanded(
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  const Align(
-                    alignment: Alignment.topCenter,
-                    child: CountDisplay(),
-                  ),
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 150),
-                      child: const PlayButton(),
-                    ),
-                  ),
-                  const Align(
+                  PlayButton(),
+                  Align(
                     alignment: Alignment.bottomRight,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -60,27 +49,22 @@ class MetronomePage extends StatelessWidget {
                         NotificationIndicator(),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
-          ),
-          const WidgetCard(
-            child: Column(
+            Divider(),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    BpmButtons(),
-                    BpmTapper(),
-                  ],
-                ),
-                BpmSlider(),
+                BpmButtons(),
+                BpmTapper(),
               ],
             ),
-          ),
-          const SizedBox(height: 4.0),
-        ],
+            BpmSlider(),
+          ],
+        ),
       ),
     );
   }

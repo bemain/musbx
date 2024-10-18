@@ -125,10 +125,8 @@ class DroneWheelState extends State<DroneWheel> {
       valueListenable: drone.isPlayingNotifier,
       builder: (context, isPlaying, _) => IconButton.filled(
         onPressed: isPlaying ? drone.pause : drone.play,
-        icon: Icon(
-          isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
-          size: 75,
-        ),
+        iconSize: 75,
+        icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
       ),
     );
   }
