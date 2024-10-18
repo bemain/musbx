@@ -51,7 +51,7 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
                                   chord: chord,
                                   color: e.key <= position
                                       ? Theme.of(context).colorScheme.primary
-                                      : null,
+                                      : Theme.of(context).colorScheme.onSurface,
                                 ),
                         );
                       }),
