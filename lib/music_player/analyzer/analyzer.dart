@@ -11,9 +11,9 @@ import 'package:musbx/widgets.dart';
 /// A component for [MusicPlayer] that is used to analyze the current song,
 /// including chord identification and waveform extraction.
 class Analyzer extends MusicPlayerComponent {
-  static const Duration minDurationShown = Duration(seconds: 5);
-  static const Duration maxDurationShown = Duration(seconds: 10);
-  static const Duration defaultDurationShown = Duration(seconds: 8);
+  static const Duration minDurationShown = Duration(seconds: 8);
+  static const Duration maxDurationShown = Duration(seconds: 14);
+  static const Duration defaultDurationShown = Duration(seconds: 10);
 
   /// The duration window around the current position shown by widgets.
   Duration get durationShown => durationShownNotifier.value;
@@ -84,7 +84,7 @@ class Analyzer extends MusicPlayerComponent {
     int? durationShown = tryCast<int>(json["durationShown"]);
     this.durationShown = Duration(
       milliseconds: durationShown ?? defaultDurationShown.inMilliseconds,
-    );
+    ).clamp(minDurationShown, maxDurationShown);
   }
 
   /// Save settings for a song to a json map.

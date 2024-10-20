@@ -10,18 +10,17 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   const DefaultAppBar({
     super.key,
     this.title,
+    this.leading,
     this.helpText,
-    this.scrolledUnderElevation,
   }) : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   /// The primary widget displayed in the app bar.
   final Widget? title;
 
+  final Widget? leading;
+
   /// A short text explaining how to use the screen. Displayed in the about dialog.
   final String? helpText;
-
-  /// The elevation that will be used if this app bar has something scrolled underneath it.
-  final double? scrolledUnderElevation;
 
   @override
   final Size preferredSize; // default is 56.0
@@ -31,9 +30,8 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
     return ValueListenableBuilder(
       valueListenable: Purchases.hasPremiumNotifier,
       builder: (context, hasPremium, child) => AppBar(
+        leading: leading,
         title: title,
-        forceMaterialTransparency: true,
-        scrolledUnderElevation: scrolledUnderElevation,
         actions: [
           if (!hasPremium)
             IconButton(

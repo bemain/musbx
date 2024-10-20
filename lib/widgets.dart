@@ -59,9 +59,14 @@ class InfoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[icon, Text(text)]));
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          icon,
+          Text(text),
+        ],
+      ),
+    );
   }
 }
 
