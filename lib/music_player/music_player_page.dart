@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/music_player/analyzer/analyzer_card.dart';
 import 'package:musbx/music_player/demixer/demixer_card.dart';
+import 'package:musbx/music_player/equalizer/equalizer_sheet.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/pick_song_button/components/spacer.dart';
@@ -10,6 +11,7 @@ import 'package:musbx/music_player/pick_song_button/components/search_youtube_bu
 import 'package:musbx/music_player/pick_song_button/components/upload_file_button.dart';
 import 'package:musbx/music_player/bottom_bar/button_panel.dart';
 import 'package:musbx/music_player/bottom_bar/position_slider.dart';
+import 'package:musbx/music_player/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
@@ -82,6 +84,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
 
   Widget _buildBody(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: BackButton(
           onPressed: () {
@@ -89,6 +92,24 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
           },
         ),
         actions: [
+          IconButton(
+            onPressed: () {
+              _showModalBottomSheet(
+                context,
+                SlowdownerSheet(),
+              );
+            },
+            icon: const Icon(Icons.height), // TODO: Make a better icon
+          ),
+          IconButton(
+            onPressed: () {
+              _showModalBottomSheet(
+                context,
+                EqualizerSheet(),
+              );
+            },
+            icon: const Icon(Icons.equalizer),
+          ),
           if (!Purchases.hasPremium)
             IconButton(
               onPressed: () {
@@ -152,6 +173,24 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
           ],
         ),
       ),
+    );
+  }
+
+  Future<T?> _showModalBottomSheet<T>(BuildContext context, Widget? child) {
+    return showModalBottomSheet<T>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      // TODO: Remove when this is in the framework https://github.com/flutter/flutter/issues/118619
+      constraints: const BoxConstraints(maxWidth: 640),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: child,
+        );
+      },
     );
   }
 

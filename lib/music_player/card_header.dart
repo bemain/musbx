@@ -6,15 +6,13 @@ class CardHeader extends StatelessWidget {
   ///
   /// Includes a switch for toggling if the component is enabled,
   /// the title of the component, and a reset button.
-  CardHeader({
+  const CardHeader({
     super.key,
     required this.title,
     required this.enabled,
     this.onEnabledChanged,
     this.onResetPressed,
   });
-
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   final String title;
   final bool enabled;
@@ -23,6 +21,8 @@ class CardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final MusicPlayer musicPlayer = MusicPlayer.instance;
+
     return Stack(
       alignment: Alignment.center,
       children: [

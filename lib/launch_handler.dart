@@ -34,7 +34,6 @@ class LaunchHandler {
   /// Called when the app is launched for the first time with a new version.
   static void onFirstLaunchWithVersion(PackageInfo info) async {
     final int buildNumber = int.parse(info.buildNumber);
-    // ignore: unused_local_variable
     final int? previousBuildNumber = lastVersionLaunched.value == "0"
         ? null
         : int.parse(lastVersionLaunched.value);
@@ -42,7 +41,8 @@ class LaunchHandler {
     debugPrint(
         "[LAUNCH] First launch with version $buildNumber (${info.version})");
 
-    if (buildNumber >= 26) {
+    if (buildNumber >= 26 &&
+        (previousBuildNumber == null || previousBuildNumber < 26)) {
       // Remove old cached files
       final Directory tempDir = await getTemporaryDirectory();
       final Directory demixerDir = Directory("${tempDir.path}/demixer");
@@ -58,5 +58,8 @@ class LaunchHandler {
           File("${docsDir.path}/youtube_search_history.json");
       if (await searchHistory.exists()) await searchHistory.delete();
     }
+
+    if (buildNumber >= 33 &&
+        (previousBuildNumber == null || previousBuildNumber < 33)) {}
   }
 }

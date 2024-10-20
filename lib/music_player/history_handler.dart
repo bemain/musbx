@@ -100,4 +100,9 @@ class HistoryHandler<T> extends ChangeNotifier {
       ),
     )));
   }
+
+  /// Remove all history entries.
+  Future<void> clear() async {
+    await (await _historyFile).delete();
+  }
 }

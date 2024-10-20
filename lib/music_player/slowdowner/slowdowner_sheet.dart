@@ -3,55 +3,65 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:musbx/music_player/card_header.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/slowdowner/circular_slider/circular_slider.dart';
 import 'package:musbx/widgets.dart';
 
-class SlowdownerCard extends StatelessWidget {
+class SlowdownerSheet extends StatelessWidget {
   /// Card with sliders for changing the pitch and speed of [MusicPlayer].
   ///
   /// Each slider is labeled with max and min value.
   /// Also features a button for resetting pitch and speed to the default values.
-  SlowdownerCard({super.key});
+  SlowdownerSheet({super.key});
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: musicPlayer.slowdowner.enabledNotifier,
-      builder: (context, enabled, _) => Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          ValueListenableBuilder(
-            valueListenable: musicPlayer.slowdowner.speedNotifier,
-            builder: (_, speed, __) => ValueListenableBuilder(
-              valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
-              builder: (context, pitch, _) => CardHeader(
-                title: "Slowdowner",
-                enabled: enabled,
-                onEnabledChanged: (value) =>
-                    musicPlayer.slowdowner.enabled = value,
-                onResetPressed: (speed.toStringAsFixed(2) == "1.00" &&
-                        pitch.abs().toStringAsFixed(1) == "0.0")
-                    ? null
-                    : () {
-                        musicPlayer.slowdowner.setSpeed(1.0);
-                        musicPlayer.slowdowner.setPitchSemitones(0);
-                      },
+          Stack(children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: ValueListenableBuilder(
+                valueListenable: musicPlayer.slowdowner.speedNotifier,
+                builder: (_, speed, __) => ValueListenableBuilder(
+                  valueListenable:
+                      musicPlayer.slowdowner.pitchSemitonesNotifier,
+                  builder: (context, pitch, _) => IconButton(
+                    iconSize: 20,
+                    onPressed: musicPlayer.nullIfNoSongElse(
+                      (speed.toStringAsFixed(2) == "1.00" &&
+                              pitch.abs().toStringAsFixed(1) == "0.0")
+                          ? null
+                          : () {
+                              musicPlayer.slowdowner.setSpeed(1.0);
+                              musicPlayer.slowdowner.setPitchSemitones(0);
+                            },
+                    ),
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ),
               ),
             ),
-          ),
-          LayoutBuilder(
-            builder: (context, BoxConstraints constraints) => Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Don't show pitch slider on iOS since setPitch() method is not implemented.
-                if (!Platform.isIOS) buildPitchSlider(constraints.maxWidth / 4),
-                buildSpeedSlider(constraints.maxWidth / 4),
-              ],
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: LayoutBuilder(
+                builder: (context, BoxConstraints constraints) => Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Don't show pitch slider on iOS since setPitch() method is not implemented.
+                    if (!Platform.isIOS)
+                      buildPitchSlider(constraints.maxWidth / 4),
+                    buildSpeedSlider(constraints.maxWidth / 4),
+                  ],
+                ),
+              ),
             ),
-          ),
+          ]),
         ],
       ),
     );
@@ -63,7 +73,12 @@ class SlowdownerCard extends StatelessWidget {
   Widget buildPitchSlider(double radius) {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
-      builder: (context, pitch, _) => Stack(children: [
+      builder: (context, pitch, _) => Column(children: [
+        Text(
+          "Pitch",
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+        const SizedBox(height: 8),
         CircularSlider(
           value: pitch,
           min: -12,
@@ -103,15 +118,6 @@ class SlowdownerCard extends StatelessWidget {
             },
           ),
         ),
-        Positioned.fill(
-          child: Align(
-            alignment: const Alignment(0, 0.8),
-            child: Text(
-              "Pitch",
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-        ),
       ]),
     );
   }
@@ -119,7 +125,12 @@ class SlowdownerCard extends StatelessWidget {
   Widget buildSpeedSlider(double radius) {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.slowdowner.speedNotifier,
-      builder: (context, speed, _) => Stack(children: [
+      builder: (context, speed, _) => Column(children: [
+        Text(
+          "Speed",
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+        const SizedBox(height: 8),
         CircularSlider(
           value: sqrt(speed - 7 / 16) - 0.25,
           min: 0,
@@ -164,15 +175,6 @@ class SlowdownerCard extends StatelessWidget {
                 ),
               );
             },
-          ),
-        ),
-        Positioned.fill(
-          child: Align(
-            alignment: const Alignment(0, 0.8),
-            child: Text(
-              "Speed",
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
           ),
         ),
       ]),

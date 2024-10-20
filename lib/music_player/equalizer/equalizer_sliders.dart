@@ -53,16 +53,13 @@ class EqualizerSliders extends StatelessWidget {
     return StreamBuilder<double>(
       stream: band?.gainStream,
       builder: (context, snapshot) {
-        return SizedBox(
-          width: 28.0,
-          child: RotatedBox(
-            quarterTurns: -1,
-            child: Slider(
-              min: equalizer.parameters?.minDecibels ?? 0,
-              max: equalizer.parameters?.maxDecibels ?? 1,
-              value: band?.gain ?? Stem.defaultVolume,
-              onChanged: !enabled ? null : band?.setGain,
-            ),
+        return RotatedBox(
+          quarterTurns: -1,
+          child: Slider(
+            min: equalizer.parameters?.minDecibels ?? 0,
+            max: equalizer.parameters?.maxDecibels ?? 1,
+            value: band?.gain ?? Stem.defaultVolume,
+            onChanged: !enabled ? null : band?.setGain,
           ),
         );
       },

@@ -45,26 +45,33 @@ class NavigationPageState extends State<NavigationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: PageView(
-              controller: controller,
-              physics: const NeverScrollableScrollPhysics(),
-              onPageChanged: (index) {
-                setState(() {
-                  currentIndex.value = index;
-                });
-              },
-              children: const [
-                MetronomePage(),
-                MusicPlayerPage(),
-                TunerPage(),
-                DronePage(),
-              ],
+      resizeToAvoidBottomInset: false,
+      body: MediaQuery(
+        // Compensate for the fact that we have double Scaffolds
+        data: MediaQuery.of(context).copyWith(
+            viewInsets: MediaQuery.viewInsetsOf(context)
+                .copyWith(bottom: MediaQuery.viewInsetsOf(context).bottom / 2)),
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView(
+                controller: controller,
+                physics: const NeverScrollableScrollPhysics(),
+                onPageChanged: (index) {
+                  setState(() {
+                    currentIndex.value = index;
+                  });
+                },
+                children: const [
+                  MetronomePage(),
+                  MusicPlayerPage(),
+                  TunerPage(),
+                  DronePage(),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
