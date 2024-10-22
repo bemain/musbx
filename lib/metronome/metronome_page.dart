@@ -24,6 +24,7 @@ class MetronomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: DefaultAppBar(),
       body: Padding(
         padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
