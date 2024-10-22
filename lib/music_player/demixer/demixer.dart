@@ -97,14 +97,6 @@ class Demixer extends MusicPlayerComponent {
     _onEnabledToggle();
   }
 
-  /// Update the [MusicPlayer]'s audio source to reflect the current state.
-  /// This has to be called manually every time [stems] are changed.
-  Future<void> onStemsChanged() async {
-    if (!isReady) return;
-
-    await _onEnabledToggle();
-  }
-
   Future<void> _onNewSongLoaded() async {
     stateNotifier.value = DemixerState.inactive;
 

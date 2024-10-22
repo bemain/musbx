@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -20,6 +21,65 @@ class StemFileData {
   final List<int> fileData;
 }
 
+class StemReader<T> {
+  StemReader(this.stemType, Stream<List<T>> stream)
+      : reader = ChunkedStreamReader(stream);
+
+  final StemType stemType;
+  final ChunkedStreamReader<T> reader;
+}
+
+class _ChunkSplitterSink implements EventSink<List<int>> {
+  final EventSink<List<int>> _sink;
+
+  /// The carry-over from the previous chunk.
+  List<int> _carry = [];
+
+  final int chunkSize;
+
+  _ChunkSplitterSink(this._sink, this.chunkSize);
+
+  @override
+  void add(List<int> data) {
+    if (data.isEmpty) close();
+
+    // Add the carry from the previous iteration
+    data = _useCarry(data);
+
+    // Extract full chunks
+    while (data.length >= chunkSize) {
+      _sink.add(data.sublist(0, chunkSize));
+      data.removeRange(0, chunkSize);
+    }
+
+    // Save the remaining data in carry
+    _carry.addAll(data);
+  }
+
+  @override
+  void close() {
+    if (_carry.isNotEmpty) {
+      _sink.add(_useCarry(<int>[]));
+    }
+
+    _sink.close();
+  }
+
+  /// Consumes and combines existing carry-over with continuation string.
+  ///
+  /// The [continuation] is only empty if called from [close].
+  List<int> _useCarry(List<int> continuation) {
+    final carry = _carry;
+    _carry = [];
+    return [...carry, ...continuation];
+  }
+
+  @override
+  void addError(Object o, [StackTrace? stackTrace]) {
+    _sink.addError(o, stackTrace);
+  }
+}
+
 class MixedAudioSource extends StreamAudioSource {
   /// An [AudioSource] that mixes multiple .wav files.
   ///
@@ -29,24 +89,78 @@ class MixedAudioSource extends StreamAudioSource {
   /// The files to mix.
   final Map<StemType, File> files;
 
+  /// The number of bytes per chunk.
+  final int chunkSize = 4096;
+
+  /// The duration of each chunk
+  late final Duration chunkDuration = Duration(
+    microseconds: (1e6 * chunkSize / (44100 * 4)).toInt(),
+  );
+
+  final int chunksBuffered = 10;
+
+  late final StreamTransformer<List<int>, List<int>> chunkSplitter =
+      StreamTransformer.fromBind(
+    (stream) => Stream<List<int>>.eventTransformed(
+      stream,
+      (EventSink<List<int>> sink) => _ChunkSplitterSink(sink, chunkSize),
+    ),
+  );
+
+  // TODO: Maybe dispose this somehow?
+  late final Stream<Duration> positionStream = MusicPlayer.instance.player
+      .createPositionStream(
+        minPeriod: chunkDuration,
+        maxPeriod: chunkDuration,
+      )
+      .asBroadcastStream();
+
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
     int sourceLength = await files.values.first.length();
+    print("[DEBUG] Request $start - $end, sourceLength $sourceLength");
 
-    List<Stream<StemFileData>> readStreams = files.entries
-        // Only files for stems that are enabled
-        .where((entry) {
-          Stem stem = MusicPlayer.instance.demixer.stems
-              .firstWhere((stem) => stem.type == entry.key);
-          return stem.enabled;
-        })
+    int currentByteOffset = start ?? 0;
+
+    StreamZip<StemFileData> readStreams = StreamZip<StemFileData>(files.entries
         // Open files for reading
         .map((entry) => entry.value
             .openRead(start, end)
+            .transform(chunkSplitter)
             .map((data) => StemFileData(stemType: entry.key, fileData: data)))
-        .toList();
-    Stream<List<int>> mixed =
-        StreamZip<StemFileData>(readStreams).map(mixWavFiles);
+        .toList());
+    Stream<List<int>> mixed = readStreams
+        // Block samples until they are actually needed, to prevent the stems from being mixed in advance
+        .asyncMap((data) async {
+      /// The position of the current song that the [data] snapshot shows up at.
+      final Duration snapshotPosition = Duration(
+        microseconds: (1e6 * (currentByteOffset - 44) / (44100 * 4))
+            .toInt(), // Why do we multiply sample rate by 4?
+      );
+
+      currentByteOffset += data.first.fileData.length;
+      print(
+          "[DEBUG] Sample at $snapshotPosition with length ${data.first.fileData.length}, current position is ${MusicPlayer.instance.position}");
+
+      if (snapshotPosition - MusicPlayer.instance.position <=
+          chunkDuration * chunksBuffered) {
+        print(
+            "[DEBUG] Instantly handing out ${data.first.fileData.length} bytes of data at $snapshotPosition");
+        return data;
+      }
+
+      // Don't return until this sample is needed.
+      await for (final Duration position in positionStream) {
+        if (snapshotPosition - position <= chunkDuration * chunksBuffered) {
+          print(
+              "[DEBUG] Handing out ${data.length} bytes of data at $snapshotPosition");
+          return data;
+        }
+      }
+      return <StemFileData>[];
+    })
+        // Mix
+        .map(mixWavFiles);
 
     return StreamAudioResponse(
       sourceLength: sourceLength,
@@ -71,11 +185,13 @@ class MixedAudioSource extends StreamAudioSource {
     // This method isn't fool proof (might by accident be these bytes at the start of the audio sample...) but it works for now
     bool headerPresent = dataLists.every((stemFileData) =>
         listEquals(
-          stemFileData.fileData.sublist(0, 4), [82, 73, 70, 70], // RIFF
+          stemFileData.fileData.sublist(0, 4),
+          [82, 73, 70, 70], // RIFF
         ) &&
-        listEquals(stemFileData.fileData.sublist(8, 16),
-            [87, 65, 86, 69, 102, 109, 116, 32] // WAVEfmt
-            ));
+        listEquals(
+          stemFileData.fileData.sublist(8, 16),
+          [87, 65, 86, 69, 102, 109, 116, 32], // WAVEfmt
+        ));
 
     List<List<double>> listsToMix = [];
     for (StemFileData stemFileData in dataLists) {
@@ -92,7 +208,8 @@ class MixedAudioSource extends StreamAudioSource {
       List<double> processedList = [
         for (var i = 0; i < uint16list.length; i++)
           // Shift all values to between `[-32768, 32767]`
-          (fold(uint16list[i], 16) - 32768) * stem.volume // Apply volume
+          (fold(uint16list[i], 16) - 32768) *
+              (stem.enabled ? stem.volume : 0) // Apply volume
       ];
       listsToMix.add(processedList);
     }

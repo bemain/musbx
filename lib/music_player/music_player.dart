@@ -68,7 +68,16 @@ class MusicPlayer {
   ]);
 
   /// The [AudioPlayer] used for playback.
-  late final AudioPlayer player = AudioPlayer(audioPipeline: audioPipeline);
+  late final AudioPlayer player = AudioPlayer(
+    audioPipeline: audioPipeline,
+    audioLoadConfiguration: const AudioLoadConfiguration(
+      androidLoadControl: AndroidLoadControl(
+        bufferForPlaybackDuration: Duration(milliseconds: 1),
+        bufferForPlaybackAfterRebufferDuration: Duration(milliseconds: 10),
+      ),
+      darwinLoadControl: DarwinLoadControl(),
+    ),
+  );
 
   late final MusicPlayerAudioHandler audioHandler = MusicPlayerAudioHandler(
     onPlay: play,

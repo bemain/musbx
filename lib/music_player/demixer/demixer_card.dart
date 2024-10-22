@@ -56,7 +56,6 @@ class DemixerCard extends StatelessWidget {
                               stem.volume = Stem.defaultVolume;
                               stem.enabled = true;
                             }
-                            musicPlayer.demixer.onStemsChanged();
                           },
                   ),
                 ),
@@ -292,108 +291,78 @@ class StemControls extends StatefulWidget {
 class StemControlsState extends State<StemControls> {
   MusicPlayer musicPlayer = MusicPlayer.instance;
 
-  /// The volume of the stem.
-  ///
-  /// Note that this doesn't always equal [widget.stem.volume], as this value is
-  /// changed whenever the user drags the volume slider but [widget.stem.volume]
-  /// is only updated once the user is done selecting a value.
-  late double volume = widget.stem.volume;
-
-  /// Update [volume] to equal [widget.stem.volume]
-  void updateVolume() {
-    setState(() {
-      volume = widget.stem.volume;
-    });
-  }
-
-  @override
-  void initState() {
-    widget.stem.volumeNotifier.addListener(updateVolume);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    widget.stem.volumeNotifier.removeListener(updateVolume);
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    /// Whether all other stems are disabled
-    final bool allOtherStemsDisabled = musicPlayer.demixer.stems
-        .where((stem) => stem != widget.stem)
-        .every((stem) => !stem.enabled);
+    return ValueListenableBuilder(
+        valueListenable: widget.stem.enabledNotifier,
+        builder: (context, enabled, child) {
+          /// Whether all other stems are disabled
+          final bool allOtherStemsDisabled = musicPlayer.demixer.stems
+              .where((stem) => stem != widget.stem)
+              .every((stem) => !enabled);
 
-    return Row(
-      children: [
-        GestureDetector(
-          onLongPress:
-              musicPlayer.nullIfNoSongElse((!musicPlayer.demixer.isReady)
-                  ? null
-                  : () {
-                      if (!Purchases.hasPremium &&
-                          musicPlayer.song?.id != demoSong.id) return;
+          return Row(
+            children: [
+              GestureDetector(
+                onLongPress:
+                    musicPlayer.nullIfNoSongElse((!musicPlayer.demixer.isReady)
+                        ? null
+                        : () {
+                            if (!Purchases.hasPremium &&
+                                musicPlayer.song?.id != demoSong.id) return;
 
-                      for (Stem stem in musicPlayer.demixer.stems) {
-                        stem.enabled = allOtherStemsDisabled;
-                      }
-                      widget.stem.enabled = !allOtherStemsDisabled;
-                      musicPlayer.demixer.onStemsChanged();
-                    }),
-          child: IconButton(
-              isSelected: widget.stem.enabled,
-              onPressed: musicPlayer.nullIfNoSongElse(
-                (!musicPlayer.demixer.isReady)
-                    ? null
-                    : () {
-                        if (allOtherStemsDisabled) return;
+                            for (Stem stem in musicPlayer.demixer.stems) {
+                              stem.enabled = allOtherStemsDisabled;
+                            }
+                            widget.stem.enabled = !allOtherStemsDisabled;
+                          }),
+                child: IconButton(
+                    isSelected: widget.stem.enabled,
+                    onPressed: musicPlayer.nullIfNoSongElse(
+                      (!musicPlayer.demixer.isReady)
+                          ? null
+                          : () {
+                              if (allOtherStemsDisabled) return;
 
-                        if (!Purchases.hasPremium &&
-                            musicPlayer.song?.id != demoSong.id &&
-                            widget.stem.type != StemType.vocals) {
-                          showAccessRestrictedDialog(context);
-                          return;
-                        }
+                              if (!Purchases.hasPremium &&
+                                  musicPlayer.song?.id != demoSong.id &&
+                                  widget.stem.type != StemType.vocals) {
+                                showAccessRestrictedDialog(context);
+                                return;
+                              }
 
-                        widget.stem.enabled = !widget.stem.enabled;
-                        musicPlayer.demixer.onStemsChanged();
-                      },
+                              widget.stem.enabled = !widget.stem.enabled;
+                            },
+                    ),
+                    icon: Icon(getStemIcon(widget.stem.type))),
               ),
-              icon: Icon(getStemIcon(widget.stem.type))),
-        ),
-        Expanded(
-          child: Slider(
-            value: volume,
-            onChanged: musicPlayer.nullIfNoSongElse(
-              (!musicPlayer.demixer.isReady || !widget.stem.enabled)
-                  ? null
-                  : (double value) {
-                      if (!Purchases.hasPremium &&
-                          musicPlayer.song?.id != demoSong.id &&
-                          widget.stem.type != StemType.vocals) {
-                        showAccessRestrictedDialog(context);
-                        return;
-                      }
+              ValueListenableBuilder(
+                valueListenable: widget.stem.volumeNotifier,
+                builder: (context, volume, child) => Expanded(
+                  child: Slider(
+                    value: volume,
+                    onChanged: musicPlayer.nullIfNoSongElse(
+                      (!musicPlayer.demixer.isReady || !enabled)
+                          ? null
+                          : (double value) {
+                              if (!Purchases.hasPremium &&
+                                  musicPlayer.song?.id != demoSong.id &&
+                                  widget.stem.type != StemType.vocals) {
+                                showAccessRestrictedDialog(context);
+                                return;
+                              }
 
-                      setState(() {
-                        volume = value;
-                      });
-                    },
-            ),
-            onChangeEnd: (value) {
-              if (!Purchases.hasPremium &&
-                  musicPlayer.song?.id != demoSong.id &&
-                  widget.stem.type != StemType.vocals) {
-                return;
-              }
-              widget.stem.volume = value;
-              musicPlayer.demixer.onStemsChanged();
-            },
-          ),
-        ),
-      ],
-    );
+                              setState(() {
+                                widget.stem.volume = value;
+                              });
+                            },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
   }
 
   IconData getStemIcon(StemType stem) {
