@@ -14,20 +14,16 @@ class PlayButton extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: Metronome.instance.isPlayingNotifier,
       builder: (context, bool isPlaying, child) {
-        return GestureDetector(
+        return InkWell(
+          borderRadius: BorderRadius.circular(32),
           onTap: () => _onPressed(context),
-          behavior: HitTestBehavior.opaque,
           child: Center(
             child: SizedBox.square(
               dimension: 150,
               child: FittedBox(
-                child: IconButton(
+                child: Icon(
                   color: Theme.of(context).colorScheme.primary,
-                  onPressed: () => _onPressed(context),
-                  iconSize: 75,
-                  icon: Icon(
-                    isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                  ),
+                  isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
                 ),
               ),
             ),

@@ -23,6 +23,9 @@ class MetronomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const EdgeInsets cardPadding =
+        EdgeInsets.only(top: 16, bottom: 8, left: 8, right: 8);
+
     return const Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: DefaultAppBar(),
@@ -36,18 +39,20 @@ class MetronomePage extends StatelessWidget {
             SizedBox(height: 8),
             Expanded(
               child: WidgetCard(
-                child: Padding(
-                  padding:
-                      EdgeInsets.only(top: 16, bottom: 8, left: 8, right: 8),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Align(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PlayButton(),
+                    Padding(
+                      padding: cardPadding,
+                      child: Align(
                         alignment: Alignment.topCenter,
                         child: CountDisplay(),
                       ),
-                      PlayButton(),
-                      Align(
+                    ),
+                    Padding(
+                      padding: cardPadding,
+                      child: Align(
                         alignment: Alignment.bottomRight,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -57,8 +62,8 @@ class MetronomePage extends StatelessWidget {
                           ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
