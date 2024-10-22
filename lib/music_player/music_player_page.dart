@@ -119,7 +119,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
                   builder: (context) => const FreeAccessRestrictedDialog(),
                 );
               },
-              icon: const Icon(Icons.star_border),
+              icon: const Icon(Icons.workspace_premium),
             ),
           const InfoButton(child: Text(helpText)),
         ],

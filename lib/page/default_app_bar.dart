@@ -42,7 +42,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
                   builder: (context) => const FreeAccessRestrictedDialog(),
                 );
               },
-              icon: const Icon(Icons.star_border),
+              icon: const Icon(Icons.workspace_premium),
             ),
           InfoButton(
             child: (helpText == null) ? null : Text(helpText!),

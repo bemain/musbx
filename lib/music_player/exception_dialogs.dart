@@ -45,7 +45,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Icons.star),
+      icon: const Icon(Icons.workspace_premium),
       title: const Text("Get Premium"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
