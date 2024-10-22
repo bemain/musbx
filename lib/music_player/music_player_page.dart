@@ -73,8 +73,11 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
               length: 2,
               initialIndex: 0,
               animationDuration: const Duration(milliseconds: 200),
-              child: Builder(
-                builder: (context) => _buildBody(context),
+              child: ValueListenableBuilder(
+                valueListenable: Purchases.hasPremiumNotifier,
+                builder: (context, hasPremium, child) {
+                  return _buildBody(context);
+                },
               ),
             );
         }
