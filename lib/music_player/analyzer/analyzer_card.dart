@@ -3,7 +3,7 @@ import 'package:musbx/music_player/analyzer/chords_display.dart';
 import 'package:musbx/music_player/analyzer/waveform_widget.dart';
 import 'package:musbx/music_player/looper/loop_slider.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/page/widget_card.dart';
+import 'package:musbx/page/flat_card.dart';
 
 class AnalyzerCard extends StatelessWidget {
   AnalyzerCard({super.key, this.scaleSpeed = 1 / 256});
@@ -40,7 +40,7 @@ class AnalyzerCard extends StatelessWidget {
       onScaleEnd: (_) {
         if (wasPlayingBeforeChange) musicPlayer.play();
       },
-      child: WidgetCard(
+      child: FlatCard(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

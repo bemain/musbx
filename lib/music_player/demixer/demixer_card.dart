@@ -8,7 +8,7 @@ import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/musbx_api/demixer_api.dart';
 import 'package:musbx/music_player/music_player.dart';
 import 'package:musbx/music_player/song_source.dart';
-import 'package:musbx/page/widget_card.dart';
+import 'package:musbx/page/flat_card.dart';
 import 'package:musbx/purchases.dart';
 import 'package:musbx/widgets.dart';
 
@@ -25,48 +25,52 @@ class DemixerCard extends StatelessWidget {
           return ValueListenableBuilder(
             valueListenable: musicPlayer.demixer.stateNotifier,
             builder: (context, state, child) {
-              return WidgetCard(
-                child: Column(children: [
-                  ValueListenableBuilder(
-                    valueListenable: musicPlayer.demixer.stemsNotifier,
-                    builder: (context, stems, child) => CardHeader(
-                      title: "Demixer",
-                      enabled: enabled,
-                      onEnabledChanged: (musicPlayer.demixer.state ==
-                                  DemixerState.outOfDate ||
-                              musicPlayer.demixer.state == DemixerState.error)
-                          ? null
-                          : (value) async {
-                              if (value &&
-                                  musicPlayer.demixer.state !=
-                                      DemixerState.done &&
-                                  await isOnCellular()) {
-                                // Show warning dialog
-                                if (context.mounted) {
-                                  await showCellularWarningDialog(context);
+              return FlatCard(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(children: [
+                    ValueListenableBuilder(
+                      valueListenable: musicPlayer.demixer.stemsNotifier,
+                      builder: (context, stems, child) => CardHeader(
+                        title: "Demixer",
+                        enabled: enabled,
+                        onEnabledChanged: (musicPlayer.demixer.state ==
+                                    DemixerState.outOfDate ||
+                                musicPlayer.demixer.state == DemixerState.error)
+                            ? null
+                            : (value) async {
+                                if (value &&
+                                    musicPlayer.demixer.state !=
+                                        DemixerState.done &&
+                                    await isOnCellular()) {
+                                  // Show warning dialog
+                                  if (context.mounted) {
+                                    await showCellularWarningDialog(context);
+                                  }
+                                  return;
                                 }
-                                return;
-                              }
 
-                              musicPlayer.demixer.enabled = value;
-                            },
-                      onResetPressed: stems.every((Stem stem) =>
-                              stem.enabled && stem.volume == Stem.defaultVolume)
-                          ? null
-                          : () {
-                              for (Stem stem in stems) {
-                                stem.volume = Stem.defaultVolume;
-                                stem.enabled = true;
-                              }
-                              musicPlayer.demixer.onStemsChanged();
-                            },
+                                musicPlayer.demixer.enabled = value;
+                              },
+                        onResetPressed: stems.every((Stem stem) =>
+                                stem.enabled &&
+                                stem.volume == Stem.defaultVolume)
+                            ? null
+                            : () {
+                                for (Stem stem in stems) {
+                                  stem.volume = Stem.defaultVolume;
+                                  stem.enabled = true;
+                                }
+                                musicPlayer.demixer.onStemsChanged();
+                              },
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 288,
-                    child: buildBody(context),
-                  ),
-                ]),
+                    SizedBox(
+                      height: 288,
+                      child: buildBody(context),
+                    ),
+                  ]),
+                ),
               );
             },
           );

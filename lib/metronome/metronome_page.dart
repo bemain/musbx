@@ -10,7 +10,7 @@ import 'package:musbx/metronome/subdivisions.dart';
 import 'package:musbx/metronome/higher.dart';
 import 'package:musbx/metronome/volume_indicator.dart';
 import 'package:musbx/page/default_app_bar.dart';
-import 'package:musbx/page/widget_card.dart';
+import 'package:musbx/page/flat_card.dart';
 
 class MetronomePage extends StatelessWidget {
   /// Page for controlling [Metronome], including:
@@ -38,7 +38,7 @@ class MetronomePage extends StatelessWidget {
             Subdivisions(),
             SizedBox(height: 8),
             Expanded(
-              child: WidgetCard(
+              child: FlatCard(
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
