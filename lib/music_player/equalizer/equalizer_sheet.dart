@@ -25,7 +25,7 @@ class EqualizerSheet extends StatelessWidget {
                     child: Center(
                       child: Text(
                         "Equalizer",
-                        style: Theme.of(context).textTheme.bodyLarge,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
                   ),

@@ -76,9 +76,9 @@ class SlowdownerSheet extends StatelessWidget {
       builder: (context, pitch, _) => Column(children: [
         Text(
           "Pitch",
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         CircularSlider(
           value: pitch,
           min: -12,
@@ -128,9 +128,9 @@ class SlowdownerSheet extends StatelessWidget {
       builder: (context, speed, _) => Column(children: [
         Text(
           "Speed",
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         CircularSlider(
           value: sqrt(speed - 7 / 16) - 0.25,
           min: 0,
