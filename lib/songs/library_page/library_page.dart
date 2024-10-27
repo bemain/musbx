@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/library_page/youtube_search.dart';
@@ -32,6 +33,9 @@ class LibraryPage extends StatelessWidget {
             SliverAppBar.medium(
               pinned: true,
               title: const Text("Songs"),
+              actions: const [
+                GetPremiumButton(),
+              ],
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(100),
                 child: Padding(

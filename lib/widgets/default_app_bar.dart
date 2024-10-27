@@ -27,28 +27,40 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    return AppBar(
+      leading: leading,
+      title: title,
+      actions: [
+        const GetPremiumButton(),
+        InfoButton(child: (helpText == null) ? null : Text(helpText!)),
+      ],
+    );
+  }
+}
+
+class GetPremiumButton extends StatelessWidget {
+  /// A simple icon button that opens the "Get Premium"-dialog when pressed.
+  /// If [Purchases.hasPremium] is true, returns a zero-sized box.
+  const GetPremiumButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: Purchases.hasPremiumNotifier,
-      builder: (context, hasPremium, child) => AppBar(
-        leading: leading,
-        title: title,
-        actions: [
-          if (!hasPremium)
-            IconButton(
-              onPressed: () {
-                if (!context.mounted) return;
-                showDialog(
-                  context: context,
-                  builder: (context) => const FreeAccessRestrictedDialog(),
-                );
-              },
-              icon: const Icon(Icons.workspace_premium),
-            ),
-          InfoButton(
-            child: (helpText == null) ? null : Text(helpText!),
-          ),
-        ],
-      ),
+      builder: (context, hasPremium, child) {
+        if (hasPremium) return const SizedBox();
+
+        return IconButton(
+          onPressed: () {
+            if (!context.mounted) return;
+            showDialog(
+              context: context,
+              builder: (context) => const FreeAccessRestrictedDialog(),
+            );
+          },
+          icon: const Icon(Icons.workspace_premium),
+        );
+      },
     );
   }
 }

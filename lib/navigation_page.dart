@@ -38,7 +38,7 @@ class NavigationPageState extends State<NavigationPage> {
     super.initState();
 
     // Restore last open page
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((duration) {
       controller.jumpToPage(currentIndex.value);
     });
 

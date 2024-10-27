@@ -5,11 +5,9 @@ import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
 import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
-import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
-import 'package:musbx/utils/purchases.dart';
 
 class SongPage extends StatelessWidget {
   const SongPage({super.key});
@@ -52,17 +50,7 @@ class SongPage extends StatelessWidget {
             },
             icon: const Icon(Icons.equalizer),
           ),
-          if (!Purchases.hasPremium)
-            IconButton(
-              onPressed: () {
-                if (!context.mounted) return;
-                showDialog(
-                  context: context,
-                  builder: (context) => const FreeAccessRestrictedDialog(),
-                );
-              },
-              icon: const Icon(Icons.workspace_premium),
-            ),
+          const GetPremiumButton(),
           const InfoButton(child: Text(helpText)),
         ],
       ),

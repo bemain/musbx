@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
-import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 class MusicPlayerPage extends StatefulWidget {
@@ -47,16 +46,11 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
             return const LoadingPage(text: "Loading song...");
 
           case MusicPlayerState.ready:
-            return DefaultTabController(
+            return const DefaultTabController(
               length: 2,
               initialIndex: 0,
-              animationDuration: const Duration(milliseconds: 200),
-              child: ValueListenableBuilder(
-                valueListenable: Purchases.hasPremiumNotifier,
-                builder: (context, hasPremium, child) {
-                  return const SongPage();
-                },
-              ),
+              animationDuration: Duration(milliseconds: 200),
+              child: SongPage(),
             );
         }
       },
