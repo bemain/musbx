@@ -95,7 +95,7 @@ class NavigationPageState extends State<NavigationPage> {
                   icon: Icon(CustomIcons.metronome),
                 ),
                 NavigationDestination(
-                  label: "Transcribe",
+                  label: "Songs",
                   icon: Icon(Icons.music_note),
                 ),
                 NavigationDestination(

@@ -1,12 +1,10 @@
 import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/music_player/analyzer/analyzer_card.dart';
 import 'package:musbx/music_player/demixer/demixer_card.dart';
 import 'package:musbx/music_player/equalizer/equalizer_sheet.dart';
 import 'package:musbx/music_player/exception_dialogs.dart';
 import 'package:musbx/music_player/music_player.dart';
-import 'package:musbx/music_player/pick_song_button/components/spacer.dart';
 import 'package:musbx/music_player/pick_song_button/components/search_youtube_button.dart';
 import 'package:musbx/music_player/pick_song_button/components/upload_file_button.dart';
 import 'package:musbx/music_player/bottom_bar/button_panel.dart';
@@ -15,7 +13,6 @@ import 'package:musbx/music_player/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/music_player/song.dart';
 import 'package:musbx/music_player/song_source.dart';
 import 'package:musbx/music_player/pick_song_button/speed_dial.dart';
-import 'package:musbx/music_player/pick_song_button/components/action.dart';
 import 'package:musbx/page/default_app_bar.dart';
 import 'package:musbx/purchases.dart';
 import 'package:musbx/widgets.dart';
@@ -62,7 +59,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
       builder: (context, state, _) {
         switch (state) {
           case MusicPlayerState.idle:
-            return _buildWelcomePage(context);
+            return _buildLibraryPage(context);
 
           case MusicPlayerState.pickingAudio:
           case MusicPlayerState.loadingAudio:
@@ -76,7 +73,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
               child: ValueListenableBuilder(
                 valueListenable: Purchases.hasPremiumNotifier,
                 builder: (context, hasPremium, child) {
-                  return _buildBody(context);
+                  return _buildSongPage(context);
                 },
               ),
             );
@@ -85,7 +82,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildSongPage(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -189,7 +186,7 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
           ),
           child: child,
         );
@@ -197,59 +194,103 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
     );
   }
 
-  Widget _buildWelcomePage(BuildContext context) {
+  final TextEditingController searchController = TextEditingController();
+
+  Widget _buildLibraryPage(BuildContext context) {
+    final List<Song> songHistory =
+        musicPlayer.songHistory.sorted(ascending: false);
+
     return Scaffold(
-      appBar: const DefaultAppBar(helpText: helpText),
-      floatingActionButton: _buildLoadSongButton(),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              "Prepare to",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            Text(
-              "Transcribe",
-              style: GoogleFonts.zeyadaTextTheme(Theme.of(context).textTheme)
-                  .displayLarge,
-            ),
-            Text(
-              "using AI technology",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16.0),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [Text("Press the"), Icon(Icons.add), Text("to begin")],
-            ),
-            const SizedBox(height: 64.0),
-            Padding(
-              padding: const EdgeInsets.only(left: 70),
-              child: Image.asset(
-                "assets/images/arrow.png",
-                width: 100,
-                color: Theme.of(context).colorScheme.onSurface,
+      body: ListenableBuilder(
+        listenable: searchController,
+        builder: (context, child) {
+          final String searchPhrase = searchController.text.toLowerCase();
+          final Iterable<Song> filteredSongHistory = songHistory.where((song) =>
+              song.title.toLowerCase().contains(searchPhrase) ||
+              (song.artist?.toLowerCase().contains(searchPhrase) ?? false));
+
+          return CustomScrollView(slivers: [
+            SliverAppBar.medium(
+              pinned: true,
+              title: const Text("Songs"),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(100),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SearchBar(
+                    controller: searchController,
+                    padding: const WidgetStatePropertyAll<EdgeInsets>(
+                      EdgeInsets.symmetric(horizontal: 16.0),
+                    ),
+                    leading: const Icon(Icons.search),
+                    trailing: [
+                      if (searchPhrase.isNotEmpty)
+                        IconButton(
+                          onPressed: () {
+                            searchController.clear();
+                          },
+                          icon: const Icon(Icons.clear),
+                        )
+                    ],
+                    hintText: "Search your library",
+                    elevation: const WidgetStatePropertyAll(0),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 64.0),
-          ],
-        ),
+            SliverList.list(
+              children: [
+                for (final Song song in filteredSongHistory)
+                  ListTile(
+                    leading: _buildSongSourceAvatar(song) ?? Container(),
+                    title: Text(
+                      song.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(song.artist ?? "Unknown artist"),
+                    onTap: musicPlayer.isLoading
+                        ? null
+                        : () async {
+                            if (musicPlayer.isAccessRestricted &&
+                                !musicPlayer.songsPlayedThisWeek
+                                    .contains(song)) {
+                              showExceptionDialog(
+                                  const MusicPlayerAccessRestrictedDialog());
+                              return;
+                            }
+
+                            MusicPlayerState prevState = musicPlayer.state;
+                            musicPlayer.stateNotifier.value =
+                                MusicPlayerState.pickingAudio;
+                            try {
+                              await musicPlayer.loadSong(song);
+                            } catch (error) {
+                              debugPrint("[MUSIC PLAYER] $error");
+                              showExceptionDialog(
+                                song.source is YoutubeSource
+                                    ? const YoutubeUnavailableDialog()
+                                    : const FileCouldNotBeLoadedDialog(),
+                              );
+                              // Restore state
+                              musicPlayer.stateNotifier.value = prevState;
+                            }
+                          },
+                  ),
+              ],
+            )
+          ]);
+        },
       ),
+      floatingActionButton: _buildLoadSongFAB(),
     );
   }
 
-  Widget _buildLoadSongButton({Object? heroTag}) {
-    final List<Song> songHistory =
-        musicPlayer.songHistory.sorted(ascending: true);
-
-    return SpeedDial(
+  Widget _buildLoadSongFAB({Object? heroTag}) {
+    return SpeedDial.extended(
       heroTag: heroTag,
+      label: const Text("Add to library"),
       children: [
-        ...(songHistory).map(_buildHistoryItem).toList(),
-        if (songHistory.isNotEmpty) SpeedDialSpacer(),
         UploadSongButton(),
       ],
       onExpandedPressed: MusicPlayer.instance.isLoading
@@ -265,45 +306,6 @@ class MusicPlayerPageState extends State<MusicPlayerPage>
       expandedChild: const Icon(Icons.search),
       expandedLabel: const Text("Search"),
       child: const Icon(Icons.add),
-    );
-  }
-
-  SpeedDialChild _buildHistoryItem(Song song) {
-    return SpeedDialAction(
-      onPressed: musicPlayer.isLoading
-          ? null
-          : (event) async {
-              if (musicPlayer.isAccessRestricted &&
-                  !musicPlayer.songsPlayedThisWeek.contains(song)) {
-                showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
-                return;
-              }
-
-              MusicPlayerState prevState = musicPlayer.state;
-              musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
-              try {
-                await musicPlayer.loadSong(song);
-              } catch (error) {
-                debugPrint("[MUSIC PLAYER] $error");
-                showExceptionDialog(
-                  song.source is YoutubeSource
-                      ? const YoutubeUnavailableDialog()
-                      : const FileCouldNotBeLoadedDialog(),
-                );
-                // Restore state
-                musicPlayer.stateNotifier.value = prevState;
-              }
-            },
-      label: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 2 / 3,
-        ),
-        child: Text(
-          song.title,
-          maxLines: 1,
-        ),
-      ),
-      child: _buildSongSourceAvatar(song) ?? Container(),
     );
   }
 

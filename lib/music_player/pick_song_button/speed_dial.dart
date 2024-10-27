@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'animated_children.dart';
-import 'animated_fab.dart';
 
 abstract class SpeedDialChild {
   /// A child of [SpeedDial].
@@ -15,7 +14,6 @@ class SpeedDial extends StatefulWidget {
   const SpeedDial({
     super.key,
     this.heroTag,
-    this.child,
     this.expandedChild,
     this.expandedLabel,
     this.onExpandedPressed,
@@ -24,17 +22,41 @@ class SpeedDial extends StatefulWidget {
     this.foregroundColor,
     this.expandedForegroundColor,
     this.overlayColor,
+    this.animationDuration = const Duration(milliseconds: 200),
     required this.children,
-    this.animationDuration = const Duration(milliseconds: 300),
-  });
+    required this.child,
+  })  : extendDuration = Duration.zero,
+        label = null;
+
+  const SpeedDial.extended({
+    super.key,
+    this.heroTag,
+    this.expandedChild,
+    this.expandedLabel,
+    this.onExpandedPressed,
+    this.backgroundColor,
+    this.expandedBackgroundColor,
+    this.foregroundColor,
+    this.expandedForegroundColor,
+    this.overlayColor,
+    this.extendDuration = const Duration(milliseconds: 50),
+    this.animationDuration = const Duration(milliseconds: 200),
+    required this.children,
+    required Widget label,
+    required this.child,
+  }) : label = label as Widget?;
 
   /// The tag to apply to the button's [Hero] widget.
   ///
   /// Copied from [FloatingActionButton].
   final Object? heroTag;
 
+  final Widget? label;
+
+  final Duration extendDuration;
+
   /// Child of the primary [FloatingActionButton].
-  final Widget? child;
+  final Widget child;
 
   /// Child of the primary [FloatingActionButton] when expanded.
   final Widget? expandedChild;
@@ -76,14 +98,11 @@ class SpeedDialState extends State<SpeedDial>
   final _key = GlobalKey();
   bool _isOpen = false;
   OverlayEntry? _overlayEntry;
-  late AnimationController _controller;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: widget.animationDuration);
-  }
+  late final AnimationController _controller =
+      AnimationController(vsync: this, duration: widget.animationDuration);
+  late final CurvedAnimation animation =
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic);
 
   @override
   void dispose() {
@@ -95,16 +114,83 @@ class SpeedDialState extends State<SpeedDial>
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: _isOpen ? 0 : 1,
-      child: FloatingActionButton(
-        key: _key,
-        heroTag: widget.heroTag,
-        onPressed: _open,
-        foregroundColor: widget.foregroundColor,
-        backgroundColor: widget.backgroundColor,
-        child: widget.child,
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) => Opacity(
+        opacity: 1 - animation.value,
+        child: _buildFAB(key: _key),
       ),
+    );
+  }
+
+  Widget _buildFAB({Key? key}) {
+    final backgroundColorTween = ColorTween(
+      begin: widget.backgroundColor ??
+          Theme.of(context).colorScheme.primaryContainer,
+      end: widget.expandedBackgroundColor ??
+          widget.backgroundColor ??
+          Theme.of(context).colorScheme.primary,
+    );
+    final foregroundColorTween = ColorTween(
+      begin: widget.foregroundColor ??
+          Theme.of(context).colorScheme.onPrimaryContainer,
+      end: widget.expandedForegroundColor ??
+          widget.foregroundColor ??
+          Theme.of(context).colorScheme.onPrimary,
+    );
+    final angleTween = Tween<double>(begin: 0, end: 1);
+
+    void onPressed() {
+      setState(() {
+        if (isOpen) {
+          _close();
+          widget.onExpandedPressed?.call();
+        } else {
+          _open();
+        }
+      });
+    }
+
+    final Widget icon = Stack(
+      children: [
+        Transform.rotate(
+            angle: angleTween.animate(animation).value,
+            child: Opacity(opacity: 1 - animation.value, child: widget.child)),
+        Transform.rotate(
+          angle: angleTween.animate(animation).value - 1,
+          child: Opacity(
+            opacity: animation.value,
+            child: widget.expandedChild,
+          ),
+        ),
+      ],
+    );
+
+    if (widget.label != null) {
+      return AnimatedSize(
+        clipBehavior: Clip.none,
+        duration: widget.extendDuration,
+        child: FloatingActionButton.extended(
+          isExtended: !isOpen,
+          key: key,
+          heroTag: widget.heroTag,
+          onPressed: onPressed,
+          backgroundColor: backgroundColorTween.lerp(animation.value),
+          foregroundColor: foregroundColorTween.lerp(animation.value),
+          extendedPadding: !isOpen ? null : const EdgeInsets.all(16),
+          label: widget.label!,
+          icon: icon,
+        ),
+      );
+    }
+
+    return FloatingActionButton(
+      key: key,
+      heroTag: widget.heroTag,
+      onPressed: onPressed,
+      backgroundColor: backgroundColorTween.lerp(animation.value),
+      foregroundColor: foregroundColorTween.lerp(animation.value),
+      child: icon,
     );
   }
 
@@ -112,7 +198,7 @@ class SpeedDialState extends State<SpeedDial>
 
   toggle() => _isOpen ? _close() : _open();
 
-  _open() {
+  _open() async {
     if (_isOpen) {
       return;
     }
@@ -141,13 +227,12 @@ class SpeedDialState extends State<SpeedDial>
 
   OverlayEntry _buildOverlay() {
     RenderBox? box = _key.currentContext?.findRenderObject() as RenderBox;
-    Offset position = box.localToGlobal(Offset.zero);
+    final Offset position = box.localToGlobal(Offset.zero);
 
-    final CurvedAnimation animation =
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic);
-
+    final double vertical =
+        MediaQuery.sizeOf(context).height - position.dy - box.size.height;
     final double horizontal =
-        MediaQuery.of(context).size.width - position.dx - box.size.width;
+        MediaQuery.sizeOf(context).width - position.dx - box.size.width;
 
     return OverlayEntry(
       builder: (context) => Material(
@@ -166,40 +251,35 @@ class SpeedDialState extends State<SpeedDial>
                 ),
               ),
             ),
-            if (widget.expandedLabel != null)
-              Positioned(
-                top: position.dy,
-                height: 56.0,
-                right: MediaQuery.sizeOf(context).width - position.dx + 16.0,
-                child: DefaultTextStyle(
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  child: AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, _) => Opacity(
-                      opacity: animation.value,
-                      child: Center(child: widget.expandedLabel!),
-                    ),
+            Positioned(
+              bottom: vertical,
+              right: horizontal,
+              child: AnimatedBuilder(
+                animation: animation,
+                builder: (context, _) => Opacity(
+                  opacity: animation.value,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.expandedLabel != null)
+                        DefaultTextStyle(
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium!
+                              .copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          child: Opacity(
+                            opacity: animation.value,
+                            child: Center(child: widget.expandedLabel!),
+                          ),
+                        ),
+                      const SizedBox(width: 16),
+                      _buildFAB(),
+                    ],
                   ),
                 ),
-              ),
-            Positioned(
-              top: position.dy,
-              left: position.dx,
-              child: AnimatedFAB(
-                animation: animation,
-                expandedChild: widget.expandedChild,
-                backgroundColor: widget.backgroundColor,
-                expandedBackgroundColor: widget.expandedBackgroundColor,
-                foregroundColor: widget.foregroundColor,
-                expandedForegroundColor: widget.expandedForegroundColor,
-                onExpandedPressed: () {
-                  _close();
-                  widget.onExpandedPressed?.call();
-                },
-                child: widget.child,
               ),
             ),
             Positioned(
