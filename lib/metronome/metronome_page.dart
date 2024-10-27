@@ -9,8 +9,8 @@ import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/subdivisions.dart';
 import 'package:musbx/metronome/higher.dart';
 import 'package:musbx/metronome/volume_indicator.dart';
-import 'package:musbx/page/default_app_bar.dart';
-import 'package:musbx/page/flat_card.dart';
+import 'package:musbx/widgets/default_app_bar.dart';
+import 'package:musbx/widgets/flat_card.dart';
 
 class MetronomePage extends StatelessWidget {
   /// Page for controlling [Metronome], including:

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/page/default_app_bar.dart';
-import 'package:musbx/permission_builder.dart';
+import 'package:musbx/widgets/default_app_bar.dart';
+import 'package:musbx/widgets/permission_builder.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/tuner/tuning_graph.dart';

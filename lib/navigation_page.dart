@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/ads.dart';
-import 'package:musbx/custom_icons.dart';
+import 'package:musbx/widgets/ads.dart';
+import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
-import 'package:musbx/music_player/music_player_page.dart';
-import 'package:musbx/persistent_value.dart';
-import 'package:musbx/purchases.dart';
+import 'package:musbx/songs/music_player_page.dart';
+import 'package:musbx/utils/persistent_value.dart';
+import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/tuner/tuner_page.dart';
-import 'package:musbx/widgets.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 /// The key of the [MusicPlayerPage]. Can be used to show dialogs.
 final GlobalKey<NavigationPageState> navigationPageKey = GlobalKey();

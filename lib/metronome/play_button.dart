@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/notification_indicator.dart';
-import 'package:musbx/notifications.dart';
+import 'package:musbx/utils/notifications.dart';
 
 class PlayButton extends StatelessWidget {
   /// Play / pause button to start or stop the [Metronome].

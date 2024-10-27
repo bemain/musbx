@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
-import 'package:musbx/notifications.dart';
+import 'package:musbx/utils/notifications.dart';
 
 class NotificationIndicator extends StatelessWidget {
   const NotificationIndicator({super.key});

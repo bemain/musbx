@@ -4,7 +4,7 @@ import 'package:musbx/drone/drone_audio_source.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/pitch_class.dart';
 import 'package:musbx/model/temperament.dart';
-import 'package:musbx/persistent_value.dart';
+import 'package:musbx/utils/persistent_value.dart';
 
 /// Singleton for playing drone tones.
 class Drone {
