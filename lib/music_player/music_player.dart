@@ -113,6 +113,7 @@ class MusicPlayer {
   Iterable<Song> get songsPlayedThisWeek => songHistory.history.entries
       .where((entry) =>
           entry.key.difference(DateTime.now()) < const Duration(days: 7))
+      .where((entry) => entry.value.id != "demo") // Exclude demo song
       .map((e) => e.value);
 
   /// Whether the user's access to the [MusicPlayer] has been restricted
