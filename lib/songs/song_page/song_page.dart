@@ -1,4 +1,3 @@
-import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/analyzer/analyzer_card.dart';
@@ -10,6 +9,8 @@ import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
+import 'package:musbx/widgets/segmented_tab_control/segment_tab.dart';
+import 'package:musbx/widgets/segmented_tab_control/segmented_tab_control.dart';
 
 class SongPage extends StatelessWidget {
   const SongPage({super.key});
@@ -89,22 +90,17 @@ class SongPage extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            SegmentedTabControl(
-              barDecoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              indicatorDecoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              tabTextColor: Theme.of(context).colorScheme.onSurface,
-              selectedTabTextColor:
-                  Theme.of(context).colorScheme.onPrimaryContainer,
-              tabs: const [
-                SegmentTab(label: "Chords"),
-                SegmentTab(label: "Instruments"),
+            const SizedBox(height: 12),
+            const SegmentedTabControl(
+              tabs: [
+                SegmentTab(
+                  text: "Chords",
+                  icon: Icon(Symbols.graphic_eq),
+                ),
+                SegmentTab(
+                  text: "Instruments",
+                  icon: Icon(Symbols.piano),
+                ),
               ],
             ),
             const SizedBox(height: 16),

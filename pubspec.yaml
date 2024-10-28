@@ -62,7 +62,6 @@ dependencies:
   async: ^2.11.0
   ffmpeg_kit_flutter: ^6.0.3
   just_waveform: ^0.0.5
-  animated_segmented_tab_control: ^2.0.0
 
   # Tuner
   pitch_detector_dart: ^0.0.7

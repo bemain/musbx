@@ -1,62 +1,76 @@
 import 'package:flutter/material.dart';
 
-/// Selection option for [SegmentedTabControl]
-@immutable
-class SegmentTab {
+const double _kTabHeight = 46.0;
+
+class SegmentTab extends StatelessWidget {
   const SegmentTab({
-    required this.label,
-    this.color,
-    this.gradient,
-    this.selectedTextColor,
-    this.backgroundColor,
-    this.backgroundGradient,
-    this.textColor,
-    this.splashColor,
-    this.splashHighlightColor,
-    this.flex = 1,
-  });
+    super.key,
+    this.text,
+    this.child,
+    this.icon,
+    this.iconMargin,
+    this.height,
+  })  : assert(text != null || child != null || icon != null),
+        assert(text == null || child == null);
 
-  /// This text will be displayed on tab.
-  final String label;
-
-  /// Tab flex factor
-  final int flex;
-
-  /// Indicator color when this option is selected.
+  /// The text to display as the tab's label.
   ///
-  /// Overrides [indicatorColor] from [SegmentedTabControl].
-  final Color? color;
+  /// Must not be used in combination with [child].
+  final String? text;
 
-  /// Indicator gradient when this option is selected.
+  /// The widget to be used as the tab's label.
   ///
-  /// Overrides [indicatorGradient] from [SegmentedTabControl].
-  /// If this is specified, [color] has no effect.
-  final Gradient? gradient;
-
-  /// Text color when this option is selected.
+  /// Usually a [Text] widget, possibly wrapped in a [Semantics] widget.
   ///
-  /// Overrides [selectedTabTextColor] from [SegmentedTabControl].
-  final Color? selectedTextColor;
+  /// Must not be used in combination with [text].
+  final Widget? child;
 
-  /// [SegmentedTabControl] color when this option is selected.
+  /// An icon to display as the tab's label.
+  final Widget? icon;
+
+  /// The margin added around the tab's icon.
   ///
-  /// Overrides [backgroundColor] from [SegmentedTabControl].
-  final Color? backgroundColor;
-
-  /// [SegmentedTabControl] background gradient when this option is selected.
+  /// Only useful when used in combination with [icon], and either one of
+  /// [text] or [child] is non-null.
   ///
-  /// Overrides [backgroundGradient] from [SegmentedTabControl].
-  /// If this is specified, [backgroundColor] has no effect.
-  final Gradient? backgroundGradient;
+  /// Defaults to 8 pixels of right margin.
+  final EdgeInsetsGeometry? iconMargin;
 
-  /// Text color when this option is selected.
+  /// The height of the [Tab].
   ///
-  /// Overrides [tabTextColor] from [SegmentedTabControl].
-  final Color? textColor;
+  /// If null, the height will be calculated based on the content of the [Tab].
+  /// The default height is 46.0 pixels.
+  final double? height;
 
-  /// Overrides [splashColor] from [SegmentedTabControl].
-  final Color? splashColor;
+  @override
+  Widget build(BuildContext context) {
+    final Widget label;
+    if (icon == null) {
+      label = _buildLabelText();
+    } else if (text == null && child == null) {
+      label = icon!;
+    } else {
+      label = Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Padding(
+            padding: iconMargin ?? const EdgeInsets.only(right: 8),
+            child: icon,
+          ),
+          _buildLabelText(),
+        ],
+      );
+    }
+    return SizedBox(
+      height: height ?? _kTabHeight,
+      child: Center(
+        child: label,
+      ),
+    );
+  }
 
-  /// Overrides [splashHighlightColor] from [SegmentedTabControl].
-  final Color? splashHighlightColor;
+  Widget _buildLabelText() {
+    return child ?? Text(text!, softWrap: false, overflow: TextOverflow.fade);
+  }
 }
