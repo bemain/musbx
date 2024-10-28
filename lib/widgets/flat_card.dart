@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 class FlatCard extends StatelessWidget {
-  const FlatCard({super.key, required this.child});
+  const FlatCard({
+    super.key,
+    this.radius = const BorderRadius.all(Radius.circular(32)),
+    required this.child,
+  });
+
+  final BorderRadiusGeometry radius;
 
   final Widget child;
 
@@ -10,9 +16,12 @@ class FlatCard extends StatelessWidget {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: radius,
       ),
-      child: child,
+      child: ClipRRect(
+        borderRadius: radius,
+        child: child,
+      ),
     );
   }
 }

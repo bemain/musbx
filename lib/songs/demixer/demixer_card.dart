@@ -27,11 +27,10 @@ class DemixerCard extends StatelessWidget {
             builder: (context, state, child) {
               return FlatCard(
                 child: Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
                   child: Column(children: [
                     _buildHeader(context),
-                    SizedBox(
-                      height: 288,
+                    Expanded(
                       child: _buildBody(context),
                     ),
                   ]),
@@ -119,7 +118,7 @@ class DemixerCard extends StatelessWidget {
       default:
         return ValueListenableBuilder(
           valueListenable: musicPlayer.demixer.stemsNotifier,
-          builder: (context, stems, child) => Column(
+          builder: (context, stems, child) => ListView(
             children: [
               for (Stem stem in musicPlayer.demixer.stems)
                 StemControls(stem: stem),
