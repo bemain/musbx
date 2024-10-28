@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -58,7 +59,7 @@ class GetPremiumButton extends StatelessWidget {
               builder: (context) => const FreeAccessRestrictedDialog(),
             );
           },
-          icon: const Icon(Icons.workspace_premium),
+          icon: const Icon(Symbols.workspace_premium),
         );
       },
     );
@@ -102,6 +103,6 @@ class InfoButton extends StatelessWidget {
             children: (child == null) ? null : [child!],
           );
         },
-        icon: const Icon(Icons.info_outline));
+        icon: const Icon(Symbols.info));
   }
 }

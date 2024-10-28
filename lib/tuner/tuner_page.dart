@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/permission_builder.dart';
 import 'package:musbx/tuner/tuner.dart';
@@ -29,8 +30,8 @@ class TunerPageState extends State<TunerPage> {
           permissionName: "microphone",
           permissionText:
               "To use the tuner, give the app permission to access the microphone.",
-          permissionDeniedIcon: const Icon(Icons.mic_off_rounded, size: 128),
-          permissionGrantedIcon: const Icon(Icons.mic_rounded, size: 128),
+          permissionDeniedIcon: const Icon(Symbols.mic_off_rounded, size: 128),
+          permissionGrantedIcon: const Icon(Symbols.mic_rounded, size: 128),
           onPermissionGranted: () async {
             setState(() {
               tuner.hasPermission = true;

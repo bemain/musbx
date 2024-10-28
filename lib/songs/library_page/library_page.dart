@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/player/music_player.dart';
@@ -45,14 +46,14 @@ class LibraryPage extends StatelessWidget {
                     padding: const WidgetStatePropertyAll<EdgeInsets>(
                       EdgeInsets.symmetric(horizontal: 16.0),
                     ),
-                    leading: const Icon(Icons.search),
+                    leading: const Icon(Symbols.search),
                     trailing: [
                       if (searchPhrase.isNotEmpty)
                         IconButton(
                           onPressed: () {
                             searchController.clear();
                           },
-                          icon: const Icon(Icons.clear),
+                          icon: const Icon(Symbols.clear),
                         )
                     ],
                     hintText: "Search your library",
@@ -126,18 +127,18 @@ class LibraryPage extends StatelessWidget {
 
               await pickYoutubeSong(context);
             },
-      expandedChild: const Icon(Icons.search),
+      expandedChild: const Icon(Symbols.search),
       expandedLabel: const Text("Search"),
-      child: const Icon(Icons.add),
+      child: const Icon(Symbols.add),
     );
   }
 
   Widget? _buildSongSourceAvatar(Song song) {
     if (song.source is FileSource) {
-      return const Icon(Icons.file_present);
+      return const Icon(Symbols.file_present);
     }
     if (song.source is YoutubeSource) {
-      return const Icon(Icons.youtube_searched_for);
+      return const Icon(Symbols.youtube_searched_for);
     }
 
     return null;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 
 class VolumeIndicator extends StatefulWidget {
@@ -24,8 +25,8 @@ class _VolumeIndicatorState extends State<VolumeIndicator> {
             setState(() {});
           },
           isSelected: isMuted,
-          icon: const Icon(Icons.volume_up),
-          selectedIcon: const Icon(Icons.vibration),
+          icon: const Icon(Symbols.volume_up),
+          selectedIcon: const Icon(Symbols.vibration),
         );
       },
     );

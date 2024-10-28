@@ -69,6 +69,7 @@ dependencies:
   mic_stream: ^0.7.1+2
   gauges: ^1.0.0 # TODO: Migrate away from this package
   fftea: ^1.5.0
+  material_symbols_icons: ^4.2789.0
 
 
 dev_dependencies:

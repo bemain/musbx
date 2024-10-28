@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 
 class CountDisplay extends StatefulWidget {
@@ -42,8 +43,8 @@ class CountDisplayState extends State<CountDisplay> {
       children: List.generate(metronome.higher, (index) {
         return Icon(
           (metronome.count == index)
-              ? Icons.circle
-              : Icons.circle_outlined, // Highlight current beat
+              ? Symbols.radio_button_checked
+              : Symbols.circle, // Highlight current beat
           color: Theme.of(context).colorScheme.primary,
         );
       }),

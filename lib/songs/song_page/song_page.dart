@@ -1,5 +1,6 @@
 import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/analyzer/analyzer_card.dart';
 import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
@@ -7,6 +8,7 @@ import 'package:musbx/songs/demixer/demixer_card.dart';
 import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
 import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
+import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 
 class SongPage extends StatelessWidget {
@@ -39,7 +41,16 @@ class SongPage extends StatelessWidget {
                 SlowdownerSheet(),
               );
             },
-            icon: const Icon(Icons.height), // TODO: Make a better icon
+            icon: const Icon(CustomIcons.accidentals),
+          ),
+          IconButton(
+            onPressed: () {
+              _showModalBottomSheet(
+                context,
+                SlowdownerSheet(),
+              );
+            },
+            icon: const Icon(Symbols.avg_pace),
           ),
           IconButton(
             onPressed: () {
@@ -48,7 +59,7 @@ class SongPage extends StatelessWidget {
                 EqualizerSheet(),
               );
             },
-            icon: const Icon(Icons.equalizer),
+            icon: const Icon(Symbols.instant_mix),
           ),
           const GetPremiumButton(),
           const InfoButton(child: Text(helpText)),

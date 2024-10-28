@@ -1,6 +1,7 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
@@ -45,7 +46,7 @@ class UploadSongButton extends SpeedDialChild {
               }
             },
       label: const Text("Upload"),
-      child: const Icon(Icons.upload),
+      child: const Icon(Symbols.upload),
     );
 
     return action.assemble(context, animation);
@@ -103,8 +104,8 @@ class UploadSongButton extends SpeedDialChild {
               : "external storage",
           permissionText:
               "To load audio from the device, give the app permission to access ${(useGranularPermissions || Platform.isIOS) ? "external storage" : "audio files"}.",
-          permissionDeniedIcon: const Icon(Icons.storage_rounded, size: 128),
-          permissionGrantedIcon: const Icon(Icons.storage_rounded, size: 128),
+          permissionDeniedIcon: const Icon(Symbols.storage_rounded, size: 128),
+          permissionGrantedIcon: const Icon(Symbols.storage_rounded, size: 128),
           onPermissionGranted: () {
             permissionGranted = true;
 

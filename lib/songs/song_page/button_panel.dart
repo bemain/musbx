@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/widgets/widgets.dart';
 
@@ -24,7 +25,7 @@ class ButtonPanel extends StatelessWidget {
               onPressed: musicPlayer.nullIfNoSongElse(() {
                 musicPlayer.seek(Duration.zero);
               }),
-              child: const ExpandedIcon(Icons.skip_previous_rounded),
+              child: const ExpandedIcon(Symbols.skip_previous_rounded),
             ),
           ),
           Flexible(
@@ -39,7 +40,7 @@ class ButtonPanel extends StatelessWidget {
                   musicPlayer
                       .seek(musicPlayer.position - const Duration(seconds: 1));
                 }),
-                child: const ExpandedIcon(Icons.fast_rewind_rounded),
+                child: const ExpandedIcon(Symbols.fast_rewind_rounded),
               ),
             ),
           ),
@@ -71,8 +72,8 @@ class ButtonPanel extends StatelessWidget {
                             }),
                             icon: ExpandedIcon(
                               isPlaying
-                                  ? Icons.stop_rounded
-                                  : Icons.play_arrow_rounded,
+                                  ? Symbols.stop_rounded
+                                  : Symbols.play_arrow_rounded,
                             ),
                           ),
                         ),
@@ -95,7 +96,7 @@ class ButtonPanel extends StatelessWidget {
                   musicPlayer
                       .seek(musicPlayer.position + const Duration(seconds: 1));
                 }),
-                child: const ExpandedIcon(Icons.fast_forward_rounded),
+                child: const ExpandedIcon(Symbols.fast_forward_rounded),
               ),
             ),
           ),

@@ -6,6 +6,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ContinuousButton extends StatelessWidget {
@@ -78,7 +79,7 @@ class ErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InfoPage(
-      icon: const Icon(Icons.error_rounded),
+      icon: const Icon(Symbols.error_rounded),
       text: text,
     );
   }
@@ -221,6 +222,7 @@ class ExpandedIcon extends StatelessWidget {
       builder: (context, constraint) => Icon(
         icon,
         size: constraint.biggest.shortestSide,
+        fill: 1,
       ),
     );
   }

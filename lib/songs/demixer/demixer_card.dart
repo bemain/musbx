@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
@@ -96,7 +97,7 @@ class DemixerCard extends StatelessWidget {
                         musicPlayer.demixer.onStemsChanged();
                       },
               ),
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Symbols.refresh),
             ),
           ),
         ),
@@ -134,7 +135,7 @@ class DemixerCard extends StatelessWidget {
       children: [
         Padding(
           padding: EdgeInsets.symmetric(vertical: 16),
-          child: Icon(Icons.update_rounded, size: 96),
+          child: Icon(Symbols.update_rounded, size: 96),
         ),
         Text(
           """A newer version of the app is available. 
@@ -149,7 +150,7 @@ Please update to the latest version to use the Demixer.""",
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.cloud_off_rounded, size: 96),
+        const Icon(Symbols.cloud_off_rounded, size: 96),
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 8),
           child: Text(
@@ -239,7 +240,7 @@ Please update to the latest version to use the Demixer.""",
                 },
               );
             },
-            icon: const Icon(Icons.info_outline),
+            icon: const Icon(Symbols.info),
           )
       ],
     );
@@ -433,11 +434,11 @@ class StemControlsState extends State<StemControls> {
   IconData getStemIcon(StemType stem) {
     return switch (stem) {
       StemType.vocals => CustomIcons.microphone,
-      StemType.piano => Icons.piano,
+      StemType.piano => Symbols.piano,
       StemType.guitar => CustomIcons.guitar_head,
       StemType.bass => CustomIcons.bass_head,
       StemType.drums => CustomIcons.snare,
-      StemType.other => Icons.music_note,
+      StemType.other => Symbols.music_note,
     };
   }
 

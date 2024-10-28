@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/widgets/ads.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/drone/drone_page.dart';
@@ -96,11 +97,11 @@ class NavigationPageState extends State<NavigationPage> {
                 ),
                 NavigationDestination(
                   label: "Songs",
-                  icon: Icon(Icons.music_note),
+                  icon: Icon(Symbols.library_music),
                 ),
                 NavigationDestination(
                   label: "Tuner",
-                  icon: Icon(Icons.speed),
+                  icon: Icon(Symbols.speed),
                 ),
                 NavigationDestination(
                   label: "Drone",

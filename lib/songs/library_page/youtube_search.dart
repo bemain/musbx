@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/widgets/youtube_api/video.dart';
 import 'package:musbx/widgets/youtube_api/youtube_api.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
@@ -80,7 +81,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
                 query = "";
               },
         color: Theme.of(context).colorScheme.onSurfaceVariant,
-        icon: const Icon(Icons.clear),
+        icon: const Icon(Symbols.clear),
       )
     ];
   }
@@ -111,7 +112,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
         children: youtubeSearchHistory.sorted().map((query) {
           return ListTile(
             leading: Icon(
-              Icons.history,
+              Symbols.history,
               color: Theme.of(context).colorScheme.outline,
             ),
             title: Text(query),
@@ -120,7 +121,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
               color: Theme.of(context).colorScheme.outline,
               icon: const RotatedBox(
                 quarterTurns: -1,
-                child: Icon(Icons.arrow_outward),
+                child: Icon(Symbols.arrow_outward),
               ),
             ),
             onTap: () {

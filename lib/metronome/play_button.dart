@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/notification_indicator.dart';
 import 'package:musbx/utils/notifications.dart';
@@ -22,8 +23,9 @@ class PlayButton extends StatelessWidget {
               dimension: 150,
               child: FittedBox(
                 child: Icon(
+                  isPlaying ? Symbols.stop_rounded : Symbols.play_arrow_rounded,
                   color: Theme.of(context).colorScheme.primary,
-                  isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                  fill: 1,
                 ),
               ),
             ),

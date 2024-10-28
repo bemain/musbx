@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/utils/notifications.dart';
 
@@ -17,7 +18,7 @@ class NotificationIndicator extends StatelessWidget {
             if (hasPermission) return;
             _requestPermission(context);
           },
-          icon: const Icon(Icons.notifications_off),
+          icon: const Icon(Symbols.notifications_off),
         );
       },
     );
@@ -49,7 +50,7 @@ class NotificationPermissionRationale extends StatelessWidget {
 
     return AlertDialog(
       title: const Text("Enable notifications"),
-      icon: const Icon(Icons.notifications_active),
+      icon: const Icon(Symbols.notifications_active),
       content: const Text(
           "Turn on notifications to quickly access the Metronome from the notifications drawer."),
       actions: [

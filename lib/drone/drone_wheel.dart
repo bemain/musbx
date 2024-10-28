@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart' hide Key;
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/model/key.dart';
 import 'package:musbx/model/pitch_class.dart';
@@ -126,7 +127,10 @@ class DroneWheelState extends State<DroneWheel> {
       builder: (context, isPlaying, _) => IconButton.filled(
         onPressed: isPlaying ? drone.pause : drone.play,
         iconSize: 75,
-        icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded),
+        icon: Icon(
+          isPlaying ? Symbols.stop_rounded : Symbols.play_arrow_rounded,
+          fill: 1,
+        ),
       ),
     );
   }
@@ -136,7 +140,7 @@ class DroneWheelState extends State<DroneWheel> {
       onPressed: () {
         drone.intervalsNotifier.value = [];
       },
-      icon: const Icon(Icons.refresh),
+      icon: const Icon(Symbols.refresh),
     );
   }
 

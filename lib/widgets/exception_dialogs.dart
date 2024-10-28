@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/widgets/custom_icons.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/navigation_page.dart';
 import 'package:musbx/utils/purchases.dart';
@@ -45,7 +45,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Icons.workspace_premium),
+      icon: const Icon(Symbols.workspace_premium),
       title: const Text("Get Premium"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -84,7 +84,7 @@ class PremiumPurchasedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Icons.verified),
+      icon: const Icon(Symbols.verified),
       title: const Text("Processing purchase"),
       content: const Text(
           """Thank you for supporting Musician's Toolbox by upgrading to Premium! 
@@ -108,7 +108,7 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Icons.new_releases),
+      icon: const Icon(Symbols.new_releases),
       title: const Text("Purchase failed"),
       content: const Text(
           """An error occured during your purchase, and your account has not been charged. Please try again in a few moments."""),
@@ -144,7 +144,7 @@ class UnsupportedFileExtensionDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.file_present_rounded, size: 128),
+          const Icon(Symbols.file_present_rounded, size: 128),
           const SizedBox(height: 15),
           Text(
               "The file type '.$extension' is not supported. Try loading a different file.")
@@ -173,7 +173,7 @@ class FileCouldNotBeLoadedDialog extends StatelessWidget {
       content: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.file_present_rounded, size: 128),
+          Icon(Symbols.file_present_rounded, size: 128),
           SizedBox(height: 15),
           Text(
               "An error occurred while loading the file. Please try again later, or try selecting a different file.")
@@ -202,7 +202,7 @@ class YoutubeUnavailableDialog extends StatelessWidget {
       content: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(CustomIcons.youtube, size: 128),
+          Icon(Symbols.cloud_off, size: 128),
           SizedBox(height: 15),
           Text(
               "The Search service is currently unavailable. Please try again later.")

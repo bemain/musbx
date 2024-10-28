@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/equalizer/equalizer_sliders.dart';
 import 'package:musbx/songs/player/music_player.dart';
 
@@ -35,7 +36,7 @@ class EqualizerSheet extends StatelessWidget {
                       iconSize: 20,
                       onPressed: musicPlayer
                           .nullIfNoSongElse(musicPlayer.equalizer.resetGain),
-                      icon: const Icon(Icons.refresh),
+                      icon: const Icon(Symbols.refresh),
                     ),
                   ),
                 ],

@@ -58,12 +58,14 @@ class MyApp extends StatelessWidget {
         sliderTheme: lightTheme.sliderTheme.copyWith(
           showValueIndicator: ShowValueIndicator.always,
         ),
+        iconTheme: lightTheme.iconTheme.copyWith(weight: 600),
       ),
       darkTheme: darkTheme.copyWith(
         textTheme: GoogleFonts.interTextTheme(darkTheme.textTheme),
         sliderTheme: darkTheme.sliderTheme.copyWith(
           showValueIndicator: ShowValueIndicator.always,
         ),
+        iconTheme: darkTheme.iconTheme.copyWith(weight: 600),
       ),
       home: NavigationPage(),
     );
