@@ -95,11 +95,11 @@ class SongPage extends StatelessWidget {
                 color: Theme.of(context).colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(32),
               ),
-              tabTextColor: Theme.of(context).colorScheme.onSurface,
               indicatorDecoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(32),
               ),
+              tabTextColor: Theme.of(context).colorScheme.onSurface,
               selectedTabTextColor:
                   Theme.of(context).colorScheme.onPrimaryContainer,
               tabs: const [
