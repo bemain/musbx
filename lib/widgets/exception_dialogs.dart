@@ -84,7 +84,7 @@ class PremiumPurchasedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Symbols.verified),
+      icon: const Icon(Symbols.new_releases),
       title: const Text("Processing purchase"),
       content: const Text(
           """Thank you for supporting Musician's Toolbox by upgrading to Premium! 
@@ -108,7 +108,7 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Symbols.new_releases),
+      icon: const Icon(Symbols.release_alert),
       title: const Text("Purchase failed"),
       content: const Text(
           """An error occured during your purchase, and your account has not been charged. Please try again in a few moments."""),
@@ -144,7 +144,7 @@ class UnsupportedFileExtensionDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Symbols.file_present_rounded, size: 128),
+          const Icon(Symbols.file_present, size: 128),
           const SizedBox(height: 15),
           Text(
               "The file type '.$extension' is not supported. Try loading a different file.")
@@ -173,7 +173,7 @@ class FileCouldNotBeLoadedDialog extends StatelessWidget {
       content: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Symbols.file_present_rounded, size: 128),
+          Icon(Symbols.file_present, size: 128),
           SizedBox(height: 15),
           Text(
               "An error occurred while loading the file. Please try again later, or try selecting a different file.")
