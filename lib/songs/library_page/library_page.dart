@@ -36,6 +36,7 @@ class LibraryPage extends StatelessWidget {
               title: const Text("Songs"),
               actions: const [
                 GetPremiumButton(),
+                InfoButton(),
               ],
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(100),
