@@ -10,6 +10,8 @@ class LoopSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool wasPlayingBeforeChange = false;
+
     return ValueListenableBuilder(
       valueListenable: musicPlayer.durationNotifier,
       builder: (_, duration, __) => ValueListenableBuilder(
@@ -35,13 +37,35 @@ class LoopSlider extends StatelessWidget {
                   loopSection.start.inMilliseconds.toDouble(),
                   loopSection.end.inMilliseconds.toDouble(),
                 ),
+                onChangeStart: (value) {
+                  wasPlayingBeforeChange = musicPlayer.isPlaying;
+                  musicPlayer.pause();
+                },
+                onChangeEnd: (value) {
+                  if (wasPlayingBeforeChange) musicPlayer.play();
+                },
                 onChanged: !loopEnabled
                     ? null
                     : musicPlayer.nullIfNoSongElse((RangeValues values) {
+                        final LoopSection previous = musicPlayer.looper.section;
+
+                        // Update section
                         musicPlayer.looper.section = LoopSection(
                           start: Duration(milliseconds: values.start.toInt()),
                           end: Duration(milliseconds: values.end.toInt()),
                         );
+
+                        if (previous.start.inMilliseconds != values.start) {
+                          // The start value changed
+                          musicPlayer.seek(
+                            Duration(milliseconds: values.start.toInt()),
+                          );
+                        } else if (previous.end.inMilliseconds != values.end) {
+                          // The end value changed
+                          musicPlayer.seek(
+                            Duration(milliseconds: values.end.toInt()),
+                          );
+                        }
                       }),
               ),
             );
