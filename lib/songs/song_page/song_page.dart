@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/analyzer/analyzer_card.dart';
@@ -15,12 +17,10 @@ import 'package:musbx/widgets/segmented_tab_control/segmented_tab_control.dart';
 class SongPage extends StatelessWidget {
   const SongPage({super.key});
 
-  static const String helpText =
-      """Press the plus-button and load a song from your device or by searching.
-
-- Mute or isolate specific instruments using the Demixer.
-- Loop a section of the song using the range slider. Use the arrows to set the start or end of the section to the current position.
-- Adjust pitch and speed using the circular sliders. Greater accuracy can be obtained by dragging away from the center.""";
+  static final String helpText =
+      """- Play along with the chords or loop a section of the song in the Chords tab.
+- Mute or isolate specific instruments in the Instruments tab.
+- Adjust pitch and speed ${Platform.isAndroid ? "and apply equalizer effects " : ""}using the options in the toolbar.""";
 
   @override
   Widget build(BuildContext context) {
@@ -53,17 +53,18 @@ class SongPage extends StatelessWidget {
             },
             icon: const Icon(Symbols.avg_pace),
           ),
-          IconButton(
-            onPressed: () {
-              _showModalBottomSheet(
-                context,
-                EqualizerSheet(),
-              );
-            },
-            icon: const Icon(Symbols.instant_mix),
-          ),
+          if (Platform.isAndroid)
+            IconButton(
+              onPressed: () {
+                _showModalBottomSheet(
+                  context,
+                  EqualizerSheet(),
+                );
+              },
+              icon: const Icon(Symbols.instant_mix),
+            ),
           const GetPremiumButton(),
-          const InfoButton(child: Text(helpText)),
+          InfoButton(child: Text(helpText)),
         ],
       ),
       body: Padding(
