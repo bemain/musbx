@@ -73,7 +73,7 @@ class MusicPlayer {
   late final MusicPlayerAudioHandler audioHandler = MusicPlayerAudioHandler(
     onPlay: play,
     onPause: pause,
-    // TODO: Implement onStop
+    onStop: stop,
     playbackStateStream: player.playbackEventStream.map(
       (event) => MusicPlayerAudioHandler.transformEvent(event, player),
     ),
@@ -128,6 +128,23 @@ class MusicPlayer {
 
   /// Pause playback.
   Future<void> pause() async => await player.pause();
+
+  /// Stops playing audio and releases decoders and other native platform resources needed to play audio.
+  /// The current audio source state will be retained and playback can be resumed at a later point in time.
+  Future<void> stop() async {
+    await saveSongPreferences();
+
+    stateNotifier.value = MusicPlayerState.idle;
+    songNotifier.value = null;
+
+    loadSongLock = () async {
+      try {
+        await loadSongLock;
+      } catch (_) {}
+      await player.stop();
+    }();
+    await loadSongLock;
+  }
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {

@@ -29,11 +29,7 @@ class SongPage extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        leading: BackButton(
-          onPressed: () {
-            musicPlayer.stateNotifier.value = MusicPlayerState.idle;
-          },
-        ),
+        leading: BackButton(onPressed: musicPlayer.stop),
         actions: [
           IconButton(
             onPressed: () {
