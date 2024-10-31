@@ -18,17 +18,11 @@ class LibraryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Song> songHistory =
-        musicPlayer.songHistory.sorted(ascending: false);
-
     return Scaffold(
       body: ListenableBuilder(
         listenable: searchController,
         builder: (context, child) {
           final String searchPhrase = searchController.text.toLowerCase();
-          final Iterable<Song> filteredSongHistory = songHistory.where((song) =>
-              song.title.toLowerCase().contains(searchPhrase) ||
-              (song.artist?.toLowerCase().contains(searchPhrase) ?? false));
 
           return CustomScrollView(slivers: [
             SliverAppBar.medium(
@@ -63,46 +57,58 @@ class LibraryPage extends StatelessWidget {
                 ),
               ),
             ),
-            SliverList.list(
-              children: [
-                for (final Song song in filteredSongHistory)
-                  ListTile(
-                    leading: _buildSongSourceAvatar(song) ?? Container(),
-                    title: Text(
-                      song.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(song.artist ?? "Unknown artist"),
-                    onTap: musicPlayer.isLoading
-                        ? null
-                        : () async {
-                            if (musicPlayer.isAccessRestricted &&
-                                !musicPlayer.songsPlayedThisWeek
-                                    .contains(song)) {
-                              showExceptionDialog(
-                                  const MusicPlayerAccessRestrictedDialog());
-                              return;
-                            }
+            ListenableBuilder(
+              listenable: musicPlayer.songHistory,
+              builder: (context, child) {
+                final Iterable<Song> songHistory = musicPlayer.songHistory
+                    .sorted(ascending: false)
+                    .where((song) =>
+                        song.title.toLowerCase().contains(searchPhrase) ||
+                        (song.artist?.toLowerCase().contains(searchPhrase) ??
+                            false));
 
-                            MusicPlayerState prevState = musicPlayer.state;
-                            musicPlayer.stateNotifier.value =
-                                MusicPlayerState.pickingAudio;
-                            try {
-                              await musicPlayer.loadSong(song);
-                            } catch (error) {
-                              debugPrint("[MUSIC PLAYER] $error");
-                              showExceptionDialog(
-                                song.source is YoutubeSource
-                                    ? const YoutubeUnavailableDialog()
-                                    : const FileCouldNotBeLoadedDialog(),
-                              );
-                              // Restore state
-                              musicPlayer.stateNotifier.value = prevState;
-                            }
-                          },
-                  ),
-              ],
+                return SliverList.list(
+                  children: [
+                    for (final Song song in songHistory)
+                      ListTile(
+                        leading: _buildSongSourceAvatar(song) ?? Container(),
+                        title: Text(
+                          song.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(song.artist ?? "Unknown artist"),
+                        onTap: musicPlayer.isLoading
+                            ? null
+                            : () async {
+                                if (musicPlayer.isAccessRestricted &&
+                                    !musicPlayer.songsPlayedThisWeek
+                                        .contains(song)) {
+                                  showExceptionDialog(
+                                      const MusicPlayerAccessRestrictedDialog());
+                                  return;
+                                }
+
+                                MusicPlayerState prevState = musicPlayer.state;
+                                musicPlayer.stateNotifier.value =
+                                    MusicPlayerState.pickingAudio;
+                                try {
+                                  await musicPlayer.loadSong(song);
+                                } catch (error) {
+                                  debugPrint("[MUSIC PLAYER] $error");
+                                  showExceptionDialog(
+                                    song.source is YoutubeSource
+                                        ? const YoutubeUnavailableDialog()
+                                        : const FileCouldNotBeLoadedDialog(),
+                                  );
+                                  // Restore state
+                                  musicPlayer.stateNotifier.value = prevState;
+                                }
+                              },
+                      ),
+                  ],
+                );
+              },
             )
           ]);
         },
