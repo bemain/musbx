@@ -141,6 +141,10 @@ class LibraryPage extends StatelessWidget {
   }
 
   Widget? _buildSongSourceAvatar(Song song) {
+    if (song == demoSong) {
+      return const Icon(Symbols.science);
+    }
+
     if (song.source is FileSource) {
       return const Icon(Symbols.file_present);
     }
