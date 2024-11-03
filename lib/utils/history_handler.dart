@@ -11,11 +11,11 @@ class HistoryHandler<T> extends ChangeNotifier {
     required this.toJson,
     required this.historyFileName,
     this.onEntryRemoved,
-    this.maxEntries = 5,
+    this.maxEntries,
   });
 
   /// The maximum number of entries saved in history.
-  final int maxEntries;
+  final int? maxEntries;
 
   /// The name of the file where entries are persisted, without extension.
   final String historyFileName;
@@ -80,7 +80,7 @@ class HistoryHandler<T> extends ChangeNotifier {
     history[DateTime.now()] = newValue;
 
     // Only keep the [maxEntries] newest entries
-    while (history.length > maxEntries) {
+    while (maxEntries != null && history.length > maxEntries!) {
       final oldestEntry = history.entries.reduce((oldest, element) =>
           element.key.isBefore(oldest.key) ? element : oldest);
       history.remove(oldestEntry.key);
