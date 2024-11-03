@@ -91,6 +91,7 @@ class LibraryPage extends StatelessWidget {
         !isLocked ? null : TextStyle(color: Theme.of(context).disabledColor);
 
     return ListTile(
+      contentPadding: const EdgeInsets.only(left: 20, right: 8),
       leading: isLocked
           ? Icon(
               Symbols.lock,
@@ -109,35 +110,13 @@ class LibraryPage extends StatelessWidget {
       ),
       trailing: IconButton(
         onPressed: () {
-          showDialog(
+          showModalBottomSheet(
             context: context,
-            builder: (context) {
-              return AlertDialog(
-                icon: const Icon(Symbols.delete, weight: 600),
-                title: const Text("Remove from library?"),
-                content: const Text(
-                  "Are you sure you want to remove this song from your library? \n\nYou can always add the song again later, but your preferences for this song will be reset.",
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text("Cancel"),
-                  ),
-                  FilledButton(
-                    onPressed: () {
-                      musicPlayer.songHistory.remove(song);
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text("Remove"),
-                  ),
-                ],
-              );
-            },
+            showDragHandle: true,
+            builder: (context) => _buildOptionsSheet(context, song),
           );
         },
-        icon: const Icon(Symbols.delete),
+        icon: const Icon(Symbols.more_vert),
       ),
       onTap: musicPlayer.isLoading
           ? null
@@ -162,6 +141,63 @@ class LibraryPage extends StatelessWidget {
                 musicPlayer.stateNotifier.value = prevState;
               }
             },
+    );
+  }
+
+  Widget _buildOptionsSheet(BuildContext context, Song song) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            song.title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          leading: const Icon(Symbols.delete),
+          title: const Text("Remove from library"),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  icon: const Icon(Symbols.delete, weight: 600),
+                  title: const Text("Remove song?"),
+                  content: const Text(
+                    "This will remove the song from your library.",
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                    FilledButton(
+                      onPressed: () {
+                        musicPlayer.songHistory.remove(song);
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text("Remove"),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+        const SizedBox(height: 32),
+      ],
     );
   }
 
