@@ -108,7 +108,11 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
     return ListenableBuilder(
       listenable: youtubeSearchHistory,
       builder: (context, child) => ListView(
-        children: youtubeSearchHistory.sorted().map((query) {
+        children: youtubeSearchHistory
+            .sorted()
+            .where((query) =>
+                query.toLowerCase().contains(this.query.toLowerCase()))
+            .map((query) {
           return ListTile(
             leading: Icon(
               Symbols.history,
