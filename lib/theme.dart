@@ -1,5 +1,6 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 const Color defaultSeed = Color(0xff578cff);
 
@@ -33,5 +34,20 @@ Future<void> generateThemes({
     useMaterial3: true,
   );
 
-  onThemesGenerated(lightTheme, darkTheme);
+  onThemesGenerated(
+    lightTheme.copyWith(
+      textTheme: GoogleFonts.interTextTheme(lightTheme.textTheme),
+      sliderTheme: lightTheme.sliderTheme.copyWith(
+        showValueIndicator: ShowValueIndicator.always,
+      ),
+      iconTheme: lightTheme.iconTheme.copyWith(weight: 600),
+    ),
+    darkTheme.copyWith(
+      textTheme: GoogleFonts.interTextTheme(darkTheme.textTheme),
+      sliderTheme: darkTheme.sliderTheme.copyWith(
+        showValueIndicator: ShowValueIndicator.always,
+      ),
+      iconTheme: darkTheme.iconTheme.copyWith(weight: 600),
+    ),
+  );
 }

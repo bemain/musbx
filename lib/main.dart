@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/songs/player/music_player.dart';
@@ -53,20 +52,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Musician's Toolbox",
-      theme: lightTheme.copyWith(
-        textTheme: GoogleFonts.interTextTheme(lightTheme.textTheme),
-        sliderTheme: lightTheme.sliderTheme.copyWith(
-          showValueIndicator: ShowValueIndicator.always,
-        ),
-        iconTheme: lightTheme.iconTheme.copyWith(weight: 600),
-      ),
-      darkTheme: darkTheme.copyWith(
-        textTheme: GoogleFonts.interTextTheme(darkTheme.textTheme),
-        sliderTheme: darkTheme.sliderTheme.copyWith(
-          showValueIndicator: ShowValueIndicator.always,
-        ),
-        iconTheme: darkTheme.iconTheme.copyWith(weight: 600),
-      ),
+      theme: lightTheme,
+      darkTheme: darkTheme,
       home: NavigationPage(),
     );
   }
