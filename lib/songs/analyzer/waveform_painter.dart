@@ -12,7 +12,7 @@ class WaveformPainter extends CustomPainter {
     this.activeColor = Colors.blue,
     this.inactiveColor = Colors.grey,
     this.amplitude = 1.0,
-    this.waveformPixelsPerStep = 16.0,
+    this.waveformPixelsPerStep = 12.0,
   });
 
   final Waveform waveform;
