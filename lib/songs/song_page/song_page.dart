@@ -92,7 +92,7 @@ class SongPage extends StatelessWidget {
               tabs: [
                 SegmentTab(
                   text: "Chords",
-                  icon: Icon(Symbols.graphic_eq),
+                  icon: Icon(CustomIcons.waveform),
                 ),
                 SegmentTab(
                   text: "Instruments",
