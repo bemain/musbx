@@ -71,6 +71,7 @@ class LibraryPage extends StatelessWidget {
                   children: [
                     for (final Song song in songHistory)
                       _buildSongTile(context, song),
+                    const SizedBox(height: 80),
                   ],
                 );
               },
