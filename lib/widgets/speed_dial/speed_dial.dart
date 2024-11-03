@@ -16,6 +16,7 @@ class SpeedDial extends StatefulWidget {
     this.heroTag,
     this.expandedChild,
     this.expandedLabel,
+    this.shouldExpand,
     this.onExpandedPressed,
     this.backgroundColor,
     this.expandedBackgroundColor,
@@ -33,6 +34,7 @@ class SpeedDial extends StatefulWidget {
     this.heroTag,
     this.expandedChild,
     this.expandedLabel,
+    this.shouldExpand,
     this.onExpandedPressed,
     this.backgroundColor,
     this.expandedBackgroundColor,
@@ -85,6 +87,10 @@ class SpeedDial extends StatefulWidget {
 
   /// The duration of the opening and closing animation.
   final Duration animationDuration;
+
+  /// Called whenever the user presses the button in the contracted state.
+  /// Return `true` if the button is allowed to expand, `false` otherwise.
+  final bool Function()? shouldExpand;
 
   /// Callback for when the primary [FloatingActionButton] is pressed in an expanded state.
   final VoidCallback? onExpandedPressed;
@@ -141,14 +147,12 @@ class SpeedDialState extends State<SpeedDial>
     final angleTween = Tween<double>(begin: 0, end: 1);
 
     void onPressed() {
-      setState(() {
-        if (isOpen) {
-          _close();
-          widget.onExpandedPressed?.call();
-        } else {
-          _open();
-        }
-      });
+      if (isOpen) {
+        _close();
+        widget.onExpandedPressed?.call();
+      } else if (widget.shouldExpand?.call() ?? true) {
+        _open();
+      }
     }
 
     final Widget icon = Stack(

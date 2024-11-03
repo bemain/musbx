@@ -34,11 +34,6 @@ class UploadSongButton extends SpeedDialChild {
       onPressed: musicPlayer.isLoading
           ? null
           : (event) {
-              if (musicPlayer.isAccessRestricted) {
-                showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
-                return;
-              }
-
               if (permissionGranted) {
                 pickFile(context);
               } else {

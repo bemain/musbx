@@ -204,22 +204,22 @@ class LibraryPage extends StatelessWidget {
   Widget _buildLoadSongFAB(BuildContext context, {Object? heroTag}) {
     return SpeedDial.extended(
       heroTag: heroTag,
-      label: const Text("Add to library"),
+      shouldExpand: () {
+        if (musicPlayer.isAccessRestricted) {
+          showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
+        }
+
+        return !musicPlayer.isAccessRestricted;
+      },
+      onExpandedPressed: MusicPlayer.instance.isLoading
+          ? null
+          : () => pickYoutubeSong(context),
+      expandedChild: const Icon(Symbols.search),
+      expandedLabel: const Text("Search"),
       children: [
         UploadSongButton(),
       ],
-      onExpandedPressed: MusicPlayer.instance.isLoading
-          ? null
-          : () async {
-              if (musicPlayer.isAccessRestricted) {
-                showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
-                return;
-              }
-
-              await pickYoutubeSong(context);
-            },
-      expandedChild: const Icon(Symbols.search),
-      expandedLabel: const Text("Search"),
+      label: const Text("Add to library"),
       child: const Icon(Symbols.add),
     );
   }
