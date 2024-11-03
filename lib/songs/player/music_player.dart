@@ -111,8 +111,8 @@ class MusicPlayer {
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
   Iterable<Song> get songsPlayedThisWeek => songHistory.history.entries
       .where((entry) =>
-          entry.key.difference(DateTime.now()) < const Duration(days: 7))
-      .where((entry) => entry.value.id != "demo") // Exclude demo song
+          entry.key.difference(DateTime.now()).abs() < const Duration(days: 7))
+      .where((entry) => entry.value.id != demoSong.id) // Exclude demo song
       .map((e) => e.value);
 
   /// Whether the user's access to the [MusicPlayer] has been restricted
