@@ -73,7 +73,7 @@ class DemixerCard extends StatelessWidget {
           alignment: Alignment.center,
           child: Center(
             child: Text(
-              "Demixer",
+              "Instruments",
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
