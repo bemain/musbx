@@ -50,7 +50,7 @@ class NotificationPermissionRationale extends StatelessWidget {
 
     return AlertDialog(
       title: const Text("Enable notifications"),
-      icon: const Icon(Symbols.notifications_active),
+      icon: const Icon(Symbols.notifications_active, weight: 600),
       content: const Text(
           "Turn on notifications to quickly access the Metronome from the notifications drawer."),
       actions: [

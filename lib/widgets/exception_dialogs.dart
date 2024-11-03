@@ -45,7 +45,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Symbols.workspace_premium),
+      icon: const Icon(Symbols.workspace_premium, weight: 600),
       title: const Text("Get Premium"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -84,7 +84,7 @@ class PremiumPurchasedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Symbols.new_releases),
+      icon: const Icon(Symbols.new_releases, weight: 600),
       title: const Text("Processing purchase"),
       content: const Text(
           """Thank you for supporting Musician's Toolbox by upgrading to Premium! 
@@ -108,7 +108,7 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Symbols.release_alert),
+      icon: const Icon(Symbols.release_alert, weight: 600),
       title: const Text("Purchase failed"),
       content: const Text(
           """An error occured during your purchase, and your account has not been charged. Please try again in a few moments."""),
