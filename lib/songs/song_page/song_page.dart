@@ -28,41 +28,7 @@ class SongPage extends StatelessWidget {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        leading: BackButton(onPressed: musicPlayer.stop),
-        actions: [
-          IconButton(
-            onPressed: () {
-              _showModalBottomSheet(
-                context,
-                SlowdownerSheet(),
-              );
-            },
-            icon: const Icon(CustomIcons.accidentals),
-          ),
-          IconButton(
-            onPressed: () {
-              _showModalBottomSheet(
-                context,
-                SlowdownerSheet(),
-              );
-            },
-            icon: const Icon(Symbols.avg_pace),
-          ),
-          if (Platform.isAndroid)
-            IconButton(
-              onPressed: () {
-                _showModalBottomSheet(
-                  context,
-                  EqualizerSheet(),
-                );
-              },
-              icon: const Icon(Symbols.instant_mix),
-            ),
-          const GetPremiumButton(),
-          InfoButton(child: Text(helpText)),
-        ],
-      ),
+      appBar: const SongAppBar(),
       body: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
@@ -106,6 +72,84 @@ class SongPage extends StatelessWidget {
             const SizedBox(height: 8),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const SongAppBar({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    final MusicPlayer musicPlayer = MusicPlayer.instance;
+
+    return ValueListenableBuilder(
+      valueListenable: musicPlayer.slowdowner.pitchNotifier,
+      builder: (context, pitch, child) => ValueListenableBuilder(
+        valueListenable: musicPlayer.slowdowner.speedNotifier,
+        builder: (context, speed, child) {
+          final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
+          final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
+          final bool isEqualizerReset = musicPlayer.equalizer.parameters?.bands
+                  .every((band) =>
+                      band.gain ==
+                      (musicPlayer.equalizer.parameters!.minDecibels +
+                              musicPlayer.equalizer.parameters!.maxDecibels) /
+                          2) ??
+              true;
+
+          return AppBar(
+            leading: BackButton(onPressed: musicPlayer.stop),
+            actions: [
+              if (!Platform.isIOS)
+                IconButton(
+                  onPressed: () {
+                    _showModalBottomSheet(
+                      context,
+                      SlowdownerSheet(),
+                    );
+                  },
+                  isSelected: !isPitchReset,
+                  color: isPitchReset
+                      ? null
+                      : Theme.of(context).colorScheme.primary,
+                  icon: const Icon(CustomIcons.accidentals),
+                ),
+              IconButton(
+                onPressed: () {
+                  _showModalBottomSheet(
+                    context,
+                    SlowdownerSheet(),
+                  );
+                },
+                isSelected: !isSpeedReset,
+                color:
+                    isSpeedReset ? null : Theme.of(context).colorScheme.primary,
+                icon: const Icon(Symbols.avg_pace),
+              ),
+              if (Platform.isAndroid)
+                IconButton(
+                  onPressed: () {
+                    _showModalBottomSheet(
+                      context,
+                      EqualizerSheet(),
+                    );
+                  },
+                  isSelected: !isEqualizerReset,
+                  color: isEqualizerReset
+                      ? null
+                      : Theme.of(context).colorScheme.primary,
+                  icon: const Icon(Symbols.instant_mix),
+                ),
+              const GetPremiumButton(),
+              InfoButton(child: Text(SongPage.helpText)),
+            ],
+          );
+        },
       ),
     );
   }

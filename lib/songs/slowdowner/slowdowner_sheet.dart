@@ -30,8 +30,7 @@ class SlowdownerSheet extends StatelessWidget {
               child: ValueListenableBuilder(
                 valueListenable: musicPlayer.slowdowner.speedNotifier,
                 builder: (_, speed, __) => ValueListenableBuilder(
-                  valueListenable:
-                      musicPlayer.slowdowner.pitchSemitonesNotifier,
+                  valueListenable: musicPlayer.slowdowner.pitchNotifier,
                   builder: (context, pitch, _) => IconButton(
                     iconSize: 20,
                     onPressed: musicPlayer.nullIfNoSongElse(
@@ -73,7 +72,7 @@ class SlowdownerSheet extends StatelessWidget {
 
   Widget buildPitchSlider(double radius) {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
+      valueListenable: musicPlayer.slowdowner.pitchNotifier,
       builder: (context, pitch, _) => Column(children: [
         Text(
           "Pitch",
@@ -186,7 +185,7 @@ class SlowdownerSheet extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: musicPlayer.slowdowner.speedNotifier,
       builder: (_, speed, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.slowdowner.pitchSemitonesNotifier,
+        valueListenable: musicPlayer.slowdowner.pitchNotifier,
         builder: (context, pitch, _) => IconButton(
           iconSize: 20,
           onPressed: (speed.toStringAsFixed(2) == "1.00" &&

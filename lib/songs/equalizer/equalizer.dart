@@ -12,6 +12,7 @@ class Equalizer extends MusicPlayerComponent {
   final AndroidEqualizer androidEqualizer = AndroidEqualizer();
 
   /// The parameters of this equalizer, or null if no song has been loaded.
+  /// TODO: This doesn't notify when the gain on the bands changes.
   AndroidEqualizerParameters? get parameters => parametersNotifier.value;
   final ValueNotifier<AndroidEqualizerParameters?> parametersNotifier =
       ValueNotifier(null);

@@ -22,7 +22,7 @@ class Slowdowner extends MusicPlayerComponent {
     if (enabled && !Platform.isIOS) {
       await audioPlayer.setPitch(pow(2, pitch / 12).toDouble());
     }
-    pitchSemitonesNotifier.value = pitch;
+    pitchNotifier.value = pitch;
   }
 
   /// Set the playback speed.
@@ -35,9 +35,9 @@ class Slowdowner extends MusicPlayerComponent {
   }
 
   /// How much the pitch will be shifted, in semitones.
-  double get pitchSemitones => pitchSemitonesNotifier.value;
-  set pitchSemitones(double value) => setPitchSemitones(value);
-  final ValueNotifier<double> pitchSemitonesNotifier = ValueNotifier(0);
+  double get pitch => pitchNotifier.value;
+  set pitch(double value) => setPitchSemitones(value);
+  final ValueNotifier<double> pitchNotifier = ValueNotifier(0);
 
   /// The playback speed.
   double get speed => speedNotifier.value;
@@ -57,7 +57,7 @@ class Slowdowner extends MusicPlayerComponent {
         musicPlayer.audioHandler.setSpeed(1.0);
       } else {
         // Restore pitch and speed
-        setPitchSemitones(pitchSemitones);
+        setPitchSemitones(pitch);
         setSpeed(speed);
       }
     });
@@ -75,7 +75,7 @@ class Slowdowner extends MusicPlayerComponent {
     final double? pitch = tryCast<double>(json["pitchSemitones"]);
     final double? speed = tryCast<double>(json["speed"]);
 
-    pitchSemitones = pitch?.clamp(-12, 12) ?? 0.0;
+    this.pitch = pitch?.clamp(-12, 12) ?? 0.0;
     this.speed = speed?.clamp(0.5, 2) ?? 1.0;
   }
 
@@ -88,7 +88,7 @@ class Slowdowner extends MusicPlayerComponent {
   Map<String, dynamic> saveSettingsToJson() {
     return {
       ...super.saveSettingsToJson(),
-      "pitchSemitones": pitchSemitones,
+      "pitchSemitones": pitch,
       "speed": speed,
     };
   }

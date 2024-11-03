@@ -59,7 +59,7 @@ class Analyzer extends MusicPlayerComponent {
         });
     });
 
-    musicPlayer.slowdowner.pitchSemitonesNotifier.addListener(_updateChords);
+    musicPlayer.slowdowner.pitchNotifier.addListener(_updateChords);
   }
 
   void _updateChords() {
@@ -67,7 +67,7 @@ class Analyzer extends MusicPlayerComponent {
       (key, value) => MapEntry(
         key,
         value?.transposed(
-          MusicPlayer.instance.slowdowner.pitchSemitones.round(),
+          MusicPlayer.instance.slowdowner.pitch.round(),
         ),
       ),
     );
