@@ -91,6 +91,15 @@ class HistoryHandler<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> remove(T value) async {
+    if (!history.values.contains(value)) return;
+
+    history.removeWhere((key, v) => v == value);
+
+    await save();
+    notifyListeners();
+  }
+
   /// Save history entries to disk.
   Future<void> save() async {
     await (await _historyFile).writeAsString(jsonEncode(history.map(

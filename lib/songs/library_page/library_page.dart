@@ -70,42 +70,7 @@ class LibraryPage extends StatelessWidget {
                 return SliverList.list(
                   children: [
                     for (final Song song in songHistory)
-                      ListTile(
-                        leading: _buildSongSourceAvatar(song) ?? Container(),
-                        title: Text(
-                          song.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(song.artist ?? "Unknown artist"),
-                        onTap: musicPlayer.isLoading
-                            ? null
-                            : () async {
-                                if (musicPlayer.isAccessRestricted &&
-                                    !musicPlayer.songsPlayedThisWeek
-                                        .contains(song)) {
-                                  showExceptionDialog(
-                                      const MusicPlayerAccessRestrictedDialog());
-                                  return;
-                                }
-
-                                MusicPlayerState prevState = musicPlayer.state;
-                                musicPlayer.stateNotifier.value =
-                                    MusicPlayerState.pickingAudio;
-                                try {
-                                  await musicPlayer.loadSong(song);
-                                } catch (error) {
-                                  debugPrint("[MUSIC PLAYER] $error");
-                                  showExceptionDialog(
-                                    song.source is YoutubeSource
-                                        ? const YoutubeUnavailableDialog()
-                                        : const FileCouldNotBeLoadedDialog(),
-                                  );
-                                  // Restore state
-                                  musicPlayer.stateNotifier.value = prevState;
-                                }
-                              },
-                      ),
+                      _buildSongTile(context, song),
                   ],
                 );
               },
@@ -114,6 +79,74 @@ class LibraryPage extends StatelessWidget {
         },
       ),
       floatingActionButton: _buildLoadSongFAB(context),
+    );
+  }
+
+  Widget _buildSongTile(BuildContext context, Song song) {
+    return ListTile(
+      leading: _buildSongSourceAvatar(song) ?? Container(),
+      title: Text(
+        song.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(song.artist ?? "Unknown artist"),
+      trailing: IconButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                icon: const Icon(Symbols.delete, weight: 600),
+                title: const Text("Remove from library?"),
+                content: const Text(
+                  "Are you sure you want to remove this song from your library? \n\nYou can always add the song again later, but your preferences for this song will be reset.",
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("Cancel"),
+                  ),
+                  FilledButton(
+                    onPressed: () {
+                      musicPlayer.songHistory.remove(song);
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("Remove"),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        icon: const Icon(Symbols.delete),
+      ),
+      onTap: musicPlayer.isLoading
+          ? null
+          : () async {
+              if (musicPlayer.isAccessRestricted &&
+                  !musicPlayer.songsPlayedThisWeek.contains(song)) {
+                showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
+                return;
+              }
+
+              MusicPlayerState prevState = musicPlayer.state;
+              musicPlayer.stateNotifier.value = MusicPlayerState.loadingAudio;
+              try {
+                await musicPlayer.loadSong(song);
+              } catch (error) {
+                debugPrint("[MUSIC PLAYER] $error");
+                showExceptionDialog(
+                  song.source is YoutubeSource
+                      ? const YoutubeUnavailableDialog()
+                      : const FileCouldNotBeLoadedDialog(),
+                );
+                // Restore state
+                musicPlayer.stateNotifier.value = prevState;
+              }
+            },
     );
   }
 
