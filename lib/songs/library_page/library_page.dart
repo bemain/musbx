@@ -83,14 +83,29 @@ class LibraryPage extends StatelessWidget {
   }
 
   Widget _buildSongTile(BuildContext context, Song song) {
+    final bool isLocked = musicPlayer.isAccessRestricted &&
+        !musicPlayer.songsPlayedThisWeek.contains(song) &&
+        song != demoSong;
+    final TextStyle? textStyle =
+        !isLocked ? null : TextStyle(color: Theme.of(context).disabledColor);
+
     return ListTile(
-      leading: _buildSongSourceAvatar(song) ?? Container(),
+      leading: isLocked
+          ? Icon(
+              Symbols.lock,
+              color: Theme.of(context).disabledColor,
+            )
+          : _buildSongSourceAvatar(song) ?? Container(),
       title: Text(
         song.title,
+        style: textStyle,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      subtitle: Text(song.artist ?? "Unknown artist"),
+      subtitle: Text(
+        song.artist ?? "Unknown artist",
+        style: textStyle,
+      ),
       trailing: IconButton(
         onPressed: () {
           showDialog(
@@ -126,8 +141,7 @@ class LibraryPage extends StatelessWidget {
       onTap: musicPlayer.isLoading
           ? null
           : () async {
-              if (musicPlayer.isAccessRestricted &&
-                  !musicPlayer.songsPlayedThisWeek.contains(song)) {
+              if (isLocked) {
                 showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
                 return;
               }
