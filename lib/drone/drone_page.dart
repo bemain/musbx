@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/drone/drone_octave.dart';
 import 'package:musbx/drone/drone_wheel.dart';
-import 'package:musbx/page/default_app_bar.dart';
+import 'package:musbx/widgets/default_app_bar.dart';
 
 class DronePage extends StatefulWidget {
   const DronePage({super.key});

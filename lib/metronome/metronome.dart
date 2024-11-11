@@ -5,8 +5,8 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musbx/notifications.dart';
-import 'package:musbx/persistent_value.dart';
+import 'package:musbx/utils/notifications.dart';
+import 'package:musbx/utils/persistent_value.dart';
 
 enum BeatSound {
   accented("beat_accented.mp3"),

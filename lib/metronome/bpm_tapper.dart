@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:soundpool/soundpool.dart';
 
@@ -86,7 +87,7 @@ class BpmTapper extends StatelessWidget {
         onPressed: () {},
         icon: const Padding(
           padding: EdgeInsets.all(10.0),
-          child: Icon(Icons.ads_click),
+          child: Icon(Symbols.touch_app),
         ),
       ),
     );

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/notification_indicator.dart';
-import 'package:musbx/notifications.dart';
+import 'package:musbx/utils/notifications.dart';
 
 class PlayButton extends StatelessWidget {
   /// Play / pause button to start or stop the [Metronome].
@@ -14,19 +15,17 @@ class PlayButton extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: Metronome.instance.isPlayingNotifier,
       builder: (context, bool isPlaying, child) {
-        return GestureDetector(
+        return InkWell(
+          borderRadius: BorderRadius.circular(32),
           onTap: () => _onPressed(context),
-          behavior: HitTestBehavior.opaque,
           child: Center(
             child: SizedBox.square(
-              dimension: 91,
+              dimension: 150,
               child: FittedBox(
-                child: IconButton.filled(
-                  onPressed: () => _onPressed(context),
-                  iconSize: 75,
-                  icon: Icon(
-                    isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                  ),
+                child: Icon(
+                  isPlaying ? Symbols.stop_rounded : Symbols.play_arrow_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                  fill: 1,
                 ),
               ),
             ),

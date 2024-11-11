@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/custom_icons.dart';
+import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/metronome/metronome.dart';
 
 class Subdivisions extends StatelessWidget {

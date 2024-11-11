@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:musbx/launch_handler.dart';
-import 'package:musbx/music_player/music_player.dart';
+import 'package:musbx/utils/launch_handler.dart';
+import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/navigation_page.dart';
-import 'package:musbx/notifications.dart';
-import 'package:musbx/persistent_value.dart';
-import 'package:musbx/purchases.dart';
+import 'package:musbx/utils/notifications.dart';
+import 'package:musbx/utils/persistent_value.dart';
+import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/theme.dart';
 
 Future<void> main() async {
@@ -53,18 +52,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Musician's Toolbox",
-      theme: lightTheme.copyWith(
-        textTheme: GoogleFonts.interTextTheme(lightTheme.textTheme),
-        sliderTheme: lightTheme.sliderTheme.copyWith(
-          showValueIndicator: ShowValueIndicator.always,
-        ),
-      ),
-      darkTheme: darkTheme.copyWith(
-        textTheme: GoogleFonts.interTextTheme(darkTheme.textTheme),
-        sliderTheme: darkTheme.sliderTheme.copyWith(
-          showValueIndicator: ShowValueIndicator.always,
-        ),
-      ),
+      theme: lightTheme,
+      darkTheme: darkTheme,
       home: NavigationPage(),
     );
   }

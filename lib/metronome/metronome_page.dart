@@ -9,7 +9,8 @@ import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/subdivisions.dart';
 import 'package:musbx/metronome/higher.dart';
 import 'package:musbx/metronome/volume_indicator.dart';
-import 'package:musbx/page/default_app_bar.dart';
+import 'package:musbx/widgets/default_app_bar.dart';
+import 'package:musbx/widgets/flat_card.dart';
 
 class MetronomePage extends StatelessWidget {
   /// Page for controlling [Metronome], including:
@@ -22,7 +23,11 @@ class MetronomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const EdgeInsets cardPadding =
+        EdgeInsets.only(top: 16, bottom: 8, left: 8, right: 8);
+
     return const Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: DefaultAppBar(),
       body: Padding(
         padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
@@ -32,29 +37,37 @@ class MetronomePage extends StatelessWidget {
             SizedBox(height: 8),
             Subdivisions(),
             SizedBox(height: 8),
-            Divider(),
-            SizedBox(height: 8),
-            CountDisplay(),
             Expanded(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  PlayButton(),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        VolumeIndicator(),
-                        NotificationIndicator(),
-                      ],
+              child: FlatCard(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PlayButton(),
+                    Padding(
+                      padding: cardPadding,
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: CountDisplay(),
+                      ),
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: cardPadding,
+                      child: Align(
+                        alignment: Alignment.bottomRight,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            VolumeIndicator(),
+                            NotificationIndicator(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            Divider(),
-            SizedBox(height: 8),
+            SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [

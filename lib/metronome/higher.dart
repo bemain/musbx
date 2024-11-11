@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 
 class Higher extends StatelessWidget {
@@ -25,7 +26,7 @@ class Higher extends StatelessWidget {
                     },
               color: Theme.of(context).colorScheme.primary,
               iconSize: 50,
-              icon: const Icon(Icons.arrow_left_rounded),
+              icon: const Icon(Symbols.arrow_left_rounded),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -45,7 +46,7 @@ class Higher extends StatelessWidget {
                     },
               color: Theme.of(context).colorScheme.primary,
               iconSize: 50,
-              icon: const Icon(Icons.arrow_right_rounded),
+              icon: const Icon(Symbols.arrow_right_rounded),
             ),
           ],
         );

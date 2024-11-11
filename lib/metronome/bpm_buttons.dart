@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
-import 'package:musbx/widgets.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 class BpmButtons extends StatelessWidget {
   /// Buttons for adjusting [Metronome]'s bpm and a label showing the current bpm,
@@ -28,7 +29,7 @@ class BpmButtons extends StatelessWidget {
               Metronome.instance.bpm--;
             },
             iconSize: iconSize,
-            icon: const Icon(Icons.remove),
+            icon: const Icon(Symbols.remove),
           ),
         ),
         ConstrainedBox(
@@ -47,7 +48,7 @@ class BpmButtons extends StatelessWidget {
               Metronome.instance.bpm++;
             },
             iconSize: iconSize,
-            icon: const Icon(Icons.add),
+            icon: const Icon(Symbols.add),
           ),
         )
       ],
