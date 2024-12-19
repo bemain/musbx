@@ -22,7 +22,7 @@ class Navigation {
   static const String tunerRoute = "/tuner";
   static const String droneRoute = "/drone";
 
-  // TODO: Actually update this
+  // The current route. This is persisted across app restarts.
   static final PersistentValue<String> currentRoute = PersistentValue(
     "currentRoute",
     initialValue: songsRoute,
@@ -44,6 +44,7 @@ class Navigation {
     navigatorKey: navigatorKey,
     restorationScopeId: "router",
     initialLocation: currentRoute.value,
+    observers: [],
     routes: [
       StatefulShellRoute.indexedStack(
         builder: _buildShell,
@@ -67,6 +68,15 @@ class Navigation {
                 routes: [
                   GoRoute(
                     path: ":id",
+                    redirect: (context, state) {
+                      final String? id = state.pathParameters["id"];
+                      if (MusicPlayer.instance.songHistory.history.values
+                          .where((song) => song.id == id)
+                          .isEmpty) {
+                        return songsRoute;
+                      }
+                      return null;
+                    },
                     builder: (context, state) {
                       final MusicPlayer musicPlayer = MusicPlayer.instance;
                       final String? id = state.pathParameters["id"];
@@ -124,7 +134,11 @@ class Navigation {
         ],
       ),
     ],
-  );
+  )..routerDelegate.addListener(() {
+      // Update the current route whenever it changes
+      currentRoute.value =
+          router.routerDelegate.currentConfiguration.uri.toFilePath();
+    });
 
   static Scaffold _buildShell(
     BuildContext context,

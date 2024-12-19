@@ -435,7 +435,6 @@ class MusicPlayer {
       ),
     );
     AudioService.notificationClicked.listen((bool event) {
-      print("[DEBUG] Notification clicked: $event");
       if (event) {
         // Navigate to the music player page
         // TODO: Don't hard code this value
