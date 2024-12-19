@@ -28,9 +28,18 @@ class Navigation {
     initialValue: songsRoute,
   );
 
+  /// The key for the navigator used by the app.
+  ///
+  /// This is used to show dialogs in places where no local context is available.
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
+  /// The current [StatefulNavigationShell] used.
+  ///
+  /// This is used to navigate to different branches of the app.
+  static late StatefulNavigationShell navigationShell;
+
+  /// The router that handles navigation.
   static final GoRouter router = GoRouter(
     navigatorKey: navigatorKey,
     restorationScopeId: "router",
@@ -120,23 +129,24 @@ class Navigation {
   static Scaffold _buildShell(
     BuildContext context,
     GoRouterState state,
-    StatefulNavigationShell navigationShell,
+    StatefulNavigationShell shell,
   ) {
+    navigationShell = shell;
     return Scaffold(
-      body: navigationShell,
+      body: shell,
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // TODO: Remove bottom padding caused by SafeArea, which leaves a big space between the NavigationBar and the banner ad.
           NavigationBar(
             onDestinationSelected: (int index) {
-              navigationShell.goBranch(
+              shell.goBranch(
                 index,
                 // When tapping the current tab, navigate to the initial location
-                initialLocation: index == navigationShell.currentIndex,
+                initialLocation: index == shell.currentIndex,
               );
             },
-            selectedIndex: navigationShell.currentIndex,
+            selectedIndex: shell.currentIndex,
             destinations: const [
               NavigationDestination(
                 label: "Metronome",

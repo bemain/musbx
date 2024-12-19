@@ -6,21 +6,22 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musbx/widgets/ads.dart';
+import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
-import 'package:musbx/songs/player/audio_handler.dart';
-import 'package:musbx/songs/library_page/youtube_search.dart';
-import 'package:musbx/widgets/youtube_api/video.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
+import 'package:musbx/songs/library_page/youtube_search.dart';
 import 'package:musbx/songs/looper/looper.dart';
-import 'package:musbx/songs/slowdowner/slowdowner.dart';
+import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/songs/player/song_preferences.dart';
 import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/slowdowner/slowdowner.dart';
+import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/widgets/ads.dart';
 import 'package:musbx/widgets/widgets.dart';
+import 'package:musbx/widgets/youtube_api/video.dart';
 
 /// The demo song loaded the first time the user launches the app.
 /// Access to this song is unrestricted.
@@ -433,6 +434,14 @@ class MusicPlayer {
         androidNotificationIcon: "drawable/ic_notification",
       ),
     );
+    AudioService.notificationClicked.listen((bool event) {
+      print("[DEBUG] Notification clicked: $event");
+      if (event) {
+        // Navigate to the music player page
+        // TODO: Don't hard code this value
+        Navigation.navigationShell.goBranch(1);
+      }
+    });
 
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration(

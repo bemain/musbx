@@ -1,6 +1,7 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/navigation.dart';
 import 'package:musbx/utils/persistent_value.dart';
 
 class Notifications {
@@ -27,6 +28,10 @@ class Notifications {
   @pragma("vm:entry-point")
   static Future<void> _onActionReceived(ReceivedAction action) async {
     if (action.channelKey == "metronome-controls") {
+      // Navigate to the metronome page
+      // TODO: Don't hard code this value
+      Navigation.navigationShell.goBranch(0);
+
       switch (action.buttonKeyPressed) {
         case "play":
           Metronome.instance.play();
@@ -71,7 +76,7 @@ class Notifications {
           channelGroupName: "Metronome",
         ),
       ],
-      debug: true,
+      debug: kDebugMode,
     );
 
     await _notifications.setListeners(
