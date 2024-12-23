@@ -25,7 +25,7 @@ class DronePageState extends State<DronePage> {
             Expanded(child: DroneWheel()),
             SizedBox(height: 16),
             DroneOctave(),
-            SizedBox(height: 32),
+            SizedBox(height: 16),
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/widgets/ads.dart';
@@ -69,11 +71,12 @@ class NavigationPageState extends State<NavigationPage> {
               currentIndex.value = index;
             });
           },
-          children: const [
-            MetronomePage(),
-            MusicPlayerPage(),
-            TunerPage(),
-            DronePage(),
+          children: [
+            const MetronomePage(),
+            const MusicPlayerPage(),
+            const TunerPage(),
+            // TODO: Enable Drone on iOS
+            if (!Platform.isIOS) const DronePage(),
           ],
         ),
       ),
@@ -90,23 +93,24 @@ class NavigationPageState extends State<NavigationPage> {
                 controller.jumpToPage(index);
               },
               selectedIndex: currentIndex.value,
-              destinations: const [
-                NavigationDestination(
+              destinations: [
+                const NavigationDestination(
                   label: "Metronome",
                   icon: Icon(CustomIcons.metronome),
                 ),
-                NavigationDestination(
+                const NavigationDestination(
                   label: "Songs",
                   icon: Icon(Symbols.library_music),
                 ),
-                NavigationDestination(
+                const NavigationDestination(
                   label: "Tuner",
                   icon: Icon(Symbols.speed),
                 ),
-                NavigationDestination(
-                  label: "Drone",
-                  icon: Icon(CustomIcons.tuning_fork),
-                ),
+                if (!Platform.isIOS)
+                  const NavigationDestination(
+                    label: "Drone",
+                    icon: Icon(CustomIcons.tuning_fork),
+                  ),
               ],
             ),
             if (!Purchases.hasPremium)

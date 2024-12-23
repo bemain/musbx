@@ -26,7 +26,8 @@ class SlowdownerSheet extends StatelessWidget {
         children: [
           Stack(children: [
             Align(
-              alignment: Alignment.topCenter,
+              alignment:
+                  Platform.isIOS ? Alignment.topRight : Alignment.topCenter,
               child: ValueListenableBuilder(
                 valueListenable: musicPlayer.slowdowner.speedNotifier,
                 builder: (_, speed, __) => ValueListenableBuilder(
