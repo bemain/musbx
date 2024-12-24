@@ -44,7 +44,6 @@ class Navigation {
     navigatorKey: navigatorKey,
     restorationScopeId: "router",
     initialLocation: currentRoute.value,
-    observers: [],
     routes: [
       StatefulShellRoute.indexedStack(
         builder: _buildShell,
@@ -70,7 +69,7 @@ class Navigation {
                     path: ":id",
                     redirect: (context, state) {
                       final String? id = state.pathParameters["id"];
-                      if (MusicPlayer.instance.songHistory.history.values
+                      if (MusicPlayer.instance.songs.history.values
                           .where((song) => song.id == id)
                           .isEmpty) {
                         return songsRoute;
@@ -83,16 +82,17 @@ class Navigation {
 
                       if (musicPlayer.song?.id != id) {
                         // Begin loading song
-                        final Song? song = musicPlayer
-                            .songHistory.history.values
+                        final Song? song = musicPlayer.songs.history.values
                             .where((song) => song.id == id)
                             .firstOrNull;
                         if (song == null) {
+                          // Restore state
+                          musicPlayer.stateNotifier.value =
+                              MusicPlayerState.idle;
                           throw GoException(
                               "There is no song with the given id: '$id'");
                         }
 
-                        MusicPlayerState prevState = musicPlayer.state;
                         musicPlayer.loadSong(song).then(
                           (_) {},
                           onError: (error, _) {
@@ -103,7 +103,8 @@ class Navigation {
                                   : const FileCouldNotBeLoadedDialog(),
                             );
                             // Restore state
-                            musicPlayer.stateNotifier.value = prevState;
+                            musicPlayer.stateNotifier.value =
+                                MusicPlayerState.idle;
                           },
                         );
                       }

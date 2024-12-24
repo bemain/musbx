@@ -2,9 +2,7 @@ import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
@@ -21,7 +19,6 @@ import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/ads.dart';
 import 'package:musbx/widgets/widgets.dart';
-import 'package:musbx/widgets/youtube_api/video.dart';
 
 /// The demo song loaded the first time the user launches the app.
 /// Access to this song is unrestricted.
@@ -84,7 +81,7 @@ class MusicPlayer {
   final SongPreferences _songPreferences = SongPreferences();
 
   /// The history of previously loaded songs.
-  final HistoryHandler<Song> songHistory = HistoryHandler<Song>(
+  final HistoryHandler<Song> songs = HistoryHandler<Song>(
     historyFileName: "song_history",
     fromJson: (json) {
       if (json is! Map<String, dynamic>) {
@@ -110,7 +107,7 @@ class MusicPlayer {
   static const int freeSongsPerWeek = 3;
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
-  Iterable<Song> get songsPlayedThisWeek => songHistory.history.entries
+  Iterable<Song> get songsPlayedThisWeek => songs.history.entries
       .where((entry) =>
           entry.key.difference(DateTime.now()).abs() < const Duration(days: 7))
       .where((entry) => entry.value.id != demoSong.id) // Exclude demo song
@@ -284,31 +281,9 @@ class MusicPlayer {
     await loadSongPreferences(song);
 
     // Add to song history.
-    await songHistory.add(song);
+    await songs.add(song);
 
     stateNotifier.value = MusicPlayerState.ready;
-  }
-
-  /// Load a song to play from a [PlatformFile].
-  Future<void> loadFile(PlatformFile file) async {
-    await loadSong(Song(
-      id: file.path!.hashCode.toString(),
-      title: file.name.split(".").first,
-      source: FileSource(file.path!),
-    ));
-  }
-
-  /// Load a song to play from a [YoutubeVideo].
-  Future<void> loadVideo(YoutubeVideo video) async {
-    HtmlUnescape htmlUnescape = HtmlUnescape();
-
-    await loadSong(Song(
-      id: video.id,
-      title: htmlUnescape.convert(video.title),
-      artist: htmlUnescape.convert(video.channelTitle),
-      artUri: Uri.tryParse(video.thumbnails.high.url),
-      source: YoutubeSource(video.id),
-    ));
   }
 
   /// Load preferences for a [song]].
@@ -357,9 +332,9 @@ class MusicPlayer {
   void _initialize() {
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
-    songHistory.fetch().then((_) {
-      if (songHistory.history.isEmpty) {
-        songHistory.add(demoSong);
+    songs.fetch().then((_) {
+      if (songs.history.isEmpty) {
+        songs.add(demoSong);
       }
     });
 

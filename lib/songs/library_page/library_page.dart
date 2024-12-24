@@ -60,9 +60,9 @@ class LibraryPage extends StatelessWidget {
               ),
             ),
             ListenableBuilder(
-              listenable: musicPlayer.songHistory,
+              listenable: musicPlayer.songs,
               builder: (context, child) {
-                final Iterable<Song> songHistory = musicPlayer.songHistory
+                final Iterable<Song> songHistory = musicPlayer.songs
                     .sorted(ascending: false)
                     .where((song) =>
                         song.title.toLowerCase().contains(searchPhrase) ||
@@ -175,7 +175,7 @@ class LibraryPage extends StatelessWidget {
                     ),
                     FilledButton(
                       onPressed: () {
-                        musicPlayer.songHistory.remove(song);
+                        musicPlayer.songs.remove(song);
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },
