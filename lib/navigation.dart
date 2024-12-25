@@ -124,7 +124,7 @@ class Navigation {
                 builder: (context, state) {
                   return const DronePage();
                 },
-              )
+              ),
             ],
           ),
         ],
