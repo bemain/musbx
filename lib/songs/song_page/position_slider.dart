@@ -74,13 +74,13 @@ class PositionSlider extends StatelessWidget {
             overlayColor: WidgetStateProperty.resolveWith((states) {
               final colors = Theme.of(context).colorScheme;
               if (states.contains(WidgetState.dragged)) {
-                return colors.primary.withOpacity(0.1);
+                return colors.primary.withAlpha(0x1a);
               }
               if (states.contains(WidgetState.hovered)) {
-                return colors.primary.withOpacity(0.08);
+                return colors.primary.withAlpha(0x14);
               }
               if (states.contains(WidgetState.focused)) {
-                return colors.primary.withOpacity(0.1);
+                return colors.primary.withAlpha(0x1a);
               }
 
               return Colors.transparent;

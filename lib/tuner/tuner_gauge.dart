@@ -131,7 +131,7 @@ class TunerGauge extends StatelessWidget {
               width: 0.8,
               color: Colors.green
                   .harmonizeWith(Theme.of(context).colorScheme.primary)
-                  .withOpacity(0.1),
+                  .withAlpha(0x1a),
             ),
             RadialGaugeAxis(
               minValue: -50,

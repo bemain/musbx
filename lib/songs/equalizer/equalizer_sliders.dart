@@ -26,7 +26,7 @@ class EqualizerSliders extends StatelessWidget {
           parameters: equalizer.parameters,
           lineColor: enabled
               ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
+              : Theme.of(context).colorScheme.onSurface.withAlpha(0x61),
           fillColor:
               enabled ? Theme.of(context).colorScheme.inversePrimary : null,
         ),

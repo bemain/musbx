@@ -54,7 +54,7 @@ class SpeedDialAction extends SpeedDialChild {
                 onPressed: () {},
                 backgroundColor: backgroundColor ??
                     Color.alphaBlend(
-                        colors.surfaceTint.withOpacity(0.1), colors.surface),
+                        colors.surfaceTint.withAlpha(0x1a), colors.surface),
                 foregroundColor: foregroundColor ?? colors.primary,
                 child: child,
               ),

@@ -83,9 +83,9 @@ class EqualizerOverlayPainter extends CustomPainter {
             end: end ?? Alignment.bottomCenter,
             stops: const [0, 0.2, 1],
             colors: [
-              fillColor!.withOpacity(0),
-              fillColor!.withOpacity(0.3),
-              fillColor!.withOpacity(1),
+              fillColor!.withAlpha(0x00),
+              fillColor!.withAlpha(0x61),
+              fillColor!.withAlpha(0xff),
             ],
           ).createShader(Offset.zero & size);
 
