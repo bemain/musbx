@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -82,7 +83,9 @@ class Tuner {
   Stream<List<double>> get audioStream {
     final Stream<Uint8List> audioStream = MicStream.microphone(
       channelConfig: ChannelConfig.CHANNEL_IN_MONO,
-      audioFormat: AudioFormat.ENCODING_PCM_8BIT,
+      audioFormat: Platform.isIOS
+          ? AudioFormat.ENCODING_PCM_16BIT
+          : AudioFormat.ENCODING_PCM_8BIT,
     );
 
     return audioStream.asyncMap((Uint8List samples) async {
