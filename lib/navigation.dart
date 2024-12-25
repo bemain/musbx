@@ -72,42 +72,37 @@ class Navigation {
                       if (MusicPlayer.instance.songs.history.values
                           .where((song) => song.id == id)
                           .isEmpty) {
+                        // If the song isn't in the library, redirect to the songs page
                         return songsRoute;
                       }
+
                       return null;
                     },
                     builder: (context, state) {
                       final MusicPlayer musicPlayer = MusicPlayer.instance;
                       final String? id = state.pathParameters["id"];
 
-                      if (musicPlayer.song?.id != id) {
-                        // Begin loading song
-                        final Song? song = musicPlayer.songs.history.values
-                            .where((song) => song.id == id)
-                            .firstOrNull;
-                        if (song == null) {
+                      // Begin loading song
+                      final Song song = musicPlayer.songs.history.values
+                          .firstWhere((song) => song.id == id);
+
+                      musicPlayer.loadSong(song).then(
+                        (_) {},
+                        onError: (error, _) {
+                          debugPrint("[MUSIC PLAYER] $error");
+                          showExceptionDialog(
+                            error is AccessRestrictedException
+                                ? const MusicPlayerAccessRestrictedDialog()
+                                : song.source is YoutubeSource
+                                    ? const YoutubeUnavailableDialog()
+                                    : const FileCouldNotBeLoadedDialog(),
+                          );
                           // Restore state
                           musicPlayer.stateNotifier.value =
                               MusicPlayerState.idle;
-                          throw GoException(
-                              "There is no song with the given id: '$id'");
-                        }
-
-                        musicPlayer.loadSong(song).then(
-                          (_) {},
-                          onError: (error, _) {
-                            debugPrint("[MUSIC PLAYER] $error");
-                            showExceptionDialog(
-                              song.source is YoutubeSource
-                                  ? const YoutubeUnavailableDialog()
-                                  : const FileCouldNotBeLoadedDialog(),
-                            );
-                            // Restore state
-                            musicPlayer.stateNotifier.value =
-                                MusicPlayerState.idle;
-                          },
-                        );
-                      }
+                          navigatorKey.currentContext?.go(songsRoute);
+                        },
+                      );
 
                       return const SongPage();
                     },

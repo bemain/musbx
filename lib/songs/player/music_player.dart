@@ -231,7 +231,8 @@ class MusicPlayer {
   Future<void> loadSong(Song song, {bool ignoreFreeLimit = false}) async {
     if (!Purchases.hasPremium && !ignoreFreeLimit) {
       if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
-        throw "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.";
+        throw const AccessRestrictedException(
+            "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.");
       }
 
       try {
