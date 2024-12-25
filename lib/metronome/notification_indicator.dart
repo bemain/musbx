@@ -28,9 +28,10 @@ class NotificationIndicator extends StatelessWidget {
     if (await Notifications.shouldShowRationale()) {
       if (!context.mounted) return;
       final bool mayRequestPermission = await showDialog(
-        context: context,
-        builder: (context) => const NotificationPermissionRationale(),
-      );
+            context: context,
+            builder: (context) => const NotificationPermissionRationale(),
+          ) ??
+          false;
       if (!mayRequestPermission) return;
     }
 

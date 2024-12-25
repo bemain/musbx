@@ -175,7 +175,7 @@ class DroneWheelState extends State<DroneWheel> {
       child: FloatingActionButton(
         elevation: isPlaying ? 0 : 6,
         backgroundColor:
-            isPlaying ? backgroundColor.withOpacity(0.5) : backgroundColor,
+            isPlaying ? backgroundColor.withAlpha(0x61) : backgroundColor,
         onPressed: () {
           if (isPlaying) {
             drone.intervals =

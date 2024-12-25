@@ -250,7 +250,7 @@ class SpeedDialState extends State<SpeedDial>
                 builder: (context, _) => Container(
                   color: ColorTween(
                     end: widget.overlayColor ??
-                        Theme.of(context).colorScheme.surface.withOpacity(0.95),
+                        Theme.of(context).colorScheme.surface.withAlpha(0xf2),
                   ).lerp(animation.value),
                 ),
               ),

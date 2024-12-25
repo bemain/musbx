@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/navigation.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/player/music_player.dart';
@@ -58,9 +60,9 @@ class LibraryPage extends StatelessWidget {
               ),
             ),
             ListenableBuilder(
-              listenable: musicPlayer.songHistory,
+              listenable: musicPlayer.songs,
               builder: (context, child) {
-                final Iterable<Song> songHistory = musicPlayer.songHistory
+                final Iterable<Song> songHistory = musicPlayer.songs
                     .sorted(ascending: false)
                     .where((song) =>
                         song.title.toLowerCase().contains(searchPhrase) ||
@@ -112,6 +114,7 @@ class LibraryPage extends StatelessWidget {
         onPressed: () {
           showModalBottomSheet(
             context: context,
+            useRootNavigator: true,
             showDragHandle: true,
             builder: (context) => _buildOptionsSheet(context, song),
           );
@@ -126,20 +129,7 @@ class LibraryPage extends StatelessWidget {
                 return;
               }
 
-              MusicPlayerState prevState = musicPlayer.state;
-              musicPlayer.stateNotifier.value = MusicPlayerState.loadingAudio;
-              try {
-                await musicPlayer.loadSong(song);
-              } catch (error) {
-                debugPrint("[MUSIC PLAYER] $error");
-                showExceptionDialog(
-                  song.source is YoutubeSource
-                      ? const YoutubeUnavailableDialog()
-                      : const FileCouldNotBeLoadedDialog(),
-                );
-                // Restore state
-                musicPlayer.stateNotifier.value = prevState;
-              }
+              context.go(Navigation.songRoute(song.id));
             },
     );
   }
@@ -168,6 +158,7 @@ class LibraryPage extends StatelessWidget {
           onTap: () {
             showDialog(
               context: context,
+              useRootNavigator: true,
               builder: (context) {
                 return AlertDialog(
                   icon: const Icon(Symbols.delete, weight: 600),
@@ -184,7 +175,7 @@ class LibraryPage extends StatelessWidget {
                     ),
                     FilledButton(
                       onPressed: () {
-                        musicPlayer.songHistory.remove(song);
+                        musicPlayer.songs.remove(song);
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },

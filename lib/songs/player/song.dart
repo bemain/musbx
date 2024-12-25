@@ -94,7 +94,9 @@ class Song {
   static Song? fromJson(Map<String, dynamic> json) {
     if (!json.containsKey("id") ||
         !json.containsKey("title") ||
-        !json.containsKey("source")) return null;
+        !json.containsKey("source")) {
+      return null;
+    }
 
     SongSource? source = SongSource.fromJson(json["source"]);
     if (source == null) return null;

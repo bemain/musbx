@@ -120,7 +120,9 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
       var subscription = host.jobProgress(response.jobId!).handleError((error) {
         if (error is! HttpException ||
-            error.message != "The requested Job does not exist") throw error;
+            error.message != "The requested Job does not exist") {
+          throw error;
+        }
       }).listen(null, cancelOnError: true);
       subscription.onData((response) {
         if (isCancelled) {

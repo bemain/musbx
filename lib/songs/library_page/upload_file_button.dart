@@ -1,7 +1,11 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/songs/player/song_source.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
@@ -48,37 +52,37 @@ class UploadSongButton extends SpeedDialChild {
   }
 
   Future<void> pickFile(BuildContext context) async {
-    MusicPlayerState prevState = musicPlayer.state;
     musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
 
     // By some reason, setting type to FileType.audio causes the file picker to not show up on iOS.
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: Platform.isIOS ? FileType.any : FileType.audio,
     );
+    final PlatformFile? file = result?.files.single;
 
-    if (result == null || result.files.single.path == null) {
+    if (file?.path == null) {
       // Restore state
-      musicPlayer.stateNotifier.value = prevState;
+      musicPlayer.stateNotifier.value = MusicPlayerState.idle;
       return;
     }
-    String extension = result.files.single.path!.split(".").last;
+    final String extension = file!.path!.split(".").last;
     if (!allowedExtensions.contains(extension)) {
       showExceptionDialog(UnsupportedFileExtensionDialog(extension: extension));
 
       // Restore state
-      musicPlayer.stateNotifier.value = prevState;
+      musicPlayer.stateNotifier.value = MusicPlayerState.idle;
       return;
     }
 
-    try {
-      await musicPlayer.loadFile(result.files.single);
-    } catch (error) {
-      showExceptionDialog(const FileCouldNotBeLoadedDialog());
+    final String id = file.path!.hashCode.toString();
 
-      // Restore state
-      musicPlayer.stateNotifier.value = prevState;
-      return;
-    }
+    await musicPlayer.songs.add(Song(
+      id: id,
+      title: file.name.split(".").first,
+      source: FileSource(file.path!),
+    ));
+
+    Navigation.navigatorKey.currentContext?.go(Navigation.songRoute(id));
   }
 
   void pushPermissionBuilder(BuildContext context) async {

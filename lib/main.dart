@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:musbx/utils/launch_handler.dart';
+import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/music_player.dart';
-import 'package:musbx/navigation_page.dart';
+import 'package:musbx/theme.dart';
+import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/persistent_value.dart';
 import 'package:musbx/utils/purchases.dart';
-import 'package:musbx/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,13 +30,12 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   // Generate themes
-  await generateThemes(onThemesGenerated: (lightTheme, darkTheme) {
-    // Run app
-    runApp(MyApp(
-      lightTheme: lightTheme,
-      darkTheme: darkTheme,
-    ));
-  });
+  final (ThemeData lightTheme, ThemeData darkTheme) = await generateThemes();
+
+  runApp(MyApp(
+    lightTheme: lightTheme,
+    darkTheme: darkTheme,
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -50,11 +49,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: "Musician's Toolbox",
       theme: lightTheme,
       darkTheme: darkTheme,
-      home: NavigationPage(),
+      routerConfig: Navigation.router,
+      restorationScopeId: "app",
     );
   }
 }

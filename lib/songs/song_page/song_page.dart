@@ -26,52 +26,63 @@ class SongPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final MusicPlayer musicPlayer = MusicPlayer.instance;
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: const SongAppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          children: [
-            Expanded(
-              child: TabBarView(
-                physics: const NeverScrollableScrollPhysics(),
+    return DefaultTabController(
+      length: 2,
+      initialIndex: 0,
+      animationDuration: const Duration(milliseconds: 200),
+      child: ValueListenableBuilder(
+        valueListenable: musicPlayer.stateNotifier,
+        builder: (context, value, child) {
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            appBar: const SongAppBar(),
+            body: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
                 children: [
-                  Column(
-                    children: [
-                      ListTile(
-                        title: Text(musicPlayer.song?.title ?? ""),
-                        titleTextStyle: Theme.of(context).textTheme.titleLarge,
-                        subtitle: Text(musicPlayer.song?.artist ?? ""),
+                  Expanded(
+                    child: TabBarView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        Column(
+                          children: [
+                            ListTile(
+                              title: Text(musicPlayer.song?.title ?? ""),
+                              titleTextStyle:
+                                  Theme.of(context).textTheme.titleLarge,
+                              subtitle: Text(musicPlayer.song?.artist ?? ""),
+                            ),
+                            Expanded(
+                              child: AnalyzerCard(),
+                            ),
+                          ],
+                        ),
+                        DemixerCard(),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const SegmentedTabControl(
+                    tabs: [
+                      SegmentTab(
+                        text: "Chords",
+                        icon: Icon(CustomIcons.waveform),
                       ),
-                      Expanded(
-                        child: AnalyzerCard(),
+                      SegmentTab(
+                        text: "Instruments",
+                        icon: Icon(Symbols.piano),
                       ),
                     ],
                   ),
-                  DemixerCard(),
+                  const SizedBox(height: 16),
+                  PositionSlider(),
+                  ButtonPanel(),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
-            const SegmentedTabControl(
-              tabs: [
-                SegmentTab(
-                  text: "Chords",
-                  icon: Icon(CustomIcons.waveform),
-                ),
-                SegmentTab(
-                  text: "Instruments",
-                  icon: Icon(Symbols.piano),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            PositionSlider(),
-            ButtonPanel(),
-            const SizedBox(height: 8),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -103,7 +114,6 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
               true;
 
           return AppBar(
-            leading: BackButton(onPressed: musicPlayer.stop),
             actions: [
               if (!Platform.isIOS)
                 IconButton(
@@ -157,6 +167,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
   Future<T?> _showModalBottomSheet<T>(BuildContext context, Widget? child) {
     return showModalBottomSheet<T>(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
       isScrollControlled: true,
       // TODO: Remove when this is in the framework https://github.com/flutter/flutter/issues/118619

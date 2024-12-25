@@ -2,24 +2,22 @@ import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:html_unescape/html_unescape_small.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musbx/widgets/ads.dart';
+import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
-import 'package:musbx/songs/player/audio_handler.dart';
-import 'package:musbx/songs/library_page/youtube_search.dart';
-import 'package:musbx/widgets/youtube_api/video.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
+import 'package:musbx/songs/library_page/youtube_search.dart';
 import 'package:musbx/songs/looper/looper.dart';
-import 'package:musbx/songs/slowdowner/slowdowner.dart';
+import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/songs/player/song_preferences.dart';
 import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/slowdowner/slowdowner.dart';
+import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/widgets/ads.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 /// The demo song loaded the first time the user launches the app.
@@ -83,7 +81,7 @@ class MusicPlayer {
   final SongPreferences _songPreferences = SongPreferences();
 
   /// The history of previously loaded songs.
-  final HistoryHandler<Song> songHistory = HistoryHandler<Song>(
+  final HistoryHandler<Song> songs = HistoryHandler<Song>(
     historyFileName: "song_history",
     fromJson: (json) {
       if (json is! Map<String, dynamic>) {
@@ -109,7 +107,7 @@ class MusicPlayer {
   static const int freeSongsPerWeek = 3;
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
-  Iterable<Song> get songsPlayedThisWeek => songHistory.history.entries
+  Iterable<Song> get songsPlayedThisWeek => songs.history.entries
       .where((entry) =>
           entry.key.difference(DateTime.now()).abs() < const Duration(days: 7))
       .where((entry) => entry.value.id != demoSong.id) // Exclude demo song
@@ -233,7 +231,8 @@ class MusicPlayer {
   Future<void> loadSong(Song song, {bool ignoreFreeLimit = false}) async {
     if (!Purchases.hasPremium && !ignoreFreeLimit) {
       if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
-        throw "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.";
+        throw const AccessRestrictedException(
+            "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.");
       }
 
       try {
@@ -283,31 +282,9 @@ class MusicPlayer {
     await loadSongPreferences(song);
 
     // Add to song history.
-    await songHistory.add(song);
+    await songs.add(song);
 
     stateNotifier.value = MusicPlayerState.ready;
-  }
-
-  /// Load a song to play from a [PlatformFile].
-  Future<void> loadFile(PlatformFile file) async {
-    await loadSong(Song(
-      id: file.path!.hashCode.toString(),
-      title: file.name.split(".").first,
-      source: FileSource(file.path!),
-    ));
-  }
-
-  /// Load a song to play from a [YoutubeVideo].
-  Future<void> loadVideo(YoutubeVideo video) async {
-    HtmlUnescape htmlUnescape = HtmlUnescape();
-
-    await loadSong(Song(
-      id: video.id,
-      title: htmlUnescape.convert(video.title),
-      artist: htmlUnescape.convert(video.channelTitle),
-      artUri: Uri.tryParse(video.thumbnails.high.url),
-      source: YoutubeSource(video.id),
-    ));
   }
 
   /// Load preferences for a [song]].
@@ -356,9 +333,9 @@ class MusicPlayer {
   void _initialize() {
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
-    songHistory.fetch().then((_) {
-      if (songHistory.history.isEmpty) {
-        songHistory.add(demoSong);
+    songs.fetch().then((_) {
+      if (songs.history.isEmpty) {
+        songs.add(demoSong);
       }
     });
 
@@ -433,6 +410,13 @@ class MusicPlayer {
         androidNotificationIcon: "drawable/ic_notification",
       ),
     );
+    AudioService.notificationClicked.listen((bool event) {
+      if (event) {
+        // Navigate to the music player page
+        // TODO: Don't hard code this value
+        Navigation.navigationShell.goBranch(1);
+      }
+    });
 
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration(

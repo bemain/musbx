@@ -39,10 +39,10 @@ class WaveformWidget extends StatelessWidget {
                   position: position,
                   duration: durationShown,
                   activeColor: musicPlayer.isLoading
-                      ? onSurface.withOpacity(0.38)
+                      ? onSurface.withAlpha(0x61)
                       : Theme.of(context).colorScheme.primary,
                   inactiveColor: musicPlayer.isLoading
-                      ? onSurface.withOpacity(0.12)
+                      ? onSurface.withAlpha(0x1f)
                       : Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
                 size: const Size(double.infinity, 64.0),

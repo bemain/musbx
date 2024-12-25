@@ -70,6 +70,7 @@ dependencies:
   gauges: ^1.0.0 # TODO: Migrate away from this package
   fftea: ^1.5.0
   material_symbols_icons: ^4.2789.0
+  go_router: ^14.4.1
 
 
 dev_dependencies:

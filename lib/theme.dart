@@ -4,9 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 const Color defaultSeed = Color(0xff578cff);
 
-Future<void> generateThemes({
-  required Function(ThemeData light, ThemeData dark) onThemesGenerated,
-}) async {
+Future<(ThemeData light, ThemeData dark)> generateThemes() async {
   // Defaults
   final ColorScheme lightDefault = ColorScheme.fromSeed(
     seedColor: defaultSeed,
@@ -34,7 +32,7 @@ Future<void> generateThemes({
     useMaterial3: true,
   );
 
-  onThemesGenerated(
+  return (
     lightTheme.copyWith(
       textTheme: GoogleFonts.interTextTheme(lightTheme.textTheme),
       sliderTheme: lightTheme.sliderTheme.copyWith(

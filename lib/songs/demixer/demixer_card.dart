@@ -367,7 +367,9 @@ class StemControlsState extends State<StemControls> {
                   ? null
                   : () {
                       if (!Purchases.hasPremium &&
-                          musicPlayer.song?.id != demoSong.id) return;
+                          musicPlayer.song?.id != demoSong.id) {
+                        return;
+                      }
 
                       for (Stem stem in musicPlayer.demixer.stems) {
                         stem.enabled = allOtherStemsDisabled;

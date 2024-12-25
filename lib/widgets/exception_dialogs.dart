@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/music_player.dart';
-import 'package:musbx/navigation_page.dart';
 import 'package:musbx/utils/purchases.dart';
 
 /// Show an exception dialog.
 ///
-/// This is only dependent on [NavigationPage]'s context, and can thus be
+/// This is only dependent on [Navigation.navigatorKey]'s context, and can thus be
 /// used in places where no local context is available, such as button callbacks.
 Future<void> showExceptionDialog(
   Widget dialog, {
   bool barrierDismissible = true,
 }) async {
-  if (navigationPageKey.currentContext == null ||
-      !navigationPageKey.currentContext!.mounted) {
+  if (Navigation.navigatorKey.currentContext == null ||
+      !Navigation.navigatorKey.currentContext!.mounted) {
     return;
   }
 
   showDialog(
-    context: navigationPageKey.currentContext!,
+    context: Navigation.navigatorKey.currentContext!,
     builder: (context) => dialog,
     barrierDismissible: barrierDismissible,
   );

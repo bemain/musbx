@@ -102,7 +102,7 @@ class TuningGraphPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint inTunePaint = Paint()..color = inTuneColor.withOpacity(0.1);
+    Paint inTunePaint = Paint()..color = inTuneColor.withAlpha(0x1a);
 
     // Draw the "in tune"-rect
     canvas.drawRRect(

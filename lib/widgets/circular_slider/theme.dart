@@ -68,22 +68,22 @@ class CircularSliderTheme {
         inactiveTrackColor = sliderTheme.inactiveTrackColor ??
             theme.colorScheme.surfaceContainerHighest,
         disabledActiveTrackColor = sliderTheme.disabledActiveTrackColor ??
-            theme.colorScheme.onSurface.withOpacity(0.38),
+            theme.colorScheme.onSurface.withAlpha(0x61),
         disabledInactiveTrackColor = sliderTheme.disabledInactiveTrackColor ??
-            theme.colorScheme.onSurface.withOpacity(0.12),
+            theme.colorScheme.onSurface.withAlpha(0x1f),
         activeTickMarkColor = sliderTheme.activeTickMarkColor ??
-            theme.colorScheme.onPrimary.withOpacity(0.38),
+            theme.colorScheme.onPrimary.withAlpha(0x61),
         inactiveTickMarkColor = sliderTheme.inactiveTickMarkColor ??
-            theme.colorScheme.onSurfaceVariant.withOpacity(0.38),
+            theme.colorScheme.onSurfaceVariant.withAlpha(0x61),
         disabledActiveTickMarkColor = sliderTheme.disabledActiveTickMarkColor ??
-            theme.colorScheme.onSurface.withOpacity(0.38),
+            theme.colorScheme.onSurface.withAlpha(0x61),
         disabledInactiveTickMarkColor =
             sliderTheme.disabledInactiveTickMarkColor ??
-                theme.colorScheme.onSurface.withOpacity(0.38),
+                theme.colorScheme.onSurface.withAlpha(0x61),
         thumbColor = sliderTheme.thumbColor ?? theme.colorScheme.primary,
         disabledThumbColor = sliderTheme.disabledThumbColor ??
-            Color.alphaBlend(theme.colorScheme.onSurface.withOpacity(0.38),
+            Color.alphaBlend(theme.colorScheme.onSurface.withAlpha(0x61),
                 theme.colorScheme.surface),
         overlayColor = sliderTheme.overlayColor ??
-            theme.colorScheme.primary.withOpacity(0.1);
+            theme.colorScheme.primary.withAlpha(0x1f);
 }
