@@ -16,76 +16,87 @@ class LibraryPage extends StatelessWidget {
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
-  final TextEditingController searchController = TextEditingController();
+  final SearchController searchController = SearchController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListenableBuilder(
-        listenable: searchController,
-        builder: (context, child) {
-          final String searchPhrase = searchController.text.toLowerCase();
-
-          return CustomScrollView(slivers: [
-            SliverAppBar.medium(
-              pinned: true,
-              title: const Text("Songs"),
-              actions: const [
-                GetPremiumButton(),
-                InfoButton(),
-              ],
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(100),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SearchBar(
-                    controller: searchController,
-                    padding: const WidgetStatePropertyAll<EdgeInsets>(
-                      EdgeInsets.symmetric(horizontal: 16.0),
-                    ),
-                    leading: const Icon(Symbols.search),
-                    trailing: [
-                      if (searchPhrase.isNotEmpty)
-                        IconButton(
-                          onPressed: () {
-                            searchController.clear();
-                          },
-                          icon: const Icon(Symbols.clear),
-                        )
-                    ],
-                    hintText: "Search your library",
-                    elevation: const WidgetStatePropertyAll(0),
+      body: CustomScrollView(slivers: [
+        SliverAppBar.medium(
+          pinned: true,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 68,
+          expandedHeight: 128,
+          title: SearchAnchor(
+            searchController: searchController,
+            builder: (context, controller) {
+              return const AbsorbPointer(
+                child: SearchBar(
+                  elevation: WidgetStatePropertyAll(0.0),
+                  padding: WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 16.0),
                   ),
+                  leading: Icon(Symbols.search),
+                  hintText: "Search your library",
                 ),
-              ),
-            ),
-            ListenableBuilder(
-              listenable: musicPlayer.songs,
-              builder: (context, child) {
-                final Iterable<Song> songHistory = musicPlayer.songs
-                    .sorted(ascending: false)
-                    .where((song) =>
-                        song.title.toLowerCase().contains(searchPhrase) ||
-                        (song.artist?.toLowerCase().contains(searchPhrase) ??
-                            false));
+              );
+            },
+            viewHintText: "Search your library",
+            suggestionsBuilder: (context, SearchController controller) {
+              final String searchPhrase = controller.text.toLowerCase();
+              if (searchPhrase.isEmpty) {
+                return const [];
+              }
 
-                return SliverList.list(
-                  children: [
-                    for (final Song song in songHistory)
-                      _buildSongTile(context, song),
-                    const SizedBox(height: 80),
-                  ],
-                );
-              },
-            )
-          ]);
-        },
-      ),
+              final Iterable<Song> songHistory = musicPlayer.songs
+                  .sorted(ascending: false)
+                  .where((song) =>
+                      song.title.toLowerCase().contains(searchPhrase) ||
+                      (song.artist?.toLowerCase().contains(searchPhrase) ??
+                          false));
+
+              return [
+                const SizedBox(height: 8),
+                for (final Song song in songHistory)
+                  _buildSongTile(context, song, showOptions: false,
+                      onSelected: () {
+                    searchController.closeView(null);
+                  }),
+                const SizedBox(height: 80),
+              ];
+            },
+          ),
+          actions: const [
+            GetPremiumButton(),
+            InfoButton(),
+          ],
+        ),
+        ListenableBuilder(
+          listenable: musicPlayer.songs,
+          builder: (context, child) {
+            return SliverList.list(
+              children: [
+                const SizedBox(height: 8),
+                for (final Song song
+                    in musicPlayer.songs.sorted(ascending: false))
+                  _buildSongTile(context, song),
+                const SizedBox(height: 80),
+              ],
+            );
+          },
+        )
+      ]),
       floatingActionButton: _buildLoadSongFAB(context),
     );
   }
 
-  Widget _buildSongTile(BuildContext context, Song song) {
+  Widget _buildSongTile(
+    BuildContext context,
+    Song song, {
+    bool showOptions = true,
+    Function()? onSelected,
+  }) {
     final bool isLocked = musicPlayer.isAccessRestricted &&
         !musicPlayer.songsPlayedThisWeek.contains(song) &&
         song != demoSong;
@@ -110,17 +121,19 @@ class LibraryPage extends StatelessWidget {
         song.artist ?? "Unknown artist",
         style: textStyle,
       ),
-      trailing: IconButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            useRootNavigator: true,
-            showDragHandle: true,
-            builder: (context) => _buildOptionsSheet(context, song),
-          );
-        },
-        icon: const Icon(Symbols.more_vert),
-      ),
+      trailing: showOptions
+          ? IconButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  useRootNavigator: true,
+                  showDragHandle: true,
+                  builder: (context) => _buildOptionsSheet(context, song),
+                );
+              },
+              icon: const Icon(Symbols.more_vert),
+            )
+          : null,
       onTap: musicPlayer.isLoading
           ? null
           : () async {
@@ -129,6 +142,7 @@ class LibraryPage extends StatelessWidget {
                 return;
               }
 
+              onSelected?.call();
               context.go(Navigation.songRoute(song.id));
             },
     );
