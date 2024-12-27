@@ -46,7 +46,12 @@ class AnalyzerCard extends StatelessWidget {
           children: [
             const SizedBox(height: 16),
             const ChordsDisplay(),
-            Expanded(child: WaveformWidget()),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: WaveformWidget(),
+              ),
+            ),
             LoopSlider(),
             const SizedBox(height: 10),
           ],

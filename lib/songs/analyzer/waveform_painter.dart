@@ -8,9 +8,11 @@ class WaveformPainter extends CustomPainter {
     required this.waveform,
     required this.position,
     required this.duration,
-    this.padding = 2.0,
+    this.padding = 3.0,
     this.activeColor = Colors.blue,
     this.inactiveColor = Colors.grey,
+    this.markerColor = Colors.black,
+    this.markerWidth = 2.0,
     this.amplitude = 1.0,
     this.waveformPixelsPerStep = 12.0,
   });
@@ -35,6 +37,9 @@ class WaveformPainter extends CustomPainter {
   /// The color used for the part of the waveform after [position].
   final Color inactiveColor;
 
+  final Color markerColor;
+  final double markerWidth;
+
   @override
   void paint(Canvas canvas, Size size) {
     if (duration == Duration.zero) return;
@@ -51,8 +56,7 @@ class WaveformPainter extends CustomPainter {
 
     final sampleOffset = waveform.positionToPixel(start);
     final sampleStart = -sampleOffset % waveformPixelsPerStep;
-    final Path activePath = Path();
-    final Path inactivePath = Path();
+    final Path waveformPath = Path();
     for (var i = sampleStart.toDouble();
         i <= waveformPixelsPerWindow + 1.0;
         i += waveformPixelsPerStep) {
@@ -67,20 +71,27 @@ class WaveformPainter extends CustomPainter {
         min(height - stepWidth * 0.75, maxY),
         Radius.circular(stepWidth / 2),
       );
-      activePath.addRRect(rrect);
-      inactivePath.addRRect(rrect);
+      waveformPath.addRRect(rrect);
     }
 
     final Path activeArea = Path()
       ..addRect(Rect.fromLTRB(-100, 0, width / 2, height));
 
     canvas.drawPath(
-      Path.combine(PathOperation.intersect, activePath, activeArea),
+      Path.combine(PathOperation.intersect, waveformPath, activeArea),
       Paint()..color = activeColor,
     );
     canvas.drawPath(
-      Path.combine(PathOperation.difference, inactivePath, activeArea),
+      Path.combine(PathOperation.difference, waveformPath, activeArea),
       Paint()..color = inactiveColor,
+    );
+
+    canvas.drawLine(
+      Offset(width / 2, height),
+      Offset(width / 2, 0),
+      Paint()
+        ..color = markerColor
+        ..strokeWidth = markerWidth,
     );
   }
 
