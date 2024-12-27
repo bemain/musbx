@@ -12,13 +12,14 @@ import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
-Future<void> pickYoutubeSong(BuildContext context) async {
+Future<void> pickYoutubeSong(BuildContext context, {String? query}) async {
   MusicPlayer musicPlayer = MusicPlayer.instance;
   musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
 
   YoutubeVideo? video = await showSearch<YoutubeVideo?>(
     context: context,
     delegate: YoutubeSearchDelegate(),
+    query: query ?? "",
   );
 
   if (video == null) {
@@ -47,7 +48,12 @@ final HistoryHandler<String> youtubeSearchHistory = HistoryHandler<String>(
 
 /// [SearchDelegate] for searching for a song on Youtube.
 class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
-  YoutubeSearchDelegate() : super(searchFieldLabel: "Search for song");
+  YoutubeSearchDelegate()
+      : super(
+          searchFieldLabel: "Search for song",
+          keyboardType: TextInputType.text,
+          textInputAction: TextInputAction.search,
+        );
 
   @override
   Widget? buildLeading(BuildContext context) {
@@ -72,11 +78,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   List<Widget>? buildActions(BuildContext context) {
     return [
       IconButton(
-        onPressed: query == ""
-            ? null
-            : () {
-                query = "";
-              },
+        onPressed: query.isEmpty ? null : () => query = "",
         color: Theme.of(context).colorScheme.onSurfaceVariant,
         icon: const Icon(Symbols.clear),
       )
@@ -88,7 +90,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
     if (youtubeSearchHistory.history.isEmpty) {
       // Help text
       return Padding(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(16.0),
         child: SizedBox(
           width: double.infinity,
           child: Text(
@@ -103,15 +105,11 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
       );
     }
 
-    return ListenableBuilder(
-      listenable: youtubeSearchHistory,
-      builder: (context, child) => ListView(
-        children: youtubeSearchHistory
-            .sorted()
-            .where((query) =>
-                query.toLowerCase().contains(this.query.toLowerCase()))
-            .map((query) {
-          return ListTile(
+    if (query.isEmpty) {
+      // Show search history
+      return ListView(children: [
+        for (final query in youtubeSearchHistory.sorted())
+          ListTile(
             leading: Icon(
               Symbols.history,
               color: Theme.of(context).colorScheme.outline,
@@ -129,9 +127,23 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
               this.query = query;
               showResults(context);
             },
-          );
-        }).toList(),
-      ),
+          ),
+      ]);
+    }
+
+    return FutureBuilder(
+      future: _getVideosFromQuery(query),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const LoadingPage(text: "Searching...");
+        if (snapshot.hasError) return const ErrorPage(text: "Search failed");
+
+        List<YoutubeVideo> results = snapshot.data!;
+        return ListView(
+          children: results.map((YoutubeVideo video) {
+            return _buildListItem(context, video);
+          }).toList(),
+        );
+      },
     );
   }
 
@@ -148,7 +160,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
         List<YoutubeVideo> results = snapshot.data!;
         return ListView(
           children: results.map((YoutubeVideo video) {
-            return listItem(context, video);
+            return _buildListItem(context, video);
           }).toList(),
         );
       },
@@ -177,33 +189,31 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   }
 
   /// Result item, showing a [YoutubeVideo]'s title, channel and thumbnail.
-  Widget listItem(BuildContext context, YoutubeVideo video) {
+  Widget _buildListItem(BuildContext context, YoutubeVideo video) {
     HtmlUnescape htmlUnescape = HtmlUnescape();
 
     return GestureDetector(
       onTap: () {
         close(context, video);
       },
-      child: Card(
-        child: ListTile(
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              video.thumbnails.medium.url,
-              width: 100.0,
-              fit: BoxFit.cover,
-            ),
+      child: ListTile(
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(8.0),
+          child: Image.network(
+            video.thumbnails.medium.url,
+            width: 100.0,
+            fit: BoxFit.cover,
           ),
-          title: Text(
-            htmlUnescape.convert(video.title),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text(
-            htmlUnescape.convert(video.channelTitle),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+        ),
+        title: Text(
+          htmlUnescape.convert(video.title),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          htmlUnescape.convert(video.channelTitle),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );

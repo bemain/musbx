@@ -59,11 +59,32 @@ class LibraryPage extends StatelessWidget {
               return [
                 const SizedBox(height: 8),
                 for (final Song song in songHistory)
-                  _buildSongTile(context, song, showOptions: false,
-                      onSelected: () {
-                    searchController.closeView(null);
-                  }),
-                const SizedBox(height: 80),
+                  _buildSongTile(
+                    context,
+                    song,
+                    showOptions: false,
+                    onSelected: () {
+                      searchController.closeView(null);
+                    },
+                  ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Center(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        searchController.closeView(null);
+                        pickYoutubeSong(context, query: controller.text);
+                      },
+                      icon: const Icon(Symbols.search),
+                      label: Text(
+                        "Search for '${controller.text}' online",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ),
               ];
             },
           ),
