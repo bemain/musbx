@@ -212,9 +212,11 @@ class ListNotifier<T> extends ChangeNotifier {
 }
 
 class ExpandedIcon extends StatelessWidget {
-  const ExpandedIcon(this.icon, {super.key});
+  const ExpandedIcon(this.icon, {super.key, this.color, this.fill});
 
   final IconData? icon;
+  final Color? color;
+  final double? fill;
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +224,8 @@ class ExpandedIcon extends StatelessWidget {
       builder: (context, constraint) => Icon(
         icon,
         size: constraint.biggest.shortestSide,
-        fill: 1,
+        color: color,
+        fill: fill,
       ),
     );
   }

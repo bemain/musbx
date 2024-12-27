@@ -19,91 +19,84 @@ class ButtonPanel extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Flexible(
-            flex: 1,
-            child: TextButton(
-              onPressed: musicPlayer.nullIfNoSongElse(() {
-                musicPlayer.seek(Duration.zero);
-              }),
-              child: const ExpandedIcon(Symbols.skip_previous_rounded),
-            ),
+          IconButton(
+            onPressed: musicPlayer.nullIfNoSongElse(() {
+              musicPlayer.seek(Duration.zero);
+            }),
+            icon: const ExpandedIcon(Symbols.skip_previous_rounded),
           ),
-          Flexible(
-            flex: 1,
-            child: ContinuousButton(
-              onContinuousPress: musicPlayer.nullIfNoSongElse(() {
+
+          ContinuousButton(
+            onContinuousPress: musicPlayer.nullIfNoSongElse(() {
+              musicPlayer
+                  .seek(musicPlayer.position - const Duration(seconds: 1));
+            }),
+            child: IconButton(
+              onPressed: musicPlayer.nullIfNoSongElse(() {
                 musicPlayer
                     .seek(musicPlayer.position - const Duration(seconds: 1));
               }),
-              child: TextButton(
-                onPressed: musicPlayer.nullIfNoSongElse(() {
-                  musicPlayer
-                      .seek(musicPlayer.position - const Duration(seconds: 1));
-                }),
-                child: const ExpandedIcon(Symbols.fast_rewind_rounded),
-              ),
+              icon: const ExpandedIcon(Symbols.fast_rewind_rounded),
             ),
           ),
-          Flexible(
-            flex: 1,
-            child: ValueListenableBuilder<bool>(
-              valueListenable: musicPlayer.isPlayingNotifier,
-              builder: (_, isPlaying, __) => ValueListenableBuilder<bool>(
-                valueListenable: musicPlayer.isBufferingNotifier,
-                builder: (context, isBuffering, _) {
-                  return AspectRatio(
-                    aspectRatio: 1.0,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        if (musicPlayer.isLoading || isBuffering)
-                          const Positioned.fill(
-                            child: CircularProgressIndicator(),
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: IconButton.filled(
-                            onPressed: musicPlayer.nullIfNoSongElse(() {
-                              if (isPlaying) {
-                                musicPlayer.pause();
-                              } else {
-                                musicPlayer.play();
-                              }
-                            }),
-                            icon: ExpandedIcon(
-                              isPlaying
-                                  ? Symbols.stop_rounded
-                                  : Symbols.play_arrow_rounded,
-                            ),
+
+          ValueListenableBuilder<bool>(
+            valueListenable: musicPlayer.isPlayingNotifier,
+            builder: (_, isPlaying, __) => ValueListenableBuilder<bool>(
+              valueListenable: musicPlayer.isBufferingNotifier,
+              builder: (context, isBuffering, _) {
+                return AspectRatio(
+                  aspectRatio: 1.0,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (musicPlayer.isLoading || isBuffering)
+                        const Positioned.fill(
+                          child: CircularProgressIndicator(),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: IconButton.filled(
+                          onPressed: musicPlayer.nullIfNoSongElse(() {
+                            if (isPlaying) {
+                              musicPlayer.pause();
+                            } else {
+                              musicPlayer.play();
+                            }
+                          }),
+                          icon: ExpandedIcon(
+                            isPlaying
+                                ? Symbols.stop_rounded
+                                : Symbols.play_arrow_rounded,
+                            fill: 1,
                           ),
                         ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
-          Flexible(
-            flex: 1,
-            child: ContinuousButton(
-              onContinuousPress: musicPlayer.nullIfNoSongElse(() {
+
+          ContinuousButton(
+            onContinuousPress: musicPlayer.nullIfNoSongElse(() {
+              musicPlayer
+                  .seek(musicPlayer.position + const Duration(seconds: 1));
+            }),
+            child: IconButton(
+              onPressed: musicPlayer.nullIfNoSongElse(() {
                 musicPlayer
                     .seek(musicPlayer.position + const Duration(seconds: 1));
               }),
-              child: TextButton(
-                onPressed: musicPlayer.nullIfNoSongElse(() {
-                  musicPlayer
-                      .seek(musicPlayer.position + const Duration(seconds: 1));
-                }),
-                child: const ExpandedIcon(Symbols.fast_forward_rounded),
-              ),
+              icon: const ExpandedIcon(Symbols.fast_forward_rounded),
             ),
           ),
+
           // Placeholder, only there to take space so the play button is centered
-          Flexible(
-            flex: 1,
-            child: Container(),
+          const IconButton(
+            onPressed: null,
+            icon: Icon(null),
           ),
         ],
       ),
