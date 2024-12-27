@@ -1,6 +1,7 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:musbx/songs/loop_style.dart';
 
 const Color defaultSeed = Color(0xff578cff);
 
@@ -39,6 +40,7 @@ Future<(ThemeData light, ThemeData dark)> generateThemes() async {
         showValueIndicator: ShowValueIndicator.always,
       ),
       iconTheme: lightTheme.iconTheme.copyWith(weight: 600),
+      extensions: [LoopStyle.fromTheme(theme: lightTheme)],
     ),
     darkTheme.copyWith(
       textTheme: GoogleFonts.interTextTheme(darkTheme.textTheme),
@@ -46,6 +48,7 @@ Future<(ThemeData light, ThemeData dark)> generateThemes() async {
         showValueIndicator: ShowValueIndicator.always,
       ),
       iconTheme: darkTheme.iconTheme.copyWith(weight: 600),
+      extensions: [LoopStyle.fromTheme(theme: darkTheme)],
     ),
   );
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/songs/loop_style.dart';
 import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/player/music_player.dart';
 
@@ -19,10 +20,12 @@ class LoopSlider extends StatelessWidget {
         builder: (_, loopEnabled, __) => ValueListenableBuilder(
           valueListenable: musicPlayer.looper.sectionNotifier,
           builder: (context, loopSection, _) {
+            LoopStyle style = Theme.of(context).extension<LoopStyle>()!;
+
             return SliderTheme(
               data: Theme.of(context).sliderTheme.copyWith(
-                    rangeThumbShape: const LoopSectionThumbShape(),
-                    rangeTrackShape: const LoopSliderTrackShape(),
+                    rangeThumbShape: LoopSectionThumbShape(style: style),
+                    rangeTrackShape: LoopSliderTrackShape(style: style),
                     valueIndicatorColor: Theme.of(context).colorScheme.primary,
                     valueIndicatorStrokeColor: Colors.transparent,
                   ),
@@ -78,11 +81,16 @@ class LoopSlider extends StatelessWidget {
 
 class LoopSliderTrackShape extends RangeSliderTrackShape
     with BaseRangeSliderTrackShape {
-  const LoopSliderTrackShape({this.height = 24, this.lineWidth = 1.0});
+  const LoopSliderTrackShape({
+    required this.style,
+    this.height = 24,
+    this.outlineWidth,
+  });
 
   final double height;
+  final double? outlineWidth;
 
-  final double lineWidth;
+  final LoopStyle style;
 
   @override
   void paint(
@@ -110,18 +118,18 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
 
     // Assign the track segment paints, which are left: active, right: inactive,
     // but reversed for right to left text.
-    final ColorTween activeTrackColorTween = ColorTween(
-      begin: sliderTheme.disabledActiveTrackColor,
-      end: sliderTheme.activeTrackColor,
+    final ColorTween outlineColorTween = ColorTween(
+      begin: style.disabledOutlineColor,
+      end: style.outlineColor,
     );
-    final ColorTween inactiveTrackColorTween = ColorTween(
-      begin: sliderTheme.disabledInactiveTrackColor,
-      end: sliderTheme.inactiveTrackColor,
+    final ColorTween trackColorTween = ColorTween(
+      begin: style.disabledInactiveLoopedTrackColor,
+      end: style.inactiveLoopedTrackColor,
     );
-    final Paint activePaint = Paint()
-      ..color = activeTrackColorTween.evaluate(enableAnimation)!;
-    final Paint inactivePaint = Paint()
-      ..color = inactiveTrackColorTween.evaluate(enableAnimation)!;
+    final Paint outlinePaint = Paint()
+      ..color = outlineColorTween.evaluate(enableAnimation)!;
+    final Paint trackPaint = Paint()
+      ..color = trackColorTween.evaluate(enableAnimation)!;
 
     final (Offset leftThumbOffset, Offset rightThumbOffset) =
         switch (textDirection) {
@@ -155,7 +163,7 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
         topRight: trackRadius,
         bottomRight: trackRadius,
       ),
-      inactivePaint,
+      trackPaint,
     );
 
     // Draw loop section overlay
@@ -175,31 +183,33 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
         leftThumbOffset.dx,
         trackRect.center.dy + height / 2,
         rightThumbOffset.dx,
-        trackRect.center.dy + height / 2 - lineWidth,
+        trackRect.center.dy + height / 2 - (outlineWidth ?? style.outlineWidth),
       ),
-      activePaint,
+      outlinePaint,
     );
     context.canvas.drawRect(
       Rect.fromLTRB(
         leftThumbOffset.dx,
-        trackRect.center.dy - height / 2 + lineWidth,
+        trackRect.center.dy - height / 2 + (outlineWidth ?? style.outlineWidth),
         rightThumbOffset.dx,
         trackRect.center.dy - height / 2,
       ),
-      activePaint,
+      outlinePaint,
     );
   }
 }
 
 class LoopSectionThumbShape extends RangeSliderThumbShape {
   const LoopSectionThumbShape({
+    required this.style,
     this.size = const Size(10, 24),
     this.radius = const Radius.circular(4),
   });
 
   final Size size;
-
   final Radius radius;
+
+  final LoopStyle style;
 
   @override
   Size getPreferredSize(bool isEnabled, bool isDiscrete) {
@@ -222,8 +232,8 @@ class LoopSectionThumbShape extends RangeSliderThumbShape {
   }) {
     final Canvas canvas = context.canvas;
     final ColorTween colorTween = ColorTween(
-      begin: sliderTheme.disabledThumbColor,
-      end: sliderTheme.thumbColor,
+      begin: style.disabledOutlineColor,
+      end: style.outlineColor,
     );
     final Color color = colorTween.evaluate(enableAnimation)!;
 

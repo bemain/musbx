@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/songs/loop_style.dart';
 import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/songs/player/music_player.dart';
@@ -45,6 +46,8 @@ class PositionSlider extends StatelessWidget {
     bool loopEnabled,
     LoopSection loopSection,
   ) {
+    LoopStyle style = Theme.of(context).extension<LoopStyle>()!;
+
     return Stack(
       children: [
         Positioned.fill(
@@ -55,21 +58,16 @@ class PositionSlider extends StatelessWidget {
         ),
         SliderTheme(
           data: Theme.of(context).sliderTheme.copyWith(
-                trackShape: !loopEnabled
-                    ? null
-                    : musicPlayer.nullIfNoSongElse(_buildSliderTrackShape(
-                        context,
-                        duration,
-                        loopSection,
-                      )),
+                trackShape: musicPlayer.nullIfNoSongElse(_buildSliderTrackShape(
+                  context,
+                  duration,
+                  loopEnabled,
+                  loopSection,
+                )),
               ),
           child: Slider(
-            activeColor: loopEnabled
-                ? Theme.of(context).colorScheme.surfaceContainer
-                : null,
-            inactiveColor: loopEnabled
-                ? Theme.of(context).colorScheme.surfaceContainer
-                : null,
+            activeColor: loopEnabled ? style.activeTrackColor : null,
+            inactiveColor: loopEnabled ? style.inactiveTrackColor : null,
             thumbColor: Theme.of(context).colorScheme.primary,
             overlayColor: WidgetStateProperty.resolveWith((states) {
               final colors = Theme.of(context).colorScheme;
@@ -129,15 +127,21 @@ class PositionSlider extends StatelessWidget {
   SliderTrackShape _buildSliderTrackShape(
     BuildContext context,
     Duration duration,
+    bool loopEnabled,
     LoopSection loopSection,
   ) {
+    LoopStyle style = Theme.of(context).extension<LoopStyle>()!;
+
     return HighlightedSectionSliderTrackShape(
       highlightStart:
           loopSection.start.inMilliseconds / duration.inMilliseconds,
       highlightEnd: loopSection.end.inMilliseconds / duration.inMilliseconds,
-      activeHighlightColor: Theme.of(context).colorScheme.primary,
-      inactiveHighlightColor:
-          Theme.of(context).colorScheme.surfaceContainerHighest,
+      activeHighlightColor: loopEnabled
+          ? style.activeLoopedTrackColor
+          : style.disabledActiveLoopedTrackColor,
+      inactiveHighlightColor: loopEnabled
+          ? style.inactiveLoopedTrackColor
+          : style.disabledInactiveLoopedTrackColor,
     );
   }
 }
