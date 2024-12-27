@@ -19,6 +19,7 @@ Future<void> pickYoutubeSong(BuildContext context, {String? query}) async {
   YoutubeVideo? video = await showSearch<YoutubeVideo?>(
     context: context,
     delegate: YoutubeSearchDelegate(),
+    useRootNavigator: true,
     query: query ?? "",
   );
 
