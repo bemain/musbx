@@ -38,6 +38,7 @@ class WaveformWidget extends StatelessWidget {
                   position: position,
                   duration: durationShown,
                   style: Theme.of(context).extension<PositionSliderStyle>()!,
+                  markerColor: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 size: const Size(double.infinity, 64.0),
               );
