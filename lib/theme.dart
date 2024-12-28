@@ -1,11 +1,11 @@
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/songs/loop_style.dart';
 
 const Color defaultSeed = Color(0xff578cff);
 
-Future<(ThemeData light, ThemeData dark)> generateThemes() async {
+(ThemeData light, ThemeData dark) generateThemes(
+    ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
   // Defaults
   final ColorScheme lightDefault = ColorScheme.fromSeed(
     seedColor: defaultSeed,
@@ -15,21 +15,13 @@ Future<(ThemeData light, ThemeData dark)> generateThemes() async {
     brightness: Brightness.dark,
   );
 
-  // Get color schemes
-  var corePalette = await DynamicColorPlugin.getCorePalette();
-
-  final (ColorScheme? lightScheme, ColorScheme? darkScheme) = (
-    corePalette?.toColorScheme(),
-    corePalette?.toColorScheme(brightness: Brightness.dark),
-  );
-
   // Create themes
   final ThemeData lightTheme = ThemeData.from(
-    colorScheme: lightScheme ?? lightDefault,
+    colorScheme: lightDynamic ?? lightDefault,
     useMaterial3: true,
   );
   final ThemeData darkTheme = ThemeData.from(
-    colorScheme: darkScheme ?? darkDefault,
+    colorScheme: darkDynamic ?? darkDefault,
     useMaterial3: true,
   );
 

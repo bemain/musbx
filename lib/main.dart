@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -29,32 +30,27 @@ Future<void> main() async {
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  // Generate themes
-  final (ThemeData lightTheme, ThemeData darkTheme) = await generateThemes();
-
-  runApp(MyApp(
-    lightTheme: lightTheme,
-    darkTheme: darkTheme,
-  ));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.lightTheme, required this.darkTheme});
-
-  /// The light [ColorScheme] obtained from the device, if any.
-  final ThemeData lightTheme;
-
-  /// The dark [ColorScheme] obtained from the device, if any.
-  final ThemeData darkTheme;
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: "Musician's Toolbox",
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      routerConfig: Navigation.router,
-      restorationScopeId: "app",
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        final (ThemeData lightTheme, ThemeData darkTheme) =
+            generateThemes(lightDynamic, darkDynamic);
+
+        return MaterialApp.router(
+          title: "Musician's Toolbox",
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          routerConfig: Navigation.router,
+          restorationScopeId: "app",
+        );
+      },
     );
   }
 }

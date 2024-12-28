@@ -33,7 +33,7 @@ dependencies:
   # General
   package_info_plus: ^8.0.0
   dynamic_color:
-    git: # Newest version from GitHub is required for tone-based colors. TODO: Use the official version once updated
+    git: # A specific fork is required for tone-based colors. TODO: Use the official version once updated
       url: https://github.com/hasali19/material-foundation-flutter-packages.git
       ref: main
       path: packages/dynamic_color/
