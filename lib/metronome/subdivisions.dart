@@ -20,6 +20,9 @@ class Subdivisions extends StatelessWidget {
           onSelectionChanged: (value) {
             metronome.subdivisions = value.single;
           },
+          style: SegmentedButton.styleFrom(
+            iconColor: Theme.of(context).colorScheme.onSurface,
+          ),
           segments: [
             ButtonSegment(
               value: 1,
