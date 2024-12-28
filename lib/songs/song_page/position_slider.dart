@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/songs/loop_style.dart';
+import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/songs/player/music_player.dart';
@@ -46,7 +46,8 @@ class PositionSlider extends StatelessWidget {
     bool loopEnabled,
     LoopSection loopSection,
   ) {
-    LoopStyle style = Theme.of(context).extension<LoopStyle>()!;
+    PositionSliderStyle style =
+        Theme.of(context).extension<PositionSliderStyle>()!;
 
     return Stack(
       children: [
@@ -130,7 +131,8 @@ class PositionSlider extends StatelessWidget {
     bool loopEnabled,
     LoopSection loopSection,
   ) {
-    LoopStyle style = Theme.of(context).extension<LoopStyle>()!;
+    PositionSliderStyle style =
+        Theme.of(context).extension<PositionSliderStyle>()!;
 
     return HighlightedSectionSliderTrackShape(
       highlightStart:

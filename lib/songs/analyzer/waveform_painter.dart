@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
-import 'package:musbx/songs/loop_style.dart';
+import 'package:musbx/songs/song_page/position_slider_style.dart';
 
 class WaveformPainter extends CustomPainter {
   WaveformPainter({
@@ -22,7 +22,7 @@ class WaveformPainter extends CustomPainter {
   final Duration position;
   final Duration duration;
 
-  final LoopStyle style;
+  final PositionSliderStyle style;
 
   final double amplitude;
 

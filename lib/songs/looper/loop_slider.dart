@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/songs/loop_style.dart';
+import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/player/music_player.dart';
 
@@ -20,12 +20,22 @@ class LoopSlider extends StatelessWidget {
         builder: (_, loopEnabled, __) => ValueListenableBuilder(
           valueListenable: musicPlayer.looper.sectionNotifier,
           builder: (context, loopSection, _) {
-            LoopStyle style = Theme.of(context).extension<LoopStyle>()!;
+            PositionSliderStyle style =
+                Theme.of(context).extension<PositionSliderStyle>()!;
 
             return SliderTheme(
               data: Theme.of(context).sliderTheme.copyWith(
-                    rangeThumbShape: LoopSectionThumbShape(style: style),
-                    rangeTrackShape: LoopSliderTrackShape(style: style),
+                    rangeThumbShape: LoopSectionThumbShape(
+                      style: style,
+                      color: Theme.of(context).colorScheme.primary,
+                      disabledColor: Theme.of(context).colorScheme.primary,
+                    ),
+                    rangeTrackShape: LoopSliderTrackShape(
+                      style: style,
+                      outlineColor: Theme.of(context).colorScheme.primary,
+                      disabledOutlineColor:
+                          Theme.of(context).colorScheme.primary,
+                    ),
                     valueIndicatorColor: Theme.of(context).colorScheme.primary,
                     valueIndicatorStrokeColor: Colors.transparent,
                   ),
@@ -84,13 +94,17 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
   const LoopSliderTrackShape({
     required this.style,
     this.height = 24,
-    this.outlineWidth,
+    this.outlineWidth = 1.0,
+    this.outlineColor = Colors.black,
+    this.disabledOutlineColor = Colors.grey,
   });
 
   final double height;
-  final double? outlineWidth;
+  final double outlineWidth;
 
-  final LoopStyle style;
+  final PositionSliderStyle style;
+  final Color outlineColor;
+  final Color disabledOutlineColor;
 
   @override
   void paint(
@@ -119,8 +133,8 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
     // Assign the track segment paints, which are left: active, right: inactive,
     // but reversed for right to left text.
     final ColorTween outlineColorTween = ColorTween(
-      begin: style.disabledOutlineColor,
-      end: style.outlineColor,
+      begin: disabledOutlineColor,
+      end: outlineColor,
     );
     final ColorTween trackColorTween = ColorTween(
       begin: style.disabledInactiveLoopedTrackColor,
@@ -183,14 +197,14 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
         leftThumbOffset.dx,
         trackRect.center.dy + height / 2,
         rightThumbOffset.dx,
-        trackRect.center.dy + height / 2 - (outlineWidth ?? style.outlineWidth),
+        trackRect.center.dy + height / 2 - outlineWidth,
       ),
       outlinePaint,
     );
     context.canvas.drawRect(
       Rect.fromLTRB(
         leftThumbOffset.dx,
-        trackRect.center.dy - height / 2 + (outlineWidth ?? style.outlineWidth),
+        trackRect.center.dy - height / 2 + outlineWidth,
         rightThumbOffset.dx,
         trackRect.center.dy - height / 2,
       ),
@@ -204,12 +218,16 @@ class LoopSectionThumbShape extends RangeSliderThumbShape {
     required this.style,
     this.size = const Size(10, 24),
     this.radius = const Radius.circular(4),
+    this.color = Colors.black,
+    this.disabledColor = Colors.grey,
   });
 
   final Size size;
   final Radius radius;
 
-  final LoopStyle style;
+  final PositionSliderStyle style;
+  final Color color;
+  final Color disabledColor;
 
   @override
   Size getPreferredSize(bool isEnabled, bool isDiscrete) {
@@ -232,8 +250,8 @@ class LoopSectionThumbShape extends RangeSliderThumbShape {
   }) {
     final Canvas canvas = context.canvas;
     final ColorTween colorTween = ColorTween(
-      begin: style.disabledOutlineColor,
-      end: style.outlineColor,
+      begin: disabledColor,
+      end: this.color,
     );
     final Color color = colorTween.evaluate(enableAnimation)!;
 

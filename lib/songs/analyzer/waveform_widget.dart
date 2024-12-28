@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/songs/analyzer/waveform_painter.dart';
-import 'package:musbx/songs/loop_style.dart';
+import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/songs/player/music_player.dart';
 
 class WaveformWidget extends StatelessWidget {
@@ -37,7 +37,7 @@ class WaveformWidget extends StatelessWidget {
                   waveform: waveform,
                   position: position,
                   duration: durationShown,
-                  style: Theme.of(context).extension<LoopStyle>()!,
+                  style: Theme.of(context).extension<PositionSliderStyle>()!,
                 ),
                 size: const Size(double.infinity, 64.0),
               );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:musbx/songs/loop_style.dart';
+import 'package:musbx/songs/song_page/position_slider_style.dart';
 
 const Color defaultSeed = Color(0xff578cff);
 
@@ -32,7 +32,7 @@ const Color defaultSeed = Color(0xff578cff);
         showValueIndicator: ShowValueIndicator.always,
       ),
       iconTheme: lightTheme.iconTheme.copyWith(weight: 600),
-      extensions: [LoopStyle.fromTheme(theme: lightTheme)],
+      extensions: [PositionSliderStyle.fromTheme(theme: lightTheme)],
     ),
     darkTheme.copyWith(
       textTheme: GoogleFonts.interTextTheme(darkTheme.textTheme),
@@ -40,7 +40,7 @@ const Color defaultSeed = Color(0xff578cff);
         showValueIndicator: ShowValueIndicator.always,
       ),
       iconTheme: darkTheme.iconTheme.copyWith(weight: 600),
-      extensions: [LoopStyle.fromTheme(theme: darkTheme)],
+      extensions: [PositionSliderStyle.fromTheme(theme: darkTheme)],
     ),
   );
 }

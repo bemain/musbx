@@ -1,9 +1,7 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
-class LoopStyle extends ThemeExtension<LoopStyle> {
-  const LoopStyle({
+class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
+  const PositionSliderStyle({
     required this.activeLoopedTrackColor,
     required this.inactiveLoopedTrackColor,
     required this.disabledActiveLoopedTrackColor,
@@ -12,11 +10,6 @@ class LoopStyle extends ThemeExtension<LoopStyle> {
     required this.inactiveTrackColor,
     required this.disabledActiveTrackColor,
     required this.disabledInactiveTrackColor,
-    required this.overlayColor,
-    required this.outlineColor,
-    required this.disabledOutlineColor,
-    required this.outlineRadius,
-    required this.outlineWidth,
   });
 
   /// Generates a SliderThemeData from three main colors.
@@ -28,10 +21,10 @@ class LoopStyle extends ThemeExtension<LoopStyle> {
   /// defaults when assigning them to the slider theme component colors.
   ///
   /// This is used to generate the default slider theme for a [ThemeData].
-  factory LoopStyle.fromTheme({
+  factory PositionSliderStyle.fromTheme({
     required ThemeData theme,
   }) {
-    return LoopStyle(
+    return PositionSliderStyle(
       activeLoopedTrackColor: theme.colorScheme.primary,
       inactiveLoopedTrackColor: theme.colorScheme.primary.withAlpha(0x1f),
       disabledActiveLoopedTrackColor:
@@ -42,11 +35,6 @@ class LoopStyle extends ThemeExtension<LoopStyle> {
       inactiveTrackColor: theme.colorScheme.surfaceContainer,
       disabledActiveTrackColor: theme.colorScheme.onSurface.withAlpha(0x1f),
       disabledInactiveTrackColor: theme.colorScheme.onSurface.withAlpha(0x1f),
-      overlayColor: theme.colorScheme.primary.withAlpha(0x1f),
-      outlineColor: theme.colorScheme.primary, // TODO: Use a different color
-      disabledOutlineColor: theme.colorScheme.onSurface.withAlpha(0x1f),
-      outlineRadius: const Radius.circular(16.0),
-      outlineWidth: 2.0,
     );
   }
 
@@ -62,15 +50,8 @@ class LoopStyle extends ThemeExtension<LoopStyle> {
   final Color inactiveTrackColor;
   final Color disabledInactiveTrackColor;
 
-  final Color overlayColor;
-
-  final Color outlineColor;
-  final Color disabledOutlineColor;
-  final Radius outlineRadius;
-  final double outlineWidth;
-
   @override
-  ThemeExtension<LoopStyle> copyWith({
+  ThemeExtension<PositionSliderStyle> copyWith({
     Color? activeLoopedTrackColor,
     Color? inactiveLoopedTrackColor,
     Color? disabledActiveLoopedTrackColor,
@@ -79,13 +60,8 @@ class LoopStyle extends ThemeExtension<LoopStyle> {
     Color? inactiveTrackColor,
     Color? disabledActiveTrackColor,
     Color? disabledInactiveTrackColor,
-    Color? overlayColor,
-    Color? outlineColor,
-    Color? disabledOutlineColor,
-    Radius? outlineRadius,
-    double? outlineWidth,
   }) {
-    return LoopStyle(
+    return PositionSliderStyle(
       activeLoopedTrackColor:
           activeLoopedTrackColor ?? this.activeLoopedTrackColor,
       inactiveLoopedTrackColor:
@@ -100,17 +76,13 @@ class LoopStyle extends ThemeExtension<LoopStyle> {
           disabledActiveTrackColor ?? this.disabledActiveTrackColor,
       disabledInactiveTrackColor:
           disabledInactiveTrackColor ?? this.disabledInactiveTrackColor,
-      overlayColor: overlayColor ?? this.overlayColor,
-      outlineColor: outlineColor ?? this.outlineColor,
-      disabledOutlineColor: disabledOutlineColor ?? this.disabledOutlineColor,
-      outlineRadius: outlineRadius ?? this.outlineRadius,
-      outlineWidth: outlineWidth ?? this.outlineWidth,
     );
   }
 
   @override
-  ThemeExtension<LoopStyle> lerp(covariant LoopStyle? other, double t) {
-    return LoopStyle(
+  ThemeExtension<PositionSliderStyle> lerp(
+      covariant PositionSliderStyle? other, double t) {
+    return PositionSliderStyle(
       activeLoopedTrackColor:
           Color.lerp(activeLoopedTrackColor, other!.activeLoopedTrackColor, t)!,
       inactiveLoopedTrackColor: Color.lerp(
@@ -129,12 +101,6 @@ class LoopStyle extends ThemeExtension<LoopStyle> {
           disabledActiveTrackColor, other.disabledActiveTrackColor, t)!,
       disabledInactiveTrackColor: Color.lerp(
           disabledInactiveTrackColor, other.disabledInactiveTrackColor, t)!,
-      overlayColor: Color.lerp(overlayColor, other.overlayColor, t)!,
-      outlineColor: Color.lerp(outlineColor, other.outlineColor, t)!,
-      disabledOutlineColor:
-          Color.lerp(disabledOutlineColor, other.disabledOutlineColor, t)!,
-      outlineRadius: Radius.lerp(outlineRadius, other.outlineRadius, t)!,
-      outlineWidth: lerpDouble(outlineWidth, other.outlineWidth, t)!,
     );
   }
 }
