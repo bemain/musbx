@@ -2,15 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
+import 'package:musbx/songs/loop_style.dart';
 
 class WaveformPainter extends CustomPainter {
   WaveformPainter({
     required this.waveform,
     required this.position,
     required this.duration,
+    required this.style,
     this.padding = 3.0,
-    this.activeColor = Colors.blue,
-    this.inactiveColor = Colors.grey,
     this.markerColor = Colors.black,
     this.markerWidth = 2.0,
     this.amplitude = 1.0,
@@ -22,6 +22,8 @@ class WaveformPainter extends CustomPainter {
   final Duration position;
   final Duration duration;
 
+  final LoopStyle style;
+
   final double amplitude;
 
   /// The number of waveform pixels per step.
@@ -30,12 +32,6 @@ class WaveformPainter extends CustomPainter {
 
   /// The number of empty pixels between each step.
   final double padding;
-
-  /// The color used for the part of the waveform before [position].
-  final Color activeColor;
-
-  /// The color used for the part of the waveform after [position].
-  final Color inactiveColor;
 
   final Color markerColor;
   final double markerWidth;
@@ -79,11 +75,11 @@ class WaveformPainter extends CustomPainter {
 
     canvas.drawPath(
       Path.combine(PathOperation.intersect, waveformPath, activeArea),
-      Paint()..color = activeColor,
+      Paint()..color = style.activeLoopedTrackColor,
     );
     canvas.drawPath(
       Path.combine(PathOperation.difference, waveformPath, activeArea),
-      Paint()..color = inactiveColor,
+      Paint()..color = style.inactiveLoopedTrackColor,
     );
 
     canvas.drawLine(

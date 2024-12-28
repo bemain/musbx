@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/songs/analyzer/waveform_painter.dart';
+import 'package:musbx/songs/loop_style.dart';
 import 'package:musbx/songs/player/music_player.dart';
 
 class WaveformWidget extends StatelessWidget {
@@ -31,22 +32,12 @@ class WaveformWidget extends StatelessWidget {
           builder: (context, durationShown, child) => ValueListenableBuilder(
             valueListenable: musicPlayer.positionNotifier,
             builder: (context, position, child) {
-              final Color onSurface = Theme.of(context).colorScheme.onSurface;
-
               return CustomPaint(
                 painter: WaveformPainter(
                   waveform: waveform,
                   position: position,
                   duration: durationShown,
-                  activeColor: musicPlayer.isLoading
-                      ? onSurface.withAlpha(0x61)
-                      : Theme.of(context).colorScheme.primary,
-                  inactiveColor: musicPlayer.isLoading
-                      ? onSurface.withAlpha(0x1f)
-                      : Theme.of(context).colorScheme.surfaceContainerHighest,
-                  markerColor: musicPlayer.isLoading
-                      ? onSurface.withAlpha(0x61)
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                  style: Theme.of(context).extension<LoopStyle>()!,
                 ),
                 size: const Size(double.infinity, 64.0),
               );
