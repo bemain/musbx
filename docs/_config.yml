@@ -1,0 +1,19 @@
+title: Musician's Toolbox
+description: A mobile app that offers everything a musician needs for transcribing, practicing and performing.
+url: https://bemain.github.io/musbx/
+
+theme: minima
+minima:
+  skin: auto
+  # TODO: Fix social links, and add Google Play and App Store
+  social_links:
+    - { platform: github,  user_url: "https://github.com/BeMain" }
+    - { platform: linkedin, user_url: "https://www.linkedin.com/in/benjamin-agardh" }
+
+header_pages:
+-
+
+author: 
+  name: Benjamin Agardh
+  email: bemain.dev@gmail.com
+

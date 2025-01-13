@@ -1,6 +1,6 @@
 ---
 layout: musbx
-permalink: /musbx
+permalink: /
 ---
 
 <p align="center">
