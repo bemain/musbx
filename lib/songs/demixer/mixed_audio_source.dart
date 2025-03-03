@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:async/async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
+import 'package:musbx/songs/demixer/mixed_byte_stream.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/demixer/stem.dart';
 import 'package:musbx/songs/player/music_player.dart';
@@ -31,22 +31,20 @@ class MixedAudioSource extends StreamAudioSource {
 
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
+    print("[DEBUG] Request [$start - $end]");
     int sourceLength = await files.values.first.length();
 
-    List<Stream<StemFileData>> readStreams = files.entries
-        // Only files for stems that are enabled
-        .where((entry) {
-          Stem stem = MusicPlayer.instance.demixer.stems
-              .firstWhere((stem) => stem.type == entry.key);
-          return stem.enabled;
-        })
-        // Open files for reading
-        .map((entry) => entry.value
-            .openRead(start, end)
-            .map((data) => StemFileData(stemType: entry.key, fileData: data)))
-        .toList();
-    Stream<List<int>> mixed =
-        StreamZip<StemFileData>(readStreams).map(mixWavFiles);
+    // TODO: Handle disable stems
+
+    Stream<List<int>> mixed = MixedByteStream(
+            files.entries.map((entry) => entry.value.openRead(start, end)))
+        .map((List<List<int>> data) => mixWavFiles([
+              for (int i = 0; i < data.length; i++)
+                StemFileData(
+                  stemType: files.entries.elementAt(i).key,
+                  fileData: data[i],
+                )
+            ]));
 
     return StreamAudioResponse(
       sourceLength: sourceLength,
