@@ -58,56 +58,55 @@ class Navigation {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
-                path: songsRoute,
-                builder: (context, state) {
-                  MusicPlayer.instance.stop();
+              path: songsRoute,
+              builder: (context, state) {
+                MusicPlayerNew.instance.stop();
 
-                  return LibraryPage();
-                },
-                routes: [
-                  GoRoute(
-                    path: ":id",
-                    redirect: (context, state) {
-                      final String? id = state.pathParameters["id"];
-                      if (MusicPlayer.instance.songs.history.values
-                          .where((song) => song.id == id)
-                          .isEmpty) {
-                        // If the song isn't in the library, redirect to the songs page
-                        return songsRoute;
-                      }
+                return LibraryPage();
+              },
+              routes: [
+                GoRoute(
+                  path: ":id",
+                  redirect: (context, state) {
+                    final String? id = state.pathParameters["id"];
+                    if (MusicPlayer.instance.songs.history.values
+                        .where((song) => song.id == id)
+                        .isEmpty) {
+                      // If the song isn't in the library, redirect to the songs page
+                      return songsRoute;
+                    }
 
-                      return null;
-                    },
-                    builder: (context, state) {
-                      final MusicPlayer musicPlayer = MusicPlayer.instance;
-                      final String? id = state.pathParameters["id"];
+                    return null;
+                  },
+                  builder: (context, state) {
+                    final MusicPlayer musicPlayer = MusicPlayer.instance;
+                    final String? id = state.pathParameters["id"];
 
-                      // Begin loading song
-                      final Song song = musicPlayer.songs.history.values
-                          .firstWhere((song) => song.id == id);
+                    // Begin loading song
+                    final Song song = musicPlayer.songs.history.values
+                        .firstWhere((song) => song.id == id);
 
-                      musicPlayer.loadSong(song).then(
-                        (_) {},
-                        onError: (error, _) {
-                          debugPrint("[MUSIC PLAYER] $error");
-                          showExceptionDialog(
-                            error is AccessRestrictedException
-                                ? const MusicPlayerAccessRestrictedDialog()
-                                : song.source is YoutubeSource
-                                    ? const YoutubeUnavailableDialog()
-                                    : const FileCouldNotBeLoadedDialog(),
-                          );
-                          // Restore state
-                          musicPlayer.stateNotifier.value =
-                              MusicPlayerState.idle;
-                          navigatorKey.currentContext?.go(songsRoute);
-                        },
-                      );
+                    MusicPlayerNew.instance.loadSong(song).then(
+                      (_) {},
+                      onError: (error, _) {
+                        debugPrint("[MUSIC PLAYER] $error");
+                        showExceptionDialog(
+                          error is AccessRestrictedException
+                              ? const MusicPlayerAccessRestrictedDialog()
+                              : song.source is YoutubeSource
+                                  ? const YoutubeUnavailableDialog()
+                                  : const FileCouldNotBeLoadedDialog(),
+                        );
+                        // Restore state
+                        navigatorKey.currentContext?.go(songsRoute);
+                      },
+                    );
 
-                      return const SongPage();
-                    },
-                  ),
-                ]),
+                    return const SongPage();
+                  },
+                ),
+              ],
+            ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(

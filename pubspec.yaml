@@ -70,6 +70,7 @@ dependencies:
   fftea: ^1.5.0
   material_symbols_icons: ^4.2789.0
   go_router: ^14.4.1
+  flutter_soloud: ^3.0.2
 
 
 dev_dependencies:

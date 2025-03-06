@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:just_audio/just_audio.dart' as ja;
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/musbx_api/youtube_api.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
@@ -10,7 +11,34 @@ import 'package:musbx/widgets/widgets.dart';
 /// Where the audio for a song is loaded from.
 abstract class SongSource {
   /// Create an [AudioSource] playable by [AudioPlayer].
-  Future<AudioSource> toAudioSource();
+  Future<ja.AudioSource> toAudioSource();
+
+  /// Whether the audio for this song has been loaded.
+  bool isLoaded = false;
+
+  /// The source of the audio, playable by [SoLoud].
+  /// Before accessing this, make sure the audio [isLoaded] by calling [load].
+  late AudioSource source;
+
+  /// Load the audio for this song.
+  Future<AudioSource> load() async {
+    if (isLoaded) return source;
+
+    source = await _load();
+    isLoaded = true;
+    return source;
+  }
+
+  /// Load the audio for this song. Should return an [AudioSource] playable by [SoLoud].
+  Future<AudioSource> _load();
+
+  /// Free the audio for this song from memory.
+  Future<void> dispose() async {
+    if (!isLoaded) return;
+
+    await SoLoud.instance.disposeSource(source);
+    isLoaded = false;
+  }
 
   /// Convert this to a json map.
   ///
@@ -52,7 +80,7 @@ abstract class SongSource {
   }
 }
 
-class FileSource implements SongSource {
+class FileSource extends SongSource {
   /// A song with audio loaded from a local file.
   FileSource(this.path);
 
@@ -63,12 +91,21 @@ class FileSource implements SongSource {
   File get file => File(path);
 
   @override
-  Future<AudioSource> toAudioSource() async {
+  Future<ja.AudioSource> toAudioSource() async {
     if (!await File(path).exists()) {
       throw FileSystemException("File doesn't exist", path);
     }
 
-    return AudioSource.file(path);
+    return ja.AudioSource.file(path);
+  }
+
+  @override
+  Future<AudioSource> _load() async {
+    if (!await File(path).exists()) {
+      throw FileSystemException("File doesn't exist", path);
+    }
+
+    return await SoLoud.instance.loadFile(path, mode: LoadMode.memory);
   }
 
   @override
@@ -78,7 +115,7 @@ class FileSource implements SongSource {
       };
 }
 
-class YoutubeSource implements SongSource {
+class YoutubeSource extends SongSource {
   /// A song with audio loaded from Youtube.
   YoutubeSource(this.youtubeId);
 
@@ -90,14 +127,25 @@ class YoutubeSource implements SongSource {
   late File cacheFile;
 
   @override
-  Future<AudioSource> toAudioSource() async {
+  Future<ja.AudioSource> toAudioSource() async {
     File? file = await _getAudioFromCache();
     file ??= await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
       youtubeId,
     );
 
     cacheFile = file;
-    return AudioSource.file(file.path);
+    return ja.AudioSource.file(file.path);
+  }
+
+  @override
+  Future<AudioSource> _load() async {
+    File? file = await _getAudioFromCache();
+    file ??= await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
+      youtubeId,
+    );
+
+    cacheFile = file;
+    return await SoLoud.instance.loadFile(file.path);
   }
 
   Future<File?> _getAudioFromCache() async {

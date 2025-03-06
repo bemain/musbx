@@ -41,42 +41,39 @@ class ButtonPanel extends StatelessWidget {
           ),
 
           ValueListenableBuilder<bool>(
-            valueListenable: musicPlayer.isPlayingNotifier,
-            builder: (_, isPlaying, __) => ValueListenableBuilder<bool>(
-              valueListenable: musicPlayer.isBufferingNotifier,
-              builder: (context, isBuffering, _) {
-                return AspectRatio(
-                  aspectRatio: 1.0,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (musicPlayer.isLoading || isBuffering)
-                        const Positioned.fill(
-                          child: CircularProgressIndicator(),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: IconButton.filled(
-                          onPressed: musicPlayer.nullIfNoSongElse(() {
-                            if (isPlaying) {
-                              musicPlayer.pause();
-                            } else {
-                              musicPlayer.play();
-                            }
-                          }),
-                          icon: ExpandedIcon(
-                            isPlaying
-                                ? Symbols.stop_rounded
-                                : Symbols.play_arrow_rounded,
-                            fill: 1,
-                          ),
+            valueListenable: MusicPlayerNew.instance.isPlayingNotifier,
+            builder: (_, isPlaying, __) {
+              return AspectRatio(
+                aspectRatio: 1.0,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (MusicPlayerNew.instance.isLoading)
+                      const Positioned.fill(
+                        child: CircularProgressIndicator(),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: IconButton.filled(
+                        onPressed: MusicPlayerNew.instance.nullIfNoSongElse(() {
+                          if (isPlaying) {
+                            MusicPlayerNew.instance.pause();
+                          } else {
+                            MusicPlayerNew.instance.resume();
+                          }
+                        }),
+                        icon: ExpandedIcon(
+                          isPlaying
+                              ? Symbols.stop_rounded
+                              : Symbols.play_arrow_rounded,
+                          fill: 1,
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
 
           ContinuousButton(

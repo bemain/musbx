@@ -21,12 +21,12 @@ class PositionSlider extends StatelessWidget {
         valueListenable: musicPlayer.looper.enabledNotifier,
         builder: (_, loopEnabled, __) => ValueListenableBuilder(
           valueListenable: musicPlayer.looper.sectionNotifier,
-          builder: (_, loopSection, __) => ValueListenableBuilder(
-            valueListenable: musicPlayer.positionNotifier,
-            builder: (context, position, _) => _buildSlider(
+          builder: (_, loopSection, __) => StreamBuilder(
+            stream: MusicPlayerNew.instance.createPositionStream(),
+            builder: (context, snapshot) => _buildSlider(
               context,
               duration,
-              position,
+              snapshot.data ?? Duration.zero,
               loopEnabled,
               loopSection,
             ),

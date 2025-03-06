@@ -31,7 +31,7 @@ class SongPage extends StatelessWidget {
       initialIndex: 0,
       animationDuration: const Duration(milliseconds: 200),
       child: ValueListenableBuilder(
-        valueListenable: musicPlayer.stateNotifier,
+        valueListenable: MusicPlayerNew.instance.stateNotifier,
         builder: (context, value, child) {
           return Scaffold(
             resizeToAvoidBottomInset: false,

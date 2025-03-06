@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:just_audio/just_audio.dart' hide AudioSource;
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
@@ -43,6 +45,223 @@ enum MusicPlayerState {
 
   /// The player has loaded audio.
   ready,
+}
+
+class MusicPlayerNew {
+  /// The instance of this singleton.
+  static final MusicPlayerNew instance = MusicPlayerNew._();
+
+  final SoLoud _soloud = SoLoud.instance;
+
+  MusicPlayerNew._() {
+    _initialize();
+  }
+
+  void _initialize() {
+    if (_soloud.isInitialized) return;
+
+    _soloud.init();
+  }
+
+  /// Used internally to load and save preferences for songs.
+  final SongPreferences _songPreferences = SongPreferences();
+
+  /// The history of previously loaded songs.
+  final HistoryHandler<Song> songs = HistoryHandler<Song>(
+    historyFileName: "song_history",
+    fromJson: (json) {
+      if (json is! Map<String, dynamic>) {
+        throw "[SONG HISTORY] Incorrectly formatted entry in history file: ($json)";
+      }
+      Song? song = Song.fromJson(json);
+      if (song == null) {
+        throw "[SONG HISTORY] History entry ($json) is missing required fields";
+      }
+      return song;
+    },
+    toJson: (value) => value.toJson(),
+    onEntryRemoved: (entry) async {
+      // Remove cached files
+      debugPrint(
+          "[SONG HISTORY] Deleting cached files for song ${entry.value.id}");
+      final Directory directory = await entry.value.cacheDirectory;
+      if (await directory.exists()) directory.delete(recursive: true);
+    },
+  );
+
+  /// The number of songs the user can play each week on the 'free' flavor of the app.
+  static const int freeSongsPerWeek = 3;
+
+  /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
+  Iterable<Song> get songsPlayedThisWeek => songs.history.entries
+      .where((entry) =>
+          entry.key.difference(DateTime.now()).abs() < const Duration(days: 7))
+      .where((entry) => entry.value.id != demoSong.id) // Exclude demo song
+      .map((e) => e.value);
+
+  /// Whether the user's access to the [MusicPlayer] has been restricted
+  /// because the number of [freeSongsPerWeek] has been reached.
+  ///
+  /// This is only ever `true` on the 'free' flavor of the app.
+  bool get isAccessRestricted =>
+      !Purchases.hasPremium && songsPlayedThisWeek.length >= freeSongsPerWeek;
+
+  Song? get song => songNotifier.value;
+  final ValueNotifier<Song?> songNotifier = ValueNotifier<Song?>(null);
+
+  /// Handle to the currently loaded song.
+  /// TODO: Rename
+  SoundHandle? handle;
+
+  /// Load a [song].
+  ///
+  /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
+  ///
+  /// If premium hasn't been unlocked and [ignoreFreeLimit] is `false`, shows an ad before loading the song.
+  Future<void> loadSong(Song song, {bool ignoreFreeLimit = false}) async {
+    if (!Purchases.hasPremium && !ignoreFreeLimit) {
+      if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
+        throw const AccessRestrictedException(
+            "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.");
+      }
+
+      try {
+        // Show interstitial ad
+        (await loadInterstitialAd())?.show();
+      } catch (e) {
+        debugPrint("[ADS] Failed to load interstitial ad: $e");
+      }
+    }
+
+    try {
+      await stop();
+      stateNotifier.value = MusicPlayerState.loadingAudio;
+
+      // Save preferences for previous song
+      await saveSongPreferences();
+
+      // Load audio
+      final AudioSource source = await song.source.load();
+      handle = await _soloud.play(source, paused: true);
+
+      // Update song
+      songNotifier.value = song;
+
+      // Load new preferences
+      await loadSongPreferences(song);
+
+      // Add to song history.
+      await songs.add(song);
+
+      stateNotifier.value = MusicPlayerState.ready;
+    } catch (e) {
+      stateNotifier.value = MusicPlayerState.idle;
+      rethrow;
+    }
+  }
+
+  MusicPlayerState get state => stateNotifier.value;
+  final ValueNotifier<MusicPlayerState> stateNotifier =
+      ValueNotifier(MusicPlayerState.idle);
+
+  /// Returns `null` if no song loaded, value otherwise.
+  T? nullIfNoSongElse<T>(T? value) =>
+      (isLoading || state == MusicPlayerState.idle) ? null : value;
+
+  /// If true, the player is currently in a loading state.
+  /// If false, the player is either idle or has loaded audio.
+  bool get isLoading => (state == MusicPlayerState.loadingAudio ||
+      state == MusicPlayerState.pickingAudio);
+
+  /// Whether the player is currently playing.
+  bool get isPlaying => isPlayingNotifier.value;
+  set isPlaying(bool value) => value ? resume() : pause();
+  final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
+
+  /// Pause playback.
+  void pause() {
+    if (handle != null) _soloud.setPause(handle!, true);
+    isPlayingNotifier.value = false;
+  }
+
+  /// Resume playback.
+  void resume() {
+    if (handle != null) _soloud.setPause(handle!, false);
+    isPlayingNotifier.value = true;
+  }
+
+  Future<void> stop() async {
+    if (handle != null) await _soloud.stop(handle!);
+    if (song != null) await song!.source.dispose();
+
+    isPlayingNotifier.value = false;
+  }
+
+  /// The current position of the player.
+  Duration get position =>
+      handle == null ? Duration.zero : _soloud.getPosition(handle!);
+
+  /// Create a stream that yield the current [position] at regular [interval]s.
+  ///
+  /// Yields data immediately upon creation, so there is always data in the stream.
+  ///
+  /// The stream is efficient, and only yields the position if it has changed.
+  Stream<Duration> createPositionStream([
+    Duration interval = const Duration(milliseconds: 100),
+  ]) async* {
+    Duration lastPosition = position;
+    yield lastPosition;
+
+    while (true) {
+      if (lastPosition != position) {
+        lastPosition = position;
+        yield position;
+      }
+      await Future.delayed(interval);
+    }
+  }
+
+  /// Load preferences for a [song]].
+  ///
+  /// If no preferences could be found for the song, do nothing.
+  Future<void> loadSongPreferences(Song song) async {
+    final Map json = await _songPreferences.load(song) ?? {};
+
+    int? position = tryCast<int>(json["position"]);
+    // seek(Duration(milliseconds: position ?? 0));
+
+    // slowdowner.loadSettingsFromJson(
+    //   tryCast<Map<String, dynamic>>(json["slowdowner"]) ?? {},
+    // );
+    // looper.loadSettingsFromJson(
+    //   tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
+    // );
+    // equalizer.loadSettingsFromJson(
+    //   tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
+    // );
+    // demixer.loadSettingsFromJson(
+    //   tryCast<Map<String, dynamic>>(json["demixer"]) ?? {},
+    // );
+    // analyzer.loadSettingsFromJson(
+    //   tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
+    // );
+  }
+
+  /// Save preferences for the current song.
+  ///
+  /// If no song is currently loaded, do nothing
+  Future<void> saveSongPreferences() async {
+    if (song == null) return;
+
+    await _songPreferences.save(song!, {
+      // "position": position.inMilliseconds,
+      // "slowdowner": slowdowner.saveSettingsToJson(),
+      // "looper": looper.saveSettingsToJson(),
+      // "equalizer": equalizer.saveSettingsToJson(),
+      // "demixer": demixer.saveSettingsToJson(),
+      // "analyzer": analyzer.saveSettingsToJson(),
+    });
+  }
 }
 
 /// Singleton for playing audio.
