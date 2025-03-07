@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/analyzer/analyzer_card.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
@@ -31,7 +32,7 @@ class SongPage extends StatelessWidget {
       initialIndex: 0,
       animationDuration: const Duration(milliseconds: 200),
       child: ValueListenableBuilder(
-        valueListenable: MusicPlayerNew.instance.stateNotifier,
+        valueListenable: Songs.playerNotifier,
         builder: (context, value, child) {
           return Scaffold(
             resizeToAvoidBottomInset: false,

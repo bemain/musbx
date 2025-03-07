@@ -88,7 +88,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (youtubeSearchHistory.history.isEmpty) {
+    if (youtubeSearchHistory.map.isEmpty) {
       // Help text
       return Padding(
         padding: const EdgeInsets.all(16.0),

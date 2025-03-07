@@ -17,16 +17,22 @@ abstract class SongSource {
   bool isLoaded = false;
 
   /// The source of the audio, playable by [SoLoud].
+  ///
   /// Before accessing this, make sure the audio [isLoaded] by calling [load].
-  late AudioSource source;
+  late AudioSource audio;
+
+  /// The duration of the audio.
+  ///
+  /// Before accessing this, make sure the audio [isLoaded] by calling [load].
+  Duration get duration => SoLoud.instance.getLength(audio);
 
   /// Load the audio for this song.
   Future<AudioSource> load() async {
-    if (isLoaded) return source;
+    if (isLoaded) return audio;
 
-    source = await _load();
+    audio = await _load();
     isLoaded = true;
-    return source;
+    return audio;
   }
 
   /// Load the audio for this song. Should return an [AudioSource] playable by [SoLoud].
@@ -36,7 +42,7 @@ abstract class SongSource {
   Future<void> dispose() async {
     if (!isLoaded) return;
 
-    await SoLoud.instance.disposeSource(source);
+    await SoLoud.instance.disposeSource(audio);
     isLoaded = false;
   }
 

@@ -4,9 +4,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
-import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
 import 'package:musbx/utils/persistent_value.dart';
@@ -60,7 +60,7 @@ class Navigation {
             GoRoute(
               path: songsRoute,
               builder: (context, state) {
-                MusicPlayerNew.instance.stop();
+                Songs.player?.stop();
 
                 return LibraryPage();
               },
@@ -69,7 +69,7 @@ class Navigation {
                   path: ":id",
                   redirect: (context, state) {
                     final String? id = state.pathParameters["id"];
-                    if (MusicPlayer.instance.songs.history.values
+                    if (Songs.history.map.values
                         .where((song) => song.id == id)
                         .isEmpty) {
                       // If the song isn't in the library, redirect to the songs page
@@ -79,14 +79,13 @@ class Navigation {
                     return null;
                   },
                   builder: (context, state) {
-                    final MusicPlayer musicPlayer = MusicPlayer.instance;
-                    final String? id = state.pathParameters["id"];
+                    final String id = state.pathParameters["id"]!;
 
                     // Begin loading song
-                    final Song song = musicPlayer.songs.history.values
+                    final Song song = Songs.history.map.values
                         .firstWhere((song) => song.id == id);
 
-                    MusicPlayerNew.instance.loadSong(song).then(
+                    Songs.load(song).then(
                       (_) {},
                       onError: (error, _) {
                         debugPrint("[MUSIC PLAYER] $error");

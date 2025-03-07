@@ -340,3 +340,8 @@ extension MapValueNotifier<T> on ValueNotifier<T> {
     return notifier;
   }
 }
+
+extension IfNotNull<T extends Object?> on T {
+  /// Returns `null` if this is `null`, and [value] otherwise.
+  S? ifNotNull<S>(S value) => this == null ? null : value;
+}

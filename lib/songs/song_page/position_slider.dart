@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
@@ -13,23 +15,22 @@ class PositionSlider extends StatelessWidget {
 
   final MusicPlayer musicPlayer = MusicPlayer.instance;
 
+  final SongPlayer player = Songs.player!;
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.durationNotifier,
-      builder: (_, duration, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.looper.enabledNotifier,
-        builder: (_, loopEnabled, __) => ValueListenableBuilder(
-          valueListenable: musicPlayer.looper.sectionNotifier,
-          builder: (_, loopSection, __) => StreamBuilder(
-            stream: MusicPlayerNew.instance.createPositionStream(),
-            builder: (context, snapshot) => _buildSlider(
-              context,
-              duration,
-              snapshot.data ?? Duration.zero,
-              loopEnabled,
-              loopSection,
-            ),
+      valueListenable: musicPlayer.looper.enabledNotifier,
+      builder: (_, loopEnabled, __) => ValueListenableBuilder(
+        valueListenable: musicPlayer.looper.sectionNotifier,
+        builder: (_, loopSection, __) => StreamBuilder(
+          stream: player.createPositionStream(),
+          builder: (context, snapshot) => _buildSlider(
+            context,
+            player.duration,
+            snapshot.data ?? Duration.zero,
+            loopEnabled,
+            loopSection,
           ),
         ),
       ),

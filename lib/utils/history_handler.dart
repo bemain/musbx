@@ -34,11 +34,11 @@ class HistoryHandler<T> extends ChangeNotifier {
       File("${(await getTemporaryDirectory()).path}/$historyFileName.json");
 
   /// The history entries, with the previously loaded songs and the time they were loaded.
-  final Map<DateTime, T> history = {};
+  final Map<DateTime, T> map = {};
 
   /// The previously played songs, sorted by date.
   List<T> sorted({ascending = false}) {
-    List<T> sorted = (history.entries.toList()
+    List<T> sorted = (map.entries.toList()
           ..sort((a, b) => a.key.compareTo(b.key)))
         .map((entry) => entry.value)
         .toList();
@@ -53,7 +53,7 @@ class HistoryHandler<T> extends ChangeNotifier {
     if (!await file.exists()) return;
     Map<String, dynamic> json = jsonDecode(await file.readAsString());
 
-    history.clear();
+    map.clear();
 
     for (var entry in json.entries) {
       DateTime? date = DateTime.tryParse(entry.key);
@@ -63,7 +63,7 @@ class HistoryHandler<T> extends ChangeNotifier {
       } catch (e) {
         debugPrint("[HISTORY] $e");
       }
-      if (date != null && value != null) history[date] = value;
+      if (date != null && value != null) map[date] = value;
     }
 
     notifyListeners();
@@ -75,15 +75,15 @@ class HistoryHandler<T> extends ChangeNotifier {
   /// Notifies listeners when done.
   Future<void> add(T newValue) async {
     // Remove duplicates
-    history.removeWhere((key, value) => value == newValue);
+    map.removeWhere((key, value) => value == newValue);
 
-    history[DateTime.now()] = newValue;
+    map[DateTime.now()] = newValue;
 
     // Only keep the [maxEntries] newest entries
-    while (maxEntries != null && history.length > maxEntries!) {
-      final oldestEntry = history.entries.reduce((oldest, element) =>
+    while (maxEntries != null && map.length > maxEntries!) {
+      final oldestEntry = map.entries.reduce((oldest, element) =>
           element.key.isBefore(oldest.key) ? element : oldest);
-      history.remove(oldestEntry.key);
+      map.remove(oldestEntry.key);
       onEntryRemoved?.call(oldestEntry);
     }
 
@@ -92,9 +92,9 @@ class HistoryHandler<T> extends ChangeNotifier {
   }
 
   Future<void> remove(T value) async {
-    if (!history.values.contains(value)) return;
+    if (!map.values.contains(value)) return;
 
-    history.removeWhere((key, v) => v == value);
+    map.removeWhere((key, v) => v == value);
 
     await save();
     notifyListeners();
@@ -102,7 +102,7 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// Save history entries to disk.
   Future<void> save() async {
-    await (await _historyFile).writeAsString(jsonEncode(history.map(
+    await (await _historyFile).writeAsString(jsonEncode(map.map(
       (date, song) => MapEntry(
         date.toString(),
         toJson(song),
