@@ -13,38 +13,8 @@ abstract class SongSource {
   /// Create an [AudioSource] playable by [AudioPlayer].
   Future<ja.AudioSource> toAudioSource();
 
-  /// Whether the audio for this song has been loaded.
-  bool isLoaded = false;
-
-  /// The source of the audio, playable by [SoLoud].
-  ///
-  /// Before accessing this, make sure the audio [isLoaded] by calling [load].
-  late AudioSource audio;
-
-  /// The duration of the audio.
-  ///
-  /// Before accessing this, make sure the audio [isLoaded] by calling [load].
-  Duration get duration => SoLoud.instance.getLength(audio);
-
-  /// Load the audio for this song.
-  Future<AudioSource> load() async {
-    if (isLoaded) return audio;
-
-    audio = await _load();
-    isLoaded = true;
-    return audio;
-  }
-
   /// Load the audio for this song. Should return an [AudioSource] playable by [SoLoud].
-  Future<AudioSource> _load();
-
-  /// Free the audio for this song from memory.
-  Future<void> dispose() async {
-    if (!isLoaded) return;
-
-    await SoLoud.instance.disposeSource(audio);
-    isLoaded = false;
-  }
+  Future<AudioSource> load();
 
   /// Convert this to a json map.
   ///
@@ -106,7 +76,7 @@ class FileSource extends SongSource {
   }
 
   @override
-  Future<AudioSource> _load() async {
+  Future<AudioSource> load() async {
     if (!await File(path).exists()) {
       throw FileSystemException("File doesn't exist", path);
     }
@@ -144,7 +114,7 @@ class YoutubeSource extends SongSource {
   }
 
   @override
-  Future<AudioSource> _load() async {
+  Future<AudioSource> load() async {
     File? file = await _getAudioFromCache();
     file ??= await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
       youtubeId,

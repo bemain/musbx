@@ -245,6 +245,7 @@ class SongSlowdowner extends SongPlayerComponent {
 
   @override
   void initialize() {
+    // FIXME: This is called after the audio has begin playing, so it will have no effect (probably)
     _pitchShiftFilter.activate();
   }
 
@@ -254,7 +255,7 @@ class SongSlowdowner extends SongPlayerComponent {
   }
 
   PitchShiftSingle get _pitchShiftFilter =>
-      player.song.source.audio.filters.pitchShiftFilter;
+      player._source.filters.pitchShiftFilter;
 
   /// How much the pitch will be shifted, in semitones.
   double get pitch => pitchNotifier.value;
@@ -313,16 +314,16 @@ class SongPlayer {
   /// Constructor used internally.
   ///
   /// Assumes the [song.source] to already be loaded.
-  SongPlayer._(this.song, this._handle);
+  SongPlayer._(this.song, this._handle, this._source);
 
   /// Create a [SongPlayer] by loading a [song].
   ///
   /// Loads the [song.source] and retrieves a [_handle] for the song from [SoLoud].
   static Future<SongPlayer> load(Song song) async {
     final AudioSource source = await song.source.load();
-    final handle = await _soloud.play(source, paused: true);
+    final SoundHandle handle = await _soloud.play(source, paused: true);
 
-    final SongPlayer player = SongPlayer._(song, handle);
+    final SongPlayer player = SongPlayer._(song, handle, source);
 
     for (final SongPlayerComponent component in player.components) {
       await component.initialize();
@@ -336,6 +337,9 @@ class SongPlayer {
 
   /// Handle to the loaded song.
   final SoundHandle _handle;
+
+  /// The source of the loaded song.
+  final AudioSource _source;
 
   /// Whether the player is currently playing.
   bool get isPlaying => isPlayingNotifier.value;
@@ -367,13 +371,11 @@ class SongPlayer {
       await component.dispose();
     }
 
-    await song.source.dispose();
+    await _soloud.disposeSource(_source);
   }
 
-  /// Convenience method to get the duration of the current [song].
-  ///
-  /// See [SongSource.duration].
-  Duration get duration => song.source.duration;
+  /// The duration of the audio.
+  Duration get duration => SoLoud.instance.getLength(_source);
 
   /// The current position of the player.
   Duration get position => _soloud.getPosition(_handle);
