@@ -24,7 +24,8 @@ abstract class SongSourceNew {
   ///
   /// Depending on the type, the map will contain some additional keys. \
   /// "youtube": `youtubeId` [String] The id of the Youtube song. \
-  /// "file": `path` [String] The path to the file.
+  /// "file": `path` [String] The path to the file. \
+  /// "demixed": `files` [Map<String, String>] The stem files.
   Map<String, dynamic> toJson();
 
   /// Try to create a [SongSourceNew] from a json map.
@@ -34,7 +35,8 @@ abstract class SongSourceNew {
   ///
   /// Depending on the type, the map should contain some additional keys. \
   /// "youtube": `youtubeId` [String] The id of the Youtube song. \
-  /// "file": `path` [String] The path to the file.
+  /// "file": `path` [String] The path to the file. \
+  /// "demixed": `files` [Map<String, String>] The stem files.
   static SongSourceNew? fromJson(Map<String, dynamic> json) {
     if (!json.containsKey("type")) return null;
     String? type = tryCast<String>(json["type"]);

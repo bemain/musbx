@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
@@ -9,7 +10,6 @@ import 'package:musbx/songs/library_page/youtube_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_source.dart';
 
 class LibraryPage extends StatelessWidget {
   LibraryPage({super.key});
@@ -129,7 +129,7 @@ class LibraryPage extends StatelessWidget {
               Symbols.lock,
               color: Theme.of(context).disabledColor,
             )
-          : _buildSongSourceAvatar(song) ?? Container(),
+          : _buildSongSourceAvatar(song) ?? const SizedBox.shrink(),
       title: Text(
         song.title,
         style: textStyle,
@@ -255,6 +255,7 @@ class LibraryPage extends StatelessWidget {
     if (song.source is YoutubeSource) {
       return const Icon(Symbols.youtube_searched_for);
     }
+    // TODO: Add demixed
 
     return null;
   }

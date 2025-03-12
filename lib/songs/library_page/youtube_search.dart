@@ -3,19 +3,16 @@ import 'package:go_router/go_router.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/youtube_api/video.dart';
 import 'package:musbx/widgets/youtube_api/youtube_api.dart';
-import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
 Future<void> pickYoutubeSong(BuildContext context, {String? query}) async {
-  MusicPlayer musicPlayer = MusicPlayer.instance;
-  musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
-
   YoutubeVideo? video = await showSearch<YoutubeVideo?>(
     context: context,
     delegate: YoutubeSearchDelegate(),
@@ -23,13 +20,9 @@ Future<void> pickYoutubeSong(BuildContext context, {String? query}) async {
     query: query ?? "",
   );
 
-  if (video == null) {
-    // Restore state
-    musicPlayer.stateNotifier.value = MusicPlayerState.idle;
-    return;
-  }
+  if (video == null) return;
 
-  await musicPlayer.songs.add(Song(
+  await Songs.history.add(SongNew(
     id: video.id,
     title: HtmlUnescape().convert(video.title),
     artist: HtmlUnescape().convert(video.channelTitle),

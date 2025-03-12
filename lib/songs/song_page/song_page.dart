@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/analyzer/analyzer_card.dart';
+import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
@@ -25,15 +26,13 @@ class SongPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MusicPlayer musicPlayer = MusicPlayer.instance;
-
     return DefaultTabController(
       length: 2,
       initialIndex: 0,
       animationDuration: const Duration(milliseconds: 200),
       child: ValueListenableBuilder(
         valueListenable: Songs.playerNotifier,
-        builder: (context, value, child) {
+        builder: (context, player, child) {
           return Scaffold(
             resizeToAvoidBottomInset: false,
             appBar: const SongAppBar(),
@@ -48,10 +47,10 @@ class SongPage extends StatelessWidget {
                         Column(
                           children: [
                             ListTile(
-                              title: Text(musicPlayer.song?.title ?? ""),
+                              title: Text(player?.song.title ?? ""),
                               titleTextStyle:
                                   Theme.of(context).textTheme.titleLarge,
-                              subtitle: Text(musicPlayer.song?.artist ?? ""),
+                              subtitle: Text(player?.song.artist ?? ""),
                             ),
                             Expanded(
                               child: AnalyzerCard(),
@@ -97,12 +96,13 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SongPlayer player = Songs.player!;
     final MusicPlayer musicPlayer = MusicPlayer.instance;
 
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.slowdowner.pitchNotifier,
+      valueListenable: player.slowdowner.pitchNotifier,
       builder: (context, pitch, child) => ValueListenableBuilder(
-        valueListenable: musicPlayer.slowdowner.speedNotifier,
+        valueListenable: player.slowdowner.speedNotifier,
         builder: (context, speed, child) {
           final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
           final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
