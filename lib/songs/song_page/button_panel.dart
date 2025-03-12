@@ -53,10 +53,10 @@ class ButtonPanel extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    if (player.isLoading)
-                      const Positioned.fill(
-                        child: CircularProgressIndicator(),
-                      ),
+                    // if (player.isLoading)
+                    //   const Positioned.fill(
+                    //     child: CircularProgressIndicator(),
+                    //   ),
                     Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: IconButton.filled(

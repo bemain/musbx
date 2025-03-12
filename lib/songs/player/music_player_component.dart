@@ -6,7 +6,7 @@ import 'package:musbx/widgets/widgets.dart';
 ///
 /// The component is responsible for all communication between itself and MusicPlayer.
 abstract class MusicPlayerComponent {
-  /// Whether we are currently looping a section of the song or not.
+  /// Whether this component is active or not.
   bool get enabled => enabledNotifier.value;
   set enabled(bool value) => enabledNotifier.value = value;
   final ValueNotifier<bool> enabledNotifier = ValueNotifier(true);

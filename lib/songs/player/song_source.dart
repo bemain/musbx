@@ -111,7 +111,7 @@ class FileSource extends SongSource {
       throw FileSystemException("File doesn't exist", path);
     }
 
-    return await SoLoud.instance.loadFile(path, mode: LoadMode.memory);
+    return await SoLoud.instance.loadFile(path);
   }
 
   @override

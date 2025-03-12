@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/library_page/youtube_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
@@ -13,8 +13,6 @@ import 'package:musbx/songs/player/song_source.dart';
 
 class LibraryPage extends StatelessWidget {
   LibraryPage({super.key});
-
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
 
   final SearchController searchController = SearchController();
 
@@ -49,7 +47,7 @@ class LibraryPage extends StatelessWidget {
                 return const [];
               }
 
-              final Iterable<Song> songHistory = musicPlayer.songs
+              final Iterable<Song> songHistory = Songs.history
                   .sorted(ascending: false)
                   .where((song) =>
                       song.title.toLowerCase().contains(searchPhrase) ||
@@ -94,13 +92,12 @@ class LibraryPage extends StatelessWidget {
           ],
         ),
         ListenableBuilder(
-          listenable: musicPlayer.songs,
+          listenable: Songs.history,
           builder: (context, child) {
             return SliverList.list(
               children: [
                 const SizedBox(height: 8),
-                for (final Song song
-                    in musicPlayer.songs.sorted(ascending: false))
+                for (final Song song in Songs.history.sorted(ascending: false))
                   _buildSongTile(context, song),
                 const SizedBox(height: 80),
               ],
@@ -118,8 +115,8 @@ class LibraryPage extends StatelessWidget {
     bool showOptions = true,
     Function()? onSelected,
   }) {
-    final bool isLocked = musicPlayer.isAccessRestricted &&
-        !musicPlayer.songsPlayedThisWeek.contains(song) &&
+    final bool isLocked = Songs.isAccessRestricted &&
+        !Songs.songsPlayedThisWeek.contains(song) &&
         song != demoSong;
     final TextStyle? textStyle =
         !isLocked ? null : TextStyle(color: Theme.of(context).disabledColor);
@@ -155,17 +152,15 @@ class LibraryPage extends StatelessWidget {
               icon: const Icon(Symbols.more_vert),
             )
           : null,
-      onTap: musicPlayer.isLoading
-          ? null
-          : () async {
-              if (isLocked) {
-                showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
-                return;
-              }
+      onTap: () async {
+        if (isLocked) {
+          showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
+          return;
+        }
 
-              onSelected?.call();
-              context.go(Navigation.songRoute(song.id));
-            },
+        onSelected?.call();
+        context.go(Navigation.songRoute(song.id));
+      },
     );
   }
 
@@ -210,7 +205,7 @@ class LibraryPage extends StatelessWidget {
                     ),
                     FilledButton(
                       onPressed: () {
-                        musicPlayer.songs.remove(song);
+                        Songs.history.remove(song);
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },
@@ -231,15 +226,13 @@ class LibraryPage extends StatelessWidget {
     return SpeedDial.extended(
       heroTag: heroTag,
       shouldExpand: () {
-        if (musicPlayer.isAccessRestricted) {
+        if (Songs.isAccessRestricted) {
           showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
         }
 
-        return !musicPlayer.isAccessRestricted;
+        return !Songs.isAccessRestricted;
       },
-      onExpandedPressed: MusicPlayer.instance.isLoading
-          ? null
-          : () => pickYoutubeSong(context),
+      onExpandedPressed: () => pickYoutubeSong(context),
       expandedChild: const Icon(Symbols.search),
       expandedLabel: const Text("Search"),
       children: [

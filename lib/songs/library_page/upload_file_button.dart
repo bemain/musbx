@@ -6,6 +6,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
@@ -30,20 +31,16 @@ class UploadSongButton extends SpeedDialChild {
   /// Whether permission to read external storage has been given or not.
   static bool permissionGranted = false;
 
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
-
   @override
   Widget assemble(BuildContext context, Animation<double> animation) {
     final SpeedDialAction action = SpeedDialAction(
-      onPressed: musicPlayer.isLoading
-          ? null
-          : (event) {
-              if (permissionGranted) {
-                pickFile(context);
-              } else {
-                pushPermissionBuilder(context);
-              }
-            },
+      onPressed: (event) {
+        if (permissionGranted) {
+          pickFile(context);
+        } else {
+          pushPermissionBuilder(context);
+        }
+      },
       label: const Text("Upload"),
       child: const Icon(Symbols.upload),
     );
@@ -52,31 +49,24 @@ class UploadSongButton extends SpeedDialChild {
   }
 
   Future<void> pickFile(BuildContext context) async {
-    musicPlayer.stateNotifier.value = MusicPlayerState.pickingAudio;
-
     // By some reason, setting type to FileType.audio causes the file picker to not show up on iOS.
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: Platform.isIOS ? FileType.any : FileType.audio,
     );
     final PlatformFile? file = result?.files.single;
 
-    if (file?.path == null) {
-      // Restore state
-      musicPlayer.stateNotifier.value = MusicPlayerState.idle;
-      return;
-    }
+    if (file?.path == null) return;
+
     final String extension = file!.path!.split(".").last;
     if (!allowedExtensions.contains(extension)) {
       showExceptionDialog(UnsupportedFileExtensionDialog(extension: extension));
 
-      // Restore state
-      musicPlayer.stateNotifier.value = MusicPlayerState.idle;
       return;
     }
 
     final String id = file.path!.hashCode.toString();
 
-    await musicPlayer.songs.add(Song(
+    await Songs.history.add(Song(
       id: id,
       title: file.name.split(".").first,
       source: FileSource(file.path!),

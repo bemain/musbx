@@ -54,6 +54,9 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   late final ValueNotifier<bool> isCancelledNotifier = ValueNotifier(false)
     ..addListener(notifyListeners);
 
+  /// Tell this process stop as soon as possible.
+  void cancel() => isCancelled = true;
+
   /// Start the [process] and catch any errors that occur.
   Future<T> _processAndReportErrors() async {
     try {

@@ -60,8 +60,6 @@ class Navigation {
             GoRoute(
               path: songsRoute,
               builder: (context, state) {
-                Songs.player?.stop();
-
                 return LibraryPage();
               },
               routes: [
@@ -85,23 +83,32 @@ class Navigation {
                     final Song song = Songs.history.map.values
                         .firstWhere((song) => song.id == id);
 
-                    Songs.load(song).then(
-                      (_) {},
-                      onError: (error, _) {
-                        debugPrint("[MUSIC PLAYER] $error");
-                        showExceptionDialog(
-                          error is AccessRestrictedException
-                              ? const MusicPlayerAccessRestrictedDialog()
-                              : song.source is YoutubeSource
-                                  ? const YoutubeUnavailableDialog()
-                                  : const FileCouldNotBeLoadedDialog(),
-                        );
-                        // Restore state
-                        navigatorKey.currentContext?.go(songsRoute);
+                    return FutureBuilder(
+                      future: Songs.load(song),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          debugPrint("[MUSIC PLAYER] ${snapshot.error}");
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            showExceptionDialog(
+                              snapshot.error is AccessRestrictedException
+                                  ? const MusicPlayerAccessRestrictedDialog()
+                                  : song.source is YoutubeSource
+                                      ? const YoutubeUnavailableDialog()
+                                      : const FileCouldNotBeLoadedDialog(),
+                            );
+                            context.go(songsRoute);
+                          });
+
+                          return const SizedBox();
+                        }
+
+                        if (snapshot.connectionState != ConnectionState.done) {
+                          return const SizedBox();
+                        }
+
+                        return const SongPage();
                       },
                     );
-
-                    return const SongPage();
                   },
                 ),
               ],

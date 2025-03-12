@@ -4,7 +4,6 @@ import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
-import 'package:musbx/songs/player/music_player.dart';
 
 class PositionSlider extends StatelessWidget {
   /// Slider for seeking a position in the current song.
@@ -13,26 +12,19 @@ class PositionSlider extends StatelessWidget {
   /// If looping is enabled, highlights the section of the slider being looped.
   PositionSlider({super.key});
 
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
-
   final SongPlayer player = Songs.player!;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: musicPlayer.looper.enabledNotifier,
-      builder: (_, loopEnabled, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.looper.sectionNotifier,
-        builder: (_, loopSection, __) => StreamBuilder(
-          stream: player.createPositionStream(),
-          builder: (context, snapshot) => _buildSlider(
-            context,
-            player.duration,
-            snapshot.data ?? Duration.zero,
-            loopEnabled,
-            loopSection,
-          ),
-        ),
+    // TODO: Implement looping
+    return StreamBuilder(
+      stream: player.createPositionStream(),
+      builder: (context, snapshot) => _buildSlider(
+        context,
+        player.duration,
+        snapshot.data ?? Duration.zero,
+        false,
+        LoopSection(),
       ),
     );
   }
@@ -60,12 +52,14 @@ class PositionSlider extends StatelessWidget {
         ),
         SliderTheme(
           data: Theme.of(context).sliderTheme.copyWith(
-                trackShape: musicPlayer.nullIfNoSongElse(_buildSliderTrackShape(
-                  context,
-                  duration,
-                  loopEnabled,
-                  loopSection,
-                )),
+                trackShape: loopEnabled
+                    ? _buildSliderTrackShape(
+                        context,
+                        duration,
+                        loopEnabled,
+                        loopSection,
+                      )
+                    : null,
               ),
           child: Slider(
             activeColor: loopEnabled ? style.activeTrackColor : null,
@@ -95,15 +89,8 @@ class PositionSlider extends StatelessWidget {
                       : duration.inMilliseconds,
                 )
                 .roundToDouble(),
-            onChangeStart: (_) {
-              wasPlayingBeforeChange = musicPlayer.isPlaying;
-              musicPlayer.pause();
-            },
-            onChanged: musicPlayer.nullIfNoSongElse((double value) {
-              musicPlayer.seek(Duration(milliseconds: value.round()));
-            }),
-            onChangeEnd: (_) {
-              if (wasPlayingBeforeChange) musicPlayer.play();
+            onChanged: (double value) {
+              player.seek(Duration(milliseconds: value.round()));
             },
           ),
         ),
@@ -119,9 +106,7 @@ class PositionSlider extends StatelessWidget {
 
   Widget _buildDurationText(BuildContext context, Duration duration) {
     return Text(
-      (musicPlayer.state != MusicPlayerState.ready)
-          ? "-- : --"
-          : durationString(duration),
+      durationString(duration),
       style: Theme.of(context).textTheme.bodySmall,
     );
   }

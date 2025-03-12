@@ -86,6 +86,8 @@ class Songs {
     Song song, {
     bool ignoreFreeLimit = false,
   }) async {
+    if (player?.song == song) return player!;
+
     if (!Purchases.hasPremium && !ignoreFreeLimit) {
       // Make sure the weekly limit has not been exceeded
       if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
@@ -101,27 +103,27 @@ class Songs {
       }
     }
 
-    await Songs.player?.stop();
+    await player?.dispose();
 
-    if (Songs.player != null) {
+    if (player != null) {
       // Save preferences
       await _preferences.save(
-        Songs.player!.song,
-        Songs.player!.toPreferences(),
+        player!.song,
+        player!.toPreferences(),
       );
     }
 
     // Load audio
-    final SongPlayer player = await SongPlayer.load(song);
+    final SongPlayer newPlayer = await SongPlayer.load(song);
 
     // Load new preferences
     final prefs = await _preferences.load(song);
-    if (prefs != null) player.loadPreferences(prefs);
+    if (prefs != null) newPlayer.loadPreferences(prefs);
 
     // Add to song history.
     await history.add(song);
 
-    playerNotifier.value = player;
-    return player;
+    playerNotifier.value = newPlayer;
+    return newPlayer;
   }
 }
