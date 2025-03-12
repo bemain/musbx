@@ -1,34 +1,42 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-// ignore: implementation_imports
-import 'package:flutter_soloud/src/filters/pitchshift_filter.dart';
-import 'package:musbx/songs/demixer/demixing_process_new.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
+import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_source.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 class Stem {
   /// The default [volume]
   static const double defaultVolume = 0.5;
 
-  static final SoLoud _soLoud = SoLoud.instance;
+  static final SoLoud _soloud = SoLoud.instance;
 
   /// A demixed stem for a song. Can be played back in sync with other stems.
   ///
   /// There should (usually) only ever be one stem of each [type].
-  Stem(this.type);
+  Stem(this.type, this.player);
+
+  /// The player that this is a part of.
+  final SongPlayer player;
 
   /// The type of stem.
   final StemType type;
 
-  /// Whether the audio for this stem has been loaded.
-  ///
-  /// If this is `true`, [source] and [handle] have been set.
-  bool isAudioLoaded = false;
+  /// The source of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [DemixedAudio].
+  AudioSource? get source {
+    if (player.playable is! DemixedAudio) return null;
+
+    return (player.playable as DemixedAudio).sources?[type];
+  }
+
+  /// The handle of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [DemixedAudio].
+  SoundHandle? get handle {
+    if (player.playable is! DemixedAudio) return null;
+
+    return (player.playable as DemixedAudio).handles?[type];
+  }
 
   /// Whether this stem is enabled and should be played.
   ///
@@ -39,12 +47,13 @@ class Stem {
     ..addListener(_updateEnabled);
 
   void _updateEnabled() {
-    if (!isAudioLoaded) return;
+    final SoundHandle? handle = this.handle;
+    if (handle == null) return;
 
     if (enabled) {
-      _soLoud.setVolume(handle, volume);
+      _soloud.setVolume(handle, volume);
     } else {
-      _soLoud.setVolume(handle, 0.0);
+      _soloud.setVolume(handle, 0.0);
     }
   }
 
@@ -55,44 +64,12 @@ class Stem {
     ..addListener(_updateVolume);
 
   void _updateVolume() {
-    if (!isAudioLoaded) return;
+    final SoundHandle? handle = this.handle;
+    if (handle == null) return;
 
     if (enabled) {
-      _soLoud.setVolume(handle, volume);
+      _soloud.setVolume(handle, volume);
     }
-  }
-
-  /// The source of the audio for this stem, playable by [SoLoud].
-  ///
-  /// Before accessing this, make sure [isAudioLoaded] is true by calling [loadAudio].
-  late final AudioSource source;
-
-  /// Handle to the sound that is played by this stem.
-  ///
-  /// Before accessing this, make sure [isAudioLoaded] is true by calling [loadAudio].
-  late final SoundHandle handle;
-
-  /// Load the audio for this stem from a [file].
-  ///
-  /// If [isAudioLoaded] is `true`, does nothing.
-  Future<void> loadAudio(File file) async {
-    if (isAudioLoaded) return;
-    isAudioLoaded = true;
-
-    source = await SoLoud.instance.loadFile(file.path);
-    handle = await SoLoud.instance.play(source, paused: true);
-  }
-
-  /// Free the resources used by this stem.
-  ///
-  /// If [isAudioLoaded] is `false`, does nothing.
-  Future<void> dispose() async {
-    if (!isAudioLoaded) return;
-
-    await SoLoud.instance.stop(handle);
-    await SoLoud.instance.disposeSource(source);
-
-    isAudioLoaded = false;
   }
 }
 
@@ -139,49 +116,21 @@ abstract class SongPlayerComponent {
 }
 
 class SongDemixer extends SongPlayerComponent {
-  static final SoLoud _soLoud = SoLoud.instance;
-
   /// A component of the [SongPlayer] that is used to separate a song into stems and change the volume of those individually.
-  SongDemixer(super.player);
+  SongDemixer(
+    super.player,
+  );
 
   /// The stems that this song has been separated into.
   List<Stem> get stems => stemsNotifier.value;
-  final StemsNotifier stemsNotifier = StemsNotifier(List.unmodifiable([
-    Stem(StemType.drums),
-    Stem(StemType.piano),
-    Stem(StemType.guitar),
-    Stem(StemType.bass),
-    Stem(StemType.vocals),
-    Stem(StemType.other),
+  late final StemsNotifier stemsNotifier = StemsNotifier(List.unmodifiable([
+    Stem(StemType.drums, player),
+    Stem(StemType.piano, player),
+    Stem(StemType.guitar, player),
+    Stem(StemType.bass, player),
+    Stem(StemType.vocals, player),
+    Stem(StemType.other, player),
   ]));
-
-  /// TODO: Make it possible to pause this.
-  late final DemixingProcess process = DemixingProcess(player.song)
-    ..resultNotifier.addListener(() async {
-      if (!process.hasResult) return;
-
-      for (final Stem stem in stems) {
-        await stem.loadAudio(process.result![stem.type]!);
-      }
-      _soLoud.addVoicesToGroup(
-        groupHandle,
-        [for (final Stem stem in stems) stem.handle],
-      );
-    });
-
-  final SoundHandle groupHandle = _soLoud.createVoiceGroup();
-
-  @override
-  Future<void> dispose() async {
-    process.cancel();
-
-    await _soLoud.stop(groupHandle);
-    _soLoud.destroyVoiceGroup(groupHandle);
-
-    for (final Stem stem in stems) {
-      await stem.dispose();
-    }
-  }
 
   /// Load settings from a [json] map.
   ///
@@ -239,23 +188,18 @@ class SongDemixer extends SongPlayerComponent {
 }
 
 class SongSlowdowner extends SongPlayerComponent {
-  static final SoLoud _soLoud = SoLoud.instance;
-
   SongSlowdowner(super.player);
 
   @override
   void initialize() {
     // FIXME: This is called after the audio has begin playing, so it will have no effect (probably)
-    _pitchShiftFilter.activate();
+    // _pitchShiftFilter.activate();
   }
 
   @override
   void dispose() {
     // _pitchShiftFilter.deactivate();
   }
-
-  PitchShiftSingle get _pitchShiftFilter =>
-      player._source.filters.pitchShiftFilter;
 
   /// How much the pitch will be shifted, in semitones.
   double get pitch => pitchNotifier.value;
@@ -264,7 +208,12 @@ class SongSlowdowner extends SongPlayerComponent {
     ..addListener(_updatePitch);
 
   void _updatePitch() {
-    _pitchShiftFilter.semitones().value = pitch;
+    if (player.playable is DemixedAudio) {
+      final playable = player.playable as DemixedAudio;
+      for (AudioSource source in playable.sources?.values ?? []) {
+        source.filters.pitchShiftFilter.semitones().value = pitch;
+      }
+    }
   }
 
   /// The playback speed.
@@ -274,7 +223,7 @@ class SongSlowdowner extends SongPlayerComponent {
     ..addListener(_updateSpeed);
 
   void _updateSpeed() {
-    _soLoud.setRelativePlaySpeed(player._handle, speed);
+    SoLoud.instance.setRelativePlaySpeed(player.handle, speed);
   }
 
   /// Load settings from a [json] map.
@@ -311,19 +260,19 @@ class SongSlowdowner extends SongPlayerComponent {
 class SongPlayer {
   static final SoLoud _soloud = SoLoud.instance;
 
-  /// Constructor used internally.
-  ///
-  /// Assumes the [song.source] to already be loaded.
-  SongPlayer._(this.song, this._handle, this._source);
+  SongPlayer._(this.song, this.handle, this.playable);
 
   /// Create a [SongPlayer] by loading a [song].
   ///
-  /// Loads the [song.source] and retrieves a [_handle] for the song from [SoLoud].
-  static Future<SongPlayer> load(Song song) async {
-    final AudioSource source = await song.source.load();
-    final SoundHandle handle = await _soloud.play(source, paused: true);
+  /// The workflow is as follows:
+  ///  - Load the [song.source], to obtain a [playable].
+  ///  - Play the [playable], to obtain a sound [handle].
+  ///  - Initialize [components].
+  static Future<SongPlayer> load(SongNew song) async {
+    final Playable playable = await song.source.load();
+    final SoundHandle handle = await playable.play();
 
-    final SongPlayer player = SongPlayer._(song, handle, source);
+    final SongPlayer player = SongPlayer._(song, handle, playable);
 
     for (final SongPlayerComponent component in player.components) {
       await component.initialize();
@@ -333,13 +282,13 @@ class SongPlayer {
   }
 
   /// The song that this player plays.
-  final Song song;
+  final SongNew song;
 
-  /// Handle to the loaded song.
-  final SoundHandle _handle;
+  /// The object created from [song.source], that in turn created the current song [handle].
+  final Playable playable;
 
-  /// The source of the loaded song.
-  final AudioSource _source;
+  /// Handle for the sound that is playing.
+  final SoundHandle handle;
 
   /// Whether the player is currently playing.
   bool get isPlaying => isPlayingNotifier.value;
@@ -348,37 +297,37 @@ class SongPlayer {
 
   /// Pause playback.
   void pause() {
-    _soloud.setPause(_handle, true);
+    _soloud.setPause(handle, true);
     isPlayingNotifier.value = false;
   }
 
   /// Resume playback.
   void resume() {
-    _soloud.setPause(_handle, false);
+    _soloud.setPause(handle, false);
     isPlayingNotifier.value = true;
   }
 
   /// Stop playback, and free the resources used by this player.
   ///
   /// See also:
-  ///  - [SongSource.dispose]
+  ///  - [Playable.dispose]
   ///  - [SongPlayerComponent.dispose]
   Future<void> dispose() async {
-    await _soloud.stop(_handle);
+    await _soloud.stop(handle);
     isPlayingNotifier.value = false;
 
     for (SongPlayerComponent component in components) {
       await component.dispose();
     }
 
-    await _soloud.disposeSource(_source);
+    await playable.dispose();
   }
 
-  /// The duration of the audio.
-  Duration get duration => SoLoud.instance.getLength(_source);
+  /// The duration of the audio that is playing.
+  Duration get duration => playable.duration;
 
   /// The current position of the player.
-  Duration get position => _soloud.getPosition(_handle);
+  Duration get position => _soloud.getPosition(handle);
 
   /// Create a stream that yield the current [position] at regular [interval]s.
   ///
@@ -403,7 +352,7 @@ class SongPlayer {
 
   /// Seek to a [position] in the current song.
   void seek(Duration position) {
-    if (_handle != null) _soloud.seek(_handle!, position);
+    if (handle != null) _soloud.seek(handle!, position);
   }
 
   /// The components that extend the functionality of this player.

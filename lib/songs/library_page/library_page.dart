@@ -47,7 +47,7 @@ class LibraryPage extends StatelessWidget {
                 return const [];
               }
 
-              final Iterable<Song> songHistory = Songs.history
+              final Iterable<SongNew> songHistory = Songs.history
                   .sorted(ascending: false)
                   .where((song) =>
                       song.title.toLowerCase().contains(searchPhrase) ||
@@ -56,7 +56,7 @@ class LibraryPage extends StatelessWidget {
 
               return [
                 const SizedBox(height: 8),
-                for (final Song song in songHistory)
+                for (final SongNew song in songHistory)
                   _buildSongTile(
                     context,
                     song,
@@ -97,7 +97,8 @@ class LibraryPage extends StatelessWidget {
             return SliverList.list(
               children: [
                 const SizedBox(height: 8),
-                for (final Song song in Songs.history.sorted(ascending: false))
+                for (final SongNew song
+                    in Songs.history.sorted(ascending: false))
                   _buildSongTile(context, song),
                 const SizedBox(height: 80),
               ],
@@ -111,7 +112,7 @@ class LibraryPage extends StatelessWidget {
 
   Widget _buildSongTile(
     BuildContext context,
-    Song song, {
+    SongNew song, {
     bool showOptions = true,
     Function()? onSelected,
   }) {
@@ -164,7 +165,7 @@ class LibraryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOptionsSheet(BuildContext context, Song song) {
+  Widget _buildOptionsSheet(BuildContext context, SongNew song) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -243,7 +244,7 @@ class LibraryPage extends StatelessWidget {
     );
   }
 
-  Widget? _buildSongSourceAvatar(Song song) {
+  Widget? _buildSongSourceAvatar(SongNew song) {
     if (song == demoSong) {
       return const Icon(Symbols.science);
     }

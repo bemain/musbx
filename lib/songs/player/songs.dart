@@ -24,22 +24,20 @@ class Songs {
   Songs._();
 
   static Future<void> initialize() async {
-    if (!_soloud.isInitialized) await _soloud.init();
+    if (!SoLoud.instance.isInitialized) await SoLoud.instance.init();
   }
 
-  static final SoLoud _soloud = SoLoud.instance;
-
   /// Used internally to load and save preferences for songs.
-  static final SongPreferences _preferences = SongPreferences();
+  static final SongPreferencesNew _preferences = SongPreferencesNew();
 
   /// The history of previously loaded songs.
-  static final HistoryHandler<Song> history = HistoryHandler<Song>(
+  static final HistoryHandler<SongNew> history = HistoryHandler<SongNew>(
     historyFileName: "song_history",
     fromJson: (json) {
       if (json is! Map<String, dynamic>) {
         throw "[SONG HISTORY] Incorrectly formatted entry in history file: ($json)";
       }
-      Song? song = Song.fromJson(json);
+      SongNew? song = SongNew.fromJson(json);
       if (song == null) {
         throw "[SONG HISTORY] History entry ($json) is missing required fields";
       }
@@ -59,7 +57,7 @@ class Songs {
   static const int freeSongsPerWeek = 3;
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
-  static Iterable<Song> get songsPlayedThisWeek => history.map.entries
+  static Iterable<SongNew> get songsPlayedThisWeek => history.map.entries
       .where((entry) =>
           entry.key.difference(DateTime.now()).abs() < const Duration(days: 7))
       .where((entry) => entry.value.id != demoSong.id) // Exclude demo song
@@ -83,7 +81,7 @@ class Songs {
   ///
   /// If premium hasn't been unlocked and [ignoreFreeLimit] is `false`, shows an ad before loading the song.
   static Future<SongPlayer> load(
-    Song song, {
+    SongNew song, {
     bool ignoreFreeLimit = false,
   }) async {
     if (player?.song == song) return player!;

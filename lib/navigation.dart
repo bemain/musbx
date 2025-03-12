@@ -80,7 +80,7 @@ class Navigation {
                     final String id = state.pathParameters["id"]!;
 
                     // Begin loading song
-                    final Song song = Songs.history.map.values
+                    final SongNew song = Songs.history.map.values
                         .firstWhere((song) => song.id == id);
 
                     return FutureBuilder(
