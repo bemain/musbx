@@ -29,14 +29,13 @@ class OutOfDateException implements Exception {
 class MusbxApi {
   /// The version of the server that this is compatible with.
   static const MusbxApiVersion version = MusbxApiVersion(
-    youtubeApiVersion: "1",
+    youtubeApiVersion: "2",
     demixerApiVersion: "2",
     chordsApiVersion: "1",
   );
 
   /// The servers hosting the Musbx API.
   static final List<String> _hostUrls = [
-    // "192.168.100.104:4242",
     "brunnby.homeip.net:4242",
     "musbx.agardh.se:4242",
   ];

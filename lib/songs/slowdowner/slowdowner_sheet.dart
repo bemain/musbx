@@ -85,13 +85,6 @@ class SlowdownerSheet extends StatelessWidget {
           onChanged: (double value) {
             player.slowdowner.pitch = (value * 10).roundToDouble() / 10;
           },
-          onChangeStart: () {
-            wasPlayingBeforeChange = player.isPlaying;
-            player.pause();
-          },
-          onChangeEnd: () {
-            if (wasPlayingBeforeChange) player.resume();
-          },
           child: LayoutBuilder(
             builder: (context, constraints) {
               return ConstrainedBox(
@@ -134,13 +127,6 @@ class SlowdownerSheet extends StatelessWidget {
           outerRadius: radius,
           onChanged: (double value) {
             player.slowdowner.speed = pow(value, 2) + value / 2 + 0.5;
-          },
-          onChangeStart: () {
-            wasPlayingBeforeChange = player.isPlaying;
-            player.pause();
-          },
-          onChangeEnd: () {
-            if (wasPlayingBeforeChange) player.resume();
           },
           child: LayoutBuilder(
             builder: (context, constraints) {

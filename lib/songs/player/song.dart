@@ -228,7 +228,7 @@ class SongNew {
 
   @override
   bool operator ==(Object other) {
-    return other is Song && other.id == id;
+    return other is SongNew && other.id == id;
   }
 
   @override

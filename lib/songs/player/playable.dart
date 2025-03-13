@@ -61,6 +61,8 @@ abstract class SongSourceNew {
 /// Note that this class is not instantiable directly but should be obtained
 /// through a [SongSourceNew], which containes instructions on how a Playable is created.
 /// When you are done playing this sound you should [dispose] it to free up resources.
+///
+/// TODO: Maybe this should be called `SongSource` and [SongSourceNew] should be `SongProvider` (or the other way around?)?
 abstract class Playable {
   /// Play this sound using [SoLoud] and return the handle to the sound.
   FutureOr<SoundHandle> play({bool paused = true, bool looping = true});
@@ -207,6 +209,7 @@ class FileAudio extends Playable {
 
   @override
   FutureOr<SoundHandle> play({bool paused = true, bool looping = true}) async {
+    // FIXME: There seems to be an error with [loadFile] where it never completes if the file has already been loaded earlier by another [AudioSource].
     source ??= await SoLoud.instance.loadFile(file.path);
 
     return await SoLoud.instance.play(

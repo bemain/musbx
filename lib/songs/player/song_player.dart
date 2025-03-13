@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+// ignore: implementation_imports
+import 'package:flutter_soloud/src/filters/pitchshift_filter.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -190,15 +192,30 @@ class SongDemixer extends SongPlayerComponent {
 class SongSlowdowner extends SongPlayerComponent {
   SongSlowdowner(super.player);
 
-  @override
-  void initialize() {
-    // FIXME: This is called after the audio has begin playing, so it will have no effect (probably)
-    // _pitchShiftFilter.activate();
+  /// Modify the pitch filter of the [player]'s [Playable]'s [AudioSource] using
+  /// the provided [modify].
+  ///
+  /// Note that some [Playable]s use multiple [AudioSource]s under the hood, so
+  /// [modify] might be called multiple times.
+  void _modifyPitchFilter(void Function(PitchShiftSingle filter) modify) {
+    switch (player.playable) {
+      case DemixedAudio playable:
+        for (AudioSource source in playable.sources?.values ?? []) {
+          modify(source.filters.pitchShiftFilter);
+        }
+      case FileAudio playable:
+        if (playable.source != null) {
+          modify(playable.source!.filters.pitchShiftFilter);
+        }
+    }
   }
 
   @override
-  void dispose() {
-    // _pitchShiftFilter.deactivate();
+  void initialize() {
+    // FIXME: This is called after the audio has begin playing, so it will have no effect (probably)
+    _modifyPitchFilter((filter) {
+      filter.activate();
+    });
   }
 
   /// How much the pitch will be shifted, in semitones.
@@ -208,12 +225,9 @@ class SongSlowdowner extends SongPlayerComponent {
     ..addListener(_updatePitch);
 
   void _updatePitch() {
-    if (player.playable is DemixedAudio) {
-      final playable = player.playable as DemixedAudio;
-      for (AudioSource source in playable.sources?.values ?? []) {
-        source.filters.pitchShiftFilter.semitones().value = pitch;
-      }
-    }
+    _modifyPitchFilter((filter) {
+      filter.semitones().value = pitch;
+    });
   }
 
   /// The playback speed.
@@ -260,7 +274,7 @@ class SongSlowdowner extends SongPlayerComponent {
 class SongPlayer {
   static final SoLoud _soloud = SoLoud.instance;
 
-  SongPlayer._(this.song, this.handle, this.playable);
+  SongPlayer._(this.song, this.playable);
 
   /// Create a [SongPlayer] by loading a [song].
   ///
@@ -270,13 +284,14 @@ class SongPlayer {
   ///  - Initialize [components].
   static Future<SongPlayer> load(SongNew song) async {
     final Playable playable = await song.source.load();
-    final SoundHandle handle = await playable.play();
 
-    final SongPlayer player = SongPlayer._(song, handle, playable);
+    final SongPlayer player = SongPlayer._(song, playable);
 
     for (final SongPlayerComponent component in player.components) {
       await component.initialize();
     }
+
+    player.handle = await playable.play();
 
     return player;
   }
@@ -288,7 +303,11 @@ class SongPlayer {
   final Playable playable;
 
   /// Handle for the sound that is playing.
-  final SoundHandle handle;
+  ///
+  /// Currently this is set after creation, so that the [components] can be
+  /// initialized before the sound starts playing. Otherwise filters won't be applied.
+  /// This is ugly though, and we should find a better solution.
+  late final SoundHandle handle;
 
   /// Whether the player is currently playing.
   bool get isPlaying => isPlayingNotifier.value;
@@ -313,7 +332,7 @@ class SongPlayer {
   ///  - [Playable.dispose]
   ///  - [SongPlayerComponent.dispose]
   Future<void> dispose() async {
-    await _soloud.stop(handle);
+    pause();
     isPlayingNotifier.value = false;
 
     for (SongPlayerComponent component in components) {

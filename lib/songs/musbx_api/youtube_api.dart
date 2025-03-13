@@ -19,8 +19,13 @@ class YoutubeApiHost extends MusbxApiHost {
       File("${(await youtubeDirectory).path}/$youtubeId.$extension");
 
   /// Download the audio for a Youtube video.
-  Future<File> downloadYoutubeSong(String youtubeId) async {
-    var response = await get("/download/$youtubeId");
+  Future<File> downloadYoutubeSong(
+    String youtubeId, {
+    String fileType = "mp3",
+  }) async {
+    var response = await get("/download/$youtubeId", headers: {
+      "FileType": fileType,
+    });
 
     if (response.statusCode != 200) {
       throw HttpException(

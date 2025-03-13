@@ -2,17 +2,18 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:musbx/songs/library_page/youtube_search.dart';
+import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/song_preferences.dart';
-import 'package:musbx/songs/player/song_source.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/ads.dart';
 
 /// The demo song loaded the first time the user launches the app.
 /// Access to this song is unrestricted.
-final Song demoSong = Song(
+final SongNew demoSong = SongNew(
   id: "demo",
   title: "In Treble, Spilled Some Jazz Jam",
   artist: "Erik Lagerstedt",
@@ -25,6 +26,14 @@ class Songs {
 
   static Future<void> initialize() async {
     if (!SoLoud.instance.isInitialized) await SoLoud.instance.init();
+
+    // Begin fetching history from disk
+    youtubeSearchHistory.fetch();
+    history.fetch().then((_) {
+      if (history.map.isEmpty) {
+        history.add(demoSong);
+      }
+    });
   }
 
   /// Used internally to load and save preferences for songs.

@@ -84,7 +84,9 @@ class Navigation {
                         .firstWhere((song) => song.id == id);
 
                     return FutureBuilder(
-                      future: Songs.load(song),
+                      future: Songs.load(song).timeout(
+                        const Duration(seconds: 30),
+                      ),
                       builder: (context, snapshot) {
                         if (snapshot.hasError) {
                           debugPrint("[MUSIC PLAYER] ${snapshot.error}");
@@ -103,12 +105,17 @@ class Navigation {
                         }
 
                         if (snapshot.connectionState != ConnectionState.done) {
+                          // TODO: Build loading
                           return const SizedBox();
                         }
 
                         return const SongPage();
                       },
                     );
+                  },
+                  onExit: (context, state) async {
+                    Songs.player?.pause();
+                    return true;
                   },
                 ),
               ],

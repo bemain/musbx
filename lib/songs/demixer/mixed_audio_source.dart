@@ -31,7 +31,6 @@ class MixedAudioSource extends StreamAudioSource {
 
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
-    print("[DEBUG] Request [$start - $end]");
     int sourceLength = await files.values.first.length();
 
     // TODO: Handle disable stems
