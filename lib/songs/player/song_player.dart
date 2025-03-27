@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 // ignore: implementation_imports
 import 'package:flutter_soloud/src/filters/pitchshift_filter.dart';
+// ignore: implementation_imports
+import 'package:flutter_soloud/src/filters/equalizer_filter.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -278,6 +280,122 @@ class SongSlowdowner extends SongPlayerComponent {
   }
 }
 
+class EqualizerBand {
+  /// The minimum value for the [gain].
+  static const double minGain = 0.0;
+
+  /// The maximum value for the [gain].
+  static const double maxGain = 4.0;
+
+  /// The gain for this band. Must be between [minGain] and [maxGain] (since that is the range SoLoud allows).
+  double get gain => gainNotifier.value;
+  set gain(double value) => gainNotifier.value = value.clamp(minGain, maxGain);
+  late final ValueNotifier<double> gainNotifier = ValueNotifier(1.0);
+}
+
+class EqualizerBandsNotifier extends ValueNotifier<List<EqualizerBand>> {
+  /// Notifies listeners whenever [gain] of any of the bands provided in [value] changes.
+  EqualizerBandsNotifier(super.value) {
+    for (EqualizerBand band in value) {
+      band.gainNotifier.addListener(notifyListeners);
+    }
+  }
+}
+
+class SongEqualizer extends SongPlayerComponent {
+  static const double defaultGain = 1.0;
+
+  SongEqualizer(super.player);
+
+  /// Modify the pitch filter of the [player]'s [Playable]'s [AudioSource] using
+  /// the provided [modify].
+  ///
+  /// Note that some [Playable]s use multiple [AudioSource]s under the hood, so
+  /// [modify] might be called multiple times.
+  void _modifyEqualizerFilter(void Function(EqualizerSingle filter) modify) {
+    switch (player.playable) {
+      case DemixedAudio playable:
+        for (AudioSource source in playable.sources.values) {
+          modify(source.filters.equalizerFilter);
+        }
+      case FileAudio playable:
+        modify(playable.source.filters.equalizerFilter);
+    }
+  }
+
+  @override
+  void initialize() {
+    _modifyEqualizerFilter((filter) {
+      if (!filter.isActive) filter.activate();
+    });
+  }
+
+  @override
+  void dispose() {
+    _modifyEqualizerFilter((filter) {
+      if (filter.isActive) filter.deactivate();
+    });
+  }
+
+  /// The frequency bands of the equalizer.
+  List<EqualizerBand> get bands => bandsNotifier.value;
+  late final EqualizerBandsNotifier bandsNotifier = EqualizerBandsNotifier(
+      List.unmodifiable(List.generate(8, (index) => EqualizerBand())))
+    ..addListener(_updateBands);
+
+  void _updateBands() {
+    _modifyEqualizerFilter((filter) {
+      for (int i = 0; i < bands.length; i++) {
+        [
+          filter.band1,
+          filter.band2,
+          filter.band3,
+          filter.band4,
+          filter.band5,
+          filter.band6,
+          filter.band7,
+          filter.band8,
+        ][i](soundHandle: player.handle)
+            .value = bands[i].gain;
+      }
+    });
+  }
+
+  /// Reset the gain on all [bands].
+  void resetGain() {
+    for (var band in bands) {
+      band.gain = defaultGain;
+    }
+  }
+
+  /// Load settings from a [json] map.
+  ///
+  /// [json] can contain the following key-value pairs (beyond `enabled`):
+  ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
+  @override
+  void loadSettingsFromJson(Map<String, dynamic> json) async {
+    super.loadSettingsFromJson(json);
+
+    final Map? gains = tryCast<Map>(json["gain"]);
+    for (var i = 0; i < bands.length; i++) {
+      final double gain = tryCast<double>(gains?["$i"]) ?? defaultGain;
+      bands[i].gain = gain;
+    }
+  }
+
+  /// Save settings for a song to a json map.
+  ///
+  /// Saves the following key-value pairs (beyond `enabled`):
+  ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
+  @override
+  Map<String, dynamic> saveSettingsToJson() {
+    return {
+      ...super.saveSettingsToJson(),
+      "gain": bands.asMap().map((index, band) => MapEntry("$index", band.gain)),
+    };
+  }
+}
+
 class SongPlayer {
   static final SoLoud _soloud = SoLoud.instance;
 
@@ -382,12 +500,20 @@ class SongPlayer {
   }
 
   /// The components that extend the functionality of this player.
-  late final List<SongPlayerComponent> components = [demixer, slowdowner];
+  late final List<SongPlayerComponent> components = [
+    demixer,
+    slowdowner,
+    equalizer,
+  ];
 
   /// Component for isolating or muting specific instruments in the song.
   late final SongDemixer demixer = SongDemixer(this);
 
+  /// Component for changing the pitch and speed of the song.
   late final SongSlowdowner slowdowner = SongSlowdowner(this);
+
+  /// Component for adjusting the gain for different frequency bands of the song.
+  late final SongEqualizer equalizer = SongEqualizer(this);
 
   /// Load song preferences from a [json] map.
   void loadPreferences(Map<String, dynamic> json) {
@@ -400,9 +526,9 @@ class SongPlayer {
     // looper.loadSettingsFromJson(
     //   tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
     // );
-    // equalizer.loadSettingsFromJson(
-    //   tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
-    // );
+    equalizer.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
+    );
     demixer.loadSettingsFromJson(
       tryCast<Map<String, dynamic>>(json["demixer"]) ?? {},
     );
@@ -417,7 +543,7 @@ class SongPlayer {
       "position": position.inMilliseconds,
       "slowdowner": slowdowner.saveSettingsToJson(),
       // "looper": looper.saveSettingsToJson(),
-      // "equalizer": equalizer.saveSettingsToJson(),
+      "equalizer": equalizer.saveSettingsToJson(),
       "demixer": demixer.saveSettingsToJson(),
       // "analyzer": analyzer.saveSettingsToJson(),
     };

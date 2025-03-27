@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/equalizer/equalizer_sliders.dart';
-import 'package:musbx/songs/player/music_player.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 
 class EqualizerSheet extends StatelessWidget {
-  EqualizerSheet({super.key});
-
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
+  const EqualizerSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final SongPlayer player = Songs.player!;
+
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.equalizer.parametersNotifier,
-      builder: (context, parameters, child) {
+      valueListenable: player.equalizer.bandsNotifier,
+      builder: (context, bands, child) {
         return SizedBox(
           height: 280,
           child: Column(children: [
@@ -34,8 +35,7 @@ class EqualizerSheet extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: IconButton(
                       iconSize: 20,
-                      onPressed: musicPlayer
-                          .nullIfNoSongElse(musicPlayer.equalizer.resetGain),
+                      onPressed: player.equalizer.resetGain,
                       icon: const Icon(Symbols.refresh),
                     ),
                   ),
