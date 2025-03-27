@@ -7,6 +7,7 @@ import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/musbx_api/youtube_api.dart';
+import 'package:musbx/songs/player/filter.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 /// An object that contains information about how to [load] a [Playable].
@@ -16,6 +17,9 @@ import 'package:musbx/widgets/widgets.dart';
 abstract class SongSourceNew {
   /// Load the [Playable] that this source points to.
   FutureOr<Playable> load();
+
+  /// Free the resources used by this source.
+  FutureOr<void> dispose() {}
 
   /// Convert this to a json map.
   ///
@@ -64,7 +68,11 @@ abstract class SongSourceNew {
 ///
 /// TODO: Maybe this should be called `SongSource` and [SongSourceNew] should be `SongProvider` (or the other way around?)?
 abstract class Playable {
+  Playable() : filters = [];
+
   /// Play this sound using [SoLoud] and return the handle to the sound.
+  ///
+  /// Before calling this, the [Playable] must be [load]ed, or it will throw an error.
   FutureOr<SoundHandle> play({bool paused = true, bool looping = true});
 
   /// The length of the audio that this plays.
@@ -73,7 +81,9 @@ abstract class Playable {
   Duration get duration;
 
   /// Free the resources used by this object.
-  FutureOr<void> dispose();
+  FutureOr<void> dispose() {}
+
+  final List<Filter> filters;
 }
 
 class YoutubeSource extends SongSourceNew {
@@ -83,6 +93,8 @@ class YoutubeSource extends SongSourceNew {
   /// The id of the YouTube song to pull.
   final String youtubeId;
 
+  AudioSource? source;
+
   @override
   Future<Playable> load() async {
     File? file = await _getAudioFromCache();
@@ -90,7 +102,17 @@ class YoutubeSource extends SongSourceNew {
       youtubeId,
     );
 
-    return FileAudio._(file);
+    source ??= await SoLoud.instance.loadFile(file.path);
+
+    return FileAudio._(source!);
+  }
+
+  @override
+  Future<void> dispose() async {
+    if (source == null) return;
+
+    await SoLoud.instance.disposeSource(source!);
+    source = null;
   }
 
   Future<File?> _getAudioFromCache() async {
@@ -129,13 +151,25 @@ class FileSource extends SongSourceNew {
   /// The file to read.
   final File file;
 
+  AudioSource? source;
+
   @override
   Future<Playable> load() async {
     if (!await file.exists()) {
       throw FileSystemException("File doesn't exist", file.path);
     }
 
-    return FileAudio._(file);
+    source ??= await SoLoud.instance.loadFile(file.path);
+
+    return FileAudio._(source!);
+  }
+
+  @override
+  Future<void> dispose() async {
+    if (source == null) return;
+
+    await SoLoud.instance.disposeSource(source!);
+    source = null;
   }
 
   /// Try to create a [FileSource] from a [json] object.
@@ -161,9 +195,26 @@ class DemixedSource extends SongSourceNew {
   /// The files to read.
   final Map<StemType, File> files;
 
+  Map<StemType, AudioSource>? sources;
+
   @override
   Future<DemixedAudio> load() async {
-    return DemixedAudio._(files);
+    sources ??= {
+      for (final e in files.entries)
+        e.key: await SoLoud.instance.loadFile(e.value.path),
+    };
+    return DemixedAudio._(sources!);
+  }
+
+  @override
+  Future<void> dispose() async {
+    if (sources == null) return;
+
+    await Future.wait([
+      for (final source in sources!.values)
+        SoLoud.instance.disposeSource(source),
+    ]);
+    sources = null;
   }
 
   /// Try to create a [DemixedSource] from a [json] object.
@@ -196,33 +247,21 @@ class DemixedSource extends SongSourceNew {
 
 class FileAudio extends Playable {
   /// A [Playable] that plays a single file.
-  FileAudio._(this.file);
-
-  /// The file played by this Playable.
-  final File file;
+  FileAudio._(this.source);
 
   /// The source of the sound that is played.
-  AudioSource? source;
+  final AudioSource source;
 
   @override
-  Duration get duration => SoLoud.instance.getLength(source!);
+  Duration get duration => SoLoud.instance.getLength(source);
 
   @override
-  FutureOr<SoundHandle> play({bool paused = true, bool looping = true}) async {
-    // FIXME: There seems to be an error with [loadFile] where it never completes if the file has already been loaded earlier by another [AudioSource].
-    source ??= await SoLoud.instance.loadFile(file.path);
-
+  Future<SoundHandle> play({bool paused = true, bool looping = true}) async {
     return await SoLoud.instance.play(
-      source!,
+      source,
       paused: paused,
       looping: looping,
     );
-  }
-
-  @override
-  FutureOr<void> dispose() async {
-    if (source != null) await SoLoud.instance.disposeSource(source!);
-    source = null;
   }
 }
 
@@ -230,28 +269,21 @@ class DemixedAudio extends Playable {
   /// A [Playable] that provides a voice group with a number of [files].
   ///
   /// This allows the files to play simultaneously while the volume can be controlled individually.
-  DemixedAudio._(this.files);
-
-  /// The files that this Playable plays simultaneously.
-  final Map<StemType, File> files;
+  DemixedAudio._(this.sources);
 
   /// The sources of the individual sounds that are played simultaneously.
-  Map<StemType, AudioSource>? sources;
+  final Map<StemType, AudioSource> sources;
 
   /// The handles of the individual sounds that are played simultaneously.
   Map<StemType, SoundHandle>? handles;
 
   @override
-  Duration get duration => SoLoud.instance.getLength(sources!.values.first);
+  Duration get duration => SoLoud.instance.getLength(sources.values.first);
 
   @override
   Future<SoundHandle> play({bool paused = true, bool looping = true}) async {
-    sources ??= {
-      for (final e in files.entries)
-        e.key: await SoLoud.instance.loadFile(e.value.path),
-    };
     handles ??= {
-      for (final e in sources!.entries)
+      for (final e in sources.entries)
         e.key: await SoLoud.instance.play(
           e.value,
           paused: paused,
@@ -269,13 +301,6 @@ class DemixedAudio extends Playable {
 
   @override
   Future<void> dispose() async {
-    if (sources == null) return;
-
-    await Future.wait([
-      for (final source in sources!.values)
-        SoLoud.instance.disposeSource(source),
-    ]);
-    sources = null;
     handles = null;
     // TODO: Do we need to destroy the voice handle specifically or is the SongPlayer's call to stop() enough?
   }

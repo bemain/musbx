@@ -30,7 +30,7 @@ class Stem {
   AudioSource? get source {
     if (player.playable is! DemixedAudio) return null;
 
-    return (player.playable as DemixedAudio).sources?[type];
+    return (player.playable as DemixedAudio).sources[type];
   }
 
   /// The handle of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [DemixedAudio].
@@ -200,21 +200,25 @@ class SongSlowdowner extends SongPlayerComponent {
   void _modifyPitchFilter(void Function(PitchShiftSingle filter) modify) {
     switch (player.playable) {
       case DemixedAudio playable:
-        for (AudioSource source in playable.sources?.values ?? []) {
+        for (AudioSource source in playable.sources.values) {
           modify(source.filters.pitchShiftFilter);
         }
       case FileAudio playable:
-        if (playable.source != null) {
-          modify(playable.source!.filters.pitchShiftFilter);
-        }
+        modify(playable.source.filters.pitchShiftFilter);
     }
   }
 
   @override
   void initialize() {
-    // FIXME: This is called after the audio has begin playing, so it will have no effect (probably)
     _modifyPitchFilter((filter) {
-      filter.activate();
+      if (!filter.isActive) filter.activate();
+    });
+  }
+
+  @override
+  void dispose() {
+    _modifyPitchFilter((filter) {
+      if (filter.isActive) filter.deactivate();
     });
   }
 
@@ -226,7 +230,7 @@ class SongSlowdowner extends SongPlayerComponent {
 
   void _updatePitch() {
     _modifyPitchFilter((filter) {
-      filter.semitones().value = pitch;
+      filter.semitones(soundHandle: player.handle).value = pitch;
     });
   }
 
@@ -238,12 +242,15 @@ class SongSlowdowner extends SongPlayerComponent {
 
   void _updateSpeed() {
     SoLoud.instance.setRelativePlaySpeed(player.handle, speed);
+    _modifyPitchFilter((filter) {
+      filter.shift(soundHandle: player.handle).value = 1 / speed;
+    });
   }
 
   /// Load settings from a [json] map.
   ///
-  /// [json] can contain the following key-value pairs (beyond `enabled`):
-  ///  - `pitchSemitones` [double] How much the pitch will be shifted, in semitones.
+  /// [json] can contain the following key-value pairs:
+  ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
   void loadSettingsFromJson(Map<String, dynamic> json) {
@@ -258,8 +265,8 @@ class SongSlowdowner extends SongPlayerComponent {
 
   /// Save settings for a song to a json map.
   ///
-  /// Saves the following key-value pairs (beyond `enabled`):
-  ///  - `pitchSemitones` [double] How much the pitch will be shifted, in semitones.
+  /// Saves the following key-value pairs:
+  ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
   Map<String, dynamic> saveSettingsToJson() {
