@@ -68,8 +68,6 @@ abstract class SongSourceNew {
 ///
 /// TODO: Maybe this should be called `SongSource` and [SongSourceNew] should be `SongProvider` (or the other way around?)?
 abstract class Playable {
-  Playable() : filters = [];
-
   /// Play this sound using [SoLoud] and return the handle to the sound.
   ///
   /// Before calling this, the [Playable] must be [load]ed, or it will throw an error.
@@ -80,10 +78,13 @@ abstract class Playable {
   /// Before accessing this, make sure [play] has been called.
   Duration get duration;
 
+  /// Get the filters for this audio.
+  ///
+  /// A [handle] can optionally be passed to get the filter of a specific song.
+  Filters filters({SoundHandle? handle});
+
   /// Free the resources used by this object.
   FutureOr<void> dispose() {}
-
-  final List<Filter> filters;
 }
 
 class YoutubeSource extends SongSourceNew {
@@ -253,6 +254,11 @@ class FileAudio extends Playable {
   final AudioSource source;
 
   @override
+  Filters filters({SoundHandle? handle}) => Filters((apply) {
+        apply(source.filters, handle: handle);
+      });
+
+  @override
   Duration get duration => SoLoud.instance.getLength(source);
 
   @override
@@ -276,6 +282,13 @@ class DemixedAudio extends Playable {
 
   /// The handles of the individual sounds that are played simultaneously.
   Map<StemType, SoundHandle>? handles;
+
+  @override
+  Filters filters({SoundHandle? handle}) => Filters((apply) {
+        for (AudioSource source in sources.values) {
+          apply(source.filters);
+        }
+      });
 
   @override
   Duration get duration => SoLoud.instance.getLength(sources.values.first);

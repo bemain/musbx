@@ -76,7 +76,7 @@ class SongPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   PositionSlider(),
-                  ButtonPanel(),
+                  const ButtonPanel(),
                   const SizedBox(height: 8),
                 ],
               ),
@@ -147,7 +147,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                   onPressed: () {
                     _showModalBottomSheet(
                       context,
-                      EqualizerSheet(),
+                      const EqualizerSheet(),
                     );
                   },
                   isSelected: !isEqualizerReset,

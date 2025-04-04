@@ -9,7 +9,7 @@ class ButtonPanel extends StatelessWidget {
   /// Panel including play/pause, forward and rewind buttons for controlling [MusicPlayer].
   ///
   /// If no song is loaded, all buttons are disabled.
-  ButtonPanel({super.key});
+  const ButtonPanel({super.key});
 
   @override
   Widget build(BuildContext context) {

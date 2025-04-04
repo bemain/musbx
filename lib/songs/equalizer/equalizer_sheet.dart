@@ -43,7 +43,7 @@ class EqualizerSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Expanded(
+            const Expanded(
               child: EqualizerSliders(),
             ),
             const SizedBox(height: 12),

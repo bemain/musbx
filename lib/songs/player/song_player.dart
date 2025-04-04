@@ -194,34 +194,24 @@ class SongDemixer extends SongPlayerComponent {
 class SongSlowdowner extends SongPlayerComponent {
   SongSlowdowner(super.player);
 
-  /// Modify the pitch filter of the [player]'s [Playable]'s [AudioSource] using
-  /// the provided [modify].
+  /// Modify the pitch filter for the current song.
   ///
-  /// Note that some [Playable]s use multiple [AudioSource]s under the hood, so
-  /// [modify] might be called multiple times.
-  void _modifyPitchFilter(void Function(PitchShiftSingle filter) modify) {
-    switch (player.playable) {
-      case DemixedAudio playable:
-        for (AudioSource source in playable.sources.values) {
-          modify(source.filters.pitchShiftFilter);
-        }
-      case FileAudio playable:
-        modify(playable.source.filters.pitchShiftFilter);
-    }
+  /// Note that this cannot be used to activate or deactivate a filter, since
+  /// that has to be done before the song is loaded and [player.handle] thus
+  /// isn't available at that time.
+  void _modifyPitchFilter(
+      void Function(PitchShiftSingle filter, {SoundHandle? handle}) modify) {
+    player.playable.filters(handle: player.handle).pitchShift.modify(modify);
   }
 
   @override
   void initialize() {
-    _modifyPitchFilter((filter) {
-      if (!filter.isActive) filter.activate();
-    });
+    player.playable.filters().pitchShift.activate();
   }
 
   @override
   void dispose() {
-    _modifyPitchFilter((filter) {
-      if (filter.isActive) filter.deactivate();
-    });
+    player.playable.filters().pitchShift.deactivate();
   }
 
   /// How much the pitch will be shifted, in semitones.
@@ -231,8 +221,8 @@ class SongSlowdowner extends SongPlayerComponent {
     ..addListener(_updatePitch);
 
   void _updatePitch() {
-    _modifyPitchFilter((filter) {
-      filter.semitones(soundHandle: player.handle).value = pitch;
+    _modifyPitchFilter((filter, {SoundHandle? handle}) {
+      filter.semitones(soundHandle: handle).value = pitch;
     });
   }
 
@@ -244,8 +234,8 @@ class SongSlowdowner extends SongPlayerComponent {
 
   void _updateSpeed() {
     SoLoud.instance.setRelativePlaySpeed(player.handle, speed);
-    _modifyPitchFilter((filter) {
-      filter.shift(soundHandle: player.handle).value = 1 / speed;
+    _modifyPitchFilter((filter, {SoundHandle? handle}) {
+      filter.shift(soundHandle: handle).value = 1 / speed;
     });
   }
 
@@ -258,11 +248,8 @@ class SongSlowdowner extends SongPlayerComponent {
   void loadSettingsFromJson(Map<String, dynamic> json) {
     super.loadSettingsFromJson(json);
 
-    final double? pitch = tryCast<double>(json["pitch"]);
-    final double? speed = tryCast<double>(json["speed"]);
-
-    this.pitch = pitch?.clamp(-12, 12) ?? 0.0;
-    this.speed = speed?.clamp(0.5, 2) ?? 1.0;
+    pitch = tryCast<double>(json["pitch"])?.clamp(-12, 12) ?? 0.0;
+    speed = tryCast<double>(json["speed"])?.clamp(0.5, 2) ?? 1.0;
   }
 
   /// Save settings for a song to a json map.
@@ -305,36 +292,28 @@ class EqualizerBandsNotifier extends ValueNotifier<List<EqualizerBand>> {
 class SongEqualizer extends SongPlayerComponent {
   static const double defaultGain = 1.0;
 
+  /// TODO: Simply activating this causes lots of artifacts at the moment, not sure why
   SongEqualizer(super.player);
 
-  /// Modify the pitch filter of the [player]'s [Playable]'s [AudioSource] using
-  /// the provided [modify].
+  /// Modify the equalizer filter for the current song.
   ///
-  /// Note that some [Playable]s use multiple [AudioSource]s under the hood, so
-  /// [modify] might be called multiple times.
-  void _modifyEqualizerFilter(void Function(EqualizerSingle filter) modify) {
-    switch (player.playable) {
-      case DemixedAudio playable:
-        for (AudioSource source in playable.sources.values) {
-          modify(source.filters.equalizerFilter);
-        }
-      case FileAudio playable:
-        modify(playable.source.filters.equalizerFilter);
-    }
+  /// Note that this cannot be used to activate or deactivate the filter, since
+  /// that has to be done before the song is loaded and [player.handle] thus
+  /// isn't available at that time.
+  void _modifyEqualizerFilter(
+      void Function(EqualizerSingle filter, {SoundHandle? handle}) modify) {
+    player.playable.filters(handle: player.handle).equalizer.modify(modify);
   }
 
   @override
   void initialize() {
-    _modifyEqualizerFilter((filter) {
-      if (!filter.isActive) filter.activate();
-    });
+    // TODO: Activate the equalizer once we find out what is causing the noise
+    // player.playable.filters().pitchShift.activate();
   }
 
   @override
   void dispose() {
-    _modifyEqualizerFilter((filter) {
-      if (filter.isActive) filter.deactivate();
-    });
+    player.playable.filters().pitchShift.deactivate();
   }
 
   /// The frequency bands of the equalizer.
@@ -344,7 +323,7 @@ class SongEqualizer extends SongPlayerComponent {
     ..addListener(_updateBands);
 
   void _updateBands() {
-    _modifyEqualizerFilter((filter) {
+    _modifyEqualizerFilter((filter, {SoundHandle? handle}) {
       for (int i = 0; i < bands.length; i++) {
         [
           filter.band1,
@@ -355,7 +334,7 @@ class SongEqualizer extends SongPlayerComponent {
           filter.band6,
           filter.band7,
           filter.band8,
-        ][i](soundHandle: player.handle)
+        ][i](soundHandle: handle)
             .value = bands[i].gain;
       }
     });
