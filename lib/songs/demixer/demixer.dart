@@ -17,7 +17,7 @@ class Stem {
   Stem(this.type, this.player);
 
   /// The player that this is a part of.
-  final SongPlayer player;
+  final FileSongPlayer player;
 
   /// The type of stem.
   final StemType type;
@@ -82,7 +82,7 @@ class StemsNotifier extends ValueNotifier<List<Stem>> {
 }
 
 class DemixerComponent extends SongPlayerComponent {
-  /// A component of the [SongPlayer] that is used to separate a song into stems and change the volume of those individually.
+  /// A component of the [DemixedSongPlayer] that is used to separate a song into stems and change the volume of those individually.
   DemixerComponent(
     super.player,
   );

@@ -123,7 +123,7 @@ class Song {
   int get hashCode => id.hashCode;
 }
 
-class SongNew {
+class SongNew<T extends SongSourceNew> {
   /// Representation of a song, to be played by a [SongPlayer].
   SongNew({
     required this.id,
@@ -165,7 +165,7 @@ class SongNew {
   /// Where this song's audio was loaded from, e.g. a YouTube video or a local file.
   ///
   /// Can be used to create a [Playable] playable by [SongPlayer].
-  final SongSourceNew source;
+  final T source;
 
   /// The media item for this song, provided to [MusicPlayerAudioHandler] when
   /// this song is played.

@@ -10,13 +10,17 @@ import 'package:musbx/widgets/flat_card.dart';
 import 'package:musbx/utils/purchases.dart';
 
 class DemixerCard extends StatelessWidget {
-  // TODO: Figure out what should be done with this widget if the current playable is not a [DemixedAudio].
   DemixerCard({super.key});
 
   final SongPlayer player = Songs.player!;
 
   @override
   Widget build(BuildContext context) {
+    if (player is! DemixedSongPlayer) {
+      // TODO: Figure out what should be done with this widget if the current playable is not a [DemixedAudio].
+      return const SizedBox();
+    }
+
     return FlatCard(
       child: Padding(
         padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
@@ -30,7 +34,10 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
+  /// Assumes [player] is a [DemixedSongPlayer].
   Widget _buildHeader(BuildContext context) {
+    final DemixedSongPlayer player = this.player as DemixedSongPlayer;
+
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -66,7 +73,10 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
+  /// Assumes [player] is a [DemixedSongPlayer].
   Widget _buildBody(BuildContext context) {
+    final DemixedSongPlayer player = this.player as DemixedSongPlayer;
+
     return ValueListenableBuilder(
       valueListenable: player.demixer.stemsNotifier,
       builder: (context, stems, child) => ListView(
@@ -300,6 +310,9 @@ class StemControlsState extends State<StemControls> {
 
   @override
   Widget build(BuildContext context) {
+    if (this.player is! DemixedSongPlayer) return const SizedBox();
+    final DemixedSongPlayer player = this.player as DemixedSongPlayer;
+
     /// Whether all other stems are disabled
     final bool allOtherStemsDisabled = player.demixer.stems
         .where((stem) => stem != widget.stem)

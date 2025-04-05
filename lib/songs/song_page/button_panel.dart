@@ -13,12 +13,7 @@ class ButtonPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SongPlayer? player = Songs.player;
-
-    if (player == null) {
-      // TODO: Create loading
-      return const SizedBox();
-    }
+    final SongPlayer player = Songs.player!;
 
     return SizedBox(
       height: 64.0,

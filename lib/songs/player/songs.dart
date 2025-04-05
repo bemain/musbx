@@ -89,11 +89,12 @@ class Songs {
   /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
   ///
   /// If premium hasn't been unlocked and [ignoreFreeLimit] is `false`, shows an ad before loading the song.
-  static Future<SongPlayer> load(
-    SongNew song, {
+  static Future<SongPlayer<P, S>>
+      load<P extends Playable, S extends SongSourceNew<P>>(
+    SongNew<S> song, {
     bool ignoreFreeLimit = false,
   }) async {
-    if (player?.song == song) return player!;
+    if (player?.song == song) return player! as SongPlayer<P, S>;
 
     if (!Purchases.hasPremium && !ignoreFreeLimit) {
       // Make sure the weekly limit has not been exceeded
@@ -121,7 +122,7 @@ class Songs {
     }
 
     // Load audio
-    final SongPlayer newPlayer = await SongPlayer.load(song);
+    final SongPlayer<P, S> newPlayer = await SongPlayer.load<P, S>(song);
 
     // Load new preferences
     final prefs = await _preferences.load(song);

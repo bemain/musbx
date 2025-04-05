@@ -10,7 +10,7 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/slowdowner/slowdowner.dart';
 import 'package:musbx/widgets/widgets.dart';
 
-abstract class SongPlayerComponent {
+abstract class SongPlayerComponent<SongPlayer> {
   SongPlayerComponent(this.player);
 
   /// The player that this is a part of.
@@ -42,38 +42,40 @@ abstract class SongPlayerComponent {
   }
 }
 
-class SongPlayer {
+abstract class SongPlayer<P extends Playable, S extends SongSourceNew<P>> {
   static final SoLoud _soloud = SoLoud.instance;
 
   SongPlayer._(this.song, this.playable);
 
   /// Create a [SongPlayer] by loading a [song].
   ///
+  /// This delegates the loading process to the correct implementation of this
+  /// abstract class, depending on the type of the `Playable` ([P]).
+  ///
   /// The workflow is as follows:
   ///  - Load the [song.source], to obtain a [playable].
   ///  - Play the [playable], to obtain a sound [handle].
   ///  - Initialize [components].
-  static Future<SongPlayer> load(SongNew song) async {
-    final Playable playable = await song.source.load(
-      cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
-    );
-
-    final SongPlayer player = SongPlayer._(song, playable);
-
-    for (final SongPlayerComponent component in player.components) {
-      await component.initialize();
+  static Future<SongPlayer<P, S>>
+      load<P extends Playable, S extends SongSourceNew<P>>(
+    SongNew<S> song,
+  ) async {
+    if (P is FileAudio) {
+      return FileSongPlayer.load(song as SongNew<SongSourceNew<FileAudio>>)
+          as SongPlayer<P, S>;
+    } else if (P is DemixedAudio) {
+      return DemixedSongPlayer.load(
+          song as SongNew<SongSourceNew<DemixedAudio>>) as SongPlayer<P, S>;
     }
 
-    player.handle = await playable.play();
-
-    return player;
+    throw ("No player exists for the given Playable of type $P");
   }
 
   /// The song that this player plays.
-  final SongNew song;
+  final SongNew<S> song;
 
   /// The object created from [song.source], that in turn created the current song [handle].
-  final Playable playable;
+  final P playable;
 
   /// Handle for the sound that is playing.
   ///
@@ -148,14 +150,9 @@ class SongPlayer {
   }
 
   /// The components that extend the functionality of this player.
-  late final List<SongPlayerComponent> components = [
-    demixer,
-    slowdowner,
-    equalizer,
-  ];
-
-  /// Component for isolating or muting specific instruments in the song.
-  late final DemixerComponent demixer = DemixerComponent(this);
+  @mustCallSuper
+  List<SongPlayerComponent> get components =>
+      List.unmodifiable([slowdowner, equalizer]);
 
   /// Component for changing the pitch and speed of the song.
   late final SlowdownerComponent slowdowner = SlowdownerComponent(this);
@@ -164,6 +161,7 @@ class SongPlayer {
   late final EqualizerComponent equalizer = EqualizerComponent(this);
 
   /// Load song preferences from a [json] map.
+  @mustCallSuper
   void loadPreferences(Map<String, dynamic> json) {
     int? position = tryCast<int>(json["position"]);
     seek(Duration(milliseconds: position ?? 0));
@@ -177,23 +175,104 @@ class SongPlayer {
     equalizer.loadSettingsFromJson(
       tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
     );
-    demixer.loadSettingsFromJson(
-      tryCast<Map<String, dynamic>>(json["demixer"]) ?? {},
-    );
     // analyzer.loadSettingsFromJson(
     //   tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
     // );
   }
 
   /// Create a json map containing the current preferences for this [song].
+  @mustCallSuper
   Map<String, dynamic> toPreferences() {
     return {
       "position": position.inMilliseconds,
       "slowdowner": slowdowner.saveSettingsToJson(),
       // "looper": looper.saveSettingsToJson(),
       "equalizer": equalizer.saveSettingsToJson(),
-      "demixer": demixer.saveSettingsToJson(),
       // "analyzer": analyzer.saveSettingsToJson(),
+    };
+  }
+}
+
+class FileSongPlayer<S extends SongSourceNew<FileAudio>>
+    extends SongPlayer<FileAudio, S> {
+  FileSongPlayer._(super.song, super.playable) : super._();
+
+  static Future<FileSongPlayer<S>> load<S extends SongSourceNew<FileAudio>>(
+      SongNew<S> song) async {
+    final FileAudio playable = await song.source.load(
+      cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
+    );
+
+    final FileSongPlayer<S> player = FileSongPlayer._(song, playable);
+
+    for (final SongPlayerComponent component in player.components) {
+      await component.initialize();
+    }
+
+    player.handle = await playable.play();
+
+    return player;
+  }
+}
+
+class DemixedSongPlayer
+    extends SongPlayer<DemixedAudio, SongSourceNew<DemixedAudio>> {
+  static final SoLoud _soloud = SoLoud.instance;
+
+  DemixedSongPlayer._(
+      SongNew<SongSourceNew<DemixedAudio>> song, DemixedAudio playable)
+      : super._(song, playable);
+
+  /// The handles of the individual sounds that are played simultaneously.
+  ///
+  /// Forwarded from the [playable].
+  Iterable<SoundHandle> get handles => playable.handles!.values;
+
+  static Future<DemixedSongPlayer> load(
+      SongNew<SongSourceNew<DemixedAudio>> song) async {
+    final DemixedAudio playable = await song.source.load(
+      cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
+    );
+
+    final DemixedSongPlayer player = DemixedSongPlayer._(song, playable);
+
+    for (final SongPlayerComponent component in player.components) {
+      await component.initialize();
+    }
+
+    player.handle = await playable.play();
+
+    return player;
+  }
+
+  @override
+  void seek(Duration position) {
+    for (SoundHandle handle in handles) {
+      _soloud.seek(handle, position);
+    }
+  }
+
+  @override
+  List<SongPlayerComponent> get components =>
+      List.unmodifiable([...super.components, demixer]);
+
+  /// Component for isolating or muting specific instruments in the song.
+  late final DemixerComponent demixer = DemixerComponent(this);
+
+  @override
+  void loadPreferences(Map<String, dynamic> json) {
+    super.loadPreferences(json);
+
+    demixer.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["demixer"]) ?? {},
+    );
+  }
+
+  @override
+  Map<String, dynamic> toPreferences() {
+    return {
+      ...super.toPreferences(),
+      "demixer": demixer.saveSettingsToJson(),
     };
   }
 }

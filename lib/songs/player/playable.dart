@@ -13,9 +13,9 @@ import 'package:musbx/widgets/widgets.dart';
 ///
 /// This is the first step in playing a song. The [Playable] obtained by calling
 /// the [load] method can in turn be used to start playing a sound.
-abstract class SongSourceNew {
+abstract class SongSourceNew<T extends Playable> {
   /// Load the [Playable] that this source points to.
-  FutureOr<Playable> load({required Directory cacheDirectory});
+  FutureOr<T> load({required Directory cacheDirectory});
 
   /// Free the resources used by this source.
   FutureOr<void> dispose() {}
@@ -86,7 +86,7 @@ abstract class Playable {
   FutureOr<void> dispose() {}
 }
 
-class YoutubeSource extends SongSourceNew {
+class YoutubeSource extends SongSourceNew<FileAudio> {
   /// A source that pulls audio from YouTube.
   YoutubeSource(this.youtubeId);
 
@@ -96,7 +96,7 @@ class YoutubeSource extends SongSourceNew {
   AudioSource? source;
 
   @override
-  Future<Playable> load({required Directory cacheDirectory}) async {
+  Future<FileAudio> load({required Directory cacheDirectory}) async {
     File cacheFile = File("${cacheDirectory.path}/audio.mp3");
 
     if (await cacheFile.exists()) {
@@ -137,7 +137,7 @@ class YoutubeSource extends SongSourceNew {
       };
 }
 
-class FileSource extends SongSourceNew {
+class FileSource extends SongSourceNew<FileAudio> {
   /// A source that reads audio from a file.
   FileSource(this.file);
 
@@ -147,7 +147,7 @@ class FileSource extends SongSourceNew {
   AudioSource? source;
 
   @override
-  Future<Playable> load({required Directory cacheDirectory}) async {
+  Future<FileAudio> load({required Directory cacheDirectory}) async {
     File cacheFile = File("${cacheDirectory.path}/audio.mp3");
 
     if (!await cacheFile.exists()) {
@@ -187,7 +187,7 @@ class FileSource extends SongSourceNew {
       };
 }
 
-class DemixedSource extends SongSourceNew {
+class DemixedSource extends SongSourceNew<DemixedAudio> {
   /// A source that demixes a [song] and loads the stems as individual audio sources.
   DemixedSource(this.parentSource);
 
