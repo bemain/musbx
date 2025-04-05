@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/equalizer/equalizer.dart';
 
 class EqualizerOverlayPainter extends CustomPainter {
   /// Paints an overlay onto a set of sliders used to control the gain on

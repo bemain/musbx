@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/songs/equalizer/equalizer.dart';
 import 'package:musbx/songs/equalizer/equalizer_overlay.dart';
 import 'package:musbx/songs/equalizer/inactive_slider_track_shape.dart';
 import 'package:musbx/songs/player/song_player.dart';
@@ -13,7 +14,7 @@ class EqualizerSliders extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SongPlayer player = Songs.player!;
-    final SongEqualizer equalizer = player.equalizer;
+    final EqualizerComponent equalizer = player.equalizer;
 
     return RepaintBoundary(
       child: CustomPaint(
