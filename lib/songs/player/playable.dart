@@ -197,14 +197,12 @@ class DemixedSource extends SongSourceNew {
 
   @override
   Future<DemixedAudio> load({required Directory cacheDirectory}) async {
-    print("[DEBUG] Loading demixed audio source");
     DemixingProcess process = DemixingProcess(
       parentSource,
       cacheDirectory: cacheDirectory,
     );
 
     final Map<StemType, File> files = await process.future;
-    print("[DEBUG] Demixing process complete, $files");
 
     sources ??= {
       for (final e in files.entries)
@@ -304,7 +302,7 @@ class DemixedAudio extends Playable {
     if (groupHandle.isError) {
       throw Exception("[DEMIXER] Failed to create voice group");
     }
-    
+
     SoLoud.instance.addVoicesToGroup(
       groupHandle,
       handles!.values.toList(),

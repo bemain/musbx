@@ -59,16 +59,15 @@ class Analyzer extends MusicPlayerComponent {
         });
     });
 
-    musicPlayer.slowdowner.pitchNotifier.addListener(_updateChords);
+    // musicPlayer.slowdowner.pitchNotifier.addListener(_updateChords);
   }
 
   void _updateChords() {
     chordsNotifier.value = chordsProcess?.result?.map(
       (key, value) => MapEntry(
         key,
-        value?.transposed(
-          MusicPlayer.instance.slowdowner.pitch.round(),
-        ),
+        value?.transposed(0 // MusicPlayer.instance.slowdowner.pitch.round(),
+            ),
       ),
     );
   }

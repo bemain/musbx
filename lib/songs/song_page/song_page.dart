@@ -9,7 +9,6 @@ import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
 import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
-import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
@@ -97,7 +96,6 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final SongPlayer player = Songs.player!;
-    final MusicPlayer musicPlayer = MusicPlayer.instance;
 
     return ValueListenableBuilder(
       valueListenable: player.slowdowner.pitchNotifier,
@@ -106,14 +104,8 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
         builder: (context, speed, child) {
           final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
           final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
-          final bool isEqualizerReset = musicPlayer.equalizer.parameters?.bands
-                  .every((band) =>
-                      band.gain ==
-                      (musicPlayer.equalizer.parameters!.minDecibels +
-                              musicPlayer.equalizer.parameters!.maxDecibels) /
-                          2) ??
-              true;
-
+          final bool isEqualizerReset = player.equalizer.bands.every((band) =>
+              band.gain == (EqualizerBand.minGain + EqualizerBand.maxGain) / 2);
           return AppBar(
             actions: [
               if (!Platform.isIOS)

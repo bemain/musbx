@@ -7,15 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart' hide AudioSource;
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
-import 'package:musbx/songs/demixer/demixer.dart';
-import 'package:musbx/songs/equalizer/equalizer.dart';
 import 'package:musbx/songs/library_page/youtube_search.dart';
 import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_preferences.dart';
 import 'package:musbx/songs/player/song_source.dart';
-import 'package:musbx/songs/slowdowner/slowdowner.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/ads.dart';
@@ -62,9 +59,7 @@ class MusicPlayer {
       ValueNotifier(MusicPlayerState.idle);
 
   /// The audio pipeline used by [player].
-  late final AudioPipeline audioPipeline = AudioPipeline(androidAudioEffects: [
-    if (Platform.isAndroid) equalizer.androidEqualizer
-  ]);
+  late final AudioPipeline audioPipeline = AudioPipeline();
 
   /// The [AudioPlayer] used for playback.
   late final AudioPlayer player = AudioPlayer(audioPipeline: audioPipeline);
@@ -184,17 +179,8 @@ class MusicPlayer {
   bool get isBuffering => isBufferingNotifier.value;
   final ValueNotifier<bool> isBufferingNotifier = ValueNotifier(false);
 
-  /// Component for changing the pitch and speed of the song.
-  final Slowdowner slowdowner = Slowdowner();
-
   /// Component for looping a section of the song.
   final Looper looper = Looper();
-
-  /// Component for adjusting the gain for different frequency bands of the song.
-  final Equalizer equalizer = Equalizer();
-
-  /// Component for isolating or music specific instruments of the song.
-  final Demixer demixer = Demixer();
 
   /// Component for analyzing the current song, including chord identification and waveform extraction.
   final Analyzer analyzer = Analyzer();
@@ -297,17 +283,8 @@ class MusicPlayer {
     int? position = tryCast<int>(json["position"]);
     seek(Duration(milliseconds: position ?? 0));
 
-    slowdowner.loadSettingsFromJson(
-      tryCast<Map<String, dynamic>>(json["slowdowner"]) ?? {},
-    );
     looper.loadSettingsFromJson(
       tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
-    );
-    equalizer.loadSettingsFromJson(
-      tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
-    );
-    demixer.loadSettingsFromJson(
-      tryCast<Map<String, dynamic>>(json["demixer"]) ?? {},
     );
     analyzer.loadSettingsFromJson(
       tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
@@ -322,10 +299,7 @@ class MusicPlayer {
 
     await _songPreferences.save(song!, {
       "position": position.inMilliseconds,
-      "slowdowner": slowdowner.saveSettingsToJson(),
       "looper": looper.saveSettingsToJson(),
-      "equalizer": equalizer.saveSettingsToJson(),
-      "demixer": demixer.saveSettingsToJson(),
       "analyzer": analyzer.saveSettingsToJson(),
     });
   }
@@ -392,10 +366,7 @@ class MusicPlayer {
       }
     });
 
-    slowdowner.initialize(this);
     looper.initialize(this);
-    equalizer.initialize(this);
-    demixer.initialize(this);
     analyzer.initialize(this);
   }
 

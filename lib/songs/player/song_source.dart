@@ -13,9 +13,6 @@ abstract class SongSource {
   /// Create an [AudioSource] playable by [AudioPlayer].
   Future<ja.AudioSource> toAudioSource();
 
-  /// Load the audio for this song. Should return an [AudioSource] playable by [SoLoud].
-  Future<AudioSource> load();
-
   /// Convert this to a json map.
   ///
   /// The map will contain at least the following key:
@@ -76,15 +73,6 @@ class FileSource extends SongSource {
   }
 
   @override
-  Future<AudioSource> load() async {
-    if (!await File(path).exists()) {
-      throw FileSystemException("File doesn't exist", path);
-    }
-
-    return await SoLoud.instance.loadFile(path);
-  }
-
-  @override
   Map<String, dynamic> toJson() => {
         "type": "file",
         "path": path,
@@ -111,17 +99,6 @@ class YoutubeSource extends SongSource {
 
     cacheFile = file;
     return ja.AudioSource.file(file.path);
-  }
-
-  @override
-  Future<AudioSource> load() async {
-    File? file = await _getAudioFromCache();
-    file ??= await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
-      youtubeId,
-    );
-
-    cacheFile = file;
-    return await SoLoud.instance.loadFile(file.path);
   }
 
   Future<File?> _getAudioFromCache() async {
