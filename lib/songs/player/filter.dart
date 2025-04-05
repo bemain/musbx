@@ -16,7 +16,7 @@ class Filters {
   /// [apply] should be called on each underlying [SoLoud] filter.
   ///
   /// The [apply] method can potentially be called multiple times on multiple
-  /// different [AudioSource]s, allowing implementations like the [DemixedAudio].
+  /// different [AudioSource]s, allowing implementations like the [MultiPlayable].
   final void Function(
       void Function(FiltersSingle filters, {SoundHandle? handle}) apply) modify;
 
@@ -36,7 +36,7 @@ class Filter<T extends FilterBase> {
   /// The function used to manipulate the underlying [SoLoud] filter(s).
   ///
   /// The inner method can potentially be called multiple times on multiple
-  /// different [AudioSource]s, allowing implementations like the [DemixedAudio].
+  /// different [AudioSource]s, allowing implementations like the [MultiPlayable].
   final void Function(void Function(T filter, {SoundHandle? handle}) apply)
       modify;
 

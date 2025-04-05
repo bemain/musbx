@@ -60,12 +60,12 @@ abstract class SongPlayer<P extends Playable, S extends SongSourceNew<P>> {
       load<P extends Playable, S extends SongSourceNew<P>>(
     SongNew<S> song,
   ) async {
-    if (P is FileAudio) {
-      return FileSongPlayer.load(song as SongNew<SongSourceNew<FileAudio>>)
+    if (P is SinglePlayable) {
+      return SinglePlayer.load(song as SongNew<SongSourceNew<SinglePlayable>>)
           as SongPlayer<P, S>;
-    } else if (P is DemixedAudio) {
-      return DemixedSongPlayer.load(
-          song as SongNew<SongSourceNew<DemixedAudio>>) as SongPlayer<P, S>;
+    } else if (P is MultiPlayable) {
+      return MultiPlayer.load(song as SongNew<SongSourceNew<MultiPlayable>>)
+          as SongPlayer<P, S>;
     }
 
     throw ("No player exists for the given Playable of type $P");
@@ -193,17 +193,18 @@ abstract class SongPlayer<P extends Playable, S extends SongSourceNew<P>> {
   }
 }
 
-class FileSongPlayer<S extends SongSourceNew<FileAudio>>
-    extends SongPlayer<FileAudio, S> {
-  FileSongPlayer._(super.song, super.playable) : super._();
+class SinglePlayer<S extends SongSourceNew<SinglePlayable>>
+    extends SongPlayer<SinglePlayable, S> {
+  /// An implementation of [SongPlayer] that plays a single audio clip.
+  SinglePlayer._(super.song, super.playable) : super._();
 
-  static Future<FileSongPlayer<S>> load<S extends SongSourceNew<FileAudio>>(
+  static Future<SinglePlayer<S>> load<S extends SongSourceNew<SinglePlayable>>(
       SongNew<S> song) async {
-    final FileAudio playable = await song.source.load(
+    final SinglePlayable playable = await song.source.load(
       cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
     );
 
-    final FileSongPlayer<S> player = FileSongPlayer._(song, playable);
+    final SinglePlayer<S> player = SinglePlayer._(song, playable);
 
     for (final SongPlayerComponent component in player.components) {
       await component.initialize();
@@ -215,26 +216,27 @@ class FileSongPlayer<S extends SongSourceNew<FileAudio>>
   }
 }
 
-class DemixedSongPlayer
-    extends SongPlayer<DemixedAudio, SongSourceNew<DemixedAudio>> {
+class MultiPlayer
+    extends SongPlayer<MultiPlayable, SongSourceNew<MultiPlayable>> {
   static final SoLoud _soloud = SoLoud.instance;
 
-  DemixedSongPlayer._(
-      SongNew<SongSourceNew<DemixedAudio>> song, DemixedAudio playable)
-      : super._(song, playable);
+  /// An implementation of [SongPlayer] that plays multiple audio clips simultaneously.
+  ///
+  /// The [demixer] component allows the volume of each audio clip to be controlled separately.
+  MultiPlayer._(super.song, super.playable) : super._();
 
   /// The handles of the individual sounds that are played simultaneously.
   ///
   /// Forwarded from the [playable].
   Iterable<SoundHandle> get handles => playable.handles!.values;
 
-  static Future<DemixedSongPlayer> load(
-      SongNew<SongSourceNew<DemixedAudio>> song) async {
-    final DemixedAudio playable = await song.source.load(
+  static Future<MultiPlayer> load(
+      SongNew<SongSourceNew<MultiPlayable>> song) async {
+    final MultiPlayable playable = await song.source.load(
       cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
     );
 
-    final DemixedSongPlayer player = DemixedSongPlayer._(song, playable);
+    final MultiPlayer player = MultiPlayer._(song, playable);
 
     for (final SongPlayerComponent component in player.components) {
       await component.initialize();

@@ -16,7 +16,7 @@ class DemixerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (player is! DemixedSongPlayer) {
+    if (player is! MultiPlayer) {
       // TODO: Figure out what should be done with this widget if the current playable is not a [DemixedAudio].
       return const SizedBox();
     }
@@ -34,9 +34,9 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// Assumes [player] is a [DemixedSongPlayer].
+  /// Assumes [player] is a [MultiPlayer].
   Widget _buildHeader(BuildContext context) {
-    final DemixedSongPlayer player = this.player as DemixedSongPlayer;
+    final MultiPlayer player = this.player as MultiPlayer;
 
     return Stack(
       alignment: Alignment.center,
@@ -73,9 +73,9 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// Assumes [player] is a [DemixedSongPlayer].
+  /// Assumes [player] is a [MultiPlayer].
   Widget _buildBody(BuildContext context) {
-    final DemixedSongPlayer player = this.player as DemixedSongPlayer;
+    final MultiPlayer player = this.player as MultiPlayer;
 
     return ValueListenableBuilder(
       valueListenable: player.demixer.stemsNotifier,
@@ -310,8 +310,8 @@ class StemControlsState extends State<StemControls> {
 
   @override
   Widget build(BuildContext context) {
-    if (this.player is! DemixedSongPlayer) return const SizedBox();
-    final DemixedSongPlayer player = this.player as DemixedSongPlayer;
+    if (this.player is! MultiPlayer) return const SizedBox();
+    final MultiPlayer player = this.player as MultiPlayer;
 
     /// Whether all other stems are disabled
     final bool allOtherStemsDisabled = player.demixer.stems

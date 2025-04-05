@@ -17,23 +17,23 @@ class Stem {
   Stem(this.type, this.player);
 
   /// The player that this is a part of.
-  final FileSongPlayer player;
+  final SinglePlayer player;
 
   /// The type of stem.
   final StemType type;
 
-  /// The source of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [DemixedAudio].
+  /// The source of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [MultiPlayable].
   AudioSource? get source {
-    if (player.playable is! DemixedAudio) return null;
+    if (player.playable is! MultiPlayable) return null;
 
-    return (player.playable as DemixedAudio).sources[type];
+    return (player.playable as MultiPlayable).sources[type];
   }
 
-  /// The handle of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [DemixedAudio].
+  /// The handle of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [MultiPlayable].
   SoundHandle? get handle {
-    if (player.playable is! DemixedAudio) return null;
+    if (player.playable is! MultiPlayable) return null;
 
-    return (player.playable as DemixedAudio).handles?[type];
+    return (player.playable as MultiPlayable).handles?[type];
   }
 
   /// Whether this stem is enabled and should be played.
@@ -82,7 +82,7 @@ class StemsNotifier extends ValueNotifier<List<Stem>> {
 }
 
 class DemixerComponent extends SongPlayerComponent {
-  /// A component of the [DemixedSongPlayer] that is used to separate a song into stems and change the volume of those individually.
+  /// A component of the [MultiPlayer] that is used to separate a song into stems and change the volume of those individually.
   DemixerComponent(
     super.player,
   );

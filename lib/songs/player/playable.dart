@@ -86,7 +86,7 @@ abstract class Playable {
   FutureOr<void> dispose() {}
 }
 
-class YoutubeSource extends SongSourceNew<FileAudio> {
+class YoutubeSource extends SongSourceNew<SinglePlayable> {
   /// A source that pulls audio from YouTube.
   YoutubeSource(this.youtubeId);
 
@@ -96,7 +96,7 @@ class YoutubeSource extends SongSourceNew<FileAudio> {
   AudioSource? source;
 
   @override
-  Future<FileAudio> load({required Directory cacheDirectory}) async {
+  Future<SinglePlayable> load({required Directory cacheDirectory}) async {
     File cacheFile = File("${cacheDirectory.path}/audio.mp3");
 
     if (await cacheFile.exists()) {
@@ -110,7 +110,7 @@ class YoutubeSource extends SongSourceNew<FileAudio> {
 
     source ??= await SoLoud.instance.loadFile(cacheFile.path);
 
-    return FileAudio._(source!);
+    return SinglePlayable._(source!);
   }
 
   @override
@@ -137,7 +137,7 @@ class YoutubeSource extends SongSourceNew<FileAudio> {
       };
 }
 
-class FileSource extends SongSourceNew<FileAudio> {
+class FileSource extends SongSourceNew<SinglePlayable> {
   /// A source that reads audio from a file.
   FileSource(this.file);
 
@@ -147,7 +147,7 @@ class FileSource extends SongSourceNew<FileAudio> {
   AudioSource? source;
 
   @override
-  Future<FileAudio> load({required Directory cacheDirectory}) async {
+  Future<SinglePlayable> load({required Directory cacheDirectory}) async {
     File cacheFile = File("${cacheDirectory.path}/audio.mp3");
 
     if (!await cacheFile.exists()) {
@@ -160,7 +160,7 @@ class FileSource extends SongSourceNew<FileAudio> {
 
     source ??= await SoLoud.instance.loadFile(cacheFile.path);
 
-    return FileAudio._(source!);
+    return SinglePlayable._(source!);
   }
 
   @override
@@ -187,8 +187,8 @@ class FileSource extends SongSourceNew<FileAudio> {
       };
 }
 
-class DemixedSource extends SongSourceNew<DemixedAudio> {
-  /// A source that demixes a [song] and loads the stems as individual audio sources.
+class DemixedSource extends SongSourceNew<MultiPlayable> {
+  /// A source that demixes a [SongNew] and loads the stems as individual audio sources.
   DemixedSource(this.parentSource);
 
   final SongSourceNew parentSource;
@@ -196,7 +196,7 @@ class DemixedSource extends SongSourceNew<DemixedAudio> {
   Map<StemType, AudioSource>? sources;
 
   @override
-  Future<DemixedAudio> load({required Directory cacheDirectory}) async {
+  Future<MultiPlayable> load({required Directory cacheDirectory}) async {
     DemixingProcess process = DemixingProcess(
       parentSource,
       cacheDirectory: cacheDirectory,
@@ -208,7 +208,7 @@ class DemixedSource extends SongSourceNew<DemixedAudio> {
       for (final e in files.entries)
         e.key: await SoLoud.instance.loadFile(e.value.path),
     };
-    return DemixedAudio._(sources!);
+    return MultiPlayable._(sources!);
   }
 
   @override
@@ -240,9 +240,9 @@ class DemixedSource extends SongSourceNew<DemixedAudio> {
       };
 }
 
-class FileAudio extends Playable {
-  /// A [Playable] that plays a single file.
-  FileAudio._(this.source);
+class SinglePlayable extends Playable {
+  /// A [Playable] that plays a single [source].
+  SinglePlayable._(this.source);
 
   /// The source of the sound that is played.
   final AudioSource source;
@@ -265,11 +265,11 @@ class FileAudio extends Playable {
   }
 }
 
-class DemixedAudio extends Playable {
-  /// A [Playable] that provides a voice group with a number of [files].
+class MultiPlayable extends Playable {
+  /// A [Playable] that provides a voice group with a number of [sources].
   ///
   /// This allows the files to play simultaneously while the volume can be controlled individually.
-  DemixedAudio._(this.sources);
+  MultiPlayable._(this.sources);
 
   /// The sources of the individual sounds that are played simultaneously.
   final Map<StemType, AudioSource> sources;
