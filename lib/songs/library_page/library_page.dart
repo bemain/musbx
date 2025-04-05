@@ -255,7 +255,10 @@ class LibraryPage extends StatelessWidget {
     if (song.source is YoutubeSource) {
       return const Icon(Symbols.youtube_searched_for);
     }
-    // TODO: Add demixed
+    // TODO: Pick a better icon
+    if (song.source is DemixedSource) {
+      return const Icon(Symbols.arrow_split);
+    }
 
     return null;
   }

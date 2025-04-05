@@ -142,6 +142,38 @@ class DemixerApiHost extends MusbxApiHost {
   }
 
   /// Download a [stem] for a [song].
+  Future<File> downloadStemNew(
+    String songId,
+    StemType stem,
+    Directory destination, {
+    StemFileType fileType = StemFileType.mp3,
+  }) async {
+    var response = await get("/stem/$songId/${stem.name}", headers: {
+      "FileType": fileType.name,
+    });
+    if (response.statusCode != 200) {
+      throw HttpException(
+        jsonDecode(response.body)["message"],
+        uri: response.request?.url,
+      );
+    }
+
+    // Determine file extension
+    assert(response.headers.containsKey("content-disposition"));
+    String fileName =
+        response.headers["content-disposition"]!.split("filename=").last.trim();
+    assert(fileName.isNotEmpty);
+    String extension = fileName.split(".").last;
+    assert(extension == fileType.name,
+        "The returned stem file ('$fileName') was not of the requested type (.${fileType.name}).");
+
+    File file = File("${destination.path}/${stem.name}.$extension");
+    await file.create(recursive: true);
+    await file.writeAsBytes(response.bodyBytes);
+    return file;
+  }
+
+  /// Download a [stem] for a [song].
   Future<File> downloadStem(
     String songId,
     Song song,

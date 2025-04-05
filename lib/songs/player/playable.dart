@@ -3,10 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:musbx/songs/library_page/upload_file_button.dart';
+import 'package:musbx/songs/demixer/demixing_process_new.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/musbx_api/youtube_api.dart';
 import 'package:musbx/songs/player/filter.dart';
 import 'package:musbx/widgets/widgets.dart';
 
@@ -16,7 +15,7 @@ import 'package:musbx/widgets/widgets.dart';
 /// the [load] method can in turn be used to start playing a sound.
 abstract class SongSourceNew {
   /// Load the [Playable] that this source points to.
-  FutureOr<Playable> load();
+  FutureOr<Playable> load({required Directory cacheDirectory});
 
   /// Free the resources used by this source.
   FutureOr<void> dispose() {}
@@ -97,13 +96,19 @@ class YoutubeSource extends SongSourceNew {
   AudioSource? source;
 
   @override
-  Future<Playable> load() async {
-    File? file = await _getAudioFromCache();
-    file ??= await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
-      youtubeId,
-    );
+  Future<Playable> load({required Directory cacheDirectory}) async {
+    File cacheFile = File("${cacheDirectory.path}/audio.mp3");
 
-    source ??= await SoLoud.instance.loadFile(file.path);
+    if (await cacheFile.exists()) {
+      debugPrint("[YOUTUBE] Using cached audio for video with id '$youtubeId'");
+    } else {
+      cacheFile = await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
+          youtubeId,
+          destination: cacheFile,
+          fileType: "mp3");
+    }
+
+    source ??= await SoLoud.instance.loadFile(cacheFile.path);
 
     return FileAudio._(source!);
   }
@@ -114,19 +119,6 @@ class YoutubeSource extends SongSourceNew {
 
     await SoLoud.instance.disposeSource(source!);
     source = null;
-  }
-
-  Future<File?> _getAudioFromCache() async {
-    for (final String extension in allowedExtensions) {
-      final File file =
-          await YoutubeApiHost.getYoutubeFile(youtubeId, extension);
-      if (await file.exists()) {
-        debugPrint(
-            "[YOUTUBE] Using cached audio for video with id '$youtubeId'");
-        return file;
-      }
-    }
-    return null;
   }
 
   /// Try to create a [YoutubeSource] from a [json] object.
@@ -155,12 +147,18 @@ class FileSource extends SongSourceNew {
   AudioSource? source;
 
   @override
-  Future<Playable> load() async {
-    if (!await file.exists()) {
-      throw FileSystemException("File doesn't exist", file.path);
+  Future<Playable> load({required Directory cacheDirectory}) async {
+    File cacheFile = File("${cacheDirectory.path}/audio.mp3");
+
+    if (!await cacheFile.exists()) {
+      if (!await file.exists()) {
+        throw FileSystemException("File doesn't exist", file.path);
+      }
+
+      cacheFile = await file.copy(cacheFile.path);
     }
 
-    source ??= await SoLoud.instance.loadFile(file.path);
+    source ??= await SoLoud.instance.loadFile(cacheFile.path);
 
     return FileAudio._(source!);
   }
@@ -190,16 +188,24 @@ class FileSource extends SongSourceNew {
 }
 
 class DemixedSource extends SongSourceNew {
-  /// A source that reads multiple [files], to be played simultaneously.
-  DemixedSource(this.files);
+  /// A source that demixes a [song] and loads the stems as individual audio sources.
+  DemixedSource(this.parentSource);
 
-  /// The files to read.
-  final Map<StemType, File> files;
+  final SongSourceNew parentSource;
 
   Map<StemType, AudioSource>? sources;
 
   @override
-  Future<DemixedAudio> load() async {
+  Future<DemixedAudio> load({required Directory cacheDirectory}) async {
+    print("[DEBUG] Loading demixed audio source");
+    DemixingProcess process = DemixingProcess(
+      parentSource,
+      cacheDirectory: cacheDirectory,
+    );
+
+    final Map<StemType, File> files = await process.future;
+    print("[DEBUG] Demixing process complete, $files");
+
     sources ??= {
       for (final e in files.entries)
         e.key: await SoLoud.instance.loadFile(e.value.path),
@@ -220,29 +226,19 @@ class DemixedSource extends SongSourceNew {
 
   /// Try to create a [DemixedSource] from a [json] object.
   static DemixedSource? fromJson(Map<String, dynamic> json) {
-    if (!json.containsKey("files")) return null;
-    Map? files = tryCast<Map>(json["files"]);
-    if (files == null) return null;
+    if (!json.containsKey("parent")) return null;
+    SongSourceNew? parentSource = SongSourceNew.fromJson(json["parent"]);
+    if (parentSource == null) return null;
 
-    Map<StemType, File> stems = {};
-    for (final e in files.entries) {
-      String? type = tryCast<String>(e.key);
-      String? path = tryCast<String>(e.value);
-      if (type == null || path == null) continue;
-
-      stems[StemType.values.firstWhere((element) => element.name == type)] =
-          File(path);
-    }
-
-    return DemixedSource(stems);
+    return DemixedSource(parentSource);
   }
 
   @override
   Map<String, dynamic> toJson() => {
         "type": "demixed",
-        "files": {
-          for (final e in files.entries) e.key.name: e.value.path,
-        },
+        "parent": {
+          ...parentSource.toJson(),
+        }
       };
 }
 
@@ -305,6 +301,10 @@ class DemixedAudio extends Playable {
     };
 
     final SoundHandle groupHandle = SoLoud.instance.createVoiceGroup();
+    if (groupHandle.isError) {
+      throw Exception("[DEMIXER] Failed to create voice group");
+    }
+    
     SoLoud.instance.addVoicesToGroup(
       groupHandle,
       handles!.values.toList(),

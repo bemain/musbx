@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
@@ -387,7 +388,9 @@ class SongPlayer {
   ///  - Play the [playable], to obtain a sound [handle].
   ///  - Initialize [components].
   static Future<SongPlayer> load(SongNew song) async {
-    final Playable playable = await song.source.load();
+    final Playable playable = await song.source.load(
+      cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
+    );
 
     final SongPlayer player = SongPlayer._(song, playable);
 
@@ -475,7 +478,7 @@ class SongPlayer {
 
   /// Seek to a [position] in the current song.
   void seek(Duration position) {
-    if (handle != null) _soloud.seek(handle!, position);
+    _soloud.seek(handle, position);
   }
 
   /// The components that extend the functionality of this player.

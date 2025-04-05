@@ -124,7 +124,7 @@ class Song {
 }
 
 class SongNew {
-  /// Representation of a song, to be played by [MusicPlayer].
+  /// Representation of a song, to be played by a [SongPlayer].
   SongNew({
     required this.id,
     required this.title,
@@ -203,7 +203,7 @@ class SongNew {
   /// The map should always contain the following keys:
   /// - `id` [String] A unique id.
   /// - `title` [String] The title of this song.
-  /// - `source` [Map<String, dynamic>] Where this song's audio was loaded from. Should contain the key `type` and other values depending on the type.
+  /// - `source` [Map<String, dynamic>] Json describing how to create a [SongSourceNew]. Should contain the key `type` and other values depending on the type.
   static SongNew? fromJson(Map<String, dynamic> json) {
     if (!json.containsKey("id") ||
         !json.containsKey("title") ||
@@ -223,6 +223,34 @@ class SongNew {
       genre: tryCast<String>(json["genre"]),
       artUri: artUri == null ? null : Uri.tryParse(artUri),
       source: source,
+    );
+  }
+
+  /// Create a copy of this [SongNew] with the specified fields replaced with new values.
+  ///
+  /// If a field is not specified, it will be copied from this [SongNew].
+  ///
+  /// Example:
+  /// ```dart
+  /// final SongNew newSong = oldSong.copyWith(title: "New title");
+  /// ```
+  SongNew copyWith({
+    String? id,
+    String? title,
+    String? album,
+    String? artist,
+    String? genre,
+    Uri? artUri,
+    SongSourceNew? source,
+  }) {
+    return SongNew(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      album: album ?? this.album,
+      artist: artist ?? this.artist,
+      genre: genre ?? this.genre,
+      artUri: artUri ?? this.artUri,
+      source: source ?? this.source,
     );
   }
 

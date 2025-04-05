@@ -21,6 +21,7 @@ class YoutubeApiHost extends MusbxApiHost {
   /// Download the audio for a Youtube video.
   Future<File> downloadYoutubeSong(
     String youtubeId, {
+    File? destination,
     String fileType = "mp3",
   }) async {
     var response = await get("/download/$youtubeId", headers: {
@@ -38,8 +39,9 @@ class YoutubeApiHost extends MusbxApiHost {
         response.headers["content-disposition"]!.split("filename=").last.trim();
     assert(fileName.isNotEmpty);
     String fileExtension = fileName.split(".").last;
-    File file = await getYoutubeFile(youtubeId, fileExtension);
-    await file.writeAsBytes(response.bodyBytes);
-    return file;
+    destination ??= await getYoutubeFile(youtubeId, fileExtension);
+    await destination.create(recursive: true);
+    await destination.writeAsBytes(response.bodyBytes);
+    return destination;
   }
 }

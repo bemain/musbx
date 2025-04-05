@@ -4,8 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/utils/process.dart';
 
 enum DemixingStep {
@@ -32,10 +31,11 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   /// Upload, separate and download stem files for a [song].
   ///
   /// TODO: Improve progress tracking for upload and download.
-  DemixingProcess(this.song);
+  DemixingProcess(this.parentSource, {required this.cacheDirectory});
 
-  /// The song being demixed.
-  final Song song;
+  final SongSourceNew parentSource;
+
+  final Directory cacheDirectory;
 
   /// The current step of the demixing process.
   DemixingStep get step => stepNotifier.value;
@@ -43,20 +43,19 @@ class DemixingProcess extends Process<Map<StemType, File>> {
       ValueNotifier(DemixingStep.checkingCache);
 
   /// Get stems for [song], if all stems (see [StemType]) were found with the correct [fileExtension].
-  Future<Map<StemType, File>?> getStemsInCache(
-    Song song, {
+  Future<Map<StemType, File>?> getStemsInCache({
     String fileExtension = "mp3",
   }) async {
-    Directory directory = await DemixerApiHost.getStemsDirectory(song);
     List<File> stemFiles = StemType.values
-        .map((stem) => File("${directory.path}/${stem.name}.$fileExtension"))
+        .map((stem) =>
+            File("${cacheDirectory.path}/${stem.name}.$fileExtension"))
         .toList();
     if ((await Future.wait(stemFiles.map((stem) => stem.exists())))
         .every((value) => value)) {
       // All stems were found in the cache.
       return {
         for (final stem in StemType.values)
-          stem: File("${directory.path}/${stem.name}.$fileExtension")
+          stem: File("${cacheDirectory.path}/${stem.name}.$fileExtension")
       };
     }
 
@@ -65,12 +64,15 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
   @override
   Future<Map<StemType, File>> process() async {
+    /// A song representing [song], but in the old format.
+    /// TODO: Remove this and migrate methods to use the new [SongNew].
+
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
-    Map<StemType, File>? cachedStemFiles = await getStemsInCache(song);
+    Map<StemType, File>? cachedStemFiles = await getStemsInCache();
     if (cachedStemFiles != null) {
-      debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
+      debugPrint("[DEMIXER] Using cached stems for song.");
 
       return cachedStemFiles;
     }
@@ -85,13 +87,13 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     stepNotifier.value = DemixingStep.uploading;
 
     UploadResponse response;
-    if (song.source is FileSource) {
+    if (parentSource is FileSource) {
       response = await host.uploadFile(
-        (song.source as FileSource).file,
+        (parentSource as FileSource).file,
       );
     } else {
       response = await host.uploadYoutubeSong(
-        (song.source as YoutubeSource).youtubeId,
+        (parentSource as YoutubeSource).youtubeId,
       );
     }
 
@@ -134,12 +136,12 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
     Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
       StemType.values.map((stem) async {
-        File file = await host.downloadStem(
+        File file = await host.downloadStemNew(
           // When dimixing files, [song.id] is not the same as the id of the song on the API ([response.songId]).
           // Thus we need to pass it as well, which is ugly. TODO: Fix this.
           response.songId,
-          song,
           stem,
+          cacheDirectory,
         );
         progressNotifier.value = (progress ?? 0) + 1 ~/ StemType.values.length;
 

@@ -129,6 +129,13 @@ class Songs {
 
     // Add to song history.
     await history.add(song);
+    // Begin demixing
+    if (song.source is! DemixedSource) {
+      await history.add(song.copyWith(
+        id: "${song.id}-demixed",
+        source: DemixedSource(song.source),
+      ));
+    }
 
     playerNotifier.value = newPlayer;
     return newPlayer;
