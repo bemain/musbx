@@ -282,32 +282,6 @@ class StemControls extends StatefulWidget {
 class StemControlsState extends State<StemControls> {
   SongPlayer player = Songs.player!;
 
-  /// The volume of the stem.
-  ///
-  /// Note that this doesn't always equal [widget.stem.volume], as this value is
-  /// changed whenever the user drags the volume slider but [widget.stem.volume]
-  /// is only updated once the user is done selecting a value.
-  late double volume = widget.stem.volume;
-
-  /// Update [volume] to equal [widget.stem.volume]
-  void updateVolume() {
-    setState(() {
-      volume = widget.stem.volume;
-    });
-  }
-
-  @override
-  void initState() {
-    widget.stem.volumeNotifier.addListener(updateVolume);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    widget.stem.volumeNotifier.removeListener(updateVolume);
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     if (this.player is! MultiPlayer) return const SizedBox();
@@ -348,30 +322,23 @@ class StemControlsState extends State<StemControls> {
               icon: Icon(getStemIcon(widget.stem.type))),
         ),
         Expanded(
-          child: Slider(
-            value: volume,
-            onChanged: (!widget.stem.enabled)
-                ? null
-                : (double value) {
-                    if (!Purchases.hasPremium &&
-                        player.song.id != demoSong.id &&
-                        widget.stem.type != StemType.vocals) {
-                      showAccessRestrictedDialog(context);
-                      return;
-                    }
+          child: ValueListenableBuilder(
+            valueListenable: widget.stem.volumeNotifier,
+            builder: (context, volume, child) => Slider(
+              value: volume,
+              onChanged: (!widget.stem.enabled)
+                  ? null
+                  : (double value) {
+                      if (!Purchases.hasPremium &&
+                          player.song.id != demoSong.id &&
+                          widget.stem.type != StemType.vocals) {
+                        showAccessRestrictedDialog(context);
+                        return;
+                      }
 
-                    setState(() {
-                      volume = value;
-                    });
-                  },
-            onChangeEnd: (value) {
-              if (!Purchases.hasPremium &&
-                  player.song.id != demoSong.id &&
-                  widget.stem.type != StemType.vocals) {
-                return;
-              }
-              widget.stem.volume = value;
-            },
+                      widget.stem.volume = value;
+                    },
+            ),
           ),
         ),
       ],
