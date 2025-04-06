@@ -13,9 +13,9 @@ import 'package:musbx/widgets/widgets.dart';
 ///
 /// This is the first step in playing a song. The [Playable] obtained by calling
 /// the [load] method can in turn be used to start playing a sound.
-abstract class SongSourceNew<T extends Playable> {
+abstract class SongSourceNew<P extends Playable> {
   /// Load the [Playable] that this source points to.
-  FutureOr<T> load({required Directory cacheDirectory});
+  FutureOr<P> load({required Directory cacheDirectory});
 
   /// Free the resources used by this source.
   FutureOr<void> dispose() {}

@@ -9,6 +9,9 @@ class EqualizerBand {
   /// The minimum value for the [gain].
   static const double minGain = 0.0;
 
+  /// The default value for the [gain].
+  static const double defaultGain = 1.0;
+
   /// The maximum value for the [gain].
   static const double maxGain = 4.0;
 
@@ -28,8 +31,6 @@ class EqualizerBandsNotifier extends ValueNotifier<List<EqualizerBand>> {
 }
 
 class EqualizerComponent extends SongPlayerComponent {
-  static const double defaultGain = 1.0;
-
   /// TODO: Simply activating this causes lots of artifacts at the moment, not sure why
   EqualizerComponent(super.player);
 
@@ -81,7 +82,7 @@ class EqualizerComponent extends SongPlayerComponent {
   /// Reset the gain on all [bands].
   void resetGain() {
     for (var band in bands) {
-      band.gain = defaultGain;
+      band.gain = EqualizerBand.defaultGain;
     }
   }
 
@@ -95,7 +96,8 @@ class EqualizerComponent extends SongPlayerComponent {
 
     final Map? gains = tryCast<Map>(json["gain"]);
     for (var i = 0; i < bands.length; i++) {
-      final double gain = tryCast<double>(gains?["$i"]) ?? defaultGain;
+      final double gain =
+          tryCast<double>(gains?["$i"]) ?? EqualizerBand.defaultGain;
       bands[i].gain = gain;
     }
   }

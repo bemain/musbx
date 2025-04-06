@@ -123,7 +123,7 @@ class Song {
   int get hashCode => id.hashCode;
 }
 
-class SongNew<T extends SongSourceNew> {
+class SongNew<P extends Playable> {
   /// Representation of a song, to be played by a [SongPlayer].
   SongNew({
     required this.id,
@@ -165,7 +165,7 @@ class SongNew<T extends SongSourceNew> {
   /// Where this song's audio was loaded from, e.g. a YouTube video or a local file.
   ///
   /// Can be used to create a [Playable] playable by [SongPlayer].
-  final T source;
+  final SongSourceNew<P> source;
 
   /// The media item for this song, provided to [MusicPlayerAudioHandler] when
   /// this song is played.
@@ -215,15 +215,23 @@ class SongNew<T extends SongSourceNew> {
     if (source == null) return null;
     final String? artUri = tryCast<String>(json["artUri"]);
 
-    return SongNew(
-      id: json["id"] as String,
-      title: json["title"] as String,
-      album: tryCast<String>(json["album"]),
-      artist: tryCast<String>(json["artist"]),
-      genre: tryCast<String>(json["genre"]),
-      artUri: artUri == null ? null : Uri.tryParse(artUri),
-      source: source,
-    );
+    SongNew<T> song<T extends Playable>() {
+      return SongNew<T>(
+        id: json["id"] as String,
+        title: json["title"] as String,
+        album: tryCast<String>(json["album"]),
+        artist: tryCast<String>(json["artist"]),
+        genre: tryCast<String>(json["genre"]),
+        artUri: artUri == null ? null : Uri.tryParse(artUri),
+        source: source as SongSourceNew<T>,
+      );
+    }
+
+    if (source is SongSourceNew<MultiPlayable>) {
+      return song<MultiPlayable>();
+    } else {
+      return song<SinglePlayable>();
+    }
   }
 
   /// Create a copy of this [SongNew] with the specified fields replaced with new values.
@@ -234,14 +242,14 @@ class SongNew<T extends SongSourceNew> {
   /// ```dart
   /// final SongNew newSong = oldSong.copyWith(title: "New title");
   /// ```
-  SongNew copyWith({
+  SongNew<T> copyWith<T extends Playable>({
     String? id,
     String? title,
     String? album,
     String? artist,
     String? genre,
     Uri? artUri,
-    SongSourceNew? source,
+    SongSourceNew<T>? source,
   }) {
     return SongNew(
       id: id ?? this.id,
@@ -250,7 +258,7 @@ class SongNew<T extends SongSourceNew> {
       artist: artist ?? this.artist,
       genre: genre ?? this.genre,
       artUri: artUri ?? this.artUri,
-      source: source ?? this.source,
+      source: source ?? this.source as SongSourceNew<T>,
     );
   }
 

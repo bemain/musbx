@@ -10,11 +10,11 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/slowdowner/slowdowner.dart';
 import 'package:musbx/widgets/widgets.dart';
 
-abstract class SongPlayerComponent<SongPlayer> {
+abstract class SongPlayerComponent<T extends SongPlayer> {
   SongPlayerComponent(this.player);
 
   /// The player that this is a part of.
-  final SongPlayer player;
+  final T player;
 
   /// Initialize and activate this component.
   ///
@@ -42,7 +42,7 @@ abstract class SongPlayerComponent<SongPlayer> {
   }
 }
 
-abstract class SongPlayer<P extends Playable, S extends SongSourceNew<P>> {
+abstract class SongPlayer<P extends Playable> {
   static final SoLoud _soloud = SoLoud.instance;
 
   SongPlayer._(this.song, this.playable);
@@ -56,23 +56,22 @@ abstract class SongPlayer<P extends Playable, S extends SongSourceNew<P>> {
   ///  - Load the [song.source], to obtain a [playable].
   ///  - Play the [playable], to obtain a sound [handle].
   ///  - Initialize [components].
-  static Future<SongPlayer<P, S>>
-      load<P extends Playable, S extends SongSourceNew<P>>(
-    SongNew<S> song,
+  static Future<SongPlayer<P>> load<P extends Playable>(
+    SongNew<P> song,
   ) async {
-    if (P is SinglePlayable) {
-      return SinglePlayer.load(song as SongNew<SongSourceNew<SinglePlayable>>)
-          as SongPlayer<P, S>;
-    } else if (P is MultiPlayable) {
-      return MultiPlayer.load(song as SongNew<SongSourceNew<MultiPlayable>>)
-          as SongPlayer<P, S>;
+    if (song.source is SongSourceNew<SinglePlayable>) {
+      return await SinglePlayer.load(song as SongNew<SinglePlayable>)
+          as SongPlayer<P>;
+    } else if (song.source is SongSourceNew<MultiPlayable>) {
+      return await MultiPlayer.load(song as SongNew<MultiPlayable>)
+          as SongPlayer<P>;
     }
 
-    throw ("No player exists for the given Playable of type $P");
+    throw ("No player exists for the given source ${song.source}");
   }
 
   /// The song that this player plays.
-  final SongNew<S> song;
+  final SongNew<P> song;
 
   /// The object created from [song.source], that in turn created the current song [handle].
   final P playable;
@@ -193,18 +192,16 @@ abstract class SongPlayer<P extends Playable, S extends SongSourceNew<P>> {
   }
 }
 
-class SinglePlayer<S extends SongSourceNew<SinglePlayable>>
-    extends SongPlayer<SinglePlayable, S> {
+class SinglePlayer extends SongPlayer<SinglePlayable> {
   /// An implementation of [SongPlayer] that plays a single audio clip.
   SinglePlayer._(super.song, super.playable) : super._();
 
-  static Future<SinglePlayer<S>> load<S extends SongSourceNew<SinglePlayable>>(
-      SongNew<S> song) async {
+  static Future<SinglePlayer> load(SongNew<SinglePlayable> song) async {
     final SinglePlayable playable = await song.source.load(
       cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
     );
 
-    final SinglePlayer<S> player = SinglePlayer._(song, playable);
+    final SinglePlayer player = SinglePlayer._(song, playable);
 
     for (final SongPlayerComponent component in player.components) {
       await component.initialize();
@@ -216,8 +213,7 @@ class SinglePlayer<S extends SongSourceNew<SinglePlayable>>
   }
 }
 
-class MultiPlayer
-    extends SongPlayer<MultiPlayable, SongSourceNew<MultiPlayable>> {
+class MultiPlayer extends SongPlayer<MultiPlayable> {
   static final SoLoud _soloud = SoLoud.instance;
 
   /// An implementation of [SongPlayer] that plays multiple audio clips simultaneously.
@@ -230,8 +226,7 @@ class MultiPlayer
   /// Forwarded from the [playable].
   Iterable<SoundHandle> get handles => playable.handles!.values;
 
-  static Future<MultiPlayer> load(
-      SongNew<SongSourceNew<MultiPlayable>> song) async {
+  static Future<MultiPlayer> load(SongNew<MultiPlayable> song) async {
     final MultiPlayable playable = await song.source.load(
       cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
     );

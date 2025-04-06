@@ -63,7 +63,7 @@ class UploadSongButton extends SpeedDialChild {
 
     final String id = file.path!.hashCode.toString();
 
-    await Songs.history.add(SongNew(
+    await Songs.history.add(SongNew<SinglePlayable>(
       id: id,
       title: file.name.split(".").first,
       source: FileSource(File(file.path!)),

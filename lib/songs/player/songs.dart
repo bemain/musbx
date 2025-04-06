@@ -89,12 +89,11 @@ class Songs {
   /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
   ///
   /// If premium hasn't been unlocked and [ignoreFreeLimit] is `false`, shows an ad before loading the song.
-  static Future<SongPlayer<P, S>>
-      load<P extends Playable, S extends SongSourceNew<P>>(
-    SongNew<S> song, {
+  static Future<SongPlayer<P>> load<P extends Playable>(
+    SongNew<P> song, {
     bool ignoreFreeLimit = false,
   }) async {
-    if (player?.song == song) return player! as SongPlayer<P, S>;
+    if (player?.song == song) return player! as SongPlayer<P>;
 
     if (!Purchases.hasPremium && !ignoreFreeLimit) {
       // Make sure the weekly limit has not been exceeded
@@ -122,7 +121,8 @@ class Songs {
     }
 
     // Load audio
-    final SongPlayer<P, S> newPlayer = await SongPlayer.load<P, S>(song);
+    print(P);
+    final SongPlayer<P> newPlayer = await SongPlayer.load<P>(song);
 
     // Load new preferences
     final prefs = await _preferences.load(song);
@@ -130,9 +130,9 @@ class Songs {
 
     // Add to song history.
     await history.add(song);
-    // Begin demixing
+    // Add demixed variant
     if (song.source is! DemixedSource) {
-      await history.add(song.copyWith(
+      await history.add(song.copyWith<MultiPlayable>(
         id: "${song.id}-demixed",
         source: DemixedSource(song.source),
       ));

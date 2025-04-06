@@ -22,7 +22,7 @@ Future<void> pickYoutubeSong(BuildContext context, {String? query}) async {
 
   if (video == null) return;
 
-  await Songs.history.add(SongNew(
+  await Songs.history.add(SongNew<SinglePlayable>(
     id: video.id,
     title: HtmlUnescape().convert(video.title),
     artist: HtmlUnescape().convert(video.channelTitle),
