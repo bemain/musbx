@@ -50,7 +50,9 @@ class Filter<T extends FilterBase> {
   void activate() {
     if (isActive) return;
 
-    modify((filter, {handle}) => filter.activate());
+    modify((filter, {handle}) {
+      if (!filter.isActive) filter.activate();
+    });
     isActiveNotifier.value = true;
   }
 
@@ -58,7 +60,9 @@ class Filter<T extends FilterBase> {
   void deactivate() {
     if (!isActive) return;
 
-    modify((filter, {handle}) => filter.deactivate());
+    modify((filter, {handle}) {
+      if (filter.isActive) filter.deactivate();
+    });
     isActiveNotifier.value = false;
   }
 }
