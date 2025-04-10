@@ -27,9 +27,9 @@ class WaveformWidget extends StatelessWidget {
 
         return ValueListenableBuilder(
           valueListenable: player.analyzer.durationShownNotifier,
-          builder: (context, durationShown, child) => StreamBuilder(
-            stream: player.createPositionStream(),
-            builder: (context, child) {
+          builder: (context, durationShown, child) => ValueListenableBuilder(
+            valueListenable: player.positionNotifier,
+            builder: (context, position, child) {
               return CustomPaint(
                 painter: WaveformPainter(
                   waveform: waveform,

@@ -17,12 +17,12 @@ class PositionSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: Implement looping
-    return StreamBuilder(
-      stream: player.createPositionStream(),
-      builder: (context, snapshot) => _buildSlider(
+    return ValueListenableBuilder(
+      valueListenable: player.positionNotifier,
+      builder: (context, position, child) => _buildSlider(
         context,
         player.duration,
-        snapshot.data ?? Duration.zero,
+        position,
         false,
         LoopSection(),
       ),

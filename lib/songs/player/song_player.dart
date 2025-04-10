@@ -46,7 +46,9 @@ abstract class SongPlayerComponent<T extends SongPlayer> {
 abstract class SongPlayer<P extends Playable> {
   static final SoLoud _soloud = SoLoud.instance;
 
-  SongPlayer._(this.song, this.playable, this.handle);
+  SongPlayer._(this.song, this.playable, this.handle) {
+    _positionUpdater;
+  }
 
   /// Create a [SongPlayer] by loading a [song].
   ///
@@ -106,6 +108,7 @@ abstract class SongPlayer<P extends Playable> {
     pause();
     isPlayingNotifier.value = false;
 
+    _positionUpdater.cancel();
     for (SongPlayerComponent component in components) {
       await component.dispose();
     }
@@ -116,33 +119,39 @@ abstract class SongPlayer<P extends Playable> {
   /// The duration of the audio that is playing.
   Duration get duration => playable.duration;
 
-  /// The current position of the player.
-  Duration get position => _soloud.getPosition(handle);
-
-  /// Create a stream that yield the current [position] at regular [interval]s.
-  ///
-  /// Yields data immediately upon creation, so there is always data in the stream.
-  ///
-  /// The stream is efficient, and only yields the position if it has changed.
-  /// TODO: Check that this stops when the subscription is cancelled.
-  Stream<Duration> createPositionStream([
-    Duration interval = const Duration(milliseconds: 100),
-  ]) async* {
-    Duration lastPosition = position;
-    yield lastPosition;
-
-    while (true) {
-      if (lastPosition != position) {
-        lastPosition = position;
-        yield position;
-      }
-      await Future.delayed(interval);
+  /// Timer responsible for periodically making sure [position] matches with the
+  /// actual position of the audio.
+  late final Timer _positionUpdater =
+      Timer.periodic(const Duration(milliseconds: 100), (Timer timer) {
+    final Duration playerPosition = _soloud.getPosition(handle);
+    if ((playerPosition - position).abs() <=
+        const Duration(milliseconds: 200)) {
+      positionNotifier.value = playerPosition;
+    } else {
+      seek(position);
     }
-  }
+  });
+
+  /// The current position of the player.
+  ///
+  /// Currently there are two ways to change the position of the player:
+  /// either by using the [seek] method directly (for immediate respons),
+  /// or by setting the [position] value (for frequent updates).
+  ///
+  /// Changes to this value are only applied every 200 ms, and too small changes
+  /// might not be applied at all.
+  Duration get position => positionNotifier.value;
+  set position(Duration value) => positionNotifier.value = value;
+  ValueNotifier<Duration> positionNotifier = ValueNotifier(Duration.zero);
 
   /// Seek to a [position] in the current song.
+  ///
+  /// Note that this should not be called to often, as it could block the main
+  /// thread and cause the app to freeze. For frequent position updates, instead
+  /// set the [position] value.
   void seek(Duration position) {
     _soloud.seek(handle, position);
+    positionNotifier.value = position;
   }
 
   /// The components that extend the functionality of this player.
@@ -243,6 +252,7 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
     for (SoundHandle handle in handles) {
       _soloud.seek(handle, position);
     }
+    positionNotifier.value = position;
   }
 
   @override

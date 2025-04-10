@@ -26,9 +26,10 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
 
             return ValueListenableBuilder(
               valueListenable: player.analyzer.durationShownNotifier,
-              builder: (context, durationShown, child) => StreamBuilder(
-                stream: player.createPositionStream(),
-                builder: (context, child) {
+              builder: (context, durationShown, child) =>
+                  ValueListenableBuilder(
+                valueListenable: player.positionNotifier,
+                builder: (context, position, child) {
                   Duration minDuration = player.position - durationShown * 0.5;
                   Duration maxDuration = player.position + durationShown * 0.5;
                   List<MapEntry<Duration, Chord?>> shownChords = chords.entries

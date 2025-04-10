@@ -31,8 +31,7 @@ class AnalyzerCard extends StatelessWidget {
       onScaleUpdate: (details) {
         // Seek
         final double dx = details.focalPointDelta.dx;
-        player.seek(
-            player.position - player.analyzer.durationShown * dx * scaleSpeed);
+        player.position -= player.analyzer.durationShown * dx * scaleSpeed;
 
         // Zoom
         player.analyzer.durationShown =
