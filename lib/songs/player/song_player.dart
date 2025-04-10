@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
 import 'package:musbx/songs/player/playable.dart';
@@ -45,7 +46,7 @@ abstract class SongPlayerComponent<T extends SongPlayer> {
 abstract class SongPlayer<P extends Playable> {
   static final SoLoud _soloud = SoLoud.instance;
 
-  SongPlayer._(this.song, this.playable);
+  SongPlayer._(this.song, this.playable, this.handle);
 
   /// Create a [SongPlayer] by loading a [song].
   ///
@@ -77,11 +78,7 @@ abstract class SongPlayer<P extends Playable> {
   final P playable;
 
   /// Handle for the sound that is playing.
-  ///
-  /// Currently this is set after creation, so that the [components] can be
-  /// initialized before the sound starts playing. Otherwise filters won't be applied.
-  /// This is ugly though, and we should find a better solution.
-  late final SoundHandle handle;
+  final SoundHandle handle;
 
   /// Whether the player is currently playing.
   bool get isPlaying => isPlayingNotifier.value;
@@ -151,13 +148,16 @@ abstract class SongPlayer<P extends Playable> {
   /// The components that extend the functionality of this player.
   @mustCallSuper
   List<SongPlayerComponent> get components =>
-      List.unmodifiable([slowdowner, equalizer]);
+      List.unmodifiable([slowdowner, equalizer, analyzer]);
 
   /// Component for changing the pitch and speed of the song.
   late final SlowdownerComponent slowdowner = SlowdownerComponent(this);
 
   /// Component for adjusting the gain for different frequency bands of the song.
   late final EqualizerComponent equalizer = EqualizerComponent(this);
+
+  /// Component for analyzing the current song, including chord identification and waveform extraction.
+  late final AnalyzerComponent analyzer = AnalyzerComponent(this);
 
   /// Load song preferences from a [json] map.
   @mustCallSuper
@@ -174,9 +174,9 @@ abstract class SongPlayer<P extends Playable> {
     equalizer.loadSettingsFromJson(
       tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
     );
-    // analyzer.loadSettingsFromJson(
-    //   tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
-    // );
+    analyzer.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
+    );
   }
 
   /// Create a json map containing the current preferences for this [song].
@@ -187,27 +187,25 @@ abstract class SongPlayer<P extends Playable> {
       "slowdowner": slowdowner.saveSettingsToJson(),
       // "looper": looper.saveSettingsToJson(),
       "equalizer": equalizer.saveSettingsToJson(),
-      // "analyzer": analyzer.saveSettingsToJson(),
+      "analyzer": analyzer.saveSettingsToJson(),
     };
   }
 }
 
 class SinglePlayer extends SongPlayer<SinglePlayable> {
   /// An implementation of [SongPlayer] that plays a single audio clip.
-  SinglePlayer._(super.song, super.playable) : super._();
+  SinglePlayer._(super.song, super.playable, super.handle) : super._();
 
   static Future<SinglePlayer> load(SongNew<SinglePlayable> song) async {
     final SinglePlayable playable = await song.source.load(
       cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
     );
-
-    final SinglePlayer player = SinglePlayer._(song, playable);
+    final SoundHandle handle = await playable.play();
+    final SinglePlayer player = SinglePlayer._(song, playable, handle);
 
     for (final SongPlayerComponent component in player.components) {
       await component.initialize();
     }
-
-    player.handle = await playable.play();
 
     return player;
   }
@@ -219,7 +217,7 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
   /// An implementation of [SongPlayer] that plays multiple audio clips simultaneously.
   ///
   /// The [demixer] component allows the volume of each audio clip to be controlled separately.
-  MultiPlayer._(super.song, super.playable) : super._();
+  MultiPlayer._(super.song, super.playable, super.handle) : super._();
 
   /// The handles of the individual sounds that are played simultaneously.
   ///
@@ -230,14 +228,12 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
     final MultiPlayable playable = await song.source.load(
       cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
     );
-
-    final MultiPlayer player = MultiPlayer._(song, playable);
+    final SoundHandle handle = await playable.play();
+    final MultiPlayer player = MultiPlayer._(song, playable, handle);
 
     for (final SongPlayerComponent component in player.components) {
       await component.initialize();
     }
-
-    player.handle = await playable.play();
 
     return player;
   }

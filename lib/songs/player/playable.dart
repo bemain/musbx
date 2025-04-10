@@ -93,7 +93,11 @@ class YoutubeSource extends SongSourceNew<SinglePlayable> {
   /// The id of the YouTube song to pull.
   final String youtubeId;
 
+  /// The [SoLoud] [AudioSource] that is generated from this source.
   AudioSource? source;
+
+  /// The file where audio data is cached.
+  File? cacheFile;
 
   @override
   Future<SinglePlayable> load({required Directory cacheDirectory}) async {
@@ -107,6 +111,7 @@ class YoutubeSource extends SongSourceNew<SinglePlayable> {
           destination: cacheFile,
           fileType: "mp3");
     }
+    this.cacheFile = cacheFile;
 
     source ??= await SoLoud.instance.loadFile(cacheFile.path);
 
@@ -144,7 +149,11 @@ class FileSource extends SongSourceNew<SinglePlayable> {
   /// The file to read.
   final File file;
 
+  /// The [SoLoud] [AudioSource] that is generated from this source.
   AudioSource? source;
+
+  /// The file where audio data is cached.
+  File? cacheFile;
 
   @override
   Future<SinglePlayable> load({required Directory cacheDirectory}) async {
@@ -157,6 +166,7 @@ class FileSource extends SongSourceNew<SinglePlayable> {
 
       cacheFile = await file.copy(cacheFile.path);
     }
+    this.cacheFile = cacheFile;
 
     source ??= await SoLoud.instance.loadFile(cacheFile.path);
 
@@ -189,20 +199,22 @@ class FileSource extends SongSourceNew<SinglePlayable> {
 
 class DemixedSource extends SongSourceNew<MultiPlayable> {
   /// A source that demixes a [SongNew] and loads the stems as individual audio sources.
-  DemixedSource(this.parentSource);
+  DemixedSource(this.parent);
 
-  final SongSourceNew parentSource;
+  final SongSourceNew parent;
 
   Map<StemType, AudioSource>? sources;
 
   @override
   Future<MultiPlayable> load({required Directory cacheDirectory}) async {
     DemixingProcess process = DemixingProcess(
-      parentSource,
+      parent,
       cacheDirectory: cacheDirectory,
     );
 
     final Map<StemType, File> files = await process.future;
+
+    await parent.load(cacheDirectory: cacheDirectory);
 
     sources ??= {
       for (final e in files.entries)
@@ -220,22 +232,24 @@ class DemixedSource extends SongSourceNew<MultiPlayable> {
         SoLoud.instance.disposeSource(source),
     ]);
     sources = null;
+
+    await parent.dispose();
   }
 
   /// Try to create a [DemixedSource] from a [json] object.
   static DemixedSource? fromJson(Map<String, dynamic> json) {
     if (!json.containsKey("parent")) return null;
-    SongSourceNew? parentSource = SongSourceNew.fromJson(json["parent"]);
-    if (parentSource == null) return null;
+    SongSourceNew? parent = SongSourceNew.fromJson(json["parent"]);
+    if (parent == null) return null;
 
-    return DemixedSource(parentSource);
+    return DemixedSource(parent);
   }
 
   @override
   Map<String, dynamic> toJson() => {
         "type": "demixed",
         "parent": {
-          ...parentSource.toJson(),
+          ...parent.toJson(),
         }
       };
 }

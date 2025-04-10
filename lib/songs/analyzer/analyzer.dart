@@ -3,17 +3,30 @@ import 'package:just_waveform/just_waveform.dart';
 import 'package:musbx/songs/analyzer/chord_identification_process.dart';
 import 'package:musbx/songs/analyzer/waveform_extraction_process.dart';
 import 'package:musbx/model/chord.dart';
-import 'package:musbx/songs/player/music_player.dart';
-import 'package:musbx/songs/player/music_player_component.dart';
-import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/widgets/widgets.dart';
 
-/// A component for [MusicPlayer] that is used to analyze the current song,
-/// including chord identification and waveform extraction.
-class Analyzer extends MusicPlayerComponent {
+class AnalyzerComponent extends SongPlayerComponent {
   static const Duration minDurationShown = Duration(seconds: 7);
   static const Duration maxDurationShown = Duration(seconds: 10);
   static const Duration defaultDurationShown = Duration(seconds: 8);
+
+  AnalyzerComponent(super.player);
+
+  @override
+  void initialize() {
+    player.slowdowner.pitchNotifier.addListener(_updateChords);
+    waveformProcess.future;
+    chordsProcess.future;
+  }
+
+  @override
+  void dispose() {
+    chordsProcess.cancel();
+    waveformProcess.cancel();
+
+    player.slowdowner.pitchNotifier.removeListener(_updateChords);
+  }
 
   /// The duration window around the current position shown by widgets.
   Duration get durationShown => durationShownNotifier.value;
@@ -22,9 +35,10 @@ class Analyzer extends MusicPlayerComponent {
   final ValueNotifier<Duration> durationShownNotifier =
       ValueNotifier(defaultDurationShown);
 
-  /// The process analyzing the chords of the current song,
-  /// or `null` if no song has been loaded.
-  ChordIdentificationProcess? chordsProcess;
+  /// The process analyzing the chords of the current song.
+  late final ChordIdentificationProcess chordsProcess =
+      ChordIdentificationProcess(player.song)
+        ..resultNotifier.addListener(_updateChords);
 
   /// The transposed chords of the current song,
   /// or `null` if no song has been loaded.
@@ -34,47 +48,31 @@ class Analyzer extends MusicPlayerComponent {
 
   /// The process extracting the waveform from the current song,
   /// or `null` if no song has been loaded.
-  WaveformExtractionProcess? waveformProcess;
+  ///
+  /// TODO: Try reimplementing this using SoLoud.
+  late final WaveformExtractionProcess waveformProcess =
+      WaveformExtractionProcess(player.song)
+        ..resultNotifier.addListener(() {
+          waveformNotifier.value = waveformProcess.result;
+        });
 
   /// The waveform extracted from the current song,
   /// or `null` if no song has been loaded.
   Waveform? get waveform => waveformNotifier.value;
   final ValueNotifier<Waveform?> waveformNotifier = ValueNotifier(null);
 
-  @override
-  void initialize(MusicPlayer musicPlayer) {
-    // When the song changes, begin analyzing.
-    musicPlayer.songNotifier.addListener(() {
-      chordsNotifier.value = null;
-      waveformNotifier.value = null;
-
-      final Song? song = musicPlayer.song;
-      if (song == null) return;
-
-      chordsProcess = ChordIdentificationProcess(song)
-        ..addListener(_updateChords);
-      waveformProcess = WaveformExtractionProcess(song)
-        ..addListener(() {
-          waveformNotifier.value = waveformProcess?.result;
-        });
-    });
-
-    // musicPlayer.slowdowner.pitchNotifier.addListener(_updateChords);
-  }
-
   void _updateChords() {
-    chordsNotifier.value = chordsProcess?.result?.map(
+    chordsNotifier.value = chordsProcess.result?.map(
       (key, value) => MapEntry(
         key,
-        value?.transposed(0 // MusicPlayer.instance.slowdowner.pitch.round(),
-            ),
+        value?.transposed(player.slowdowner.pitch.round()),
       ),
     );
   }
 
   /// Load settings from a [json] map.
   ///
-  /// [json] can contain the following key-value pairs (beyond `enabled`):
+  /// [json] can contain the following key-value pairs:
   ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
   void loadSettingsFromJson(Map<String, dynamic> json) {
@@ -88,7 +86,7 @@ class Analyzer extends MusicPlayerComponent {
 
   /// Save settings for a song to a json map.
   ///
-  /// Saves the following key-value pairs (beyond `enabled`):
+  /// Saves the following key-value pairs:
   ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
   Map<String, dynamic> saveSettingsToJson() {

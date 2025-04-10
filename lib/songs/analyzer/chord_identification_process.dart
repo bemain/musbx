@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:musbx/model/chord.dart';
 import 'package:musbx/songs/musbx_api/chords_api.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
+import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_source.dart';
 import 'package:musbx/utils/process.dart';
 
 class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
@@ -14,11 +14,25 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   ChordIdentificationProcess(this.song);
 
   /// The song being analyzed.
-  final Song song;
+  final SongNew song;
 
   /// The file where the chords for this [song] are cached.
   Future<File> get cacheFile async =>
       File("${(await song.cacheDirectory).path}/chords.json");
+
+  /// Perform chord analysis on the [source] using the given [host].
+  Future<Map> _analyzeSource(SongSourceNew source, ChordsApiHost host) async {
+    switch (source) {
+      case FileSource():
+        return await host.analyzeFile(source.file);
+      case YoutubeSource():
+        return await host.analyzeYoutubeSong(source.youtubeId);
+      case DemixedSource():
+        return await _analyzeSource(source.parent, host);
+      default:
+        throw "Chord analysis cannot be performed on the source $source.";
+    }
+  }
 
   @override
   Future<Map<Duration, Chord?>> process() async {
@@ -39,15 +53,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
       // Perform chords identification
       final ChordsApiHost host = await MusbxApi.findChordsHost();
 
-      if (song.source is FileSource) {
-        chords = await host.analyzeFile(
-          (song.source as FileSource).file,
-        );
-      } else {
-        chords = await host.analyzeYoutubeSong(
-          (song.source as YoutubeSource).youtubeId,
-        );
-      }
+      chords = await _analyzeSource(song.source, host);
 
       // Save to cache
       await cache.writeAsString(jsonEncode(chords));

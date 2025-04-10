@@ -6,7 +6,6 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart' hide AudioSource;
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/library_page/youtube_search.dart';
 import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
@@ -182,9 +181,6 @@ class MusicPlayer {
   /// Component for looping a section of the song.
   final Looper looper = Looper();
 
-  /// Component for analyzing the current song, including chord identification and waveform extraction.
-  final Analyzer analyzer = Analyzer();
-
   /// The process currently loading a song, or `null` if no song has been loaded.
   ///
   /// This is used to make sure two processes don't try to load a song at the same time.
@@ -286,9 +282,6 @@ class MusicPlayer {
     looper.loadSettingsFromJson(
       tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
     );
-    analyzer.loadSettingsFromJson(
-      tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
-    );
   }
 
   /// Save preferences for the current song.
@@ -300,7 +293,6 @@ class MusicPlayer {
     await _songPreferences.save(song!, {
       "position": position.inMilliseconds,
       "looper": looper.saveSettingsToJson(),
-      "analyzer": analyzer.saveSettingsToJson(),
     });
   }
 
@@ -367,7 +359,6 @@ class MusicPlayer {
     });
 
     looper.initialize(this);
-    analyzer.initialize(this);
   }
 
   /// Initialize the audio service for [audioHandler] to enable interaction
