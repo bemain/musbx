@@ -102,14 +102,30 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
       valueListenable: player.slowdowner.pitchNotifier,
       builder: (context, pitch, child) => ValueListenableBuilder(
         valueListenable: player.slowdowner.speedNotifier,
-        builder: (context, speed, child) {
-          final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
-          final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
-          final bool isEqualizerReset = player.equalizer.bands.every((band) =>
-              band.gain == (EqualizerBand.minGain + EqualizerBand.maxGain) / 2);
-          return AppBar(
-            actions: [
-              if (!Platform.isIOS)
+        builder: (context, speed, child) => ValueListenableBuilder(
+          valueListenable: player.equalizer.bandsNotifier,
+          builder: (context, bands, child) {
+            final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
+            final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
+            final bool isEqualizerReset = bands.every((band) =>
+                band.gain.toStringAsFixed(2) ==
+                EqualizerBand.defaultGain.toStringAsFixed(2));
+            return AppBar(
+              actions: [
+                if (!Platform.isIOS)
+                  IconButton(
+                    onPressed: () {
+                      _showModalBottomSheet(
+                        context,
+                        SlowdownerSheet(),
+                      );
+                    },
+                    isSelected: !isPitchReset,
+                    color: isPitchReset
+                        ? null
+                        : Theme.of(context).colorScheme.primary,
+                    icon: const Icon(CustomIcons.accidentals),
+                  ),
                 IconButton(
                   onPressed: () {
                     _showModalBottomSheet(
@@ -117,43 +133,32 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                       SlowdownerSheet(),
                     );
                   },
-                  isSelected: !isPitchReset,
-                  color: isPitchReset
+                  isSelected: !isSpeedReset,
+                  color: isSpeedReset
                       ? null
                       : Theme.of(context).colorScheme.primary,
-                  icon: const Icon(CustomIcons.accidentals),
+                  icon: const Icon(Symbols.avg_pace),
                 ),
-              IconButton(
-                onPressed: () {
-                  _showModalBottomSheet(
-                    context,
-                    SlowdownerSheet(),
-                  );
-                },
-                isSelected: !isSpeedReset,
-                color:
-                    isSpeedReset ? null : Theme.of(context).colorScheme.primary,
-                icon: const Icon(Symbols.avg_pace),
-              ),
-              if (Platform.isAndroid)
-                IconButton(
-                  onPressed: () {
-                    _showModalBottomSheet(
-                      context,
-                      const EqualizerSheet(),
-                    );
-                  },
-                  isSelected: !isEqualizerReset,
-                  color: isEqualizerReset
-                      ? null
-                      : Theme.of(context).colorScheme.primary,
-                  icon: const Icon(Symbols.instant_mix),
-                ),
-              const GetPremiumButton(),
-              InfoButton(child: Text(SongPage.helpText)),
-            ],
-          );
-        },
+                if (Platform.isAndroid)
+                  IconButton(
+                    onPressed: () {
+                      _showModalBottomSheet(
+                        context,
+                        const EqualizerSheet(),
+                      );
+                    },
+                    isSelected: !isEqualizerReset,
+                    color: isEqualizerReset
+                        ? null
+                        : Theme.of(context).colorScheme.primary,
+                    icon: const Icon(Symbols.instant_mix),
+                  ),
+                const GetPremiumButton(),
+                InfoButton(child: Text(SongPage.helpText)),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
