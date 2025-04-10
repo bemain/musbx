@@ -8,24 +8,17 @@ import 'package:musbx/widgets/widgets.dart';
 class SlowdownerComponent extends SongPlayerComponent {
   SlowdownerComponent(super.player);
 
-  /// Modify the pitch filter for the current song.
-  ///
-  /// Note that this cannot be used to activate or deactivate a filter, since
-  /// that has to be done before the song is loaded and [player.handle] thus
-  /// isn't available at that time.
-  void _modifyPitchFilter(
-      void Function(PitchShiftSingle filter, {SoundHandle? handle}) modify) {
-    player.playable.filters(handle: player.handle).pitchShift.modify(modify);
-  }
+  /// The global pitch shift filter, provided by [SoLoud].
+  PitchShiftGlobal get filter => SoLoud.instance.filters.pitchShiftFilter;
 
   @override
   void initialize() {
-    player.playable.filters().pitchShift.activate();
+    filter.activate();
   }
 
   @override
   void dispose() {
-    player.playable.filters().pitchShift.deactivate();
+    filter.deactivate();
   }
 
   /// How much the pitch will be shifted, in semitones.
@@ -35,9 +28,7 @@ class SlowdownerComponent extends SongPlayerComponent {
     ..addListener(_updatePitch);
 
   void _updatePitch() {
-    _modifyPitchFilter((filter, {SoundHandle? handle}) {
-      filter.semitones(soundHandle: handle).value = pitch;
-    });
+    filter.semitones.value = pitch;
   }
 
   /// The playback speed.
@@ -48,9 +39,7 @@ class SlowdownerComponent extends SongPlayerComponent {
 
   void _updateSpeed() {
     SoLoud.instance.setRelativePlaySpeed(player.handle, speed);
-    _modifyPitchFilter((filter, {SoundHandle? handle}) {
-      filter.shift(soundHandle: handle).value = 1 / speed;
-    });
+    filter.shift.value = 1 / speed;
   }
 
   /// Load settings from a [json] map.

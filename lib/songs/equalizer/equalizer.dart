@@ -13,7 +13,10 @@ class EqualizerBand {
   static const double defaultGain = 1.0;
 
   /// The maximum value for the [gain].
-  static const double maxGain = 4.0;
+  ///
+  /// [SoLoud] technically allows values up to 4.0, but too high values makes
+  /// the audio very distorted.
+  static const double maxGain = 2.0;
 
   /// The gain for this band. Must be between [minGain] and [maxGain] (since that is the range SoLoud allows).
   double get gain => gainNotifier.value;
@@ -31,52 +34,42 @@ class EqualizerBandsNotifier extends ValueNotifier<List<EqualizerBand>> {
 }
 
 class EqualizerComponent extends SongPlayerComponent {
-  /// TODO: Simply activating this causes lots of artifacts at the moment, not sure why
   EqualizerComponent(super.player);
 
-  /// Modify the equalizer filter for the current song.
-  ///
-  /// Note that this cannot be used to activate or deactivate the filter, since
-  /// that has to be done before the song is loaded and [player.handle] thus
-  /// isn't available at that time.
-  void _modifyEqualizerFilter(
-      void Function(EqualizerSingle filter, {SoundHandle? handle}) modify) {
-    player.playable.filters(handle: player.handle).equalizer.modify(modify);
-  }
+  /// The global equalizer filter, provided by [SoLoud].
+  EqualizerGlobal get filter => SoLoud.instance.filters.equalizerFilter;
 
   @override
   void initialize() {
-    // TODO: Activate the equalizer once we find out what is causing the noise
-    // player.playable.filters().pitchShift.activate();
+    filter.activate();
   }
 
   @override
   void dispose() {
-    player.playable.filters().pitchShift.deactivate();
+    filter.deactivate();
   }
 
   /// The frequency bands of the equalizer.
   List<EqualizerBand> get bands => bandsNotifier.value;
-  late final EqualizerBandsNotifier bandsNotifier = EqualizerBandsNotifier(
-      List.unmodifiable(List.generate(8, (index) => EqualizerBand())))
-    ..addListener(_updateBands);
+  late final EqualizerBandsNotifier bandsNotifier =
+      EqualizerBandsNotifier(List.unmodifiable(List.generate(
+    8,
+    (index) =>
+        EqualizerBand()..gainNotifier.addListener(() => _updateBand(index)),
+  )));
 
-  void _updateBands() {
-    _modifyEqualizerFilter((filter, {SoundHandle? handle}) {
-      for (int i = 0; i < bands.length; i++) {
-        [
-          filter.band1,
-          filter.band2,
-          filter.band3,
-          filter.band4,
-          filter.band5,
-          filter.band6,
-          filter.band7,
-          filter.band8,
-        ][i](soundHandle: handle)
-            .value = bands[i].gain;
-      }
-    });
+  void _updateBand(int index) {
+    [
+      filter.band1,
+      filter.band2,
+      filter.band3,
+      filter.band4,
+      filter.band5,
+      filter.band6,
+      filter.band7,
+      filter.band8,
+    ][index]
+        .value = bands[index].gain;
   }
 
   /// Reset the gain on all [bands].
@@ -88,7 +81,7 @@ class EqualizerComponent extends SongPlayerComponent {
 
   /// Load settings from a [json] map.
   ///
-  /// [json] can contain the following key-value pairs (beyond `enabled`):
+  /// [json] can contain the following key-value pairs:
   ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
   void loadSettingsFromJson(Map<String, dynamic> json) async {
@@ -104,7 +97,7 @@ class EqualizerComponent extends SongPlayerComponent {
 
   /// Save settings for a song to a json map.
   ///
-  /// Saves the following key-value pairs (beyond `enabled`):
+  /// Saves the following key-value pairs:
   ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
   Map<String, dynamic> saveSettingsToJson() {

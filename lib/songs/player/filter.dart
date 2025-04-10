@@ -48,8 +48,6 @@ class Filter<T extends FilterBase> {
   ///
   /// If this filter is already active, does nothing.
   void activate() {
-    if (isActive) return;
-
     modify((filter, {handle}) {
       if (!filter.isActive) filter.activate();
     });
@@ -58,8 +56,6 @@ class Filter<T extends FilterBase> {
 
   /// If this filter is not active, does nothing.
   void deactivate() {
-    if (!isActive) return;
-
     modify((filter, {handle}) {
       if (filter.isActive) filter.deactivate();
     });
