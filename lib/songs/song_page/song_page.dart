@@ -26,14 +26,16 @@ class SongPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      initialIndex: 0,
-      animationDuration: const Duration(milliseconds: 200),
-      child: ValueListenableBuilder(
-        valueListenable: Songs.playerNotifier,
-        builder: (context, player, child) {
-          return Scaffold(
+    return ValueListenableBuilder(
+      valueListenable: Songs.playerNotifier,
+      builder: (context, player, child) {
+        if (player == null) return const SizedBox();
+
+        return DefaultTabController(
+          length: 2,
+          initialIndex: 0,
+          animationDuration: const Duration(milliseconds: 200),
+          child: Scaffold(
             resizeToAvoidBottomInset: false,
             appBar: const SongAppBar(),
             body: Padding(
@@ -47,10 +49,10 @@ class SongPage extends StatelessWidget {
                         Column(
                           children: [
                             ListTile(
-                              title: Text(player?.song.title ?? ""),
+                              title: Text(player.song.title),
                               titleTextStyle:
                                   Theme.of(context).textTheme.titleLarge,
-                              subtitle: Text(player?.song.artist ?? ""),
+                              subtitle: Text(player.song.artist ?? ""),
                             ),
                             Expanded(
                               child: AnalyzerCard(),
@@ -81,9 +83,9 @@ class SongPage extends StatelessWidget {
                 ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

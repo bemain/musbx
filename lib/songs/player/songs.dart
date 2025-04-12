@@ -144,8 +144,6 @@ class Songs extends BaseAudioHandler with SeekHandler {
     SongNew<P> song, {
     bool ignoreFreeLimit = false,
   }) async {
-    if (player?.song == song) return player! as SongPlayer<P>;
-
     if (!Purchases.hasPremium && !ignoreFreeLimit) {
       // Make sure the weekly limit has not been exceeded
       if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
@@ -161,23 +159,15 @@ class Songs extends BaseAudioHandler with SeekHandler {
       }
     }
 
-    await player?.dispose();
-
-    if (player != null) {
-      // Save preferences
-      await _preferences.save(
-        player!.song,
-        player!.toPreferences(),
-      );
-    }
+    // Dispose the previous player
+    await Songs.dispose();
 
     // Load audio
-    print(P);
-    final SongPlayer<P> newPlayer = await SongPlayer.load<P>(song);
+    final SongPlayer<P> player = await SongPlayer.load<P>(song);
 
     // Load new preferences
     final prefs = await _preferences.load(song);
-    if (prefs != null) newPlayer.loadPreferences(prefs);
+    if (prefs != null) player.loadPreferences(prefs);
 
     // Add to song history.
     await history.add(song);
@@ -190,13 +180,27 @@ class Songs extends BaseAudioHandler with SeekHandler {
     }
 
     // Update media notification
-    newPlayer.addListener(handler.updateState);
+    player.addListener(handler.updateState);
     handler.mediaItem.add(
-      song.mediaItem.copyWith(duration: newPlayer.duration),
+      song.mediaItem.copyWith(duration: player.duration),
     );
 
-    playerNotifier.value = newPlayer;
-    return newPlayer;
+    playerNotifier.value = player;
+    return player;
+  }
 
+  /// Dispose the current [player].
+  static Future<void> dispose() async {
+    await player?.dispose();
+
+    if (player != null) {
+      // Save preferences
+      await _preferences.save(
+        player!.song,
+        player!.toPreferences(),
+      );
+    }
+
+    playerNotifier.value = null;
   }
 }

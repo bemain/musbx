@@ -114,7 +114,7 @@ class Navigation {
                     );
                   },
                   onExit: (context, state) async {
-                    Songs.player?.pause();
+                    await Songs.dispose();
                     return true;
                   },
                 ),
