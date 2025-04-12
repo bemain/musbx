@@ -133,14 +133,7 @@ class SongNew<P extends Playable> {
     this.genre,
     this.artUri,
     required this.source,
-  }) : mediaItem = MediaItem(
-          id: id,
-          title: title,
-          album: album,
-          artist: artist,
-          genre: genre,
-          artUri: artUri ?? defaultAlbumArt,
-        );
+  });
 
   /// A unique id.
   final String id;
@@ -167,9 +160,18 @@ class SongNew<P extends Playable> {
   /// Can be used to create a [Playable] playable by [SongPlayer].
   final SongSourceNew<P> source;
 
-  /// The media item for this song, provided to [MusicPlayerAudioHandler] when
+  /// The media item for this song, provided to [SongsAudioHandler] when
   /// this song is played.
-  final MediaItem mediaItem;
+  ///
+  /// Note that the returned media item does not include the duration of the audio.
+  MediaItem get mediaItem => MediaItem(
+        id: id,
+        title: title,
+        album: album,
+        artist: artist,
+        genre: genre,
+        artUri: artUri ?? defaultAlbumArt,
+      );
 
   /// The directory where files relating to this song are cached.
   late final Future<Directory> cacheDirectory =

@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart' hide AudioSource;
-import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/youtube_search.dart';
 import 'package:musbx/songs/looper/looper.dart';
-import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_preferences.dart';
 import 'package:musbx/songs/player/song_source.dart';
@@ -62,15 +59,6 @@ class MusicPlayer {
 
   /// The [AudioPlayer] used for playback.
   late final AudioPlayer player = AudioPlayer(audioPipeline: audioPipeline);
-
-  late final MusicPlayerAudioHandler audioHandler = MusicPlayerAudioHandler(
-    onPlay: play,
-    onPause: pause,
-    onStop: stop,
-    playbackStateStream: player.playbackEventStream.map(
-      (event) => MusicPlayerAudioHandler.transformEvent(event, player),
-    ),
-  );
 
   /// Used internally to load and save preferences for songs.
   final SongPreferences _songPreferences = SongPreferences();
@@ -143,7 +131,6 @@ class MusicPlayer {
     position = looper.clampPosition(position, duration: duration);
     positionNotifier.value = position;
     await player.seek(position);
-    await audioHandler.seek(position);
   }
 
   /// Title of the current song, or `null` if no song loaded.
@@ -256,11 +243,6 @@ class MusicPlayer {
     // Reset loopSection
     looper.section = LoopSection(end: duration);
 
-    // Update the media player notification
-    audioHandler.mediaItem.add(
-      song.mediaItem.copyWith(duration: duration),
-    );
-
     // Load new preferences
     await loadSongPreferences(song);
 
@@ -365,22 +347,6 @@ class MusicPlayer {
   /// with the phone's media player, and the audio session to allow playing
   /// and recording simultaneously (required on iOS).
   Future<void> initAudioService() async {
-    await AudioService.init(
-      builder: () => audioHandler,
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'se.agardh.musbx.channel.music_player',
-        androidNotificationChannelName: 'Music player',
-        androidNotificationIcon: "drawable/ic_notification",
-      ),
-    );
-    AudioService.notificationClicked.listen((bool event) {
-      if (event) {
-        // Navigate to the music player page
-        // TODO: Don't hard code this value
-        Navigation.navigationShell.goBranch(1);
-      }
-    });
-
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration(
       avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,

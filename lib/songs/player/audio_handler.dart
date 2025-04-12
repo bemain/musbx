@@ -1,61 +1,67 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter/material.dart';
+import 'package:musbx/songs/player/songs.dart';
 
-class MusicPlayerAudioHandler extends BaseAudioHandler {
-  /// Interface to the audio notification.
-  MusicPlayerAudioHandler({
-    required this.onPlay,
-    required this.onPause,
-    this.onStop,
-    required Stream<PlaybackState> playbackStateStream,
-  }) {
-    // Listen to playback events from AudioPlayer.
-    playbackStateStream.pipe(playbackState);
-  }
+/// An [AudioHandler] that wraps around [Songs.player] and interacts with the
+/// media notification and provides standard system callbacks to handle media
+/// playback requests from different sources in a uniform way.
+class SongsAudioHandler extends BaseAudioHandler with SeekHandler {
+  SongsAudioHandler._();
 
-  /// Called when the play action is triggered.
-  final Future<void> Function() onPlay;
-
-  /// Called when the pause action is triggered.
-  final Future<void> Function() onPause;
-
-  /// Called when the stop action is triggered.
-  final Future<void> Function()? onStop;
-
-  @override
-  Future<void> play() async => await onPlay();
-
-  @override
-  Future<void> pause() async => await onPause();
-
-  @override
-  Future<void> stop() async {
-    await onStop?.call();
-    await super.stop();
-  }
-
-  /// Transform an event from just_audio's [AudioPlayer] to audio_service's [AudioHandler].
-  static PlaybackState transformEvent(PlaybackEvent event, AudioPlayer player) {
-    final isCompleted = (player.processingState == ProcessingState.completed);
-
-    return PlaybackState(
-      controls: [
-        if (player.playing) MediaControl.pause else MediaControl.play,
-      ],
-      androidCompactActionIndices: const [0],
-      processingState: const {
-        ProcessingState.idle: AudioProcessingState.idle,
-        ProcessingState.loading: AudioProcessingState.loading,
-        ProcessingState.buffering: AudioProcessingState.buffering,
-        ProcessingState.ready: AudioProcessingState.ready,
-        ProcessingState.completed: AudioProcessingState.ready,
-      }[player.processingState]!,
-      playing: player.playing && !isCompleted,
-      updatePosition: player.position,
-      bufferedPosition: player.bufferedPosition,
-      speed: player.speed,
+  /// Create a [SongsAudioHandler] and register it using [AudioService.init].
+  static Future<SongsAudioHandler> initialize() async {
+    return await AudioService.init<SongsAudioHandler>(
+      builder: () => SongsAudioHandler._(),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'se.agardh.musbx.channel.songs',
+        androidNotificationChannelName: 'Music playback',
+        androidNotificationIcon: "drawable/ic_notification",
+        androidNotificationOngoing: true,
+        notificationColor: Colors.white,
+        fastForwardInterval: Duration(seconds: 10),
+        rewindInterval: Duration(seconds: 10),
+      ),
     );
+  }
+
+  @override
+  Future<void> play() async => Songs.player?.resume();
+
+  @override
+  Future<void> pause() async => Songs.player?.pause();
+
+  @override
+  Future<void> seek(Duration position) async => Songs.player?.seek(position);
+
+  @override
+  Future<void> stop() async => await Songs.player?.dispose();
+
+  void updateState() {
+    playbackState.add(PlaybackState(
+      controls: [
+        // TODO: Use custom icons
+        if (Songs.player?.isPlaying ?? true)
+          MediaControl.pause
+        else
+          MediaControl.play,
+        MediaControl.rewind,
+        MediaControl.fastForward,
+      ],
+      systemActions: const {
+        MediaAction.playPause,
+        MediaAction.seek,
+        MediaAction.seekForward,
+        MediaAction.seekBackward,
+      },
+      processingState: Songs.player == null
+          ? AudioProcessingState.idle
+          : AudioProcessingState.ready,
+      playing: Songs.player?.isPlaying ?? false,
+      updatePosition: Songs.player?.position ?? Duration.zero,
+      bufferedPosition: Songs.player?.duration ?? Duration.zero,
+      speed: Songs.player?.slowdowner.speed ?? 1.0,
+    ));
   }
 }

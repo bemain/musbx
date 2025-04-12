@@ -1,8 +1,13 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/youtube_search.dart';
+import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
@@ -21,11 +26,57 @@ final SongNew demoSong = SongNew(
   source: YoutubeSource("9ytqRUjYJ7s"),
 );
 
-class Songs {
-  Songs._();
+/// A helper class for loading songs.
+class Songs extends BaseAudioHandler with SeekHandler {
+  /// The [AudioHandler] that handles interaction with the media notification.
+  ///
+  /// This is created when [initialize] is called.
+  static late final SongsAudioHandler handler;
 
+  /// Whether this has been initialized.
+  ///
+  /// See [initialize].
+  static bool isInitialized = false;
+
+  /// Initialize [SoLoud], create the audio [handler] and configure the audio session.
+  /// Must be done before any song is [load]ed.
+  ///
+  /// If [isInitialized] is `true`, do nothing.
   static Future<void> initialize() async {
+    if (isInitialized) return;
+    isInitialized = true;
+
     if (!SoLoud.instance.isInitialized) await SoLoud.instance.init();
+
+    // Initialize audio handler
+    handler = await SongsAudioHandler.initialize();
+    AudioService.notificationClicked.listen((bool event) {
+      if (event) {
+        // Navigate to the music player page
+        // TODO: Don't hard code this value
+        Navigation.navigationShell.goBranch(1);
+      }
+    });
+
+    // Configure audio session
+    final AudioSession session = await AudioSession.instance;
+    await session.configure(AudioSessionConfiguration(
+      avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+      avAudioSessionCategoryOptions:
+          AVAudioSessionCategoryOptions.allowBluetooth |
+              AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+              AVAudioSessionCategoryOptions.defaultToSpeaker,
+      avAudioSessionRouteSharingPolicy:
+          AVAudioSessionRouteSharingPolicy.defaultPolicy,
+      avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+      androidAudioAttributes: const AndroidAudioAttributes(
+        contentType: AndroidAudioContentType.music,
+        flags: AndroidAudioFlags.none,
+        usage: AndroidAudioUsage.media,
+      ),
+      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+      androidWillPauseWhenDucked: true,
+    ));
 
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
@@ -72,7 +123,7 @@ class Songs {
       .where((entry) => entry.value.id != demoSong.id) // Exclude demo song
       .map((e) => e.value);
 
-  /// Whether the user's access to the [MusicPlayer] has been restricted
+  /// Whether the user's access to playing [Songs] has been restricted
   /// because the number of [freeSongsPerWeek] has been reached.
   ///
   /// This is only ever `true` on the 'free' flavor of the app.
@@ -138,7 +189,14 @@ class Songs {
       ));
     }
 
+    // Update media notification
+    newPlayer.addListener(handler.updateState);
+    handler.mediaItem.add(
+      song.mediaItem.copyWith(duration: newPlayer.duration),
+    );
+
     playerNotifier.value = newPlayer;
     return newPlayer;
+
   }
 }

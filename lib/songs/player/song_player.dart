@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
@@ -43,7 +44,7 @@ abstract class SongPlayerComponent<T extends SongPlayer> {
   }
 }
 
-abstract class SongPlayer<P extends Playable> {
+abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   static final SoLoud _soloud = SoLoud.instance;
 
   SongPlayer._(this.song, this.playable, this.handle) {
@@ -85,7 +86,8 @@ abstract class SongPlayer<P extends Playable> {
   /// Whether the player is currently playing.
   bool get isPlaying => isPlayingNotifier.value;
   set isPlaying(bool value) => value ? resume() : pause();
-  final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
+  late final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false)
+    ..addListener(notifyListeners);
 
   /// Pause playback.
   void pause() {
@@ -94,9 +96,10 @@ abstract class SongPlayer<P extends Playable> {
   }
 
   /// Resume playback.
-  void resume() {
+  Future<void> resume() async {
     _soloud.setPause(handle, false);
     isPlayingNotifier.value = true;
+    (await AudioSession.instance).setActive(true);
   }
 
   /// Stop playback, and free the resources used by this player.
@@ -104,6 +107,7 @@ abstract class SongPlayer<P extends Playable> {
   /// See also:
   ///  - [Playable.dispose]
   ///  - [SongPlayerComponent.dispose]
+  @override
   Future<void> dispose() async {
     pause();
     isPlayingNotifier.value = false;
@@ -114,6 +118,7 @@ abstract class SongPlayer<P extends Playable> {
     }
 
     await playable.dispose();
+    super.dispose();
   }
 
   /// The duration of the audio that is playing.
@@ -152,6 +157,7 @@ abstract class SongPlayer<P extends Playable> {
   void seek(Duration position) {
     _soloud.seek(handle, position);
     positionNotifier.value = position;
+    notifyListeners();
   }
 
   /// The components that extend the functionality of this player.
@@ -253,6 +259,7 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
       _soloud.seek(handle, position);
     }
     positionNotifier.value = position;
+    notifyListeners();
   }
 
   @override
