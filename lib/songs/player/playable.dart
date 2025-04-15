@@ -164,6 +164,7 @@ class FileSource extends SongSourceNew<SinglePlayable> {
         throw FileSystemException("File doesn't exist", file.path);
       }
 
+      await cacheFile.create(recursive: true);
       cacheFile = await file.copy(cacheFile.path);
     }
     this.cacheFile = cacheFile;
