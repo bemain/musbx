@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/navigation.dart';
@@ -58,26 +57,6 @@ class Songs extends BaseAudioHandler with SeekHandler {
         Navigation.navigationShell.goBranch(1);
       }
     });
-
-    // Configure audio session
-    final AudioSession session = await AudioSession.instance;
-    await session.configure(AudioSessionConfiguration(
-      avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-      avAudioSessionCategoryOptions:
-          AVAudioSessionCategoryOptions.allowBluetooth |
-              AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-              AVAudioSessionCategoryOptions.defaultToSpeaker,
-      avAudioSessionRouteSharingPolicy:
-          AVAudioSessionRouteSharingPolicy.defaultPolicy,
-      avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
-      androidAudioAttributes: const AndroidAudioAttributes(
-        contentType: AndroidAudioContentType.music,
-        flags: AndroidAudioFlags.none,
-        usage: AndroidAudioUsage.media,
-      ),
-      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-      androidWillPauseWhenDucked: true,
-    ));
 
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
@@ -166,13 +145,14 @@ class Songs extends BaseAudioHandler with SeekHandler {
     // Load audio
     final SongPlayer<P> player = await SongPlayer.load<P>(song);
 
-    // Load new preferences
+    // Load preferences
     final prefs = await _preferences.load(song);
     if (prefs != null) player.loadPreferences(prefs);
 
     // Add to song history.
     await history.add(song);
     // Add demixed variant
+    // TODO: Don't do this if demixed variant is already added
     if (song.source is! DemixedSource) {
       await history.add(song.copyWith<MultiPlayable>(
         id: "${song.id}-demixed",

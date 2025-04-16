@@ -99,7 +99,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   Future<void> resume() async {
     _soloud.setPause(handle, false);
     isPlayingNotifier.value = true;
-    (await AudioSession.instance).setActive(true);
+    await SongsAudioHandler.session.setActive(true);
   }
 
   /// Stop playback, and free the resources used by this player.
@@ -112,7 +112,10 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     pause();
     isPlayingNotifier.value = false;
 
+    SongsAudioHandler.session.setActive(false);
+
     _positionUpdater.cancel();
+
     for (SongPlayerComponent component in components) {
       await component.dispose();
     }
