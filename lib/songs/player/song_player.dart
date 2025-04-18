@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
+import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/slowdowner/slowdowner.dart';
@@ -47,6 +47,7 @@ abstract class SongPlayerComponent<T extends SongPlayer> {
 abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   static final SoLoud _soloud = SoLoud.instance;
 
+  // TODO: Notify when the audio loops
   SongPlayer._(this.song, this.playable, this.handle) {
     _positionUpdater;
   }
@@ -54,7 +55,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// Create a [SongPlayer] by loading a [song].
   ///
   /// This delegates the loading process to the correct implementation of this
-  /// abstract class, depending on the type of the `Playable` ([P]).
+  /// abstract class, depending on the type of the `Playable` [P].
   ///
   /// The workflow is as follows:
   ///  - Load the [song.source], to obtain a [playable].
@@ -131,32 +132,25 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// actual position of the audio.
   late final Timer _positionUpdater =
       Timer.periodic(const Duration(milliseconds: 100), (Timer timer) {
-    final Duration playerPosition = _soloud.getPosition(handle);
-    if ((playerPosition - position).abs() <=
-        const Duration(milliseconds: 200)) {
-      positionNotifier.value = playerPosition;
-    } else {
-      seek(position);
-    }
+    if (!isPlaying) return;
+    position = _soloud.getPosition(handle);
   });
 
   /// The current position of the player.
   ///
-  /// Currently there are two ways to change the position of the player:
-  /// either by using the [seek] method directly (for immediate respons),
-  /// or by setting the [position] value (for frequent updates).
-  ///
-  /// Changes to this value are only applied every 200 ms, and too small changes
-  /// might not be applied at all.
+  /// Note that changes to this value are not actually applied, so you are
+  /// required to call [seek] for the change to take effect. This is intentional,
+  /// as it allows us to update the [position] very frequently without actually
+  /// seeking in the audio source, which could freeze the main thread.
   Duration get position => positionNotifier.value;
   set position(Duration value) => positionNotifier.value = value;
   ValueNotifier<Duration> positionNotifier = ValueNotifier(Duration.zero);
 
   /// Seek to a [position] in the current song.
   ///
-  /// Note that this should not be called to often, as it could block the main
+  /// Note that this should not be called too often, as it could block the main
   /// thread and cause the app to freeze. For frequent position updates, instead
-  /// set the [position] value.
+  /// set the [position] value continously, and only [seek] once at the end.
   void seek(Duration position) {
     _soloud.seek(handle, position);
     positionNotifier.value = position;

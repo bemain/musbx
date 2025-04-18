@@ -38,6 +38,7 @@ class AnalyzerCard extends StatelessWidget {
             durationShownBeforeChange * (1 / details.scale);
       },
       onScaleEnd: (_) {
+        player.seek(player.position);
         if (wasPlayingBeforeChange) player.resume();
       },
       child: FlatCard(

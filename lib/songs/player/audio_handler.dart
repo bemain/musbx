@@ -119,6 +119,7 @@ class SongsAudioHandler extends BaseAudioHandler with SeekHandler {
       updatePosition: Songs.player?.position ?? Duration.zero,
       bufferedPosition: Songs.player?.duration ?? Duration.zero,
       speed: Songs.player?.slowdowner.speed ?? 1.0,
+      repeatMode: AudioServiceRepeatMode.all,
     ));
   }
 }

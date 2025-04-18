@@ -19,9 +19,6 @@ class WaveformExtractionProcess extends Process<Waveform> {
 
   /// Get the file where the audio for [source] is cached.
   File? _cacheFile(SongSourceNew source) {
-    if (source case DemixedSource()) {
-      print("[DEBUG] Demixed source with parent ${source.parent}");
-    }
     return switch (source) {
       FileSource() => source.cacheFile,
       YoutubeSource() => source.cacheFile,
