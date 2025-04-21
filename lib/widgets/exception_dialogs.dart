@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/player/music_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/purchases.dart';
 
 /// Show an exception dialog.
@@ -30,8 +30,7 @@ class MusicPlayerAccessRestrictedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const FreeAccessRestrictedDialog(
-      reason:
-          "You have used your ${MusicPlayer.freeSongsPerWeek} weekly songs.",
+      reason: "You have used your ${Songs.freeSongsPerWeek} weekly songs.",
     );
   }
 }

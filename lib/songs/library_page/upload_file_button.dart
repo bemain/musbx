@@ -8,7 +8,6 @@ import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
 import 'package:musbx/widgets/speed_dial/action.dart';
 import 'package:musbx/widgets/permission_builder.dart';
