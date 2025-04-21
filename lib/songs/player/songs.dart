@@ -152,14 +152,6 @@ class Songs extends BaseAudioHandler with SeekHandler {
 
     // Add to song history.
     await history.add(song);
-    // Add demixed variant
-    // TODO: Don't do this if demixed variant is already added
-    if (song.source is! DemixedSource) {
-      await history.add(song.copyWith<MultiPlayable>(
-        id: "${song.id}-demixed",
-        source: DemixedSource(song.source),
-      ));
-    }
 
     // Update media notification
     player.addListener(handler.updateState);

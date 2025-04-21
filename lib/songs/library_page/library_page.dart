@@ -128,7 +128,7 @@ class LibraryPage extends StatelessWidget {
               Symbols.lock,
               color: Theme.of(context).disabledColor,
             )
-          : _buildSongSourceAvatar(song) ?? const SizedBox.shrink(),
+          : _buildSongIcon(song),
       title: Text(
         song.title,
         style: textStyle,
@@ -243,22 +243,23 @@ class LibraryPage extends StatelessWidget {
     );
   }
 
-  Widget? _buildSongSourceAvatar(Song song) {
+  Widget _buildSongIcon(Song song) {
     if (song == demoSong) {
       return const Icon(Symbols.science);
     }
+    return Icon(_getSourceIcon(song.source));
+  }
 
-    if (song.source is FileSource) {
-      return const Icon(Symbols.file_present);
+  IconData _getSourceIcon(SongSource source) {
+    if (source is FileSource) {
+      return Symbols.file_present;
     }
-    if (song.source is YoutubeSource) {
-      return const Icon(Symbols.youtube_searched_for);
+    if (source is YoutubeSource) {
+      return Symbols.youtube_searched_for;
     }
-    // TODO: Pick a better icon
-    if (song.source is DemixedSource) {
-      return const Icon(Symbols.arrow_split);
+    if (source is DemixedSource) {
+      return _getSourceIcon(source.parent);
     }
-
-    return null;
+    return Symbols.music_note;
   }
 }
