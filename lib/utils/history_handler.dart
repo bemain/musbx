@@ -96,6 +96,8 @@ class HistoryHandler<T> extends ChangeNotifier {
 
     map.removeWhere((key, v) => v == value);
 
+    onEntryRemoved?.call(MapEntry(DateTime.now(), value));
+
     await save();
     notifyListeners();
   }
