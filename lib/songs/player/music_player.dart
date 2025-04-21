@@ -128,7 +128,6 @@ class MusicPlayer {
 
   /// Seek to [position].
   Future<void> seek(Duration position) async {
-    position = looper.clampPosition(position, duration: duration);
     positionNotifier.value = position;
     await player.seek(position);
   }
@@ -164,9 +163,6 @@ class MusicPlayer {
   /// Whether the player is buffering audio.
   bool get isBuffering => isBufferingNotifier.value;
   final ValueNotifier<bool> isBufferingNotifier = ValueNotifier(false);
-
-  /// Component for looping a section of the song.
-  final Looper looper = Looper();
 
   /// The process currently loading a song, or `null` if no song has been loaded.
   ///
@@ -240,8 +236,6 @@ class MusicPlayer {
 
     // Update song
     songNotifier.value = song;
-    // Reset loopSection
-    looper.section = LoopSection(end: duration);
 
     // Load new preferences
     await loadSongPreferences(song);
@@ -260,10 +254,6 @@ class MusicPlayer {
 
     int? position = tryCast<int>(json["position"]);
     seek(Duration(milliseconds: position ?? 0));
-
-    looper.loadSettingsFromJson(
-      tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
-    );
   }
 
   /// Save preferences for the current song.
@@ -274,7 +264,6 @@ class MusicPlayer {
 
     await _songPreferences.save(song!, {
       "position": position.inMilliseconds,
-      "looper": looper.saveSettingsToJson(),
     });
   }
 
@@ -304,19 +293,6 @@ class MusicPlayer {
 
     // position
     player.positionStream.listen((position) async {
-      // If we have reached the end of the loop section while looping, seek to the start.
-      if ((isPlaying && looper.enabled && position >= looper.section.end)) {
-        await seek(Duration.zero);
-        return;
-      }
-
-      // If we have reached the end of the song, pause.
-      if (isPlaying && !looper.enabled && position >= duration) {
-        await player.pause();
-        await seek(duration);
-        return;
-      }
-
       // Update position
       if (isPlaying) positionNotifier.value = position;
     });
@@ -339,8 +315,6 @@ class MusicPlayer {
         isBufferingNotifier.value = false;
       }
     });
-
-    looper.initialize(this);
   }
 
   /// Initialize the audio service for [audioHandler] to enable interaction

@@ -6,6 +6,7 @@ import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
+import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -152,6 +153,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// thread and cause the app to freeze. For frequent position updates, instead
   /// set the [position] value continously, and only [seek] once at the end.
   void seek(Duration position) {
+    position = looping.clamp(position);
     _soloud.seek(handle, position);
     positionNotifier.value = position;
     notifyListeners();
@@ -171,6 +173,10 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// Component for analyzing the current song, including chord identification and waveform extraction.
   late final AnalyzerComponent analyzer = AnalyzerComponent(this);
 
+  /// Component for looping a section of the song.
+  /// TODO: Rename
+  late final LoopComponent looping = LoopComponent(this);
+
   /// Load song preferences from a [json] map.
   @mustCallSuper
   void loadPreferences(Map<String, dynamic> json) {
@@ -180,9 +186,9 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     slowdowner.loadSettingsFromJson(
       tryCast<Map<String, dynamic>>(json["slowdowner"]) ?? {},
     );
-    // looper.loadSettingsFromJson(
-    //   tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
-    // );
+    looping.loadSettingsFromJson(
+      tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
+    );
     equalizer.loadSettingsFromJson(
       tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
     );
@@ -197,7 +203,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     return {
       "position": position.inMilliseconds,
       "slowdowner": slowdowner.saveSettingsToJson(),
-      // "looper": looper.saveSettingsToJson(),
+      "looper": looping.saveSettingsToJson(),
       "equalizer": equalizer.saveSettingsToJson(),
       "analyzer": analyzer.saveSettingsToJson(),
     };
