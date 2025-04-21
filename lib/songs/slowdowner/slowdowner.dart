@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 // ignore: implementation_imports
@@ -30,7 +32,7 @@ class SlowdownerComponent extends SongPlayerComponent {
     ..addListener(notifyListeners);
 
   void _updatePitch() {
-    filter.semitones.value = pitch;
+    filter.shift.value = pow(2, pitch / 12) / speed;
   }
 
   /// The playback speed.
@@ -42,7 +44,7 @@ class SlowdownerComponent extends SongPlayerComponent {
 
   void _updateSpeed() {
     SoLoud.instance.setRelativePlaySpeed(player.handle, speed);
-    filter.shift.value = 1 / speed;
+    _updatePitch();
   }
 
   /// Load settings from a [json] map.
