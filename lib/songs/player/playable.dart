@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/player/filter.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/source.dart';
 
 /// An object that can be played by [SongPlayer].
 ///
@@ -12,12 +14,8 @@ import 'package:musbx/songs/player/filter.dart';
 /// Note that this class is not instantiable directly but should be obtained
 /// through a [SongSource], which containes instructions on how a Playable is created.
 /// When you are done playing this sound you should [dispose] it to free up resources.
-///
-/// TODO: Maybe this should be called `SongSource` and [SongSource] should be `SongProvider` (or the other way around?)?
 abstract class Playable {
   /// Play this sound using [SoLoud] and return the handle to the sound.
-  ///
-  /// Before calling this, the [Playable] must be [load]ed, or it will throw an error.
   FutureOr<SoundHandle> play({bool paused = true, bool looping = true});
 
   /// The length of the audio that this plays.
@@ -60,7 +58,7 @@ class SinglePlayable extends Playable {
 }
 
 class MultiPlayable extends Playable {
-  /// A [Playable] that provides a voice group with a number of [sources].
+  /// A [Playable] that plays multiple [sources] simultaneously.
   ///
   /// This allows the files to play simultaneously while the volume can be controlled individually.
   MultiPlayable(this.sources);
@@ -81,6 +79,7 @@ class MultiPlayable extends Playable {
   @override
   Duration get duration => SoLoud.instance.getLength(sources.values.first);
 
+  /// Play the underlying sounds using [SoLoud], add them all to a group and return the group handle.
   @override
   Future<SoundHandle> play({bool paused = true, bool looping = true}) async {
     handles ??= {

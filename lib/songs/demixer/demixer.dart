@@ -78,14 +78,13 @@ class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
   DemixerComponent(super.player);
 
   /// The stems that this song has been separated into.
-  /// TODO: Sort these
   List<Stem> get stems => stemsNotifier.value;
   late final StemsNotifier stemsNotifier = StemsNotifier(List.unmodifiable([
-    Stem(StemType.drums, player),
+    Stem(StemType.vocals, player),
     Stem(StemType.piano, player),
     Stem(StemType.guitar, player),
     Stem(StemType.bass, player),
-    Stem(StemType.vocals, player),
+    Stem(StemType.drums, player),
     Stem(StemType.other, player),
   ]))
     ..addListener(notifyListeners);

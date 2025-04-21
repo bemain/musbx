@@ -65,8 +65,16 @@ class PositionSlider extends StatelessWidget {
                             : player.duration.inMilliseconds,
                       )
                       .roundToDouble(),
+                  onChangeStart: (value) {
+                    wasPlayingBeforeChange = player.isPlaying;
+                    player.pause();
+                  },
                   onChanged: (double value) {
-                    player.seek(Duration(milliseconds: value.round()));
+                    player.position = Duration(milliseconds: value.round());
+                  },
+                  onChangeEnd: (value) {
+                    player.seek(position);
+                    if (wasPlayingBeforeChange) player.resume();
                   },
                 ),
               ),
@@ -81,7 +89,7 @@ class PositionSlider extends StatelessWidget {
         });
   }
 
-  /// Whether the MusicPlayer was playing before the user began changing the position.
+  /// Whether the player was playing before the user began changing the position.
   static bool wasPlayingBeforeChange = false;
 
   Widget _buildDurationText(BuildContext context, Duration duration) {

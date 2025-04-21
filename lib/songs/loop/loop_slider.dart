@@ -11,11 +11,15 @@ class LoopSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    /// Whether the player was playing before the user began changing the position.
     bool wasPlayingBeforeChange = false;
 
-    return ListenableBuilder(
-      listenable: player.loop,
-      builder: (context, _) {
+    /// The position that the player was at before the user began changing the loop section.
+    Duration positionBeforeChange = Duration.zero;
+
+    return ValueListenableBuilder(
+      valueListenable: player.loop.sectionNotifier,
+      builder: (context, section, _) {
         PositionSliderStyle style =
             Theme.of(context).extension<PositionSliderStyle>()!;
 
@@ -35,44 +39,45 @@ class LoopSlider extends StatelessWidget {
                 valueIndicatorStrokeColor: Colors.transparent,
               ),
           child: RangeSlider(
-              labels: RangeLabels(
-                player.loop.start.toString().substring(2, 10),
-                player.loop.end.toString().substring(2, 10),
-              ),
-              min: 0,
-              max: player.duration.inMilliseconds.toDouble(),
-              values: RangeValues(
-                player.loop.start.inMilliseconds.toDouble(),
-                player.loop.end.inMilliseconds.toDouble(),
-              ),
-              onChangeStart: (value) {
-                wasPlayingBeforeChange = player.isPlaying;
-                player.pause();
-              },
-              onChangeEnd: (value) {
-                if (wasPlayingBeforeChange) player.resume();
-              },
-              onChanged: (RangeValues values) {
-                final Duration previousStart = player.loop.start;
-                final Duration previousEnd = player.loop.end;
+            labels: RangeLabels(
+              player.loop.start.toString().substring(2, 10),
+              player.loop.end.toString().substring(2, 10),
+            ),
+            min: 0,
+            max: player.duration.inMilliseconds.toDouble(),
+            values: RangeValues(
+              player.loop.start.inMilliseconds.toDouble(),
+              player.loop.end.inMilliseconds.toDouble(),
+            ),
+            onChangeStart: (value) {
+              positionBeforeChange = player.position;
+              wasPlayingBeforeChange = player.isPlaying;
+              player.pause();
+            },
+            onChanged: (RangeValues values) {
+              final Duration previousStart = player.loop.start;
+              final Duration previousEnd = player.loop.end;
 
-                // Update section
-                player.loop.start =
-                    Duration(milliseconds: values.start.toInt());
-                player.loop.end = Duration(milliseconds: values.end.toInt());
+              // Update section
+              player.loop.section = (
+                Duration(milliseconds: values.start.toInt()),
+                Duration(milliseconds: values.end.toInt())
+              );
 
-                if (previousStart.inMilliseconds != values.start) {
-                  // The start value changed
-                  player.seek(
-                    Duration(milliseconds: values.start.toInt()),
-                  );
-                } else if (previousEnd.inMilliseconds != values.end) {
-                  // The end value changed
-                  player.seek(
-                    Duration(milliseconds: values.end.toInt()),
-                  );
-                }
-              }),
+              if (previousStart.inMilliseconds != values.start) {
+                // The start value changed
+                player.position = Duration(milliseconds: values.start.toInt());
+              }
+              if (previousEnd.inMilliseconds != values.end) {
+                // The end value changed
+                player.position = Duration(milliseconds: values.end.toInt());
+              }
+            },
+            onChangeEnd: (value) {
+              player.seek(positionBeforeChange);
+              if (wasPlayingBeforeChange) player.resume();
+            },
+          ),
         );
       },
     );

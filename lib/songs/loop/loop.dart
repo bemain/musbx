@@ -6,16 +6,26 @@ class LoopComponent extends SongPlayerComponent {
   LoopComponent(super.player);
 
   /// The start of the section being looped.
-  Duration get start => startNotifier.value;
-  set start(Duration value) => startNotifier.value = value;
-  late final ValueNotifier<Duration> startNotifier =
-      ValueNotifier(Duration.zero)..addListener(notifyListeners);
+  Duration get start => sectionNotifier.value.$1;
+  set start(Duration value) =>
+      sectionNotifier.value = (value, sectionNotifier.value.$2);
 
   /// The end of the section being looped.
-  Duration get end => endNotifier.value;
-  set end(Duration value) => endNotifier.value = value;
-  late final ValueNotifier<Duration> endNotifier =
-      ValueNotifier(player.duration)..addListener(notifyListeners);
+  Duration get end => sectionNotifier.value.$2;
+  set end(Duration value) =>
+      sectionNotifier.value = (sectionNotifier.value.$1, value);
+
+  /// The section being looped.
+  /// The first value is the [start] and the second is the [end] of the section.
+  (Duration start, Duration end) get section => (start, end);
+  set section((Duration start, Duration end) value) {
+    start = value.$1;
+    end = value.$2;
+  }
+
+  late final ValueNotifier<(Duration start, Duration end)> sectionNotifier =
+      ValueNotifier((Duration.zero, player.duration))
+        ..addListener(notifyListeners);
 
   @override
   void initialize() {
