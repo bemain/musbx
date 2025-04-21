@@ -14,7 +14,7 @@ class LoopSlider extends StatelessWidget {
     bool wasPlayingBeforeChange = false;
 
     return ListenableBuilder(
-      listenable: player.looping,
+      listenable: player.loop,
       builder: (context, _) {
         PositionSliderStyle style =
             Theme.of(context).extension<PositionSliderStyle>()!;
@@ -36,14 +36,14 @@ class LoopSlider extends StatelessWidget {
               ),
           child: RangeSlider(
               labels: RangeLabels(
-                player.looping.start.toString().substring(2, 10),
-                player.looping.end.toString().substring(2, 10),
+                player.loop.start.toString().substring(2, 10),
+                player.loop.end.toString().substring(2, 10),
               ),
               min: 0,
               max: player.duration.inMilliseconds.toDouble(),
               values: RangeValues(
-                player.looping.start.inMilliseconds.toDouble(),
-                player.looping.end.inMilliseconds.toDouble(),
+                player.loop.start.inMilliseconds.toDouble(),
+                player.loop.end.inMilliseconds.toDouble(),
               ),
               onChangeStart: (value) {
                 wasPlayingBeforeChange = player.isPlaying;
@@ -53,13 +53,13 @@ class LoopSlider extends StatelessWidget {
                 if (wasPlayingBeforeChange) player.resume();
               },
               onChanged: (RangeValues values) {
-                final Duration previousStart = player.looping.start;
-                final Duration previousEnd = player.looping.end;
+                final Duration previousStart = player.loop.start;
+                final Duration previousEnd = player.loop.end;
 
                 // Update section
-                player.looping.start =
+                player.loop.start =
                     Duration(milliseconds: values.start.toInt());
-                player.looping.end = Duration(milliseconds: values.end.toInt());
+                player.loop.end = Duration(milliseconds: values.end.toInt());
 
                 if (previousStart.inMilliseconds != values.start) {
                   // The start value changed

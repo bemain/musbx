@@ -6,7 +6,7 @@ import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
-import 'package:musbx/songs/looper/looper.dart';
+import 'package:musbx/songs/loop/loop.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -160,7 +160,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// thread and cause the app to freeze. For frequent position updates, instead
   /// set the [position] value continously, and only [seek] once at the end.
   void seek(Duration position) {
-    position = looping.clamp(position);
+    position = loop.clamp(position);
     _soloud.seek(handle, position);
     positionNotifier.value = position;
     notifyListeners();
@@ -169,7 +169,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// The components that extend the functionality of this player.
   @mustCallSuper
   List<SongPlayerComponent> get components =>
-      List.unmodifiable([slowdowner, equalizer, analyzer, looping]);
+      List.unmodifiable([slowdowner, equalizer, analyzer, loop]);
 
   /// Component for changing the pitch and speed of the song.
   late final SlowdownerComponent slowdowner = SlowdownerComponent(this);
@@ -181,7 +181,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   late final AnalyzerComponent analyzer = AnalyzerComponent(this);
 
   /// Component for looping a section of the song.
-  late final LoopComponent looping = LoopComponent(this);
+  late final LoopComponent loop = LoopComponent(this);
 
   /// Load song preferences from a [json] map.
   @mustCallSuper
@@ -192,7 +192,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     slowdowner.loadPreferencesFromJson(
       tryCast<Map<String, dynamic>>(json["slowdowner"]) ?? {},
     );
-    looping.loadPreferencesFromJson(
+    loop.loadPreferencesFromJson(
       tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
     );
     equalizer.loadPreferencesFromJson(
@@ -209,7 +209,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     return {
       "position": position.inMilliseconds,
       "slowdowner": slowdowner.savePreferencesToJson(),
-      "looper": looping.savePreferencesToJson(),
+      "looper": loop.savePreferencesToJson(),
       "equalizer": equalizer.savePreferencesToJson(),
       "analyzer": analyzer.savePreferencesToJson(),
     };
@@ -264,7 +264,7 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
 
   @override
   void seek(Duration position) {
-    position = looping.clamp(position);
+    position = loop.clamp(position);
     for (SoundHandle handle in handles) {
       _soloud.seek(handle, position);
     }
