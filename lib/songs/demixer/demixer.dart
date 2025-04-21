@@ -75,9 +75,7 @@ class StemsNotifier extends ValueNotifier<List<Stem>> {
 
 class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
   /// A component of the [MultiPlayer] that is used to separate a song into stems and change the volume of those individually.
-  DemixerComponent(
-    super.player,
-  );
+  DemixerComponent(super.player);
 
   /// The stems that this song has been separated into.
   /// TODO: Sort these
@@ -89,7 +87,8 @@ class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
     Stem(StemType.bass, player),
     Stem(StemType.vocals, player),
     Stem(StemType.other, player),
-  ]));
+  ]))
+    ..addListener(notifyListeners);
 
   /// Load settings from a [json] map.
   ///
@@ -105,8 +104,8 @@ class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
   ///  - `enabled` [bool] Whether this stem is enabled and should be played.
   ///  - `volume` [double] The volume this stem is played back at. Must be between 0 and 1.
   @override
-  void loadSettingsFromJson(Map<String, dynamic> json) {
-    super.loadSettingsFromJson(json);
+  void loadPreferencesFromJson(Map<String, dynamic> json) {
+    super.loadPreferencesFromJson(json);
 
     for (Stem stem in stems) {
       Map<String, dynamic>? stemData =
@@ -118,6 +117,8 @@ class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
       double? volume = tryCast<double>(stemData?["volume"]);
       stem.volume = volume ?? 0.5;
     }
+
+    notifyListeners();
   }
 
   /// Save settings for a song to a json map.
@@ -134,9 +135,9 @@ class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
   ///  - `enabled` [bool] Whether this stem is enabled and should be played.
   ///  - `volume` [double] The volume this stem is played back at. Must be between 0 and 1.
   @override
-  Map<String, dynamic> saveSettingsToJson() {
+  Map<String, dynamic> savePreferencesToJson() {
     return {
-      ...super.saveSettingsToJson(),
+      ...super.savePreferencesToJson(),
       for (Stem stem in stems)
         stem.type.name: {
           "enabled": stem.enabled,

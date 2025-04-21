@@ -26,14 +26,15 @@ class AnalyzerComponent extends SongPlayerComponent {
     waveformProcess.cancel();
 
     player.slowdowner.pitchNotifier.removeListener(_updateChords);
+    super.dispose();
   }
 
   /// The duration window around the current position shown by widgets.
   Duration get durationShown => durationShownNotifier.value;
   set durationShown(Duration value) => durationShownNotifier.value =
       value.clamp(minDurationShown, maxDurationShown);
-  final ValueNotifier<Duration> durationShownNotifier =
-      ValueNotifier(defaultDurationShown);
+  late final ValueNotifier<Duration> durationShownNotifier =
+      ValueNotifier(defaultDurationShown)..addListener(notifyListeners);
 
   /// The process analyzing the chords of the current song.
   late final ChordIdentificationProcess chordsProcess =
@@ -75,13 +76,15 @@ class AnalyzerComponent extends SongPlayerComponent {
   /// [json] can contain the following key-value pairs:
   ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
-  void loadSettingsFromJson(Map<String, dynamic> json) {
-    super.loadSettingsFromJson(json);
+  void loadPreferencesFromJson(Map<String, dynamic> json) {
+    super.loadPreferencesFromJson(json);
 
     int? durationShown = tryCast<int>(json["durationShown"]);
     this.durationShown = Duration(
       milliseconds: durationShown ?? defaultDurationShown.inMilliseconds,
     ).clamp(minDurationShown, maxDurationShown);
+
+    notifyListeners();
   }
 
   /// Save settings for a song to a json map.
@@ -89,9 +92,9 @@ class AnalyzerComponent extends SongPlayerComponent {
   /// Saves the following key-value pairs:
   ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
-  Map<String, dynamic> saveSettingsToJson() {
+  Map<String, dynamic> savePreferencesToJson() {
     return {
-      ...super.saveSettingsToJson(),
+      ...super.savePreferencesToJson(),
       "durationShown": durationShown.inMilliseconds,
     };
   }

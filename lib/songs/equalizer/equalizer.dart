@@ -47,6 +47,7 @@ class EqualizerComponent extends SongPlayerComponent {
   @override
   void dispose() {
     filter.deactivate();
+    super.dispose();
   }
 
   /// The frequency bands of the equalizer.
@@ -56,7 +57,8 @@ class EqualizerComponent extends SongPlayerComponent {
     8,
     (index) =>
         EqualizerBand()..gainNotifier.addListener(() => _updateBand(index)),
-  )));
+  )))
+        ..addListener(notifyListeners);
 
   void _updateBand(int index) {
     [
@@ -84,8 +86,8 @@ class EqualizerComponent extends SongPlayerComponent {
   /// [json] can contain the following key-value pairs:
   ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
-  void loadSettingsFromJson(Map<String, dynamic> json) async {
-    super.loadSettingsFromJson(json);
+  void loadPreferencesFromJson(Map<String, dynamic> json) async {
+    super.loadPreferencesFromJson(json);
 
     final Map? gains = tryCast<Map>(json["gain"]);
     for (var i = 0; i < bands.length; i++) {
@@ -93,6 +95,8 @@ class EqualizerComponent extends SongPlayerComponent {
           tryCast<double>(gains?["$i"]) ?? EqualizerBand.defaultGain;
       bands[i].gain = gain;
     }
+
+    notifyListeners();
   }
 
   /// Save settings for a song to a json map.
@@ -100,9 +104,9 @@ class EqualizerComponent extends SongPlayerComponent {
   /// Saves the following key-value pairs:
   ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
-  Map<String, dynamic> saveSettingsToJson() {
+  Map<String, dynamic> savePreferencesToJson() {
     return {
-      ...super.saveSettingsToJson(),
+      ...super.savePreferencesToJson(),
       "gain": bands.asMap().map((index, band) => MapEntry("$index", band.gain)),
     };
   }

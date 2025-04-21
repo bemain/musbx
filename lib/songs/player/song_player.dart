@@ -13,7 +13,8 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/slowdowner/slowdowner.dart';
 import 'package:musbx/widgets/widgets.dart';
 
-abstract class SongPlayerComponent<T extends SongPlayer> {
+abstract class SongPlayerComponent<T extends SongPlayer>
+    extends ChangeNotifier {
   SongPlayerComponent(this.player);
 
   /// The player that this is a part of.
@@ -27,20 +28,26 @@ abstract class SongPlayerComponent<T extends SongPlayer> {
   /// Free the resources used by this component.
   ///
   /// Called when the [player] that this is part of disposed.
-  FutureOr<void> dispose() async {}
+  @override
+  @mustCallSuper
+  FutureOr<void> dispose() async {
+    super.dispose();
+  }
 
-  /// Load settings for a song from a [json] map.
+  /// Load preferences for a song from a [json] map.
   ///
   /// Called when a song that has preferences saved is loaded.
   ///
   /// Implementations should be able to handle a value being null,
   /// and never expect a specific key to exist.
+  ///
+  /// If any values were changed, this should call [notifyListeners].
   @mustCallSuper
-  void loadSettingsFromJson(Map<String, dynamic> json) {}
+  void loadPreferencesFromJson(Map<String, dynamic> json) {}
 
   /// Save settings for a song to a json map.
   @mustCallSuper
-  Map<String, dynamic> saveSettingsToJson() {
+  Map<String, dynamic> savePreferencesToJson() {
     return {};
   }
 }
@@ -162,7 +169,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// The components that extend the functionality of this player.
   @mustCallSuper
   List<SongPlayerComponent> get components =>
-      List.unmodifiable([slowdowner, equalizer, analyzer]);
+      List.unmodifiable([slowdowner, equalizer, analyzer, looping]);
 
   /// Component for changing the pitch and speed of the song.
   late final SlowdownerComponent slowdowner = SlowdownerComponent(this);
@@ -174,7 +181,6 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   late final AnalyzerComponent analyzer = AnalyzerComponent(this);
 
   /// Component for looping a section of the song.
-  /// TODO: Rename
   late final LoopComponent looping = LoopComponent(this);
 
   /// Load song preferences from a [json] map.
@@ -183,16 +189,16 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     int? position = tryCast<int>(json["position"]);
     seek(Duration(milliseconds: position ?? 0));
 
-    slowdowner.loadSettingsFromJson(
+    slowdowner.loadPreferencesFromJson(
       tryCast<Map<String, dynamic>>(json["slowdowner"]) ?? {},
     );
-    looping.loadSettingsFromJson(
+    looping.loadPreferencesFromJson(
       tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
     );
-    equalizer.loadSettingsFromJson(
+    equalizer.loadPreferencesFromJson(
       tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
     );
-    analyzer.loadSettingsFromJson(
+    analyzer.loadPreferencesFromJson(
       tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
     );
   }
@@ -202,10 +208,10 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   Map<String, dynamic> toPreferences() {
     return {
       "position": position.inMilliseconds,
-      "slowdowner": slowdowner.saveSettingsToJson(),
-      "looper": looping.saveSettingsToJson(),
-      "equalizer": equalizer.saveSettingsToJson(),
-      "analyzer": analyzer.saveSettingsToJson(),
+      "slowdowner": slowdowner.savePreferencesToJson(),
+      "looper": looping.savePreferencesToJson(),
+      "equalizer": equalizer.savePreferencesToJson(),
+      "analyzer": analyzer.savePreferencesToJson(),
     };
   }
 }
@@ -258,6 +264,7 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
 
   @override
   void seek(Duration position) {
+    position = looping.clamp(position);
     for (SoundHandle handle in handles) {
       _soloud.seek(handle, position);
     }
@@ -276,7 +283,7 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
   void loadPreferences(Map<String, dynamic> json) {
     super.loadPreferences(json);
 
-    demixer.loadSettingsFromJson(
+    demixer.loadPreferencesFromJson(
       tryCast<Map<String, dynamic>>(json["demixer"]) ?? {},
     );
   }
@@ -285,7 +292,7 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
   Map<String, dynamic> toPreferences() {
     return {
       ...super.toPreferences(),
-      "demixer": demixer.saveSettingsToJson(),
+      "demixer": demixer.savePreferencesToJson(),
     };
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -7,36 +5,41 @@ import 'package:musbx/widgets/widgets.dart';
 class LoopComponent extends SongPlayerComponent {
   LoopComponent(super.player);
 
-  /// The section being looped.
-  LoopSection get section => sectionNotifier.value;
-  set section(LoopSection section) => sectionNotifier.value = section;
-  final ValueNotifier<LoopSection> sectionNotifier =
-      ValueNotifier(LoopSection());
+  /// The start of the section being looped.
+  Duration get start => startNotifier.value;
+  set start(Duration value) => startNotifier.value = value;
+  late final ValueNotifier<Duration> startNotifier =
+      ValueNotifier(Duration.zero)..addListener(notifyListeners);
+
+  /// The end of the section being looped.
+  Duration get end => endNotifier.value;
+  set end(Duration value) => endNotifier.value = value;
+  late final ValueNotifier<Duration> endNotifier =
+      ValueNotifier(player.duration)..addListener(notifyListeners);
 
   @override
-  FutureOr<void> initialize() {
+  void initialize() {
     player.positionNotifier.addListener(() {
-      // Clamp the current position to the looped section
-      if (player.position < section.start || player.position > section.end) {
-        player.seek(player.position);
+      if (player.position < start || player.position > end) {
+        if (player.isPlaying) {
+          // Seek to the start
+          player.seek(start);
+        } else {
+          // Clamp the current position to the looped section
+          player.position = clamp(player.position);
+        }
       }
     });
-    sectionNotifier.addListener(() async {
-      // Clamp the current position to the looped section
-      if (player.position < section.start || player.position > section.end) {
-        player.seek(player.position);
+    addListener(() {
+      if (player.position < start || player.position > end) {
+        player.position = clamp(player.position);
       }
     });
   }
 
-  /// Clamp [position] to between [section.start] and [section.end].
+  /// Clamp [position] to between [start] and [end].
   Duration clamp(Duration position) {
-    return Duration(
-      milliseconds: position.inMilliseconds.clamp(
-        section.start.inMilliseconds,
-        section.end.inMilliseconds,
-      ),
-    );
+    return position.clamp(start, end);
   }
 
   /// Load settings from a [json] map.
@@ -45,10 +48,10 @@ class LoopComponent extends SongPlayerComponent {
   ///  - `start` [int] The start position of the section being looped, in milliseconds.
   ///  - `end` [int] The end position of the section being looped, in milliseconds.
   ///
-  /// If start and end don't make a valid LoopSection (e.g. if start > end) the looped [section] is not set.
+  /// If start and end don't make a valid LoopSection (e.g. if start > end) no values are set.
   @override
-  void loadSettingsFromJson(Map<String, dynamic> json) {
-    super.loadSettingsFromJson(json);
+  void loadPreferencesFromJson(Map<String, dynamic> json) {
+    super.loadPreferencesFromJson(json);
 
     Duration start = Duration(milliseconds: tryCast<int>(json["start"]) ?? 0);
     Duration end = Duration(
@@ -70,7 +73,10 @@ class LoopComponent extends SongPlayerComponent {
       return;
     }
 
-    section = LoopSection(start: start, end: end);
+    this.start = start;
+    this.end = end;
+
+    notifyListeners();
   }
 
   /// Save settings for a song to a json map.
@@ -79,34 +85,11 @@ class LoopComponent extends SongPlayerComponent {
   ///  - `start` [int] The start position of the section being looped, in milliseconds.
   ///  - `end` [int] The end position of the section being looped, in milliseconds.
   @override
-  Map<String, dynamic> saveSettingsToJson() {
+  Map<String, dynamic> savePreferencesToJson() {
     return {
-      ...super.saveSettingsToJson(),
-      "start": section.start.inMilliseconds,
-      "end": section.end.inMilliseconds,
+      ...super.savePreferencesToJson(),
+      "start": start.inMilliseconds,
+      "end": end.inMilliseconds,
     };
   }
-}
-
-/// Representation of a sect by [Looper] to select what section of the song to loop.
-class LoopSection {
-  LoopSection({
-    this.start = Duration.zero,
-    this.end = const Duration(seconds: 1),
-  }) {
-    assert(start <= end);
-  }
-
-  final Duration start;
-  final Duration end;
-
-  /// Duration between [start] and [end].
-  Duration get length => end - start;
-
-  @override
-  bool operator ==(Object other) =>
-      other is LoopSection && start == other.start && end == other.end;
-
-  @override
-  int get hashCode => Object.hash(start, end);
 }

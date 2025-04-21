@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
-import 'package:musbx/songs/looper/looper.dart';
 
 class LoopSlider extends StatelessWidget {
   /// Range slider for selecting the section to loop.
@@ -14,9 +13,9 @@ class LoopSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     bool wasPlayingBeforeChange = false;
 
-    return ValueListenableBuilder(
-      valueListenable: player.looping.sectionNotifier,
-      builder: (context, loopSection, _) {
+    return ListenableBuilder(
+      listenable: player.looping,
+      builder: (context, _) {
         PositionSliderStyle style =
             Theme.of(context).extension<PositionSliderStyle>()!;
 
@@ -37,14 +36,14 @@ class LoopSlider extends StatelessWidget {
               ),
           child: RangeSlider(
               labels: RangeLabels(
-                loopSection.start.toString().substring(2, 10),
-                loopSection.end.toString().substring(2, 10),
+                player.looping.start.toString().substring(2, 10),
+                player.looping.end.toString().substring(2, 10),
               ),
               min: 0,
               max: player.duration.inMilliseconds.toDouble(),
               values: RangeValues(
-                loopSection.start.inMilliseconds.toDouble(),
-                loopSection.end.inMilliseconds.toDouble(),
+                player.looping.start.inMilliseconds.toDouble(),
+                player.looping.end.inMilliseconds.toDouble(),
               ),
               onChangeStart: (value) {
                 wasPlayingBeforeChange = player.isPlaying;
@@ -54,20 +53,20 @@ class LoopSlider extends StatelessWidget {
                 if (wasPlayingBeforeChange) player.resume();
               },
               onChanged: (RangeValues values) {
-                final LoopSection previous = player.looping.section;
+                final Duration previousStart = player.looping.start;
+                final Duration previousEnd = player.looping.end;
 
                 // Update section
-                player.looping.section = LoopSection(
-                  start: Duration(milliseconds: values.start.toInt()),
-                  end: Duration(milliseconds: values.end.toInt()),
-                );
+                player.looping.start =
+                    Duration(milliseconds: values.start.toInt());
+                player.looping.end = Duration(milliseconds: values.end.toInt());
 
-                if (previous.start.inMilliseconds != values.start) {
+                if (previousStart.inMilliseconds != values.start) {
                   // The start value changed
                   player.seek(
                     Duration(milliseconds: values.start.toInt()),
                   );
-                } else if (previous.end.inMilliseconds != values.end) {
+                } else if (previousEnd.inMilliseconds != values.end) {
                   // The end value changed
                   player.seek(
                     Duration(milliseconds: values.end.toInt()),

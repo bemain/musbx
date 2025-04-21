@@ -19,13 +19,15 @@ class SlowdownerComponent extends SongPlayerComponent {
   @override
   void dispose() {
     filter.deactivate();
+    super.dispose();
   }
 
   /// How much the pitch will be shifted, in semitones.
   double get pitch => pitchNotifier.value;
   set pitch(double value) => pitchNotifier.value = value;
   late final ValueNotifier<double> pitchNotifier = ValueNotifier(0)
-    ..addListener(_updatePitch);
+    ..addListener(_updatePitch)
+    ..addListener(notifyListeners);
 
   void _updatePitch() {
     filter.semitones.value = pitch;
@@ -35,7 +37,8 @@ class SlowdownerComponent extends SongPlayerComponent {
   double get speed => speedNotifier.value;
   set speed(double value) => speedNotifier.value = value;
   late final ValueNotifier<double> speedNotifier = ValueNotifier(1)
-    ..addListener(_updateSpeed);
+    ..addListener(_updateSpeed)
+    ..addListener(notifyListeners);
 
   void _updateSpeed() {
     SoLoud.instance.setRelativePlaySpeed(player.handle, speed);
@@ -48,11 +51,13 @@ class SlowdownerComponent extends SongPlayerComponent {
   ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
-  void loadSettingsFromJson(Map<String, dynamic> json) {
-    super.loadSettingsFromJson(json);
+  void loadPreferencesFromJson(Map<String, dynamic> json) {
+    super.loadPreferencesFromJson(json);
 
     pitch = tryCast<double>(json["pitch"])?.clamp(-12, 12) ?? 0.0;
     speed = tryCast<double>(json["speed"])?.clamp(0.5, 2) ?? 1.0;
+
+    notifyListeners();
   }
 
   /// Save settings for a song to a json map.
@@ -61,9 +66,9 @@ class SlowdownerComponent extends SongPlayerComponent {
   ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
-  Map<String, dynamic> saveSettingsToJson() {
+  Map<String, dynamic> savePreferencesToJson() {
     return {
-      ...super.saveSettingsToJson(),
+      ...super.savePreferencesToJson(),
       "pitch": pitch,
       "speed": speed,
     };
