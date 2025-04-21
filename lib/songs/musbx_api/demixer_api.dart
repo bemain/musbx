@@ -3,8 +3,6 @@ import 'dart:io';
 
 import 'package:http_parser/http_parser.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/widgets/widgets.dart';
 import 'package:http/http.dart' as http;
 
 enum StemFileType {
@@ -48,16 +46,6 @@ enum StemType {
 
 class DemixerApiHost extends MusbxApiHost {
   DemixerApiHost(super.address, {super.https});
-
-  /// The directory where stems for a [song] are saved.
-  static Future<Directory> getStemsDirectory(Song song) async {
-    final dir = Directory("${(await song.cacheDirectory).path}/stems");
-    await dir.create(recursive: true);
-    return dir;
-  }
-
-  static final Future<Directory> extractedFilesDirectory =
-      createTempDirectory("demixer/extracted");
 
   /// Upload a local [file] to the server.
   ///
@@ -142,7 +130,7 @@ class DemixerApiHost extends MusbxApiHost {
   }
 
   /// Download a [stem] for a [song].
-  Future<File> downloadStemNew(
+  Future<File> downloadStem(
     String songId,
     StemType stem,
     Directory destination, {
@@ -169,38 +157,6 @@ class DemixerApiHost extends MusbxApiHost {
 
     File file = File("${destination.path}/${stem.name}.$extension");
     await file.create(recursive: true);
-    await file.writeAsBytes(response.bodyBytes);
-    return file;
-  }
-
-  /// Download a [stem] for a [song].
-  Future<File> downloadStem(
-    String songId,
-    Song song,
-    StemType stem, {
-    StemFileType fileType = StemFileType.mp3,
-  }) async {
-    var response = await get("/stem/$songId/${stem.name}", headers: {
-      "FileType": fileType.name,
-    });
-    if (response.statusCode != 200) {
-      throw HttpException(
-        jsonDecode(response.body)["message"],
-        uri: response.request?.url,
-      );
-    }
-
-    // Determine file extension
-    assert(response.headers.containsKey("content-disposition"));
-    String fileName =
-        response.headers["content-disposition"]!.split("filename=").last.trim();
-    assert(fileName.isNotEmpty);
-    String extension = fileName.split(".").last;
-    assert(extension == fileType.name,
-        "The returned stem file ('$fileName') was not of the requested type (.${fileType.name}).");
-
-    File file =
-        File("${(await getStemsDirectory(song)).path}/${stem.name}.$extension");
     await file.writeAsBytes(response.bodyBytes);
     return file;
   }

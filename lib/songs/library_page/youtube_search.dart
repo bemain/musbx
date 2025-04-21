@@ -6,6 +6,7 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/youtube_api/video.dart';
 import 'package:musbx/widgets/youtube_api/youtube_api.dart';
 import 'package:musbx/utils/history_handler.dart';
@@ -22,7 +23,7 @@ Future<void> pickYoutubeSong(BuildContext context, {String? query}) async {
 
   if (video == null) return;
 
-  await Songs.history.add(SongNew<SinglePlayable>(
+  await Songs.history.add(Song<SinglePlayable>(
     id: video.id,
     title: HtmlUnescape().convert(video.title),
     artist: HtmlUnescape().convert(video.channelTitle),

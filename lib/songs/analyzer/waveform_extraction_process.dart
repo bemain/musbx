@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:just_waveform/just_waveform.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/process.dart';
 
 class WaveformExtractionProcess extends Process<Waveform> {
@@ -11,14 +11,14 @@ class WaveformExtractionProcess extends Process<Waveform> {
   WaveformExtractionProcess(this.song);
 
   /// The song being processed.
-  final SongNew song;
+  final Song song;
 
   /// Get the file were the waveform for [song] is saved.
-  static Future<File> getWaveformFile(SongNew song) async =>
+  static Future<File> getWaveformFile(Song song) async =>
       File("${(await song.cacheDirectory).path}/waveform.wave");
 
   /// Get the file where the audio for [source] is cached.
-  File? _cacheFile(SongSourceNew source) {
+  File? _cacheFile(SongSource source) {
     return switch (source) {
       FileSource() => source.cacheFile,
       YoutubeSource() => source.cacheFile,
@@ -35,7 +35,7 @@ class WaveformExtractionProcess extends Process<Waveform> {
       return await JustWaveform.parse(outFile);
     }
 
-    final SongSourceNew source = song.source;
+    final SongSource source = song.source;
     final File? inFile = _cacheFile(source);
     if (inFile == null || !await inFile.exists()) {
       throw "File doesn't exist: $inFile";

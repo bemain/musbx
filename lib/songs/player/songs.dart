@@ -10,7 +10,8 @@ import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/song_preferences.dart';
+import 'package:musbx/songs/player/preferences.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/ads.dart';
@@ -18,7 +19,7 @@ import 'package:musbx/widgets/ads.dart';
 /// The demo song loaded the first time the user launches the app.
 /// Access to this song is unrestricted.
 /// TODO: Include a demixed version as demo instead.
-final SongNew<SinglePlayable> demoSong = SongNew(
+final Song<SinglePlayable> demoSong = Song(
   id: "demo",
   title: "In Treble, Spilled Some Jazz Jam",
   artist: "Erik Lagerstedt",
@@ -68,16 +69,16 @@ class Songs extends BaseAudioHandler with SeekHandler {
   }
 
   /// Used internally to load and save preferences for songs.
-  static final SongPreferencesNew _preferences = SongPreferencesNew();
+  static final SongPreferences _preferences = SongPreferences();
 
   /// The history of previously loaded songs.
-  static final HistoryHandler<SongNew> history = HistoryHandler<SongNew>(
+  static final HistoryHandler<Song> history = HistoryHandler<Song>(
     historyFileName: "song_history",
     fromJson: (json) {
       if (json is! Map<String, dynamic>) {
         throw "[SONG HISTORY] Incorrectly formatted entry in history file: ($json)";
       }
-      SongNew? song = SongNew.fromJson(json);
+      Song? song = Song.fromJson(json);
       if (song == null) {
         throw "[SONG HISTORY] History entry ($json) is missing required fields";
       }
@@ -97,7 +98,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
   static const int freeSongsPerWeek = 3;
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
-  static Iterable<SongNew> get songsPlayedThisWeek => history.map.entries
+  static Iterable<Song> get songsPlayedThisWeek => history.map.entries
       .where((entry) =>
           entry.key.difference(DateTime.now()).abs() < const Duration(days: 7))
       .where((entry) => entry.value.id != demoSong.id) // Exclude demo song
@@ -121,7 +122,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
   ///
   /// If premium hasn't been unlocked and [ignoreFreeLimit] is `false`, shows an ad before loading the song.
   static Future<SongPlayer<P>> load<P extends Playable>(
-    SongNew<P> song, {
+    Song<P> song, {
     bool ignoreFreeLimit = false,
   }) async {
     if (!Purchases.hasPremium && !ignoreFreeLimit) {

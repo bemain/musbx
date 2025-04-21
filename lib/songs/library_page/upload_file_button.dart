@@ -7,6 +7,7 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
 import 'package:musbx/widgets/speed_dial/action.dart';
@@ -62,7 +63,7 @@ class UploadSongButton extends SpeedDialChild {
 
     final String id = file.path!.hashCode.toString();
 
-    await Songs.history.add(SongNew<SinglePlayable>(
+    await Songs.history.add(Song<SinglePlayable>(
       id: id,
       title: file.name.split(".").first,
       source: FileSource(File(file.path!)),

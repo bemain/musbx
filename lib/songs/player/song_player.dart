@@ -10,6 +10,7 @@ import 'package:musbx/songs/loop/loop.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/songs/slowdowner/slowdowner.dart';
 import 'package:musbx/widgets/widgets.dart';
 
@@ -70,13 +71,13 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   ///  - Play the [playable], to obtain a sound [handle].
   ///  - Initialize [components].
   static Future<SongPlayer<P>> load<P extends Playable>(
-    SongNew<P> song,
+    Song<P> song,
   ) async {
-    if (song.source is SongSourceNew<SinglePlayable>) {
-      return await SinglePlayer.load(song as SongNew<SinglePlayable>)
+    if (song.source is SongSource<SinglePlayable>) {
+      return await SinglePlayer.load(song as Song<SinglePlayable>)
           as SongPlayer<P>;
-    } else if (song.source is SongSourceNew<MultiPlayable>) {
-      return await MultiPlayer.load(song as SongNew<MultiPlayable>)
+    } else if (song.source is SongSource<MultiPlayable>) {
+      return await MultiPlayer.load(song as Song<MultiPlayable>)
           as SongPlayer<P>;
     }
 
@@ -84,7 +85,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   }
 
   /// The song that this player plays.
-  final SongNew<P> song;
+  final Song<P> song;
 
   /// The object created from [song.source], that in turn created the current song [handle].
   final P playable;
@@ -220,7 +221,7 @@ class SinglePlayer extends SongPlayer<SinglePlayable> {
   /// An implementation of [SongPlayer] that plays a single audio clip.
   SinglePlayer._(super.song, super.playable, super.handle) : super._();
 
-  static Future<SinglePlayer> load(SongNew<SinglePlayable> song) async {
+  static Future<SinglePlayer> load(Song<SinglePlayable> song) async {
     final SinglePlayable playable = await song.source.load(
       cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
     );
@@ -248,7 +249,7 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
   /// Forwarded from the [playable].
   Iterable<SoundHandle> get handles => playable.handles!.values;
 
-  static Future<MultiPlayer> load(SongNew<MultiPlayable> song) async {
+  static Future<MultiPlayer> load(Song<MultiPlayable> song) async {
     final MultiPlayable playable = await song.source.load(
       cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
     );

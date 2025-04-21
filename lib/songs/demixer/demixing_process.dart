@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/process.dart';
 
 enum DemixingStep {
@@ -33,7 +33,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   /// TODO: Improve progress tracking for upload and download.
   DemixingProcess(this.parentSource, {required this.cacheDirectory});
 
-  final SongSourceNew parentSource;
+  final SongSource parentSource;
 
   final Directory cacheDirectory;
 
@@ -64,9 +64,6 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
   @override
   Future<Map<StemType, File>> process() async {
-    /// A song representing [song], but in the old format.
-    /// TODO: Remove this and migrate methods to use the new [SongNew].
-
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
@@ -136,7 +133,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
     Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
       StemType.values.map((stem) async {
-        File file = await host.downloadStemNew(
+        File file = await host.downloadStem(
           // When dimixing files, [song.id] is not the same as the id of the song on the API ([response.songId]).
           // Thus we need to pass it as well, which is ugly. TODO: Fix this.
           response.songId,

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/library_page/youtube_search.dart';
@@ -47,7 +47,7 @@ class LibraryPage extends StatelessWidget {
                 return const [];
               }
 
-              final Iterable<SongNew> songHistory = Songs.history
+              final Iterable<Song> songHistory = Songs.history
                   .sorted(ascending: false)
                   .where((song) =>
                       song.title.toLowerCase().contains(searchPhrase) ||
@@ -56,7 +56,7 @@ class LibraryPage extends StatelessWidget {
 
               return [
                 const SizedBox(height: 8),
-                for (final SongNew song in songHistory)
+                for (final Song song in songHistory)
                   _buildSongTile(
                     context,
                     song,
@@ -97,8 +97,7 @@ class LibraryPage extends StatelessWidget {
             return SliverList.list(
               children: [
                 const SizedBox(height: 8),
-                for (final SongNew song
-                    in Songs.history.sorted(ascending: false))
+                for (final Song song in Songs.history.sorted(ascending: false))
                   _buildSongTile(context, song),
                 const SizedBox(height: 80),
               ],
@@ -112,7 +111,7 @@ class LibraryPage extends StatelessWidget {
 
   Widget _buildSongTile(
     BuildContext context,
-    SongNew song, {
+    Song song, {
     bool showOptions = true,
     Function()? onSelected,
   }) {
@@ -165,7 +164,7 @@ class LibraryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOptionsSheet(BuildContext context, SongNew song) {
+  Widget _buildOptionsSheet(BuildContext context, Song song) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -244,7 +243,7 @@ class LibraryPage extends StatelessWidget {
     );
   }
 
-  Widget? _buildSongSourceAvatar(SongNew song) {
+  Widget? _buildSongSourceAvatar(Song song) {
     if (song == demoSong) {
       return const Icon(Symbols.science);
     }
