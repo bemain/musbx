@@ -147,6 +147,8 @@ class Songs extends BaseAudioHandler with SeekHandler {
 
     // Load audio
     final SongPlayer<P> player = await SongPlayer.load<P>(song);
+    final prefs = await _preferences.load(song);
+    if (prefs != null) player.loadPreferences(prefs);
 
     // Add to song history.
     await history.add(song);
