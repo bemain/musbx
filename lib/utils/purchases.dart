@@ -38,6 +38,12 @@ class Purchases {
       isAvailable = false;
     }
 
+    if (!Platform.isAndroid || !Platform.isIOS) {
+      // Payments are only supported on mobile. On other platforms, simply enable premium.
+      hasPremiumNotifier.value = true;
+      return;
+    }
+
     if (!isAvailable) return;
 
     _inAppPurchase.purchaseStream.listen((newPurchases) async {
