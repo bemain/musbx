@@ -17,8 +17,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   final Song song;
 
   /// The file where the chords for this [song] are cached.
-  Future<File> get cacheFile async =>
-      File("${(await song.cacheDirectory).path}/chords.json");
+  File get cacheFile => File("${song.cacheDirectory.path}/chords.json");
 
   /// Perform chord analysis on the [source] using the given [host].
   Future<Map> _analyzeSource(SongSource source, ChordsApiHost host) async {
@@ -35,15 +34,14 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   }
 
   @override
-  Future<Map<Duration, Chord?>> process() async {
+  Future<Map<Duration, Chord?>> execute() async {
     Map? chords;
     // Check cache
-    File cache = await cacheFile;
-    if (await cache.exists()) {
+    if (await cacheFile.exists()) {
       try {
-        chords = jsonDecode(await cache.readAsString()) as Map;
+        chords = jsonDecode(await cacheFile.readAsString()) as Map;
       } catch (e) {
-        debugPrint("[ANALYZER] Malformed chords file: '${cache.path}'");
+        debugPrint("[ANALYZER] Malformed chords file: '${cacheFile.path}'");
       }
     }
 
@@ -56,7 +54,8 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
       chords = await _analyzeSource(song.source, host);
 
       // Save to cache
-      await cache.writeAsString(jsonEncode(chords));
+      await cacheFile.create(recursive: true);
+      await cacheFile.writeAsString(jsonEncode(chords));
     }
 
     breakIfCancelled();

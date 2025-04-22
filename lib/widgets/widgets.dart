@@ -161,12 +161,28 @@ class MeasureSize extends SingleChildRenderObjectWidget {
   }
 }
 
-/// Creates a temporary directory with the given [name].
-/// If the directory already exists, does nothing.
-Future<Directory> createTempDirectory(String name) async {
-  var dir = Directory("${(await getTemporaryDirectory()).path}/$name/");
-  await dir.create(recursive: true);
-  return dir;
+class Directories {
+  Directories._();
+
+  static late final Directory _tempDir;
+
+  /// Get a temporary directory with the given [name].
+  ///
+  /// This does not check to make sure that the directory actually exists.
+  static Directory getTempDirectory(String name) =>
+      Directory("${_tempDir.path}/$name/");
+
+  /// Creates a temporary directory with the given [name].
+  /// If the directory already exists, does nothing.
+  static Future<Directory> createTempDirectory(String name) async {
+    var dir = getTempDirectory(name);
+    await dir.create(recursive: true);
+    return dir;
+  }
+
+  static Future<void> init() async {
+    _tempDir = await getTemporaryDirectory();
+  }
 }
 
 class ListNotifier<T> extends ChangeNotifier {

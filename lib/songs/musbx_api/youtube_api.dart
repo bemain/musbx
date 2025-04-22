@@ -8,15 +8,15 @@ class YoutubeApiHost extends MusbxApiHost {
   YoutubeApiHost(super.address, {super.https});
 
   /// The directory where Youtube files are saved.
-  static final Future<Directory> youtubeDirectory =
-      createTempDirectory("youtube");
+  static final Directory youtubeDirectory =
+      Directories.getTempDirectory("youtube");
 
   /// The file where the audio for Youtube song with id [youtubeId] is saved.
   static Future<File> getYoutubeFile(
     String youtubeId,
     String extension,
   ) async =>
-      File("${(await youtubeDirectory).path}/$youtubeId.$extension");
+      File("${youtubeDirectory.path}/$youtubeId.$extension");
 
   /// Download the audio for a Youtube video.
   Future<File> downloadYoutubeSong(

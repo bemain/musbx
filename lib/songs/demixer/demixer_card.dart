@@ -1,89 +1,92 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
+import 'package:musbx/songs/demixer/demixing_process.dart';
+import 'package:musbx/songs/musbx_api/musbx_api.dart';
+import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/widgets/flat_card.dart';
 import 'package:musbx/utils/purchases.dart';
 
-class DemixerCard extends StatelessWidget {
-  DemixerCard({super.key});
+class DemixingProcessIndicator extends StatefulWidget {
+  const DemixingProcessIndicator({super.key, required this.song});
 
-  final SongPlayer player = Songs.player!;
+  final Song song;
+
+  @override
+  State<DemixingProcessIndicator> createState() =>
+      _DemixingProcessIndicatorState();
+}
+
+class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
+  late DemixingProcess process;
+
+  @override
+  void initState() {
+    super.initState();
+    process = createProcess();
+  }
+
+  @override
+  void dispose() {
+    process.cancel();
+    super.dispose();
+  }
+
+  DemixingProcess createProcess() {
+    return DemixingProcess(
+      widget.song.source,
+      cacheDirectory: Directory("${widget.song.cacheDirectory.path}/source/"),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (player is! MultiPlayer) {
-      // TODO: Figure out what should be done with this widget if the current playable is not a [DemixedAudio].
-      return const SizedBox();
-    }
+    return ListenableBuilder(
+      listenable: process,
+      builder: (context, child) {
+        if (process.hasError) {
+          if (process.error is OutOfDateException) return buildOutOfDate();
 
-    return FlatCard(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
-        child: Column(children: [
-          _buildHeader(context),
-          Expanded(
-            child: _buildBody(context),
-          ),
-        ]),
-      ),
-    );
-  }
+          return buildError();
+        }
 
-  /// Assumes [player] is a [MultiPlayer].
-  Widget _buildHeader(BuildContext context) {
-    final MultiPlayer player = this.player as MultiPlayer;
+        if (process.isActive) {
+          return buildLoading(context, process);
+        }
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Align(
-          alignment: Alignment.center,
-          child: Center(
-            child: Text(
-              "Instruments",
-              style: Theme.of(context).textTheme.titleMedium,
+        /// Override the history entry for the song with a demixed variant.
+        Songs.history.add(widget.song.copyWith<MultiPlayable>(
+          source: DemixedSource(widget.song.source),
+        ));
+
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "The song has been separated into instruments. To complete the loading process, reload the page.",
+              textAlign: TextAlign.center,
             ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: ValueListenableBuilder(
-            valueListenable: player.demixer.stemsNotifier,
-            builder: (context, stems, child) => IconButton(
-              iconSize: 20,
-              onPressed: stems.every((Stem stem) =>
-                      stem.enabled && stem.volume == Stem.defaultVolume)
-                  ? null
-                  : () {
-                      for (Stem stem in stems) {
-                        stem.volume = Stem.defaultVolume;
-                        stem.enabled = true;
-                      }
-                    },
-              icon: const Icon(Symbols.refresh),
+            const SizedBox(height: 8),
+            FilledButton(
+              onPressed: () {
+                context.replace(Navigation.songRoute(widget.song.id));
+              },
+              child: const Text("Reload"),
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Assumes [player] is a [MultiPlayer].
-  Widget _buildBody(BuildContext context) {
-    final MultiPlayer player = this.player as MultiPlayer;
-
-    return ValueListenableBuilder(
-      valueListenable: player.demixer.stemsNotifier,
-      builder: (context, stems, child) => ListView(
-        children: [
-          for (Stem stem in player.demixer.stems) StemControls(stem: stem),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
@@ -104,7 +107,6 @@ Please update to the latest version to use the Demixer.""",
     );
   }
 
-  /// TODO: Remove? Leaving it here for the moment since I might want to use it later
   Widget buildError() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -118,17 +120,18 @@ Please update to the latest version to use the Demixer.""",
           ),
         ),
         OutlinedButton(
-          onPressed: () {},
+          onPressed: () {
+            setState(() {
+              process = createProcess();
+            });
+          },
           child: const Text("Retry"),
         ),
       ],
     );
   }
 
-  /// TODO: Remove? Leaving it here for the moment since I might want to use it later
-  Widget buildLoading(BuildContext context) {
-    // if (player.demixer.process == null) return const SizedBox(height: 192);
-
+  Widget buildLoading(BuildContext context, DemixingProcess process) {
     // TODO: Add "Cancel" button
     return SizedBox(
       height: 192,
@@ -142,29 +145,62 @@ Please update to the latest version to use the Demixer.""",
               child: CircularProgressIndicator(),
             ),
           ),
-          // Align(
-          //   alignment: const Alignment(0, -0.3),
-          //   child: ValueListenableBuilder(
-          //     valueListenable: player.demixer.process!.stepNotifier,
-          //     builder: (context, step, child) =>
-          //         Text("${step.index + 1} / ${DemixingStep.values.length}"),
-          //   ),
-          // ),
-          // ValueListenableBuilder(
-          //   valueListenable: player.demixer.process!.stepNotifier,
-          //   builder: (context, step, child) => buildLoadingText(context),
-          // ),
-          // Align(
-          //   alignment: const Alignment(0, 0.3),
-          //   child: ValueListenableBuilder(
-          //     valueListenable: player.demixer.process!.progressNotifier,
-          //     builder: (context, progress, child) => Text(
-          //         (progress == null) ? "" : "${(progress * 100).round()}%"),
-          //   ),
-          // ),
+          Align(
+            alignment: const Alignment(0, -0.3),
+            child: ValueListenableBuilder(
+              valueListenable: process.stepNotifier,
+              builder: (context, step, child) =>
+                  Text("${step.index} / ${DemixingStep.values.length - 1}"),
+            ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: process.stepNotifier,
+            builder: (context, step, child) =>
+                buildLoadingText(context, process),
+          ),
+          Align(
+            alignment: const Alignment(0, 0.3),
+            child: ValueListenableBuilder(
+              valueListenable: process.progressNotifier,
+              builder: (context, progress, child) => Text(
+                  (progress == null) ? "" : "${(progress * 100).round()}%"),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Widget buildLoadingText(BuildContext context, DemixingProcess process) {
+    switch (process.step) {
+      case DemixingStep.checkingCache:
+      case DemixingStep.findingHost:
+        return buildLoadingTextWithInfoButton(context, "Preparing...");
+      case DemixingStep.uploading:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Uploading...",
+          "The song is being uploaded to the server, and will soon be queued for demixing.",
+        );
+      case DemixingStep.separating:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Demixing...",
+          "The server is demixing the song. \nAudio source separation is a complex process, and might take a while. ${(widget.song.source is YoutubeSource ? "\n\nYou may close the app while the demixing is in progress. \n\nThis only needs to be done once, so loading the song next time will be much faster." : "")}",
+        );
+      case DemixingStep.compressing:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Compressing...",
+          "The server is compressing the song to decrease the amount of data that needs to be sent.",
+        );
+      case DemixingStep.downloading:
+        return buildLoadingTextWithInfoButton(
+          context,
+          "Downloading...",
+          "The song has been demixed and is being downloaded to your device.",
+        );
+    }
   }
 
   Widget buildLoadingTextWithInfoButton(
@@ -204,43 +240,6 @@ Please update to the latest version to use the Demixer.""",
   }
 
   /// TODO: Remove? Leaving it here for the moment since I might want to use it later
-  Widget buildLoadingText(BuildContext context) {
-    // switch (player.demixer.process?.step) {
-    //   case DemixingStep.checkingCache:
-    //   case DemixingStep.findingHost:
-    //     return buildLoadingTextWithInfoButton(context, "Preparing...");
-    //   case DemixingStep.uploading:
-    //     return buildLoadingTextWithInfoButton(
-    //       context,
-    //       "Uploading...",
-    //       "The song is being uploaded to the server, and will soon be queued for demixing.",
-    //     );
-    //   case DemixingStep.separating:
-    //     return buildLoadingTextWithInfoButton(
-    //       context,
-    //       "Demixing...",
-    //       "The server is demixing the song. \nAudio source separation is a complex process, and might take a while. ${(player.song.source is YoutubeSource ? "\n\nYou may close the app while the demixing is in progress. \n\nThis only needs to be done once, so loading the song next time will be much faster." : "")}",
-    //     );
-    //   case DemixingStep.compressing:
-    //     return buildLoadingTextWithInfoButton(
-    //       context,
-    //       "Compressing...",
-    //       "The server is compressing the song to decrease the amount of data that needs to be sent.",
-    //     );
-    //   case DemixingStep.downloading:
-    //     return buildLoadingTextWithInfoButton(
-    //       context,
-    //       "Downloading...",
-    //       "The song has been demixed and is being downloaded to your device.",
-    //     );
-
-    //   case null:
-    //     return buildLoadingTextWithInfoButton(context, "Loading...");
-    // }
-    return const SizedBox();
-  }
-
-  /// TODO: Remove? Leaving it here for the moment since I might want to use it later
   Future<void> showCellularWarningDialog(BuildContext context) async {
     await showDialog(
       context: context,
@@ -262,6 +261,84 @@ Please update to the latest version to use the Demixer.""",
             },
             child: const Text("Enable"),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class DemixerCard extends StatelessWidget {
+  DemixerCard({super.key});
+
+  final SongPlayer player = Songs.player!;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatCard(
+      child: Padding(
+          padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
+          child: () {
+            if (player is! MultiPlayer) {
+              return DemixingProcessIndicator(song: player.song);
+            }
+            return Column(children: [
+              buildHeader(context),
+              Expanded(
+                child: buildBody(context),
+              ),
+            ]);
+          }()),
+    );
+  }
+
+  /// Assumes [player] is a [MultiPlayer].
+  Widget buildHeader(BuildContext context) {
+    final MultiPlayer player = this.player as MultiPlayer;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Align(
+          alignment: Alignment.center,
+          child: Center(
+            child: Text(
+              "Instruments",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ValueListenableBuilder(
+            valueListenable: player.demixer.stemsNotifier,
+            builder: (context, stems, child) => IconButton(
+              iconSize: 20,
+              onPressed: stems.every((Stem stem) =>
+                      stem.enabled && stem.volume == Stem.defaultVolume)
+                  ? null
+                  : () {
+                      for (Stem stem in stems) {
+                        stem.volume = Stem.defaultVolume;
+                        stem.enabled = true;
+                      }
+                    },
+              icon: const Icon(Symbols.refresh),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Assumes [player] is a [MultiPlayer].
+  Widget buildBody(BuildContext context) {
+    final MultiPlayer player = this.player as MultiPlayer;
+
+    return ValueListenableBuilder(
+      valueListenable: player.demixer.stemsNotifier,
+      builder: (context, stems, child) => ListView(
+        children: [
+          for (Stem stem in player.demixer.stems) StemControls(stem: stem),
         ],
       ),
     );

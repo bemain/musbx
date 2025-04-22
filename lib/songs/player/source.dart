@@ -77,9 +77,10 @@ class YoutubeSource extends SongSource<SinglePlayable> {
       debugPrint("[YOUTUBE] Using cached audio for video with id '$youtubeId'");
     } else {
       cacheFile = await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
-          youtubeId,
-          destination: cacheFile,
-          fileType: "mp3");
+        youtubeId,
+        destination: cacheFile,
+        fileType: "mp3",
+      );
     }
     this.cacheFile = cacheFile;
 
@@ -178,7 +179,7 @@ class DemixedSource extends SongSource<MultiPlayable> {
 
   @override
   Future<MultiPlayable> load({required Directory cacheDirectory}) async {
-    DemixingProcess process = DemixingProcess(
+    final DemixingProcess process = DemixingProcess(
       parent,
       cacheDirectory: cacheDirectory,
     );

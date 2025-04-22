@@ -73,15 +73,32 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   static Future<SongPlayer<P>> load<P extends Playable>(
     Song<P> song,
   ) async {
+    final P playable = await song.source.load(
+      cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
+    );
+    final SoundHandle handle = await playable.play();
+    final SongPlayer<P> player;
     if (song.source is SongSource<SinglePlayable>) {
-      return await SinglePlayer.load(song as Song<SinglePlayable>)
-          as SongPlayer<P>;
+      player = SinglePlayer(
+        song as Song<SinglePlayable>,
+        playable as SinglePlayable,
+        handle,
+      ) as SongPlayer<P>;
     } else if (song.source is SongSource<MultiPlayable>) {
-      return await MultiPlayer.load(song as Song<MultiPlayable>)
-          as SongPlayer<P>;
+      player = MultiPlayer(
+        song as Song<MultiPlayable>,
+        playable as MultiPlayable,
+        handle,
+      ) as SongPlayer<P>;
+    } else {
+      throw ("No player exists for the given source ${song.source}");
     }
 
-    throw ("No player exists for the given source ${song.source}");
+    for (final SongPlayerComponent component in player.components) {
+      await component.initialize();
+    }
+
+    return player;
   }
 
   /// The song that this player plays.
@@ -219,21 +236,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
 
 class SinglePlayer extends SongPlayer<SinglePlayable> {
   /// An implementation of [SongPlayer] that plays a single audio clip.
-  SinglePlayer._(super.song, super.playable, super.handle) : super._();
-
-  static Future<SinglePlayer> load(Song<SinglePlayable> song) async {
-    final SinglePlayable playable = await song.source.load(
-      cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
-    );
-    final SoundHandle handle = await playable.play();
-    final SinglePlayer player = SinglePlayer._(song, playable, handle);
-
-    for (final SongPlayerComponent component in player.components) {
-      await component.initialize();
-    }
-
-    return player;
-  }
+  SinglePlayer(super.song, super.playable, super.handle) : super._();
 }
 
 class MultiPlayer extends SongPlayer<MultiPlayable> {
@@ -242,26 +245,12 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
   /// An implementation of [SongPlayer] that plays multiple audio clips simultaneously.
   ///
   /// The [demixer] component allows the volume of each audio clip to be controlled separately.
-  MultiPlayer._(super.song, super.playable, super.handle) : super._();
+  MultiPlayer(super.song, super.playable, super.handle) : super._();
 
   /// The handles of the individual sounds that are played simultaneously.
   ///
   /// Forwarded from the [playable].
   Iterable<SoundHandle> get handles => playable.handles!.values;
-
-  static Future<MultiPlayer> load(Song<MultiPlayable> song) async {
-    final MultiPlayable playable = await song.source.load(
-      cacheDirectory: Directory("${(await song.cacheDirectory).path}/source/"),
-    );
-    final SoundHandle handle = await playable.play();
-    final MultiPlayer player = MultiPlayer._(song, playable, handle);
-
-    for (final SongPlayerComponent component in player.components) {
-      await component.initialize();
-    }
-
-    return player;
-  }
 
   @override
   void seek(Duration position) {

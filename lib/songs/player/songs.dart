@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Process;
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +29,8 @@ final Song<SinglePlayable> demoSong = Song(
 
 /// A helper class for loading songs.
 class Songs extends BaseAudioHandler with SeekHandler {
+  Songs._();
+
   /// The [AudioHandler] that handles interaction with the media notification.
   ///
   /// This is created when [initialize] is called.
@@ -89,8 +91,8 @@ class Songs extends BaseAudioHandler with SeekHandler {
       // Remove cached files
       debugPrint(
           "[SONG HISTORY] Deleting cached files for song ${entry.value.id}");
-      final Directory directory = await entry.value.cacheDirectory;
-      if (await directory.exists()) directory.delete(recursive: true);
+      final Directory directory = entry.value.cacheDirectory;
+      if (await directory.exists()) await directory.delete(recursive: true);
     },
   );
 
@@ -145,10 +147,6 @@ class Songs extends BaseAudioHandler with SeekHandler {
 
     // Load audio
     final SongPlayer<P> player = await SongPlayer.load<P>(song);
-
-    // Load preferences
-    final prefs = await _preferences.load(song);
-    if (prefs != null) player.loadPreferences(prefs);
 
     // Add to song history.
     await history.add(song);

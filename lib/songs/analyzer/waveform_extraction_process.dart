@@ -14,8 +14,8 @@ class WaveformExtractionProcess extends Process<Waveform> {
   final Song song;
 
   /// Get the file were the waveform for [song] is saved.
-  static Future<File> getWaveformFile(Song song) async =>
-      File("${(await song.cacheDirectory).path}/waveform.wave");
+  static File getWaveformFile(Song song) =>
+      File("${song.cacheDirectory.path}/waveform.wave");
 
   /// Get the file where the audio for [source] is cached.
   File? _cacheFile(SongSource source) {
@@ -28,8 +28,8 @@ class WaveformExtractionProcess extends Process<Waveform> {
   }
 
   @override
-  Future<Waveform> process() async {
-    final File outFile = await getWaveformFile(song);
+  Future<Waveform> execute() async {
+    final File outFile = getWaveformFile(song);
     if (await outFile.exists()) {
       // Use cached waveform
       return await JustWaveform.parse(outFile);
@@ -47,8 +47,7 @@ class WaveformExtractionProcess extends Process<Waveform> {
     final progressStream = JustWaveform.extract(
       audioInFile: inFile,
       waveOutFile: outFile,
-      zoom: const WaveformZoom.pixelsPerSecond(
-          100), // TODO: Try changing this value
+      zoom: const WaveformZoom.pixelsPerSecond(100),
     );
 
     await for (var event in progressStream) {

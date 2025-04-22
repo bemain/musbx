@@ -61,8 +61,7 @@ class Song<P extends Playable> {
       );
 
   /// The directory where files relating to this song are cached.
-  late final Future<Directory> cacheDirectory =
-      createTempDirectory("songs/$id");
+  Directory get cacheDirectory => Directories.getTempDirectory("songs/$id");
 
   @override
   String toString() {

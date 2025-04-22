@@ -11,11 +11,13 @@ import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/persistent_value.dart';
 import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await PersistentValue.initialize();
+  await Directories.init();
 
   // Create audio service
   await Songs.initialize();

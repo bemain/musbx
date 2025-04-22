@@ -28,7 +28,7 @@ enum DemixingStep {
 }
 
 class DemixingProcess extends Process<Map<StemType, File>> {
-  /// Upload, separate and download stem files for a [song].
+  /// Upload, separate and download stem files for a song.
   ///
   /// TODO: Improve progress tracking for upload and download.
   DemixingProcess(this.parentSource, {required this.cacheDirectory});
@@ -42,7 +42,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   final ValueNotifier<DemixingStep> stepNotifier =
       ValueNotifier(DemixingStep.checkingCache);
 
-  /// Get stems for [song], if all stems (see [StemType]) were found with the correct [fileExtension].
+  /// Get stems for the song, if all stems (see [StemType]) were found with the correct [fileExtension].
   Future<Map<StemType, File>?> getStemsInCache({
     String fileExtension = "mp3",
   }) async {
@@ -63,7 +63,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   }
 
   @override
-  Future<Map<StemType, File>> process() async {
+  Future<Map<StemType, File>> execute() async {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
@@ -76,14 +76,14 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
     stepNotifier.value = DemixingStep.findingHost;
 
-    DemixerApiHost host = await MusbxApi.findDemixerHost();
+    final DemixerApiHost host = await MusbxApi.findDemixerHost();
 
     breakIfCancelled();
 
     // Upload song to server
     stepNotifier.value = DemixingStep.uploading;
 
-    UploadResponse response;
+    final UploadResponse response;
     if (parentSource is FileSource) {
       response = await host.uploadFile(
         (parentSource as FileSource).file,
@@ -131,11 +131,9 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     stepNotifier.value = DemixingStep.downloading;
     progressNotifier.value = 0;
 
-    Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
+    final Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
       StemType.values.map((stem) async {
         File file = await host.downloadStem(
-          // When dimixing files, [song.id] is not the same as the id of the song on the API ([response.songId]).
-          // Thus we need to pass it as well, which is ugly. TODO: Fix this.
           response.songId,
           stem,
           cacheDirectory,
