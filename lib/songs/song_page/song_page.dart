@@ -171,8 +171,6 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
       useRootNavigator: true,
       showDragHandle: true,
       isScrollControlled: true,
-      // TODO: Remove when this is in the framework https://github.com/flutter/flutter/issues/118619
-      constraints: const BoxConstraints(maxWidth: 640),
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(

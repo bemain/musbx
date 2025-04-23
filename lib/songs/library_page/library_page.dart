@@ -142,12 +142,7 @@ class LibraryPage extends StatelessWidget {
       trailing: showOptions
           ? IconButton(
               onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  useRootNavigator: true,
-                  showDragHandle: true,
-                  builder: (context) => _buildOptionsSheet(context, song),
-                );
+                _showOptionsSheet(context, song);
               },
               icon: const Icon(Symbols.more_vert),
             )
@@ -161,6 +156,18 @@ class LibraryPage extends StatelessWidget {
         onSelected?.call();
         context.go(Navigation.songRoute(song.id));
       },
+      onLongPress: () {
+        _showOptionsSheet(context, song);
+      },
+    );
+  }
+
+  void _showOptionsSheet(BuildContext context, Song song) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      showDragHandle: true,
+      builder: (context) => _buildOptionsSheet(context, song),
     );
   }
 
