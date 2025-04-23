@@ -191,6 +191,13 @@ class LibraryPage extends StatelessWidget {
             subtitle: Text(
               song.artist ?? "Unknown artist",
             ),
+            trailing: song.source is DemixedSource
+                ? null
+                : const Tooltip(
+                    message:
+                        "This song has not been separated into instruments",
+                    child: Icon(Symbols.piano_off),
+                  ),
           ),
           const Divider(),
           ListTile(
