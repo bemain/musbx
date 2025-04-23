@@ -73,6 +73,8 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Icon(Symbols.check_circle_rounded, size: 96),
+            const SizedBox(height: 8),
             const Text(
               "The song has been separated into instruments. To complete the loading process, reload the page.",
               textAlign: TextAlign.center,
@@ -94,10 +96,8 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
     return const Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: Icon(Symbols.update_rounded, size: 96),
-        ),
+        Icon(Symbols.update_rounded, size: 96),
+        SizedBox(height: 8),
         Text(
           """A newer version of the app is available. 
 Please update to the latest version to use the Demixer.""",
@@ -112,13 +112,12 @@ Please update to the latest version to use the Demixer.""",
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Icon(Symbols.cloud_off_rounded, size: 96),
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          child: Text(
-            """An error occurred while demixing. Please try again later.""",
-            textAlign: TextAlign.center,
-          ),
+        const SizedBox(height: 8),
+        const Text(
+          """An error occurred while demixing. Please try again later.""",
+          textAlign: TextAlign.center,
         ),
+        const SizedBox(height: 8),
         OutlinedButton(
           onPressed: () {
             setState(() {

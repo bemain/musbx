@@ -18,7 +18,6 @@ import 'package:musbx/widgets/ads.dart';
 
 /// The demo song loaded the first time the user launches the app.
 /// Access to this song is unrestricted.
-/// TODO: Include a demixed version as demo instead.
 final Song<SinglePlayable> demoSong = Song(
   id: "demo",
   title: "In Treble, Spilled Some Jazz Jam",
