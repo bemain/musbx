@@ -24,7 +24,7 @@ abstract class SongPlayerComponent<T extends SongPlayer>
   /// Initialize and activate this component.
   ///
   /// Called when the [player] is created.
-  FutureOr<void> initialize() async {}
+  void initialize() async {}
 
   /// Free the resources used by this component.
   ///
@@ -53,12 +53,17 @@ abstract class SongPlayerComponent<T extends SongPlayer>
   }
 }
 
+/// A
 abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   static final SoLoud _soloud = SoLoud.instance;
 
-  // TODO: Notify when the audio loops
   SongPlayer._(this.song, this.playable, this.handle) {
     _positionUpdater;
+
+    // Initialize components
+    for (final SongPlayerComponent component in components) {
+      component.initialize();
+    }
   }
 
   /// Create a [SongPlayer] by loading a [song].
@@ -69,10 +74,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// The workflow is as follows:
   ///  - Load the [song.source], to obtain a [playable].
   ///  - Play the [playable], to obtain a sound [handle].
-  ///  - Initialize [components].
-  static Future<SongPlayer<P>> load<P extends Playable>(
-    Song<P> song,
-  ) async {
+  static Future<SongPlayer<P>> load<P extends Playable>(Song<P> song) async {
     final P playable = await song.source.load(
       cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
     );
@@ -92,10 +94,6 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
       ) as SongPlayer<P>;
     } else {
       throw ("No player exists for the given source ${song.source}");
-    }
-
-    for (final SongPlayerComponent component in player.components) {
-      await component.initialize();
     }
 
     return player;

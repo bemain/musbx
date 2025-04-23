@@ -61,7 +61,8 @@ class Song<P extends Playable> {
       );
 
   /// The directory where files relating to this song are cached.
-  Directory get cacheDirectory => Directories.getTempDirectory("songs/$id");
+  Directory get cacheDirectory =>
+      Directories.applicationDocumentsDir("songs/$id");
 
   @override
   String toString() {

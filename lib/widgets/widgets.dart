@@ -166,22 +166,36 @@ class Directories {
 
   static late final Directory _tempDir;
 
+  static late final Directory _appDocsDir;
+
   /// Get a temporary directory with the given [name].
   ///
   /// This does not check to make sure that the directory actually exists.
-  static Directory getTempDirectory(String name) =>
+  static Directory temporaryDir(String name) =>
       Directory("${_tempDir.path}/$name/");
 
-  /// Creates a temporary directory with the given [name].
-  /// If the directory already exists, does nothing.
-  static Future<Directory> createTempDirectory(String name) async {
-    var dir = getTempDirectory(name);
-    await dir.create(recursive: true);
-    return dir;
-  }
+  /// Get a application documents directory with the given [name].
+  ///
+  /// This does not check to make sure that the directory actually exists.
+  static Directory applicationDocumentsDir(String name) =>
+      Directory("${_appDocsDir.path}/$name/");
 
-  static Future<void> init() async {
+  /// Resolve the paths to commonly used locations on the filesystem, which are
+  /// used by the methods provided by this class.
+  ///
+  /// Should be called during app launch.
+  static Future<void> initialize() async {
     _tempDir = await getTemporaryDirectory();
+    try {
+      _appDocsDir = await getApplicationDocumentsDirectory();
+    } catch (e) {
+      debugPrint(
+          "[DIRECTORIES] Unable to get application documents; falling back to temporary directory. $e");
+      _appDocsDir = _tempDir;
+    }
+
+    debugPrint(
+        "[DIRECTORIES] Initialized with temporary directory at ${_tempDir.path}, application documents at ${_appDocsDir.path}");
   }
 }
 

@@ -17,7 +17,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await PersistentValue.initialize();
-  await Directories.init();
+  await Directories.initialize();
 
   // Create audio service
   await Songs.initialize();

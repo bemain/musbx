@@ -7,16 +7,12 @@ import 'package:musbx/widgets/widgets.dart';
 class YoutubeApiHost extends MusbxApiHost {
   YoutubeApiHost(super.address, {super.https});
 
-  /// The directory where Youtube files are saved.
-  static final Directory youtubeDirectory =
-      Directories.getTempDirectory("youtube");
-
-  /// The file where the audio for Youtube song with id [youtubeId] is saved.
-  static Future<File> getYoutubeFile(
+  /// The default file where the audio for Youtube song with id [youtubeId] is saved.
+  static File getYoutubeFile(
     String youtubeId,
     String extension,
-  ) async =>
-      File("${youtubeDirectory.path}/$youtubeId.$extension");
+  ) =>
+      File("${Directories.temporaryDir("youtube").path}/$youtubeId.$extension");
 
   /// Download the audio for a Youtube video.
   Future<File> downloadYoutubeSong(
@@ -39,7 +35,7 @@ class YoutubeApiHost extends MusbxApiHost {
         response.headers["content-disposition"]!.split("filename=").last.trim();
     assert(fileName.isNotEmpty);
     String fileExtension = fileName.split(".").last;
-    destination ??= await getYoutubeFile(youtubeId, fileExtension);
+    destination ??= getYoutubeFile(youtubeId, fileExtension);
     await destination.create(recursive: true);
     await destination.writeAsBytes(response.bodyBytes);
     return destination;
