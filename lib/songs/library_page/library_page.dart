@@ -165,60 +165,65 @@ class LibraryPage extends StatelessWidget {
   }
 
   Widget _buildOptionsSheet(BuildContext context, Song song) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            song.title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+    return ListTileTheme(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+      minLeadingWidth: 32,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: _buildSongIcon(song),
+            title: Text(
+              song.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            titleTextStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            subtitle: Text(
+              song.artist ?? "Unknown artist",
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-          leading: const Icon(Symbols.delete),
-          title: const Text("Remove from library"),
-          onTap: () {
-            showDialog(
-              context: context,
-              useRootNavigator: true,
-              builder: (context) {
-                return AlertDialog(
-                  icon: const Icon(Symbols.delete, weight: 600),
-                  title: const Text("Remove song?"),
-                  content: const Text(
-                    "This will remove the song from your library.",
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text("Cancel"),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Symbols.delete),
+            title: const Text("Remove from library"),
+            onTap: () {
+              showDialog(
+                context: context,
+                useRootNavigator: true,
+                builder: (context) {
+                  return AlertDialog(
+                    icon: const Icon(Symbols.delete, weight: 600),
+                    title: const Text("Remove song?"),
+                    content: const Text(
+                      "This will remove the song from your library.",
                     ),
-                    FilledButton(
-                      onPressed: () {
-                        Songs.history.remove(song);
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text("Remove"),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
-        const SizedBox(height: 32),
-      ],
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Cancel"),
+                      ),
+                      FilledButton(
+                        onPressed: () {
+                          Songs.history.remove(song);
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Remove"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
     );
   }
 
