@@ -141,20 +141,19 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                       : Theme.of(context).colorScheme.primary,
                   icon: const Icon(Symbols.avg_pace),
                 ),
-                if (Platform.isAndroid)
-                  IconButton(
-                    onPressed: () {
-                      _showModalBottomSheet(
-                        context,
-                        const EqualizerSheet(),
-                      );
-                    },
-                    isSelected: !isEqualizerReset,
-                    color: isEqualizerReset
-                        ? null
-                        : Theme.of(context).colorScheme.primary,
-                    icon: const Icon(Symbols.instant_mix),
-                  ),
+                IconButton(
+                  onPressed: () {
+                    _showModalBottomSheet(
+                      context,
+                      const EqualizerSheet(),
+                    );
+                  },
+                  isSelected: !isEqualizerReset,
+                  color: isEqualizerReset
+                      ? null
+                      : Theme.of(context).colorScheme.primary,
+                  icon: const Icon(Symbols.instant_mix),
+                ),
                 const GetPremiumButton(),
                 InfoButton(child: Text(SongPage.helpText)),
               ],
