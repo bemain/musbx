@@ -46,6 +46,7 @@ class Navigation {
     initialLocation: currentRoute.value,
     routes: [
       StatefulShellRoute.indexedStack(
+        restorationScopeId: "shell",
         builder: _buildShell,
         branches: [
           StatefulShellBranch(routes: [
@@ -56,71 +57,75 @@ class Navigation {
               },
             ),
           ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: songsRoute,
-              builder: (context, state) {
-                return LibraryPage();
-              },
-              routes: [
-                GoRoute(
-                  path: ":id",
-                  redirect: (context, state) {
-                    final String? id = state.pathParameters["id"];
-                    if (Songs.history.map.values
-                        .where((song) => song.id == id)
-                        .isEmpty) {
-                      // If the song isn't in the library, redirect to the songs page
-                      return songsRoute;
-                    }
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: songsRoute,
+                builder: (context, state) {
+                  // Dispose the previous player.
+                  // This cannot be done in the song routes `onExit` callback,
+                  // since that is called every time we switch tab.
+                  Songs.dispose();
 
-                    return null;
-                  },
-                  builder: (context, state) {
-                    final String id = state.pathParameters["id"]!;
+                  return LibraryPage();
+                },
+                routes: [
+                  GoRoute(
+                    path: ":id",
+                    redirect: (context, state) {
+                      final String? id = state.pathParameters["id"];
+                      if (Songs.history.map.values
+                          .where((song) => song.id == id)
+                          .isEmpty) {
+                        // If the song isn't in the library, redirect to the songs page
+                        return songsRoute;
+                      }
 
-                    // Begin loading song
-                    final Song song = Songs.history.map.values
-                        .firstWhere((song) => song.id == id);
+                      return null;
+                    },
+                    builder: (context, state) {
+                      final String id = state.pathParameters["id"]!;
 
-                    return FutureBuilder(
-                      future: Songs.load(song).timeout(
-                        const Duration(seconds: 30),
-                      ),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasError) {
-                          debugPrint("[MUSIC PLAYER] ${snapshot.error}");
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            showExceptionDialog(
-                              snapshot.error is AccessRestrictedException
-                                  ? const MusicPlayerAccessRestrictedDialog()
-                                  : song.source is YoutubeSource
-                                      ? const YoutubeUnavailableDialog()
-                                      : const FileCouldNotBeLoadedDialog(),
-                            );
-                            context.go(songsRoute);
-                          });
+                      // Begin loading song
+                      final Song song = Songs.history.map.values
+                          .firstWhere((song) => song.id == id);
 
-                          return const SizedBox();
-                        }
+                      return FutureBuilder(
+                        future: Songs.load(song).timeout(
+                          const Duration(seconds: 30),
+                        ),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            debugPrint("[MUSIC PLAYER] ${snapshot.error}");
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              showExceptionDialog(
+                                snapshot.error is AccessRestrictedException
+                                    ? const MusicPlayerAccessRestrictedDialog()
+                                    : song.source is YoutubeSource
+                                        ? const YoutubeUnavailableDialog()
+                                        : const FileCouldNotBeLoadedDialog(),
+                              );
+                              context.go(songsRoute);
+                            });
 
-                        if (snapshot.connectionState != ConnectionState.done) {
-                          // TODO: Build loading
-                          return const SizedBox();
-                        }
+                            return const SizedBox();
+                          }
 
-                        return const SongPage();
-                      },
-                    );
-                  },
-                  onExit: (context, state) async {
-                    await Songs.dispose();
-                    return true;
-                  },
-                ),
-              ],
-            ),
-          ]),
+                          if (snapshot.connectionState !=
+                              ConnectionState.done) {
+                            // TODO: Build loading
+                            return const SizedBox();
+                          }
+
+                          return const SongPage();
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
           StatefulShellBranch(routes: [
             GoRoute(
               path: tunerRoute,
