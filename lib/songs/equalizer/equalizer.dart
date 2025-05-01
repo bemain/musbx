@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 // ignore: implementation_imports
 import 'package:flutter_soloud/src/filters/equalizer_filter.dart';
+import 'package:musbx/songs/player/filter.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/widgets/widgets.dart';
 
@@ -36,11 +37,15 @@ class EqualizerBandsNotifier extends ValueNotifier<List<EqualizerBand>> {
 class EqualizerComponent extends SongPlayerComponent {
   EqualizerComponent(super.player);
 
-  /// The global equalizer filter, provided by [SoLoud].
-  EqualizerGlobal get filter => SoLoud.instance.filters.equalizerFilter;
+  /// The equalizer filter, provided by [SoLoud].
+  Filter<EqualizerSingle> get filter =>
+      player.playable.filters(handle: player.handle).equalizer;
 
   @override
   void initialize() {
+    // Note that this activation is redundant.
+    // We have to activate the filter before the sound is played, and so we
+    // activate it already when the [Playable] is created.
     filter.activate();
   }
 
@@ -61,17 +66,21 @@ class EqualizerComponent extends SongPlayerComponent {
         ..addListener(notifyListeners);
 
   void _updateBand(int index) {
-    [
-      filter.band1,
-      filter.band2,
-      filter.band3,
-      filter.band4,
-      filter.band5,
-      filter.band6,
-      filter.band7,
-      filter.band8,
-    ][index]
-        .value = bands[index].gain;
+    filter.modify(
+      (filter, {handle}) {
+        [
+          filter.band1,
+          filter.band2,
+          filter.band3,
+          filter.band4,
+          filter.band5,
+          filter.band6,
+          filter.band7,
+          filter.band8,
+        ][index](soundHandle: handle)
+            .value = bands[index].gain;
+      },
+    );
   }
 
   /// Reset the gain on all [bands].

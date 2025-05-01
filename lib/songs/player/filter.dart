@@ -54,6 +54,8 @@ class Filter<T extends FilterBase> {
     isActiveNotifier.value = true;
   }
 
+  /// Deactivate this filter.
+  ///
   /// If this filter is not active, does nothing.
   void deactivate() {
     modify((filter, {handle}) {

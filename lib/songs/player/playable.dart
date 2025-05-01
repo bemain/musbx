@@ -71,9 +71,9 @@ class MultiPlayable extends Playable {
 
   @override
   Filters filters({SoundHandle? handle}) => Filters((apply) {
-        for (AudioSource source in sources.values) {
-          apply(source.filters);
-        }
+        sources.forEach((stem, source) {
+          apply(source.filters, handle: handles?[stem]);
+        });
       });
 
   @override
