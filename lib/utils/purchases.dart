@@ -38,13 +38,11 @@ class Purchases {
       isAvailable = false;
     }
 
-    if (!Platform.isAndroid || !Platform.isIOS) {
+    if (!isAvailable) {
       // Payments are only supported on mobile. On other platforms, simply enable premium.
       hasPremiumNotifier.value = true;
       return;
     }
-
-    if (!isAvailable) return;
 
     _inAppPurchase.purchaseStream.listen((newPurchases) async {
       for (PurchaseDetails purchase in newPurchases) {
@@ -52,6 +50,12 @@ class Purchases {
       }
     });
 
+    //await _inAppPurchase.restorePurchases();
+  }
+
+  /// Restore all previous purchases.
+  static Future<void> restore() async {
+    if (!isAvailable) return;
     await _inAppPurchase.restorePurchases();
   }
 

@@ -36,6 +36,7 @@ class MusicPlayerAccessRestrictedDialog extends StatelessWidget {
 }
 
 class FreeAccessRestrictedDialog extends StatelessWidget {
+  // TODO: Redesign this
   const FreeAccessRestrictedDialog({super.key, this.reason});
 
   /// Text explaining why access was restricted.
@@ -50,12 +51,31 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-              "${reason == null ? "" : "$reason\n\n"}Upgrade to the Premium version of Musician's Toolbox to get:"),
+          Padding(
+            padding: EdgeInsets.only(left: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                    "${reason == null ? "" : "$reason\n\n"}Upgrade to the Premium version of Musician's Toolbox to get:"),
+                const SizedBox(height: 8),
+                const Text(" ★ Unlimited songs"),
+                const Text(" ★ Full access to AI-powered Demixing"),
+                const Text(" ★ An ad-free experience"),
+              ],
+            ),
+          ),
           const SizedBox(height: 8),
-          const Text(" ★ Unlimited songs"),
-          const Text(" ★ Full access to AI-powered Demixing"),
-          const Text(" ★ An ad-free experience"),
+          TextButton(
+            onPressed: () async {
+              await Purchases.restore();
+              if (context.mounted) Navigator.of(context).pop();
+            },
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+            ),
+            child: const Text("Restore purchase"),
+          ),
         ],
       ),
       actions: [
