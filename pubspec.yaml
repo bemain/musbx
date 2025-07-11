@@ -38,15 +38,18 @@ dependencies:
       ref: main
       path: packages/dynamic_color/
   permission_handler: ^11.3.1
-  device_info_plus: ^10.1.0
+  device_info_plus: ^11.5.0
   path_provider: ^2.1.5
   shared_preferences: ^2.2.3
   google_fonts: ^6.2.1
-  google_mobile_ads: ^5.1.0
-  in_app_purchase: ^3.2.0
+  google_mobile_ads: ^6.0.0
+  in_app_purchase: ^3.2.3
 
   # Metronome
-  soundpool: ^2.4.1
+  soundpool: 
+    git:
+      url: https://github.com/mumei/soundpool-3.29.0.git
+      path: soundpool
   awesome_notifications_core: ^0.10.1
   awesome_notifications: ^0.10.1
   flutter_volume_controller: ^1.3.3 # TODO: Migrate to package volume_controller
@@ -55,22 +58,20 @@ dependencies:
   just_audio: ^0.9.41
   audio_service: ^0.18.17
   audio_session: ^0.1.19
-  file_picker: ^8.0.5
+  file_picker: ^10.2.0
   http: ^1.2.1
   html_unescape: ^2.0.0
   http_parser: ^4.0.2
-  connectivity_plus: ^6.0.5
-  ffmpeg_kit_flutter: ^6.0.3
+  connectivity_plus: ^6.1.4
   just_waveform: ^0.0.5
-  flutter_soloud: ^3.1.6
+  flutter_soloud: ^3.2.1
 
   # Tuner
   pitch_detector_dart: ^0.0.7
-  mic_stream: ^0.7.1+2
+  mic_stream: ^0.7.3-dev
   gauges: ^1.0.0 # TODO: Migrate away from this package
-  fftea: ^1.5.0
-  material_symbols_icons: ^4.2789.0
-  go_router: ^14.4.1
+  material_symbols_icons: ^4.2815.1
+  go_router: ^16.0.0
 
 
 dev_dependencies:
@@ -85,7 +86,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^6.0.0
 
 # To apply changes to the icon configuration, run:
 # `dart run flutter_launcher_icons`

@@ -243,8 +243,6 @@ class SinglePlayer extends SongPlayer<SinglePlayable> {
 }
 
 class MultiPlayer extends SongPlayer<MultiPlayable> {
-  static final SoLoud _soloud = SoLoud.instance;
-
   /// An implementation of [SongPlayer] that plays multiple audio clips simultaneously.
   ///
   /// The [demixer] component allows the volume of each audio clip to be controlled separately.
@@ -254,16 +252,6 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
   ///
   /// Forwarded from the [playable].
   Iterable<SoundHandle> get handles => playable.handles!.values;
-
-  @override
-  void seek(Duration position) {
-    position = loop.clamp(position);
-    for (SoundHandle handle in handles) {
-      _soloud.seek(handle, position);
-    }
-    positionNotifier.value = position;
-    notifyListeners();
-  }
 
   @override
   List<SongPlayerComponent> get components =>
