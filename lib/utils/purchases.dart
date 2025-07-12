@@ -50,7 +50,7 @@ class Purchases {
       }
     });
 
-    //await _inAppPurchase.restorePurchases();
+    await _inAppPurchase.restorePurchases();
   }
 
   /// Restore all previous purchases.
