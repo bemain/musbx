@@ -276,4 +276,10 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
       "demixer": demixer.savePreferencesToJson(),
     };
   }
+
+  @override
+  Future<void> dispose() async {
+    await super.dispose();
+    SoLoud.instance.destroyVoiceGroup(handle);
+  }
 }

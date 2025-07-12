@@ -106,6 +106,5 @@ class MultiPlayable extends Playable {
   @override
   Future<void> dispose() async {
     handles = null;
-    // TODO: Do we need to destroy the voice handle specifically or is the SongPlayer's call to stop() enough?
   }
 }

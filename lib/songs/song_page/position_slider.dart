@@ -73,7 +73,7 @@ class PositionSlider extends StatelessWidget {
                     player.position = Duration(milliseconds: value.round());
                   },
                   onChangeEnd: (value) {
-                    player.seek(position);
+                    player.seek(Duration(milliseconds: value.round()));
                     if (wasPlayingBeforeChange) player.resume();
                   },
                 ),

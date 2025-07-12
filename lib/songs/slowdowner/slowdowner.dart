@@ -38,6 +38,9 @@ class SlowdownerComponent extends SongPlayerComponent {
 
   void _updatePitch() {
     filter.modify((filter, {handle}) {
+      // Adjust pitch shift based on playback speed. The formula `pow(2, pitch / 12)`
+      // converts semitone shifts to frequency ratios, and dividing by `speed` compensates
+      // for changes in playback speed that affect perceived pitch.
       filter.shift(soundHandle: handle).value = pow(2, pitch / 12) / speed;
     });
   }
