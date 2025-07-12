@@ -37,7 +37,7 @@ class HistoryHandler<T> extends ChangeNotifier {
   final Map<DateTime, T> map = {};
 
   /// The previously played songs, sorted by date.
-  List<T> sorted({ascending = false}) {
+  List<T> sorted({bool ascending = false}) {
     List<T> sorted = (map.entries.toList()
           ..sort((a, b) => a.key.compareTo(b.key)))
         .map((entry) => entry.value)

@@ -200,9 +200,9 @@ class SpeedDialState extends State<SpeedDial>
 
   bool get isOpen => _isOpen;
 
-  toggle() => _isOpen ? _close() : _open();
+  dynamic toggle() => _isOpen ? _close() : _open();
 
-  _open() async {
+  Future<void> _open() async {
     if (_isOpen) {
       return;
     }

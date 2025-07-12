@@ -51,8 +51,7 @@ class ContinuousButton extends StatelessWidget {
 }
 
 class InfoPage extends StatelessWidget {
-  const InfoPage({Key? key, required this.icon, required this.text})
-      : super(key: key);
+  const InfoPage({super.key, required this.icon, required this.text});
 
   final Widget icon;
   final String text;
@@ -72,7 +71,7 @@ class InfoPage extends StatelessWidget {
 }
 
 class ErrorPage extends StatelessWidget {
-  const ErrorPage({Key? key, required this.text}) : super(key: key);
+  const ErrorPage({super.key, required this.text});
 
   final String text;
 
@@ -86,7 +85,7 @@ class ErrorPage extends StatelessWidget {
 }
 
 class LoadingPage extends StatelessWidget {
-  const LoadingPage({Key? key, required this.text}) : super(key: key);
+  const LoadingPage({super.key, required this.text});
 
   final String text;
 
@@ -208,7 +207,7 @@ class ListNotifier<T> extends ChangeNotifier {
   UnmodifiableListView<T> get value => UnmodifiableListView(_value);
 
   T operator [](int index) => _value[index];
-  operator []=(int index, T value) {
+  void operator []=(int index, T value) {
     _value[index] = value;
     notifyListeners();
   }

@@ -3,7 +3,7 @@ import 'package:musbx/metronome/metronome.dart';
 
 class BpmSlider extends StatelessWidget {
   /// Slider for adjusting [Metronome]'s bpm.
-  const BpmSlider({Key? key}) : super(key: key);
+  const BpmSlider({super.key});
 
   @override
   Widget build(BuildContext context) {
