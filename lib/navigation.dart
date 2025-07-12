@@ -158,53 +158,58 @@ class Navigation {
       currentRoute.value = "/${path.split("/").first}";
     });
 
-  static Scaffold _buildShell(
+  static Widget _buildShell(
     BuildContext context,
     GoRouterState state,
     StatefulNavigationShell shell,
   ) {
     navigationShell = shell;
-    return Scaffold(
-      body: shell,
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // TODO: Remove bottom padding caused by SafeArea, which leaves a big space between the NavigationBar and the banner ad.
-          NavigationBar(
-            onDestinationSelected: (int index) {
-              shell.goBranch(
-                index,
-                // When tapping the current tab, navigate to the initial location
-                initialLocation: index == shell.currentIndex,
-              );
-            },
-            selectedIndex: shell.currentIndex,
-            destinations: const [
-              NavigationDestination(
-                label: "Metronome",
-                icon: Icon(CustomIcons.metronome),
+    return ValueListenableBuilder(
+      valueListenable: Purchases.hasPremiumNotifier,
+      builder: (context, hasPremium, child) {
+        return Scaffold(
+          body: shell,
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // TODO: Remove bottom padding caused by SafeArea, which leaves a big space between the NavigationBar and the banner ad.
+              NavigationBar(
+                onDestinationSelected: (int index) {
+                  shell.goBranch(
+                    index,
+                    // When tapping the current tab, navigate to the initial location
+                    initialLocation: index == shell.currentIndex,
+                  );
+                },
+                selectedIndex: shell.currentIndex,
+                destinations: const [
+                  NavigationDestination(
+                    label: "Metronome",
+                    icon: Icon(CustomIcons.metronome),
+                  ),
+                  NavigationDestination(
+                    label: "Songs",
+                    icon: Icon(Symbols.library_music),
+                  ),
+                  NavigationDestination(
+                    label: "Tuner",
+                    icon: Icon(Symbols.speed),
+                  ),
+                  NavigationDestination(
+                    label: "Drone",
+                    icon: Icon(CustomIcons.tuning_fork),
+                  ),
+                ],
               ),
-              NavigationDestination(
-                label: "Songs",
-                icon: Icon(Symbols.library_music),
-              ),
-              NavigationDestination(
-                label: "Tuner",
-                icon: Icon(Symbols.speed),
-              ),
-              NavigationDestination(
-                label: "Drone",
-                icon: Icon(CustomIcons.tuning_fork),
-              ),
+              if (!hasPremium)
+                const SafeArea(
+                  top: false,
+                  child: BannerAdWidget(),
+                ),
             ],
           ),
-          if (!Purchases.hasPremium)
-            const SafeArea(
-              top: false,
-              child: BannerAdWidget(),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

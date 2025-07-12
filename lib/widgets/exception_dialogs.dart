@@ -108,7 +108,7 @@ class PremiumPurchasedDialog extends StatelessWidget {
       content: const Text(
           """Thank you for supporting Musician's Toolbox by upgrading to Premium! 
 
-Your purchase is processing and premium features will soon be activated. Please note that this can take up to 5 minutes."""),
+Your purchase is processing and premium features will soon be activated. Please note that this can take up to 5 minutes. If nothing happens, try restarting the app."""),
       actions: [
         TextButton(
           onPressed: () {

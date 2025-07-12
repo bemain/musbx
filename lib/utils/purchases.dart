@@ -91,7 +91,7 @@ class Purchases {
         switch (purchase.productID) {
           case _premiumID:
             debugPrint(
-                "[PURCHASES] Buying Premium failed: ${purchase.error ?? "Cancelled"}");
+                "[PURCHASES] Buying Premium failed: ${purchase.error?.message ?? "Cancelled"}");
             showExceptionDialog(const PremiumPurchaseFailedDialog());
             break;
         }
