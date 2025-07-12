@@ -45,6 +45,10 @@ class Navigation {
     restorationScopeId: "router",
     initialLocation: currentRoute.value,
     routes: [
+      GoRoute(
+        path: "/",
+        redirect: (context, state) => songsRoute,
+      ),
       StatefulShellRoute.indexedStack(
         restorationScopeId: "shell",
         builder: _buildShell,
@@ -148,9 +152,10 @@ class Navigation {
       ),
     ],
   )..routerDelegate.addListener(() {
-      // Update the current route whenever it changes
-      currentRoute.value =
-          router.routerDelegate.currentConfiguration.uri.toFilePath();
+      // Update the current route whenever it changes. Only remember the top-level route, not which subroute we were on.
+      final path = router.routerDelegate.currentConfiguration.uri
+          .toFilePath(windows: false);
+      currentRoute.value = "/${path.split("/").first}";
     });
 
   static Scaffold _buildShell(
