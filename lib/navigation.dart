@@ -95,7 +95,10 @@ class Navigation {
                           .firstWhere((song) => song.id == id);
 
                       return FutureBuilder(
-                        future: Songs.load(song).timeout(
+                        future: Songs.load(
+                          song,
+                          ignoreFreeLimit: song.id == demoSong.id,
+                        ).timeout(
                           const Duration(seconds: 30),
                         ),
                         builder: (context, snapshot) {
