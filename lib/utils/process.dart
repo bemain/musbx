@@ -63,9 +63,11 @@ abstract class Process<T extends Object> extends ChangeNotifier {
       final T res = await execute();
       resultNotifier.value = res;
       return res;
-    } catch (e) {
+    } on Cancelled catch (e, s) {
+      return Future.error(e, s);
+    } catch (e, s) {
       errorNotifier.value = e;
-      rethrow;
+      return Future.error(e, s);
     }
   }
 

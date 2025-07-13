@@ -19,9 +19,11 @@ import 'package:musbx/widgets/flat_card.dart';
 import 'package:musbx/utils/purchases.dart';
 
 class DemixingProcessIndicator extends StatefulWidget {
-  const DemixingProcessIndicator({super.key, required this.song});
+  const DemixingProcessIndicator({super.key, required this.player});
 
-  final Song song;
+  final SinglePlayer player;
+
+  Song get song => player.song;
 
   @override
   State<DemixingProcessIndicator> createState() =>
@@ -29,26 +31,14 @@ class DemixingProcessIndicator extends StatefulWidget {
 }
 
 class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
-  late DemixingProcess process;
-
-  @override
-  void initState() {
-    super.initState();
-    process = createProcess();
-  }
-
-  @override
-  void dispose() {
-    process.cancel();
-    super.dispose();
-  }
-
   DemixingProcess createProcess() {
     return DemixingProcess(
       widget.song.source,
       cacheDirectory: Directory("${widget.song.cacheDirectory.path}/source/"),
     );
   }
+
+  DemixingProcess get process => widget.player.demixingProcess;
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +111,7 @@ Please update to the latest version to use the Demixer.""",
         OutlinedButton(
           onPressed: () {
             setState(() {
-              process = createProcess();
+              widget.player.restartDemixing();
             });
           },
           child: const Text("Retry"),
@@ -277,9 +267,10 @@ class DemixerCard extends StatelessWidget {
       child: Padding(
           padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
           child: () {
-            if (player is! MultiPlayer) {
-              return DemixingProcessIndicator(song: player.song);
+            if (player is SinglePlayer) {
+              return DemixingProcessIndicator(player: player as SinglePlayer);
             }
+
             return Column(children: [
               buildHeader(context),
               Expanded(

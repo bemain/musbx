@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
+import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
 import 'package:musbx/songs/loop/loop.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
@@ -239,7 +240,28 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
 
 class SinglePlayer extends SongPlayer<SinglePlayable> {
   /// An implementation of [SongPlayer] that plays a single audio clip.
-  SinglePlayer(super.song, super.playable, super.handle) : super._();
+  SinglePlayer(super.song, super.playable, super.handle) : super._() {
+    restartDemixing(); // Start demixing
+  }
+
+  /// The process responsible for demixing the song.
+  ///
+  /// This process is started automatically when the [SinglePlayer] is created.
+  late DemixingProcess demixingProcess;
+
+  /// Restart the [demixingProcess].
+  void restartDemixing() {
+    demixingProcess = DemixingProcess(
+      song.source,
+      cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
+    );
+  }
+
+  @override
+  Future<void> dispose() {
+    demixingProcess.cancel();
+    return super.dispose();
+  }
 }
 
 class MultiPlayer extends SongPlayer<MultiPlayable> {
