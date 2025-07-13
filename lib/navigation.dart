@@ -69,7 +69,9 @@ class Navigation {
                   // Dispose the previous player.
                   // This cannot be done in the song routes `onExit` callback,
                   // since that is called every time we switch tab.
-                  Songs.dispose();
+                  WidgetsBinding.instance.addPostFrameCallback((_) async {
+                    Songs.dispose();
+                  });
 
                   return LibraryPage();
                 },
