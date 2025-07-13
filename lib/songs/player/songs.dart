@@ -164,16 +164,17 @@ class Songs extends BaseAudioHandler with SeekHandler {
 
   /// Dispose the current [player].
   static Future<void> dispose() async {
-    await player?.dispose();
-
-    if (player != null) {
-      // Save preferences
-      await _preferences.save(
-        player!.song,
-        player!.toPreferences(),
-      );
-    }
+    final player = Songs.player;
+    if (player == null) return;
 
     playerNotifier.value = null;
+
+    await player.dispose();
+
+    // Save preferences
+    await _preferences.save(
+      player.song,
+      player.toPreferences(),
+    );
   }
 }
