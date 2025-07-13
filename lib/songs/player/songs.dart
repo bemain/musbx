@@ -63,7 +63,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
     // Begin fetching history from disk
     youtubeSearchHistory.fetch();
     history.fetch().then((_) {
-      if (history.map.isEmpty) {
+      if (history.entries.isEmpty) {
         history.add(demoSong);
       }
     });
@@ -99,7 +99,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
   static const int freeSongsPerWeek = 3;
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
-  static Iterable<Song> get songsPlayedThisWeek => history.map.entries
+  static Iterable<Song> get songsPlayedThisWeek => history.entries.entries
       .where((entry) =>
           entry.key.difference(DateTime.now()).abs() < const Duration(days: 7))
       .where((entry) => entry.value.id != demoSong.id) // Exclude demo song

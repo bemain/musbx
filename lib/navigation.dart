@@ -80,7 +80,7 @@ class Navigation {
                     path: ":id",
                     redirect: (context, state) {
                       final String? id = state.pathParameters["id"];
-                      if (Songs.history.map.values
+                      if (Songs.history.entries.values
                           .where((song) => song.id == id)
                           .isEmpty) {
                         // If the song isn't in the library, redirect to the songs page
@@ -93,7 +93,7 @@ class Navigation {
                       final String id = state.pathParameters["id"]!;
 
                       // Begin loading song
-                      final Song song = Songs.history.map.values
+                      final Song song = Songs.history.entries.values
                           .firstWhere((song) => song.id == id);
 
                       return FutureBuilder(
