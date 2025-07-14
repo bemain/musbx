@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/songs/equalizer/equalizer.dart';
 import 'package:musbx/songs/equalizer/equalizer_sliders.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
@@ -14,6 +15,10 @@ class EqualizerSheet extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: player.equalizer.bandsNotifier,
       builder: (context, bands, child) {
+        final bool isReset = bands.every((band) =>
+            band.gain.toStringAsFixed(2) ==
+            EqualizerBand.defaultGain.toStringAsFixed(2));
+
         return SizedBox(
           height: 280,
           child: Column(children: [
@@ -35,7 +40,7 @@ class EqualizerSheet extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: IconButton(
                       iconSize: 20,
-                      onPressed: player.equalizer.resetGain,
+                      onPressed: isReset ? null : player.equalizer.resetGain,
                       icon: const Icon(Symbols.refresh),
                     ),
                   ),
