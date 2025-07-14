@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
@@ -201,7 +202,49 @@ class LibraryPage extends StatelessWidget {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Symbols.delete),
+            enabled: song.cacheDirectory.existsSync(),
+            leading: const Icon(Symbols.folder_delete),
+            title: const Text("Clear cached files"),
+            onTap: () {
+              showDialog(
+                context: context,
+                useRootNavigator: true,
+                builder: (context) {
+                  return AlertDialog(
+                    icon: const Icon(Symbols.folder_delete),
+                    title: const Text("Clear cache?"),
+                    content: const Text(
+                      "This will free up some space on your device. Loading this song will take longer the next time.",
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Cancel"),
+                      ),
+                      FilledButton(
+                        onPressed: () {
+                          song.cacheDirectory.delete(recursive: true);
+                          if (song.source is DemixedSource) {
+                            // Override the history entry for the song with a non-demixed variant
+                            Songs.history.add(song.copyWith<SinglePlayable>(
+                              source: (song.source as DemixedSource).rootParent,
+                            ));
+                          }
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Clear"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Symbols.delete_forever),
             title: const Text("Remove from library"),
             onTap: () {
               showDialog(
@@ -209,7 +252,7 @@ class LibraryPage extends StatelessWidget {
                 useRootNavigator: true,
                 builder: (context) {
                   return AlertDialog(
-                    icon: const Icon(Symbols.delete, weight: 600),
+                    icon: const Icon(Symbols.delete_forever),
                     title: const Text("Remove song?"),
                     content: const Text(
                       "This will remove the song from your library.",

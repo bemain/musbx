@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -31,13 +29,6 @@ class DemixingProcessIndicator extends StatefulWidget {
 }
 
 class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
-  DemixingProcess createProcess() {
-    return DemixingProcess(
-      widget.song.source,
-      cacheDirectory: Directory("${widget.song.cacheDirectory.path}/source/"),
-    );
-  }
-
   DemixingProcess get process => widget.player.demixingProcess;
 
   @override

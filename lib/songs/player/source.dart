@@ -170,10 +170,15 @@ class FileSource extends SongSource<SinglePlayable> {
 }
 
 class DemixedSource extends SongSource<MultiPlayable> {
-  /// A source that demixes a [Song] and loads the stems as individual audio sources.
+  /// A source that demixes a [Song] and loads the stems as a `MultiPlayable`.
   DemixedSource(this.parent);
 
   final SongSource parent;
+
+  /// The first source above this that is a [SinglePlayable].
+  SongSource<SinglePlayable> get rootParent => parent is DemixedSource
+      ? (parent as DemixedSource).rootParent
+      : parent as SongSource<SinglePlayable>;
 
   Map<StemType, AudioSource>? sources;
 
