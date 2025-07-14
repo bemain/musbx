@@ -72,7 +72,7 @@ class LibraryPage extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () {
                         searchController.closeView(null);
-                        pickYoutubeSong(context, query: controller.text);
+                        YoutubeSearch.pickSong(context, query: controller.text);
                       },
                       icon: const Icon(Symbols.search),
                       label: Text(
@@ -251,7 +251,7 @@ class LibraryPage extends StatelessWidget {
 
         return !Songs.isAccessRestricted;
       },
-      onExpandedPressed: () => pickYoutubeSong(context),
+      onExpandedPressed: () => YoutubeSearch.pickSong(context),
       expandedChild: const Icon(Symbols.search),
       expandedLabel: const Text("Search"),
       children: [

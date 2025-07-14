@@ -12,34 +12,36 @@ import 'package:musbx/widgets/youtube_api/youtube_api.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/widgets/widgets.dart';
 
-/// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
-Future<void> pickYoutubeSong(BuildContext context, {String? query}) async {
-  YoutubeVideo? video = await showSearch<YoutubeVideo?>(
-    context: context,
-    delegate: YoutubeSearchDelegate(),
-    useRootNavigator: true,
-    query: query ?? "",
+class YoutubeSearch {
+  /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
+  static Future<void> pickSong(BuildContext context, {String? query}) async {
+    YoutubeVideo? video = await showSearch<YoutubeVideo?>(
+      context: context,
+      delegate: YoutubeSearchDelegate(),
+      useRootNavigator: true,
+      query: query ?? "",
+    );
+
+    if (video == null) return;
+
+    await Songs.history.add(Song<SinglePlayable>(
+      id: video.id,
+      title: HtmlUnescape().convert(video.title),
+      artist: HtmlUnescape().convert(video.channelTitle),
+      artUri: Uri.tryParse(video.thumbnails.high.url),
+      source: YoutubeSource(video.id),
+    ));
+
+    if (context.mounted) context.go(Navigation.songRoute(video.id));
+  }
+
+  /// The history of previous search queries.
+  static final HistoryHandler<String> history = HistoryHandler<String>(
+    fromJson: (json) => json as String,
+    toJson: (value) => value,
+    historyFileName: "search_history",
   );
-
-  if (video == null) return;
-
-  await Songs.history.add(Song<SinglePlayable>(
-    id: video.id,
-    title: HtmlUnescape().convert(video.title),
-    artist: HtmlUnescape().convert(video.channelTitle),
-    artUri: Uri.tryParse(video.thumbnails.high.url),
-    source: YoutubeSource(video.id),
-  ));
-
-  if (context.mounted) context.go(Navigation.songRoute(video.id));
 }
-
-/// The history of previous search queries.
-final HistoryHandler<String> youtubeSearchHistory = HistoryHandler<String>(
-  fromJson: (json) => json as String,
-  toJson: (value) => value,
-  historyFileName: "search_history",
-);
 
 /// [SearchDelegate] for searching for a song on Youtube.
 class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
@@ -82,8 +84,8 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (youtubeSearchHistory.entries.isEmpty) {
-      // Help text
+    if (YoutubeSearch.history.entries.isEmpty) {
+      // Show help text
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: SizedBox(
@@ -100,57 +102,45 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
       );
     }
 
-    if (query.isEmpty) {
-      // Show search history
-      return ListView(children: [
-        for (final query in youtubeSearchHistory.sorted())
-          ListTile(
-            leading: Icon(
-              Symbols.history,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-            title: Text(query),
-            trailing: IconButton(
-              onPressed: () => this.query = query,
-              color: Theme.of(context).colorScheme.outline,
-              icon: const RotatedBox(
-                quarterTurns: -1,
-                child: Icon(Symbols.arrow_outward),
-              ),
-            ),
-            onTap: () {
-              this.query = query;
-              showResults(context);
-            },
+    final searchHistory = YoutubeSearch.history
+        .sorted()
+        .where((e) => e.toLowerCase().contains(query.toLowerCase()));
+
+    // Show search history
+    return ListView(children: [
+      for (final query in searchHistory)
+        ListTile(
+          leading: Icon(
+            Symbols.history,
+            color: Theme.of(context).colorScheme.outline,
           ),
-      ]);
-    }
-
-    return FutureBuilder(
-      future: _getVideosFromQuery(query),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const LoadingPage(text: "Searching...");
-        if (snapshot.hasError) return const ErrorPage(text: "Search failed");
-
-        List<YoutubeVideo> results = snapshot.data!;
-        return ListView(
-          children: results.map((YoutubeVideo video) {
-            return _buildListItem(context, video);
-          }).toList(),
-        );
-      },
-    );
+          title: Text(query),
+          trailing: IconButton(
+            onPressed: () => this.query = query,
+            color: Theme.of(context).colorScheme.outline,
+            icon: const RotatedBox(
+              quarterTurns: -1,
+              child: Icon(Symbols.arrow_outward),
+            ),
+          ),
+          onTap: () {
+            this.query = query;
+            showResults(context);
+          },
+        ),
+    ]);
   }
 
   @override
   Widget buildResults(BuildContext context) {
-    if (query != "") youtubeSearchHistory.add(query.trim());
-
     return FutureBuilder(
       future: _getVideosFromQuery(query),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const ErrorPage(
+              text: "Search failed. Please try again later.");
+        }
         if (!snapshot.hasData) return const LoadingPage(text: "Searching...");
-        if (snapshot.hasError) return const ErrorPage(text: "Search failed");
 
         List<YoutubeVideo> results = snapshot.data!;
         return ListView(
@@ -189,6 +179,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
     return GestureDetector(
       onTap: () {
+        YoutubeSearch.history.add(query.trim());
         close(context, video);
       },
       child: ListTile(

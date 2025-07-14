@@ -59,7 +59,7 @@ class YoutubeDataApi {
     var jsonData = json.decode(res.body);
     if (jsonData['error'] != null) {
       debugPrint("[YOUTUBE] Error: ${jsonData['error']['message']}");
-      return [];
+      throw Exception(jsonData['error']['message']);
     }
 
     // Map result to [YoutubeVideo]s

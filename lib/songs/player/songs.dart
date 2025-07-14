@@ -61,7 +61,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
     });
 
     // Begin fetching history from disk
-    youtubeSearchHistory.fetch();
+    YoutubeSearch.history.fetch();
     history.fetch().then((_) {
       if (history.entries.isEmpty) {
         history.add(demoSong);
