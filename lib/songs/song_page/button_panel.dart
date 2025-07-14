@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/songs/player/music_player.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 class ButtonPanel extends StatelessWidget {
   /// Panel including play/pause, forward and rewind buttons for controlling [MusicPlayer].
   ///
   /// If no song is loaded, all buttons are disabled.
-  ButtonPanel({super.key});
-
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
+  const ButtonPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final SongPlayer player = Songs.player!;
+
     return SizedBox(
       height: 64.0,
       child: Row(
@@ -20,75 +21,68 @@ class ButtonPanel extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
-            onPressed: musicPlayer.nullIfNoSongElse(() {
-              musicPlayer.seek(Duration.zero);
-            }),
+            onPressed: () {
+              player.seek(Duration.zero);
+            },
             icon: const ExpandedIcon(Symbols.skip_previous_rounded),
           ),
 
           ContinuousButton(
-            onContinuousPress: musicPlayer.nullIfNoSongElse(() {
-              musicPlayer
-                  .seek(musicPlayer.position - const Duration(seconds: 1));
-            }),
+            onContinuousPress: () {
+              player.seek(player.position - const Duration(seconds: 1));
+            },
             child: IconButton(
-              onPressed: musicPlayer.nullIfNoSongElse(() {
-                musicPlayer
-                    .seek(musicPlayer.position - const Duration(seconds: 1));
-              }),
+              onPressed: () {
+                player.seek(player.position - const Duration(seconds: 1));
+              },
               icon: const ExpandedIcon(Symbols.fast_rewind_rounded),
             ),
           ),
 
           ValueListenableBuilder<bool>(
-            valueListenable: musicPlayer.isPlayingNotifier,
-            builder: (_, isPlaying, __) => ValueListenableBuilder<bool>(
-              valueListenable: musicPlayer.isBufferingNotifier,
-              builder: (context, isBuffering, _) {
-                return AspectRatio(
-                  aspectRatio: 1.0,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (musicPlayer.isLoading || isBuffering)
-                        const Positioned.fill(
-                          child: CircularProgressIndicator(),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: IconButton.filled(
-                          onPressed: musicPlayer.nullIfNoSongElse(() {
-                            if (isPlaying) {
-                              musicPlayer.pause();
-                            } else {
-                              musicPlayer.play();
-                            }
-                          }),
-                          icon: ExpandedIcon(
-                            isPlaying
-                                ? Symbols.stop_rounded
-                                : Symbols.play_arrow_rounded,
-                            fill: 1,
-                          ),
+            valueListenable: player.isPlayingNotifier,
+            builder: (_, isPlaying, __) {
+              return AspectRatio(
+                aspectRatio: 1.0,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // if (player.isLoading)
+                    //   const Positioned.fill(
+                    //     child: CircularProgressIndicator(),
+                    //   ),
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: IconButton.filled(
+                        onPressed: () {
+                          if (isPlaying) {
+                            player.pause();
+                          } else {
+                            player.resume();
+                          }
+                        },
+                        icon: ExpandedIcon(
+                          isPlaying
+                              ? Symbols.stop_rounded
+                              : Symbols.play_arrow_rounded,
+                          fill: 1,
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
 
           ContinuousButton(
-            onContinuousPress: musicPlayer.nullIfNoSongElse(() {
-              musicPlayer
-                  .seek(musicPlayer.position + const Duration(seconds: 1));
-            }),
+            onContinuousPress: () {
+              player.seek(player.position + const Duration(seconds: 1));
+            },
             child: IconButton(
-              onPressed: musicPlayer.nullIfNoSongElse(() {
-                musicPlayer
-                    .seek(musicPlayer.position + const Duration(seconds: 1));
-              }),
+              onPressed: () {
+                player.seek(player.position + const Duration(seconds: 1));
+              },
               icon: const ExpandedIcon(Symbols.fast_forward_rounded),
             ),
           ),

@@ -21,7 +21,7 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   }
 
   /// The future that completes with this task.
-  late final Future<T> future = _processAndReportErrors();
+  late final Future<T> future = _executeAndReportErrors();
 
   /// The progress of the process.
   /// Should be a fraction between 0 and 1.
@@ -54,20 +54,25 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   late final ValueNotifier<bool> isCancelledNotifier = ValueNotifier(false)
     ..addListener(notifyListeners);
 
-  /// Start the [process] and catch any errors that occur.
-  Future<T> _processAndReportErrors() async {
+  /// Tell this process stop as soon as possible.
+  void cancel() => isCancelled = true;
+
+  /// Start execution and catch any errors that occur.
+  Future<T> _executeAndReportErrors() async {
     try {
-      final T res = await process();
+      final T res = await execute();
       resultNotifier.value = res;
       return res;
-    } catch (e) {
+    } on Cancelled catch (e, s) {
+      return Future.error(e, s);
+    } catch (e, s) {
       errorNotifier.value = e;
-      rethrow;
+      return Future.error(e, s);
     }
   }
 
   /// The method that this process executes.
-  Future<T> process();
+  Future<T> execute();
 
   /// If this process has been cancelled, throw a [Cancelled] error.
   ///

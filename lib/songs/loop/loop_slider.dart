@@ -1,90 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
-import 'package:musbx/songs/looper/looper.dart';
-import 'package:musbx/songs/player/music_player.dart';
 
 class LoopSlider extends StatelessWidget {
   /// Range slider for selecting the section to loop.
   LoopSlider({super.key});
 
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
+  final SongPlayer player = Songs.player!;
 
   @override
   Widget build(BuildContext context) {
+    /// Whether the player was playing before the user began changing the position.
     bool wasPlayingBeforeChange = false;
 
+    /// The position that the player was at before the user began changing the loop section.
+    Duration positionBeforeChange = Duration.zero;
+
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.durationNotifier,
-      builder: (_, duration, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.looper.enabledNotifier,
-        builder: (_, loopEnabled, __) => ValueListenableBuilder(
-          valueListenable: musicPlayer.looper.sectionNotifier,
-          builder: (context, loopSection, _) {
-            PositionSliderStyle style =
-                Theme.of(context).extension<PositionSliderStyle>()!;
+      valueListenable: player.loop.sectionNotifier,
+      builder: (context, section, _) {
+        PositionSliderStyle style =
+            Theme.of(context).extension<PositionSliderStyle>()!;
 
-            return SliderTheme(
-              data: Theme.of(context).sliderTheme.copyWith(
-                    rangeThumbShape: LoopSectionThumbShape(
-                      style: style,
-                      color: Theme.of(context).colorScheme.primary,
-                      disabledColor: Theme.of(context).colorScheme.primary,
-                    ),
-                    rangeTrackShape: LoopSliderTrackShape(
-                      style: style,
-                      outlineColor: Theme.of(context).colorScheme.primary,
-                      disabledOutlineColor:
-                          Theme.of(context).colorScheme.primary,
-                    ),
-                    valueIndicatorColor: Theme.of(context).colorScheme.primary,
-                    valueIndicatorStrokeColor: Colors.transparent,
-                  ),
-              child: RangeSlider(
-                labels: RangeLabels(
-                  loopSection.start.toString().substring(2, 10),
-                  loopSection.end.toString().substring(2, 10),
+        return SliderTheme(
+          data: Theme.of(context).sliderTheme.copyWith(
+                rangeThumbShape: LoopSectionThumbShape(
+                  style: style,
+                  color: Theme.of(context).colorScheme.primary,
+                  disabledColor: Theme.of(context).colorScheme.primary,
                 ),
-                min: 0,
-                max: duration.inMilliseconds.toDouble(),
-                values: RangeValues(
-                  loopSection.start.inMilliseconds.toDouble(),
-                  loopSection.end.inMilliseconds.toDouble(),
+                rangeTrackShape: LoopSliderTrackShape(
+                  style: style,
+                  outlineColor: Theme.of(context).colorScheme.primary,
+                  disabledOutlineColor: Theme.of(context).colorScheme.primary,
                 ),
-                onChangeStart: (value) {
-                  wasPlayingBeforeChange = musicPlayer.isPlaying;
-                  musicPlayer.pause();
-                },
-                onChangeEnd: (value) {
-                  if (wasPlayingBeforeChange) musicPlayer.play();
-                },
-                onChanged: !loopEnabled
-                    ? null
-                    : musicPlayer.nullIfNoSongElse((RangeValues values) {
-                        final LoopSection previous = musicPlayer.looper.section;
-
-                        // Update section
-                        musicPlayer.looper.section = LoopSection(
-                          start: Duration(milliseconds: values.start.toInt()),
-                          end: Duration(milliseconds: values.end.toInt()),
-                        );
-
-                        if (previous.start.inMilliseconds != values.start) {
-                          // The start value changed
-                          musicPlayer.seek(
-                            Duration(milliseconds: values.start.toInt()),
-                          );
-                        } else if (previous.end.inMilliseconds != values.end) {
-                          // The end value changed
-                          musicPlayer.seek(
-                            Duration(milliseconds: values.end.toInt()),
-                          );
-                        }
-                      }),
+                valueIndicatorColor: Theme.of(context).colorScheme.primary,
+                valueIndicatorStrokeColor: Colors.transparent,
               ),
-            );
-          },
-        ),
-      ),
+          child: RangeSlider(
+            labels: RangeLabels(
+              player.loop.start.toString().substring(2, 10),
+              player.loop.end.toString().substring(2, 10),
+            ),
+            min: 0,
+            max: player.duration.inMilliseconds.toDouble(),
+            values: RangeValues(
+              player.loop.start.inMilliseconds.toDouble(),
+              player.loop.end.inMilliseconds.toDouble(),
+            ),
+            onChangeStart: (value) {
+              positionBeforeChange = player.position;
+              wasPlayingBeforeChange = player.isPlaying;
+              player.pause();
+            },
+            onChanged: (RangeValues values) {
+              final Duration previousStart = player.loop.start;
+              final Duration previousEnd = player.loop.end;
+
+              // Update section
+              player.loop.section = (
+                Duration(milliseconds: values.start.toInt()),
+                Duration(milliseconds: values.end.toInt())
+              );
+
+              if (previousStart.inMilliseconds != values.start) {
+                // The start value changed
+                player.position = Duration(milliseconds: values.start.toInt());
+              }
+              if (previousEnd.inMilliseconds != values.end) {
+                // The end value changed
+                player.position = Duration(milliseconds: values.end.toInt());
+              }
+            },
+            onChangeEnd: (value) {
+              player.seek(positionBeforeChange);
+              if (wasPlayingBeforeChange) player.resume();
+            },
+          ),
+        );
+      },
     );
   }
 }

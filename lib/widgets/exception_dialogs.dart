@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/player/music_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/purchases.dart';
 
 /// Show an exception dialog.
@@ -30,13 +30,13 @@ class MusicPlayerAccessRestrictedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const FreeAccessRestrictedDialog(
-      reason:
-          "You have used your ${MusicPlayer.freeSongsPerWeek} weekly songs.",
+      reason: "You have used your ${Songs.freeSongsPerWeek} weekly songs.",
     );
   }
 }
 
 class FreeAccessRestrictedDialog extends StatelessWidget {
+  // TODO: Redesign this
   const FreeAccessRestrictedDialog({super.key, this.reason});
 
   /// Text explaining why access was restricted.
@@ -51,12 +51,31 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-              "${reason == null ? "" : "$reason\n\n"}Upgrade to the Premium version of Musician's Toolbox to get:"),
+          Padding(
+            padding: EdgeInsets.only(left: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                    "${reason == null ? "" : "$reason\n\n"}Upgrade to the Premium version of Musician's Toolbox to get:"),
+                const SizedBox(height: 8),
+                const Text(" ★ Unlimited songs"),
+                const Text(" ★ Full access to AI-powered Demixing"),
+                const Text(" ★ An ad-free experience"),
+              ],
+            ),
+          ),
           const SizedBox(height: 8),
-          const Text(" ★ Unlimited songs"),
-          const Text(" ★ Full access to AI-powered Demixing"),
-          const Text(" ★ An ad-free experience"),
+          TextButton(
+            onPressed: () async {
+              await Purchases.restore();
+              if (context.mounted) Navigator.of(context).pop();
+            },
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+            ),
+            child: const Text("Restore purchase"),
+          ),
         ],
       ),
       actions: [
@@ -89,7 +108,7 @@ class PremiumPurchasedDialog extends StatelessWidget {
       content: const Text(
           """Thank you for supporting Musician's Toolbox by upgrading to Premium! 
 
-Your purchase is processing and premium features will soon be activated. Please note that this can take up to 5 minutes."""),
+Your purchase is processing and premium features will soon be activated. Please note that this can take up to 5 minutes. If nothing happens, try restarting the app."""),
       actions: [
         TextButton(
           onPressed: () {

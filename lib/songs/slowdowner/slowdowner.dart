@@ -1,94 +1,87 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:musbx/songs/player/audio_handler.dart';
-import 'package:musbx/songs/player/music_player.dart';
-import 'package:musbx/songs/player/music_player_component.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
+// ignore: implementation_imports
+import 'package:flutter_soloud/src/filters/pitchshift_filter.dart';
+import 'package:musbx/songs/player/filter.dart';
+import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/widgets/widgets.dart';
 
-/// A component for [MusicPlayer] that is used to change the speed and pitch of a song.
-class Slowdowner extends MusicPlayerComponent {
-  /// The audio player used by [MusicPlayer], set during [initialize].
-  late final AudioPlayer audioPlayer;
+class SlowdownerComponent extends SongPlayerComponent {
+  SlowdownerComponent(super.player);
 
-  /// The audio handler used by [MusicPlayer], set during [initialize].
-  late final MusicPlayerAudioHandler audioHandler;
+  /// The  pitch shift filter, provided by [SoLoud].
+  Filter<PitchShiftSingle> get filter =>
+      player.playable.filters(handle: player.handle).pitchShift;
 
-  /// Set how much the pitch will be shifted, in semitones.
-  Future<void> setPitchSemitones(double pitch) async {
-    // TODO: Implement pitch-changing on iOS
-    if (enabled && !Platform.isIOS) {
-      await audioPlayer.setPitch(pow(2, pitch / 12).toDouble());
-    }
-    pitchNotifier.value = pitch;
+  @override
+  void initialize() {
+    // Note that this activation is redundant.
+    // We have to activate the filter before the sound is played, and so we
+    // activate it already when the [Playable] is created.
+    filter.activate();
   }
 
-  /// Set the playback speed.
-  Future<void> setSpeed(double speed) async {
-    if (enabled) {
-      await audioPlayer.setSpeed(speed);
-      await audioHandler.setSpeed(speed);
-    }
-    speedNotifier.value = speed;
+  @override
+  void dispose() {
+    filter.deactivate();
+    super.dispose();
   }
 
   /// How much the pitch will be shifted, in semitones.
   double get pitch => pitchNotifier.value;
-  set pitch(double value) => setPitchSemitones(value);
-  final ValueNotifier<double> pitchNotifier = ValueNotifier(0);
+  set pitch(double value) => pitchNotifier.value = value;
+  late final ValueNotifier<double> pitchNotifier = ValueNotifier(0.0)
+    ..addListener(_updatePitch)
+    ..addListener(notifyListeners);
+
+  void _updatePitch() {
+    filter.modify((filter, {handle}) {
+      // Adjust pitch shift based on playback speed. The formula `pow(2, pitch / 12)`
+      // converts semitone shifts to frequency ratios, and dividing by `speed` compensates
+      // for changes in playback speed that affect perceived pitch.
+      filter.shift(soundHandle: handle).value = pow(2, pitch / 12) / speed;
+    });
+  }
 
   /// The playback speed.
   double get speed => speedNotifier.value;
-  set speed(double value) => setSpeed(value);
-  final ValueNotifier<double> speedNotifier = ValueNotifier(1);
+  set speed(double value) => speedNotifier.value = value;
+  late final ValueNotifier<double> speedNotifier = ValueNotifier(1.0)
+    ..addListener(_updateSpeed)
+    ..addListener(notifyListeners);
 
-  @override
-  void initialize(MusicPlayer musicPlayer) {
-    audioPlayer = musicPlayer.player;
-    audioHandler = musicPlayer.audioHandler;
-
-    enabledNotifier.addListener(() {
-      if (!enabled) {
-        // Silently reset [MusicPlayer]'s pitch and speed
-        if (!Platform.isIOS) audioPlayer.setPitch(1.0);
-        audioPlayer.setSpeed(1.0);
-        musicPlayer.audioHandler.setSpeed(1.0);
-      } else {
-        // Restore pitch and speed
-        setPitchSemitones(pitch);
-        setSpeed(speed);
-      }
-    });
+  void _updateSpeed() {
+    SoLoud.instance.setRelativePlaySpeed(player.handle, speed);
+    _updatePitch();
   }
 
   /// Load settings from a [json] map.
   ///
-  /// [json] can contain the following key-value pairs (beyond `enabled`):
-  ///  - `pitchSemitones` [double] How much the pitch will be shifted, in semitones.
+  /// [json] can contain the following key-value pairs:
+  ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
-  void loadSettingsFromJson(Map<String, dynamic> json) {
-    super.loadSettingsFromJson(json);
+  void loadPreferencesFromJson(Map<String, dynamic> json) {
+    super.loadPreferencesFromJson(json);
 
-    final double? pitch = tryCast<double>(json["pitchSemitones"]);
-    final double? speed = tryCast<double>(json["speed"]);
+    pitch = tryCast<double>(json["pitch"])?.clamp(-12, 12) ?? 0.0;
+    speed = tryCast<double>(json["speed"])?.clamp(0.5, 2) ?? 1.0;
 
-    this.pitch = pitch?.clamp(-12, 12) ?? 0.0;
-    this.speed = speed?.clamp(0.5, 2) ?? 1.0;
+    notifyListeners();
   }
 
   /// Save settings for a song to a json map.
   ///
-  /// Saves the following key-value pairs (beyond `enabled`):
-  ///  - `pitchSemitones` [double] How much the pitch will be shifted, in semitones.
+  /// Saves the following key-value pairs:
+  ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
-  Map<String, dynamic> saveSettingsToJson() {
+  Map<String, dynamic> savePreferencesToJson() {
     return {
-      ...super.saveSettingsToJson(),
-      "pitchSemitones": pitch,
+      ...super.savePreferencesToJson(),
+      "pitch": pitch,
       "speed": speed,
     };
   }

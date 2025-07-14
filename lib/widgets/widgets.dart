@@ -51,8 +51,7 @@ class ContinuousButton extends StatelessWidget {
 }
 
 class InfoPage extends StatelessWidget {
-  const InfoPage({Key? key, required this.icon, required this.text})
-      : super(key: key);
+  const InfoPage({super.key, required this.icon, required this.text});
 
   final Widget icon;
   final String text;
@@ -60,19 +59,23 @@ class InfoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          icon,
-          Text(text),
-        ],
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 8.0,
+          children: <Widget>[
+            icon,
+            Text(text),
+          ],
+        ),
       ),
     );
   }
 }
 
 class ErrorPage extends StatelessWidget {
-  const ErrorPage({Key? key, required this.text}) : super(key: key);
+  const ErrorPage({super.key, required this.text});
 
   final String text;
 
@@ -86,7 +89,7 @@ class ErrorPage extends StatelessWidget {
 }
 
 class LoadingPage extends StatelessWidget {
-  const LoadingPage({Key? key, required this.text}) : super(key: key);
+  const LoadingPage({super.key, required this.text});
 
   final String text;
 
@@ -161,12 +164,42 @@ class MeasureSize extends SingleChildRenderObjectWidget {
   }
 }
 
-/// Creates a temporary directory with the given [name].
-/// If the directory already exists, does nothing.
-Future<Directory> createTempDirectory(String name) async {
-  var dir = Directory("${(await getTemporaryDirectory()).path}/$name/");
-  await dir.create(recursive: true);
-  return dir;
+class Directories {
+  Directories._();
+
+  static late final Directory _tempDir;
+
+  static late final Directory _appDocsDir;
+
+  /// Get a temporary directory with the given [name].
+  ///
+  /// This does not check to make sure that the directory actually exists.
+  static Directory temporaryDir(String name) =>
+      Directory("${_tempDir.path}/$name/");
+
+  /// Get a application documents directory with the given [name].
+  ///
+  /// This does not check to make sure that the directory actually exists.
+  static Directory applicationDocumentsDir(String name) =>
+      Directory("${_appDocsDir.path}/$name/");
+
+  /// Resolve the paths to commonly used locations on the filesystem, which are
+  /// used by the methods provided by this class.
+  ///
+  /// Should be called during app launch.
+  static Future<void> initialize() async {
+    _tempDir = await getTemporaryDirectory();
+    try {
+      _appDocsDir = await getApplicationDocumentsDirectory();
+    } catch (e) {
+      debugPrint(
+          "[DIRECTORIES] Unable to get application documents; falling back to temporary directory. $e");
+      _appDocsDir = _tempDir;
+    }
+
+    debugPrint(
+        "[DIRECTORIES] Initialized with temporary directory at ${_tempDir.path}, application documents at ${_appDocsDir.path}");
+  }
 }
 
 class ListNotifier<T> extends ChangeNotifier {
@@ -178,7 +211,7 @@ class ListNotifier<T> extends ChangeNotifier {
   UnmodifiableListView<T> get value => UnmodifiableListView(_value);
 
   T operator [](int index) => _value[index];
-  operator []=(int index, T value) {
+  void operator []=(int index, T value) {
     _value[index] = value;
     notifyListeners();
   }
@@ -340,3 +373,10 @@ extension MapValueNotifier<T> on ValueNotifier<T> {
     return notifier;
   }
 }
+
+extension IfNotNull<T extends Object?> on T {
+  /// Returns `null` if this is `null`, and [value] otherwise.
+  S? ifNotNull<S>(S value) => this == null ? null : value;
+}
+
+Type typeOf<T>() => T;

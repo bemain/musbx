@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/analyzer/analyzer_card.dart';
+import 'package:musbx/songs/equalizer/equalizer.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
 import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
-import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
@@ -24,16 +26,16 @@ class SongPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MusicPlayer musicPlayer = MusicPlayer.instance;
+    return ValueListenableBuilder(
+      valueListenable: Songs.playerNotifier,
+      builder: (context, player, child) {
+        if (player == null) return const SizedBox();
 
-    return DefaultTabController(
-      length: 2,
-      initialIndex: 0,
-      animationDuration: const Duration(milliseconds: 200),
-      child: ValueListenableBuilder(
-        valueListenable: musicPlayer.stateNotifier,
-        builder: (context, value, child) {
-          return Scaffold(
+        return DefaultTabController(
+          length: 2,
+          initialIndex: 0,
+          animationDuration: const Duration(milliseconds: 200),
+          child: Scaffold(
             resizeToAvoidBottomInset: false,
             appBar: const SongAppBar(),
             body: Padding(
@@ -47,10 +49,10 @@ class SongPage extends StatelessWidget {
                         Column(
                           children: [
                             ListTile(
-                              title: Text(musicPlayer.song?.title ?? ""),
+                              title: Text(player.song.title),
                               titleTextStyle:
                                   Theme.of(context).textTheme.titleLarge,
-                              subtitle: Text(musicPlayer.song?.artist ?? ""),
+                              subtitle: Text(player.song.artist ?? ""),
                             ),
                             Expanded(
                               child: AnalyzerCard(),
@@ -76,14 +78,14 @@ class SongPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   PositionSlider(),
-                  ButtonPanel(),
+                  const ButtonPanel(),
                   const SizedBox(height: 8),
                 ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -96,26 +98,36 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MusicPlayer musicPlayer = MusicPlayer.instance;
+    final SongPlayer player = Songs.player!;
 
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.slowdowner.pitchNotifier,
+      valueListenable: player.slowdowner.pitchNotifier,
       builder: (context, pitch, child) => ValueListenableBuilder(
-        valueListenable: musicPlayer.slowdowner.speedNotifier,
-        builder: (context, speed, child) {
-          final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
-          final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
-          final bool isEqualizerReset = musicPlayer.equalizer.parameters?.bands
-                  .every((band) =>
-                      band.gain ==
-                      (musicPlayer.equalizer.parameters!.minDecibels +
-                              musicPlayer.equalizer.parameters!.maxDecibels) /
-                          2) ??
-              true;
-
-          return AppBar(
-            actions: [
-              if (!Platform.isIOS)
+        valueListenable: player.slowdowner.speedNotifier,
+        builder: (context, speed, child) => ValueListenableBuilder(
+          valueListenable: player.equalizer.bandsNotifier,
+          builder: (context, bands, child) {
+            final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
+            final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
+            final bool isEqualizerReset = bands.every((band) =>
+                band.gain.toStringAsFixed(2) ==
+                EqualizerBand.defaultGain.toStringAsFixed(2));
+            return AppBar(
+              actions: [
+                if (!Platform.isIOS)
+                  IconButton(
+                    onPressed: () {
+                      _showModalBottomSheet(
+                        context,
+                        SlowdownerSheet(),
+                      );
+                    },
+                    isSelected: !isPitchReset,
+                    color: isPitchReset
+                        ? null
+                        : Theme.of(context).colorScheme.primary,
+                    icon: const Icon(CustomIcons.accidentals),
+                  ),
                 IconButton(
                   onPressed: () {
                     _showModalBottomSheet(
@@ -123,30 +135,17 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                       SlowdownerSheet(),
                     );
                   },
-                  isSelected: !isPitchReset,
-                  color: isPitchReset
+                  isSelected: !isSpeedReset,
+                  color: isSpeedReset
                       ? null
                       : Theme.of(context).colorScheme.primary,
-                  icon: const Icon(CustomIcons.accidentals),
+                  icon: const Icon(Symbols.avg_pace),
                 ),
-              IconButton(
-                onPressed: () {
-                  _showModalBottomSheet(
-                    context,
-                    SlowdownerSheet(),
-                  );
-                },
-                isSelected: !isSpeedReset,
-                color:
-                    isSpeedReset ? null : Theme.of(context).colorScheme.primary,
-                icon: const Icon(Symbols.avg_pace),
-              ),
-              if (Platform.isAndroid)
                 IconButton(
                   onPressed: () {
                     _showModalBottomSheet(
                       context,
-                      EqualizerSheet(),
+                      const EqualizerSheet(),
                     );
                   },
                   isSelected: !isEqualizerReset,
@@ -155,11 +154,12 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                       : Theme.of(context).colorScheme.primary,
                   icon: const Icon(Symbols.instant_mix),
                 ),
-              const GetPremiumButton(),
-              InfoButton(child: Text(SongPage.helpText)),
-            ],
-          );
-        },
+                const GetPremiumButton(),
+                InfoButton(child: Text(SongPage.helpText)),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -170,8 +170,6 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
       useRootNavigator: true,
       showDragHandle: true,
       isScrollControlled: true,
-      // TODO: Remove when this is in the framework https://github.com/flutter/flutter/issues/118619
-      constraints: const BoxConstraints(maxWidth: 640),
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(

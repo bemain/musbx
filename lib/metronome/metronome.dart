@@ -19,6 +19,7 @@ enum BeatSound {
   final String fileName;
 }
 
+/// TODO: Rewrite using flutter_soloud
 class Metronome {
   Metronome._() {
     // Listen to app lifecycle

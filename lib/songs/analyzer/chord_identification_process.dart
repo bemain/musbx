@@ -6,7 +6,7 @@ import 'package:musbx/model/chord.dart';
 import 'package:musbx/songs/musbx_api/chords_api.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/process.dart';
 
 class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
@@ -17,19 +17,31 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   final Song song;
 
   /// The file where the chords for this [song] are cached.
-  Future<File> get cacheFile async =>
-      File("${(await song.cacheDirectory).path}/chords.json");
+  File get cacheFile => File("${song.cacheDirectory.path}/chords.json");
+
+  /// Perform chord analysis on the [source] using the given [host].
+  Future<Map> _analyzeSource(SongSource source, ChordsApiHost host) async {
+    switch (source) {
+      case FileSource():
+        return await host.analyzeFile(source.file);
+      case YoutubeSource():
+        return await host.analyzeYoutubeSong(source.youtubeId);
+      case DemixedSource():
+        return await _analyzeSource(source.parent, host);
+      default:
+        throw "Chord analysis cannot be performed on the source $source.";
+    }
+  }
 
   @override
-  Future<Map<Duration, Chord?>> process() async {
+  Future<Map<Duration, Chord?>> execute() async {
     Map? chords;
     // Check cache
-    File cache = await cacheFile;
-    if (await cache.exists()) {
+    if (await cacheFile.exists()) {
       try {
-        chords = jsonDecode(await cache.readAsString()) as Map;
+        chords = jsonDecode(await cacheFile.readAsString()) as Map;
       } catch (e) {
-        debugPrint("[ANALYZER] Malformed chords file: '${cache.path}'");
+        debugPrint("[ANALYZER] Malformed chords file: '${cacheFile.path}'");
       }
     }
 
@@ -39,18 +51,11 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
       // Perform chords identification
       final ChordsApiHost host = await MusbxApi.findChordsHost();
 
-      if (song.source is FileSource) {
-        chords = await host.analyzeFile(
-          (song.source as FileSource).file,
-        );
-      } else {
-        chords = await host.analyzeYoutubeSong(
-          (song.source as YoutubeSource).youtubeId,
-        );
-      }
+      chords = await _analyzeSource(song.source, host);
 
       // Save to cache
-      await cache.writeAsString(jsonEncode(chords));
+      await cacheFile.create(recursive: true);
+      await cacheFile.writeAsString(jsonEncode(chords));
     }
 
     breakIfCancelled();

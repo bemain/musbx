@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:just_waveform/just_waveform.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/process.dart';
 
 class WaveformExtractionProcess extends Process<Waveform> {
@@ -14,20 +14,31 @@ class WaveformExtractionProcess extends Process<Waveform> {
   final Song song;
 
   /// Get the file were the waveform for [song] is saved.
-  static Future<File> getWaveformFile(Song song) async =>
-      File("${(await song.cacheDirectory).path}/waveform.wave");
+  static File getWaveformFile(Song song) =>
+      File("${song.cacheDirectory.path}/waveform.wave");
+
+  /// Get the file where the audio for [source] is cached.
+  File? _cacheFile(SongSource source) {
+    return switch (source) {
+      FileSource() => source.cacheFile,
+      YoutubeSource() => source.cacheFile,
+      DemixedSource() => _cacheFile(source.parent),
+      _ => null,
+    };
+  }
 
   @override
-  Future<Waveform> process() async {
-    final File inFile = song.source is YoutubeSource
-        ? (song.source as YoutubeSource).cacheFile
-        : (song.source as FileSource).file;
-    if (!await inFile.exists()) throw "File doesn't exist $inFile";
-
-    final File outFile = await getWaveformFile(song);
+  Future<Waveform> execute() async {
+    final File outFile = getWaveformFile(song);
     if (await outFile.exists()) {
       // Use cached waveform
       return await JustWaveform.parse(outFile);
+    }
+
+    final SongSource source = song.source;
+    final File? inFile = _cacheFile(source);
+    if (inFile == null || !await inFile.exists()) {
+      throw "File doesn't exist: $inFile";
     }
 
     breakIfCancelled();

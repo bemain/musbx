@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/songs/player/music_player.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/circular_slider/circular_slider.dart';
 import 'package:musbx/widgets/widgets.dart';
 
@@ -15,7 +15,7 @@ class SlowdownerSheet extends StatelessWidget {
   /// Also features a button for resetting pitch and speed to the default values.
   SlowdownerSheet({super.key});
 
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
+  final SongPlayer player = Songs.player!;
 
   @override
   Widget build(BuildContext context) {
@@ -26,23 +26,20 @@ class SlowdownerSheet extends StatelessWidget {
         children: [
           Stack(children: [
             Align(
-              alignment:
-                  Platform.isIOS ? Alignment.topRight : Alignment.topCenter,
+              alignment: Alignment.topCenter,
               child: ValueListenableBuilder(
-                valueListenable: musicPlayer.slowdowner.speedNotifier,
+                valueListenable: player.slowdowner.speedNotifier,
                 builder: (_, speed, __) => ValueListenableBuilder(
-                  valueListenable: musicPlayer.slowdowner.pitchNotifier,
+                  valueListenable: player.slowdowner.pitchNotifier,
                   builder: (context, pitch, _) => IconButton(
                     iconSize: 20,
-                    onPressed: musicPlayer.nullIfNoSongElse(
-                      (speed.toStringAsFixed(2) == "1.00" &&
-                              pitch.abs().toStringAsFixed(1) == "0.0")
-                          ? null
-                          : () {
-                              musicPlayer.slowdowner.setSpeed(1.0);
-                              musicPlayer.slowdowner.setPitchSemitones(0);
-                            },
-                    ),
+                    onPressed: (speed.toStringAsFixed(2) == "1.00" &&
+                            pitch.abs().toStringAsFixed(1) == "0.0")
+                        ? null
+                        : () {
+                            player.slowdowner.speed = 1.0;
+                            player.slowdowner.pitch = 0;
+                          },
                     icon: const Icon(Symbols.refresh),
                   ),
                 ),
@@ -54,9 +51,7 @@ class SlowdownerSheet extends StatelessWidget {
                 builder: (context, BoxConstraints constraints) => Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Don't show pitch slider on iOS since setPitch() method is not implemented.
-                    if (!Platform.isIOS)
-                      buildPitchSlider(constraints.maxWidth / 4),
+                    buildPitchSlider(constraints.maxWidth / 4),
                     buildSpeedSlider(constraints.maxWidth / 4),
                   ],
                 ),
@@ -68,12 +63,12 @@ class SlowdownerSheet extends StatelessWidget {
     );
   }
 
-  /// Whether the MusicPlayer was playing before the user began changing the pitch or speed.
+  /// Whether the [player] was playing before the user began changing the pitch or speed.
   static bool wasPlayingBeforeChange = false;
 
   Widget buildPitchSlider(double radius) {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.slowdowner.pitchNotifier,
+      valueListenable: player.slowdowner.pitchNotifier,
       builder: (context, pitch, _) => Column(children: [
         Text(
           "Pitch",
@@ -86,20 +81,8 @@ class SlowdownerSheet extends StatelessWidget {
           max: 12,
           divisionValues: List.generate(25, (i) => i - 12.0),
           outerRadius: radius,
-          onChanged: musicPlayer.nullIfNoSongElse(
-            (!musicPlayer.slowdowner.enabled)
-                ? null
-                : (double value) {
-                    musicPlayer.slowdowner
-                        .setPitchSemitones((value * 10).roundToDouble() / 10);
-                  },
-          ),
-          onChangeStart: () {
-            wasPlayingBeforeChange = musicPlayer.isPlaying;
-            musicPlayer.pause();
-          },
-          onChangeEnd: () {
-            if (wasPlayingBeforeChange) musicPlayer.play();
+          onChanged: (double value) {
+            player.slowdowner.pitch = (value * 10).roundToDouble() / 10;
           },
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -111,9 +94,9 @@ class SlowdownerSheet extends StatelessWidget {
                   max: 12.0,
                   style: Theme.of(context).textTheme.displaySmall,
                   prefixWithSign: true,
-                  onSubmitted: musicPlayer.nullIfNoSongElse((value) {
-                    musicPlayer.slowdowner.setPitchSemitones(value);
-                  }),
+                  onSubmitted: (value) {
+                    player.slowdowner.pitch = value;
+                  },
                 ),
               );
             },
@@ -125,7 +108,7 @@ class SlowdownerSheet extends StatelessWidget {
 
   Widget buildSpeedSlider(double radius) {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.slowdowner.speedNotifier,
+      valueListenable: player.slowdowner.speedNotifier,
       builder: (context, speed, _) => Column(children: [
         Text(
           "Speed",
@@ -141,20 +124,8 @@ class SlowdownerSheet extends StatelessWidget {
               .map((speedValue) => sqrt(speedValue - 7 / 16) - 0.25)
               .toList(),
           outerRadius: radius,
-          onChanged: musicPlayer.nullIfNoSongElse(
-            (!musicPlayer.slowdowner.enabled)
-                ? null
-                : (double value) {
-                    musicPlayer.slowdowner
-                        .setSpeed(pow(value, 2) + value / 2 + 0.5);
-                  },
-          ),
-          onChangeStart: () {
-            wasPlayingBeforeChange = musicPlayer.isPlaying;
-            musicPlayer.pause();
-          },
-          onChangeEnd: () {
-            if (wasPlayingBeforeChange) musicPlayer.play();
+          onChanged: (double value) {
+            player.slowdowner.speed = pow(value, 2) + value / 2 + 0.5;
           },
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -170,9 +141,9 @@ class SlowdownerSheet extends StatelessWidget {
                     // Don't allow negative numbers
                     FilteringTextInputFormatter.deny(RegExp(r"-"))
                   ],
-                  onSubmitted: musicPlayer.nullIfNoSongElse((value) {
-                    musicPlayer.slowdowner.setSpeed(value);
-                  }),
+                  onSubmitted: (value) {
+                    player.slowdowner.speed = value;
+                  },
                 ),
               );
             },
@@ -184,17 +155,17 @@ class SlowdownerSheet extends StatelessWidget {
 
   Widget buildResetButton() {
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.slowdowner.speedNotifier,
+      valueListenable: player.slowdowner.speedNotifier,
       builder: (_, speed, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.slowdowner.pitchNotifier,
+        valueListenable: player.slowdowner.pitchNotifier,
         builder: (context, pitch, _) => IconButton(
           iconSize: 20,
           onPressed: (speed.toStringAsFixed(2) == "1.00" &&
                   pitch.abs().toStringAsFixed(1) == "0.0")
               ? null
               : () {
-                  musicPlayer.slowdowner.setSpeed(1.0);
-                  musicPlayer.slowdowner.setPitchSemitones(0);
+                  player.slowdowner.speed = 1.0;
+                  player.slowdowner.pitch = 0;
                 },
           icon: const Icon(Symbols.refresh),
         ),

@@ -1,188 +1,100 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
-import 'package:musbx/songs/demixer/demixing_process.dart';
-import 'package:musbx/songs/demixer/mixed_audio_source.dart';
-import 'package:musbx/songs/demixer/stem.dart';
-import 'package:musbx/songs/looper/looper.dart';
-import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/player/music_player.dart';
-import 'package:musbx/songs/player/music_player_component.dart';
-import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/widgets/widgets.dart';
 
-enum DemixerState {
-  /// Demixing hasn't started. E.g. the user hasn't selected a song yet.
-  inactive,
+class Stem {
+  /// The default [volume]
+  static const double defaultVolume = 0.5;
 
-  /// The song is being demixed.
-  demixing,
+  static final SoLoud _soloud = SoLoud.instance;
 
-  /// The song has been demixed and is ready to be played.
-  done,
-
-  /// The Demixer isn't up to date with the server.
-  /// The app has to be updated to the latest version.
-  outOfDate,
-
-  /// Something went wrong while demixing the song.
-  error,
-}
-
-/// A component for [MusicPlayer] that is used to separate a song into stems and change the volume of those individually.
-class Demixer extends MusicPlayerComponent {
-  /// The stems that songs are being separated into.
-  List<Stem> get stems => stemsNotifier.value;
-  late final StemsNotifier stemsNotifier = StemsNotifier(List.unmodifiable([
-    Stem(StemType.vocals),
-    Stem(StemType.piano),
-    Stem(StemType.guitar),
-    Stem(StemType.bass),
-    Stem(StemType.drums),
-    Stem(StemType.other),
-  ]));
-
-  /// The state of the Demixer.
-  DemixerState get state => stateNotifier.value;
-  final ValueNotifier<DemixerState> stateNotifier =
-      ValueNotifier(DemixerState.inactive);
-
-  /// Whether the Demixer is ready to play the current song.
+  /// A demixed stem for a song. Can be played back in sync with other stems.
   ///
-  /// If `true`, the current song has been separated and mixed, and the Demixer is enabled.
-  bool get isReady => state == DemixerState.done && enabled;
+  /// There should (usually) only ever be one stem of each [type].
+  Stem(this.type, this.player);
 
-  /// The process demxing the current song, or `null` if no song has been selected.
-  DemixingProcess? process;
+  /// The player that this is a part of.
+  final MultiPlayer player;
 
-  @override
-  void initialize(MusicPlayer musicPlayer) {
-    musicPlayer.songNotifier.addListener(_onNewSongLoaded);
-    enabledNotifier.addListener(_onEnabledToggle);
-  }
+  /// The type of stem.
+  final StemType type;
 
-  /// Demix [MusicPlayer]'s current song.
+  /// The source of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [MultiPlayable].
+  AudioSource? get source => player.playable.sources[type];
+
+  /// The handle of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [MultiPlayable].
+  SoundHandle? get handle => player.playable.handles?[type];
+
+  /// Whether this stem is enabled and should be played.
   ///
-  /// Starts a [process] demixing the song, and catches any error encountered.
-  ///
-  /// Does nothing if no song has been loaded to [MusicPlayer].
-  Future<void> demixCurrentSong() async {
-    MusicPlayer musicPlayer = MusicPlayer.instance;
-    Song? song = musicPlayer.song;
-    if (song == null) return;
+  /// If this is `false` the audio will be muted, regardless of the value of [volume].
+  bool get enabled => enabledNotifier.value;
+  set enabled(bool value) => enabledNotifier.value = value;
+  late final ValueNotifier<bool> enabledNotifier = ValueNotifier(true)
+    ..addListener(_updateEnabled);
 
-    stateNotifier.value = DemixerState.demixing;
-
-    try {
-      process?.isCancelled = true;
-      process = DemixingProcess(song);
-
-      Map<StemType, File>? stemFiles = await process?.future;
-      if (stemFiles == null) return;
-    } on OutOfDateException {
-      debugPrint(
-          "[DEMIXER] Out of date. Try upgrading the app to the latest version");
-      stateNotifier.value = DemixerState.outOfDate;
-      return;
-    } catch (error) {
-      debugPrint("[DEMIXER] Error demixing song: $error");
-      stateNotifier.value = DemixerState.error;
-      return;
-    }
-
-    stateNotifier.value = DemixerState.done;
-
-    _onEnabledToggle();
-  }
-
-  /// Update the [MusicPlayer]'s audio source to reflect the current state.
-  /// This has to be called manually every time [stems] are changed.
-  Future<void> onStemsChanged() async {
-    if (!isReady) return;
-
-    await _onEnabledToggle();
-  }
-
-  Future<void> _onNewSongLoaded() async {
-    stateNotifier.value = DemixerState.inactive;
-
-    if (await isOnCellular()) enabled = false;
-
-    if (!enabled) return;
-
-    await demixCurrentSong();
-  }
-
-  Future<void> _onEnabledToggle() async {
-    if (state != DemixerState.done) {
-      if (enabled) {
-        await demixCurrentSong();
-      } else {
-        process?.isCancelled = true;
-        stateNotifier.value = DemixerState.inactive;
-      }
-      return;
-    }
-
-    MusicPlayer musicPlayer = MusicPlayer.instance;
-    if (musicPlayer.song == null) return;
-
-    // Make sure no other process is currently setting the audio source
-    musicPlayer.loadSongLock = _loadAudioSource(
-      awaitBeforeLoading: musicPlayer.loadSongLock,
-    );
-    await musicPlayer.loadSongLock;
-  }
-
-  /// Awaits [awaitBeforeLoading] and enables/disables demixed audio.
-  /// See [MusicPlayer.loadSongLock] for more info why this is required.
-  Future<void> _loadAudioSource({
-    Future<void>? awaitBeforeLoading,
-  }) async {
-    try {
-      await awaitBeforeLoading;
-    } catch (_) {}
-
-    MusicPlayer musicPlayer = MusicPlayer.instance;
-    Duration position = musicPlayer.position;
+  void _updateEnabled() {
+    final SoundHandle? handle = this.handle;
+    if (handle == null) return;
 
     if (enabled) {
-      // Load wav files
-      Directory directory = await DemixerApiHost.extractedFilesDirectory;
-      Map<StemType, File> files = Map.fromEntries(StemType.values.map((stem) =>
-          MapEntry(stem, File("${directory.path}/${stem.name}.wav"))));
-
-      // Enable mixed audio
-      await musicPlayer.player.setAudioSource(
-        MixedAudioSource(files),
-        initialPosition: position,
-      );
-      await musicPlayer.player.setVolume(1.0);
+      _soloud.setVolume(handle, volume);
     } else {
-      // Restore "normal" audio
-      if (musicPlayer.song == null) return;
-      await musicPlayer.player.setAudioSource(
-        await musicPlayer.song!.source.toAudioSource(),
-        initialPosition: position,
-      );
-      await musicPlayer.player.setVolume(0.5);
-    }
-
-    // Update loopSection to avoid error if new audio source isn't exectly as long as the previous.
-    if (musicPlayer.song == null) return;
-    Duration newDuration = musicPlayer.player.duration!;
-    if (musicPlayer.looper.section.end.compareTo(newDuration) > 0) {
-      // Section end is greater than new duration
-      musicPlayer.looper.section = LoopSection(end: newDuration);
+      _soloud.setVolume(handle, 0.0);
     }
   }
+
+  /// The volume this stem is played at. The value is clamped between 0 and 1.
+  double get volume => volumeNotifier.value;
+  set volume(double value) => volumeNotifier.value = value.clamp(0, 1);
+  late final ValueNotifier<double> volumeNotifier = ValueNotifier(defaultVolume)
+    ..addListener(_updateVolume);
+
+  void _updateVolume() {
+    final SoundHandle? handle = this.handle;
+    if (handle == null) return;
+
+    if (enabled) {
+      _soloud.setVolume(handle, volume);
+    }
+  }
+}
+
+class StemsNotifier extends ValueNotifier<List<Stem>> {
+  /// Notifies listeners whenever [enabled] or [volume] of any of the stems provided in [value] changes.
+  StemsNotifier(super.value) {
+    for (Stem stem in value) {
+      stem.enabledNotifier.addListener(notifyListeners);
+      stem.volumeNotifier.addListener(notifyListeners);
+    }
+  }
+}
+
+class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
+  /// A component of the [MultiPlayer] that is used to separate a song into stems and change the volume of those individually.
+  DemixerComponent(super.player);
+
+  /// The stems that this song has been separated into.
+  List<Stem> get stems => stemsNotifier.value;
+  late final StemsNotifier stemsNotifier = StemsNotifier(List.unmodifiable([
+    Stem(StemType.vocals, player),
+    Stem(StemType.piano, player),
+    Stem(StemType.guitar, player),
+    Stem(StemType.bass, player),
+    Stem(StemType.drums, player),
+    Stem(StemType.other, player),
+  ]))
+    ..addListener(notifyListeners);
 
   /// Load settings from a [json] map.
   ///
-  /// [json] can contain the following stems (beyond `enabled`):
+  /// [json] can contain the following stems:
   ///  - `drums`
+  ///  - `piano`
+  ///  - `guitar`
   ///  - `bass`
   ///  - `vocals`
   ///  - `other`
@@ -191,8 +103,8 @@ class Demixer extends MusicPlayerComponent {
   ///  - `enabled` [bool] Whether this stem is enabled and should be played.
   ///  - `volume` [double] The volume this stem is played back at. Must be between 0 and 1.
   @override
-  void loadSettingsFromJson(Map<String, dynamic> json) {
-    super.loadSettingsFromJson(json);
+  void loadPreferencesFromJson(Map<String, dynamic> json) {
+    super.loadPreferencesFromJson(json);
 
     for (Stem stem in stems) {
       Map<String, dynamic>? stemData =
@@ -204,12 +116,16 @@ class Demixer extends MusicPlayerComponent {
       double? volume = tryCast<double>(stemData?["volume"]);
       stem.volume = volume ?? 0.5;
     }
+
+    notifyListeners();
   }
 
   /// Save settings for a song to a json map.
   ///
   /// Saves the following stems:
   ///  - `drums`
+  ///  - `piano`
+  ///  - `guitar`
   ///  - `bass`
   ///  - `vocals`
   ///  - `other`
@@ -218,9 +134,9 @@ class Demixer extends MusicPlayerComponent {
   ///  - `enabled` [bool] Whether this stem is enabled and should be played.
   ///  - `volume` [double] The volume this stem is played back at. Must be between 0 and 1.
   @override
-  Map<String, dynamic> saveSettingsToJson() {
+  Map<String, dynamic> savePreferencesToJson() {
     return {
-      ...super.saveSettingsToJson(),
+      ...super.savePreferencesToJson(),
       for (Stem stem in stems)
         stem.type.name: {
           "enabled": stem.enabled,

@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/songs/analyzer/waveform_painter.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
-import 'package:musbx/songs/player/music_player.dart';
 
 class WaveformWidget extends StatelessWidget {
   WaveformWidget({super.key});
 
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
+  final SongPlayer player = Songs.player!;
 
   @override
   Widget build(BuildContext context) {
-    if (musicPlayer.isLoading || musicPlayer.state == MusicPlayerState.idle) {
-      return const SizedBox(); // TODO: Show dummy waveform when no song
-    }
-
     return ValueListenableBuilder(
-      valueListenable: musicPlayer.analyzer.waveformNotifier,
+      valueListenable: player.analyzer.waveformNotifier,
       builder: (context, waveform, child) {
         if (waveform == null) {
+          // TODO: Show dummy waveform.
           return const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -28,14 +26,14 @@ class WaveformWidget extends StatelessWidget {
         }
 
         return ValueListenableBuilder(
-          valueListenable: musicPlayer.analyzer.durationShownNotifier,
+          valueListenable: player.analyzer.durationShownNotifier,
           builder: (context, durationShown, child) => ValueListenableBuilder(
-            valueListenable: musicPlayer.positionNotifier,
+            valueListenable: player.positionNotifier,
             builder: (context, position, child) {
               return CustomPaint(
                 painter: WaveformPainter(
                   waveform: waveform,
-                  position: position,
+                  position: player.position,
                   duration: durationShown,
                   style: Theme.of(context).extension<PositionSliderStyle>()!,
                   markerColor: Theme.of(context).colorScheme.onSurfaceVariant,

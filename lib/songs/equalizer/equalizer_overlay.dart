@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:musbx/songs/equalizer/equalizer.dart';
 
 class EqualizerOverlayPainter extends CustomPainter {
   /// Paints an overlay onto a set of sliders used to control the gain on
@@ -8,14 +8,16 @@ class EqualizerOverlayPainter extends CustomPainter {
   /// Connects the thumbs of the sliders using a line, and fills the area
   /// between the line and the center with a gradient.
   EqualizerOverlayPainter({
-    required this.parameters,
+    required this.bands,
     required this.lineColor,
     this.lineWidth = 6.0,
     this.fillColor,
   });
 
   /// The Equalizer's parameters.
-  final AndroidEqualizerParameters? parameters;
+  ///
+  /// If this is `null`, the sliders are painted as disabled.
+  final List<EqualizerBand>? bands;
 
   /// The color of the line connecting the thumbs.
   final Color lineColor;
@@ -31,7 +33,7 @@ class EqualizerOverlayPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (parameters == null) {
+    if (bands == null) {
       // Assume all the bands have a gain of 0.
       // Draw a disabled line at the center of the overlay
       canvas.drawLine(
@@ -60,13 +62,13 @@ class EqualizerOverlayPainter extends CustomPainter {
 
     // Generate spline points
     List<Offset> controlPoints = List.generate(
-      parameters!.bands.length,
+      bands!.length,
       (index) {
-        AndroidEqualizerBand band = parameters!.bands[index];
-        double decibelFraction = (band.gain - parameters!.minDecibels) /
-            (parameters!.maxDecibels - parameters!.minDecibels);
+        EqualizerBand band = bands![index];
+        double decibelFraction = (band.gain - EqualizerBand.minGain) /
+            (EqualizerBand.maxGain - EqualizerBand.minGain);
 
-        return Offset(size.width * (index + 0.5) / parameters!.bands.length,
+        return Offset(size.width * (index + 0.5) / bands!.length,
             sliderTrackPadding + actualHeight * (1 - decibelFraction));
       },
     );
@@ -91,9 +93,8 @@ class EqualizerOverlayPainter extends CustomPainter {
 
       Path fillPath = Path()
         ..addPolygon(splinePoints, false)
-        ..lineTo(
-            size.width * (1 - 0.5 / parameters!.bands.length), size.height / 2)
-        ..lineTo(size.width * 0.5 / parameters!.bands.length, size.height / 2);
+        ..lineTo(size.width * (1 - 0.5 / bands!.length), size.height / 2)
+        ..lineTo(size.width * 0.5 / bands!.length, size.height / 2);
 
       // Draw fill below line
       fillPaint.shader = fillShader(end: Alignment.bottomCenter);
@@ -108,7 +109,7 @@ class EqualizerOverlayPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant EqualizerOverlayPainter oldDelegate) {
-    return parameters != oldDelegate.parameters ||
+    return bands != oldDelegate.bands ||
         lineColor != oldDelegate.lineColor ||
         lineWidth != oldDelegate.lineWidth ||
         fillColor != oldDelegate.fillColor;

@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/process.dart';
 
 enum DemixingStep {
@@ -28,42 +25,37 @@ enum DemixingStep {
 
   /// The stem files are being downloaded.
   downloading,
-
-  /// The stem files are being extracted.
-  extracting,
 }
 
 class DemixingProcess extends Process<Map<StemType, File>> {
-  /// Upload, separate and download stem files for a [song].
-  ///
-  /// The stem files will be 16 bit wav files.
+  /// Upload, separate and download stem files for a song.
   ///
   /// TODO: Improve progress tracking for upload and download.
-  DemixingProcess(this.song);
+  DemixingProcess(this.parentSource, {required this.cacheDirectory});
 
-  /// The song being demixed.
-  final Song song;
+  final SongSource parentSource;
+
+  final Directory cacheDirectory;
 
   /// The current step of the demixing process.
   DemixingStep get step => stepNotifier.value;
   final ValueNotifier<DemixingStep> stepNotifier =
       ValueNotifier(DemixingStep.checkingCache);
 
-  /// Get stems for [song], if all stems (see [StemType]) were found with the correct [fileExtension].
-  Future<Map<StemType, File>?> getStemsInCache(
-    Song song, {
+  /// Get stems for the song, if all stems (see [StemType]) were found with the correct [fileExtension].
+  Future<Map<StemType, File>?> getStemsInCache({
     String fileExtension = "mp3",
   }) async {
-    Directory directory = await DemixerApiHost.getStemsDirectory(song);
     List<File> stemFiles = StemType.values
-        .map((stem) => File("${directory.path}/${stem.name}.$fileExtension"))
+        .map((stem) =>
+            File("${cacheDirectory.path}/${stem.name}.$fileExtension"))
         .toList();
     if ((await Future.wait(stemFiles.map((stem) => stem.exists())))
         .every((value) => value)) {
       // All stems were found in the cache.
       return {
         for (final stem in StemType.values)
-          stem: File("${directory.path}/${stem.name}.$fileExtension")
+          stem: File("${cacheDirectory.path}/${stem.name}.$fileExtension")
       };
     }
 
@@ -71,44 +63,34 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   }
 
   @override
-  Future<Map<StemType, File>> process() async {
+  Future<Map<StemType, File>> execute() async {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
-    Map<StemType, File>? cachedStemFiles = await getStemsInCache(song);
+    Map<StemType, File>? cachedStemFiles = await getStemsInCache();
     if (cachedStemFiles != null) {
-      debugPrint("[DEMIXER] Using cached stems for song ${song.id}.");
-
-      // Cached files need to be converted to wav
-      stepNotifier.value = DemixingStep.extracting;
-      progressNotifier.value = 0;
-
-      for (final entry in cachedStemFiles.entries) {
-        cachedStemFiles[entry.key] = await mp3ToWav(entry.value);
-        progressNotifier.value = (progress ?? 0) + 1 ~/ StemType.values.length;
-        breakIfCancelled();
-      }
+      debugPrint("[DEMIXER] Using cached stems for song.");
 
       return cachedStemFiles;
     }
 
     stepNotifier.value = DemixingStep.findingHost;
 
-    DemixerApiHost host = await MusbxApi.findDemixerHost();
+    final DemixerApiHost host = await MusbxApi.findDemixerHost();
 
     breakIfCancelled();
 
     // Upload song to server
     stepNotifier.value = DemixingStep.uploading;
 
-    UploadResponse response;
-    if (song.source is FileSource) {
+    final UploadResponse response;
+    if (parentSource is FileSource) {
       response = await host.uploadFile(
-        (song.source as FileSource).file,
+        (parentSource as FileSource).file,
       );
     } else {
       response = await host.uploadYoutubeSong(
-        (song.source as YoutubeSource).youtubeId,
+        (parentSource as YoutubeSource).youtubeId,
       );
     }
 
@@ -149,14 +131,12 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     stepNotifier.value = DemixingStep.downloading;
     progressNotifier.value = 0;
 
-    Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
+    final Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
       StemType.values.map((stem) async {
         File file = await host.downloadStem(
-          // When dimixing files, [song.id] is not the same as the id of the song on the API ([response.songId]).
-          // Thus we need to pass it as well, which is ugly. TODO: Fix this.
           response.songId,
-          song,
           stem,
+          cacheDirectory,
         );
         progressNotifier.value = (progress ?? 0) + 1 ~/ StemType.values.length;
 
@@ -166,42 +146,6 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
     breakIfCancelled();
 
-    // Convert files to wav
-    stepNotifier.value = DemixingStep.extracting;
-    progressNotifier.value = 0;
-
-    for (final entry in stemFiles.entries) {
-      stemFiles[entry.key] = await mp3ToWav(entry.value);
-
-      progressNotifier.value = (progress ?? 0) + 1 ~/ StemType.values.length;
-
-      breakIfCancelled();
-    }
-
     return stemFiles;
   }
-}
-
-/// Convert [inFile] from mp3 to 16 bit pcm wav.
-Future<File> mp3ToWav(File inFile) async {
-  /// File name without extension
-  String fileName = inFile.path.split("/").last.split(".").first;
-  String outputDirectory = (await DemixerApiHost.extractedFilesDirectory).path;
-
-  // Use ffmpeg to convert files to wav
-  String arguments =
-      "-y -i ${inFile.path} -bitexact -acodec pcm_s16le $outputDirectory/$fileName.wav";
-  final session = await FFmpegKit.execute(arguments);
-  ReturnCode? returnCode = await session.getReturnCode();
-
-  if (!ReturnCode.isSuccess(returnCode)) {
-    throw ProcessException(
-      "ffmpeg",
-      arguments.split(" "),
-      "Converting file $fileName.mp3 to wav failed. \n${await session.getOutput()}",
-      returnCode?.getValue() ?? 0,
-    );
-  }
-
-  return File("$fileName.wav");
 }

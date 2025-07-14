@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 /// The default album art.
@@ -10,8 +10,8 @@ import 'package:musbx/widgets/widgets.dart';
 final Uri defaultAlbumArt =
     Uri.parse("https://bemain.github.io/musbx/default_album_art.png");
 
-class Song {
-  /// Representation of a song, to be played by [MusicPlayer].
+class Song<P extends Playable> {
+  /// Representation of a song, to be played by a [SongPlayer].
   Song({
     required this.id,
     required this.title,
@@ -20,14 +20,7 @@ class Song {
     this.genre,
     this.artUri,
     required this.source,
-  }) : mediaItem = MediaItem(
-          id: id,
-          title: title,
-          album: album,
-          artist: artist,
-          genre: genre,
-          artUri: artUri ?? defaultAlbumArt,
-        );
+  });
 
   /// A unique id.
   final String id;
@@ -51,16 +44,25 @@ class Song {
 
   /// Where this song's audio was loaded from, e.g. a YouTube video or a local file.
   ///
-  /// Can be used to create an [AudioSource] playable by [AudioPlayer].
-  final SongSource source;
+  /// Can be used to create a [Playable] playable by [SongPlayer].
+  final SongSource<P> source;
 
-  /// The media item for this song, provided to [MusicPlayerAudioHandler] when
+  /// The media item for this song, provided to [SongsAudioHandler] when
   /// this song is played.
-  final MediaItem mediaItem;
+  ///
+  /// Note that the returned media item does not include the duration of the audio.
+  MediaItem get mediaItem => MediaItem(
+        id: id,
+        title: title,
+        album: album,
+        artist: artist,
+        genre: genre,
+        artUri: artUri ?? defaultAlbumArt,
+      );
 
   /// The directory where files relating to this song are cached.
-  late final Future<Directory> cacheDirectory =
-      createTempDirectory("songs/$id");
+  Directory get cacheDirectory =>
+      Directories.applicationDocumentsDir("songs/$id");
 
   @override
   String toString() {
@@ -90,7 +92,7 @@ class Song {
   /// The map should always contain the following keys:
   /// - `id` [String] A unique id.
   /// - `title` [String] The title of this song.
-  /// - `source` [Map<String, dynamic>] Where this song's audio was loaded from. Should contain the key `type` and other values depending on the type.
+  /// - `source` [Map<String, dynamic>] Json describing how to create a [SongSource]. Should contain the key `type` and other values depending on the type.
   static Song? fromJson(Map<String, dynamic> json) {
     if (!json.containsKey("id") ||
         !json.containsKey("title") ||
@@ -102,14 +104,50 @@ class Song {
     if (source == null) return null;
     final String? artUri = tryCast<String>(json["artUri"]);
 
+    Song<T> song<T extends Playable>() {
+      return Song<T>(
+        id: json["id"] as String,
+        title: json["title"] as String,
+        album: tryCast<String>(json["album"]),
+        artist: tryCast<String>(json["artist"]),
+        genre: tryCast<String>(json["genre"]),
+        artUri: artUri == null ? null : Uri.tryParse(artUri),
+        source: source as SongSource<T>,
+      );
+    }
+
+    if (source is SongSource<MultiPlayable>) {
+      return song<MultiPlayable>();
+    } else {
+      return song<SinglePlayable>();
+    }
+  }
+
+  /// Create a copy of this [Song] with the specified fields replaced with new values.
+  ///
+  /// If a field is not specified, it will be copied from this [Song].
+  ///
+  /// Example:
+  /// ```dart
+  /// final Song newSong = oldSong.copyWith(title: "New title");
+  /// ```
+  Song<T> copyWith<T extends Playable>({
+    String? id,
+    String? title,
+    String? album,
+    String? artist,
+    String? genre,
+    Uri? artUri,
+    SongSource<T>? source,
+  }) {
     return Song(
-      id: json["id"] as String,
-      title: json["title"] as String,
-      album: tryCast<String>(json["album"]),
-      artist: tryCast<String>(json["artist"]),
-      genre: tryCast<String>(json["genre"]),
-      artUri: artUri == null ? null : Uri.tryParse(artUri),
-      source: source,
+      id: id ?? this.id,
+      title: title ?? this.title,
+      album: album ?? this.album,
+      artist: artist ?? this.artist,
+      genre: genre ?? this.genre,
+      artUri: artUri ?? this.artUri,
+      source: source ?? this.source as SongSource<T>,
     );
   }
 

@@ -1,143 +1,116 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
-import 'package:musbx/songs/looper/looper.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
-import 'package:musbx/songs/player/music_player.dart';
 
 class PositionSlider extends StatelessWidget {
   /// Slider for seeking a position in the current song.
   ///
   /// Includes labels displaying the current position and duration of the current song.
   /// If looping is enabled, highlights the section of the slider being looped.
-  PositionSlider({super.key});
+  PositionSlider({super.key, this.enabled = true});
 
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
+  final SongPlayer player = Songs.player!;
+
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: musicPlayer.durationNotifier,
-      builder: (_, duration, __) => ValueListenableBuilder(
-        valueListenable: musicPlayer.looper.enabledNotifier,
-        builder: (_, loopEnabled, __) => ValueListenableBuilder(
-          valueListenable: musicPlayer.looper.sectionNotifier,
-          builder: (_, loopSection, __) => ValueListenableBuilder(
-            valueListenable: musicPlayer.positionNotifier,
-            builder: (context, position, _) => _buildSlider(
-              context,
-              duration,
-              position,
-              loopEnabled,
-              loopSection,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Whether the MusicPlayer was playing before the user began changing the position.
-  static bool wasPlayingBeforeChange = false;
-
-  Widget _buildSlider(
-    BuildContext context,
-    Duration duration,
-    Duration position,
-    bool loopEnabled,
-    LoopSection loopSection,
-  ) {
     PositionSliderStyle style =
         Theme.of(context).extension<PositionSliderStyle>()!;
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: _buildDurationText(context, position),
-          ),
-        ),
-        SliderTheme(
-          data: Theme.of(context).sliderTheme.copyWith(
-                trackShape: musicPlayer.nullIfNoSongElse(_buildSliderTrackShape(
-                  context,
-                  duration,
-                  loopEnabled,
-                  loopSection,
-                )),
+    return ValueListenableBuilder(
+        valueListenable: player.positionNotifier,
+        builder: (context, position, child) {
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: _buildDurationText(context, position),
+                ),
               ),
-          child: Slider(
-            activeColor: loopEnabled ? style.activeTrackColor : null,
-            inactiveColor: loopEnabled ? style.inactiveTrackColor : null,
-            thumbColor: Theme.of(context).colorScheme.primary,
-            overlayColor: WidgetStateProperty.resolveWith((states) {
-              final colors = Theme.of(context).colorScheme;
-              if (states.contains(WidgetState.dragged)) {
-                return colors.primary.withAlpha(0x1a);
-              }
-              if (states.contains(WidgetState.hovered)) {
-                return colors.primary.withAlpha(0x14);
-              }
-              if (states.contains(WidgetState.focused)) {
-                return colors.primary.withAlpha(0x1a);
-              }
+              SliderTheme(
+                data: Theme.of(context).sliderTheme.copyWith(
+                      trackShape: enabled
+                          ? _buildSliderTrackShape(context, enabled)
+                          : null,
+                    ),
+                child: Slider(
+                  activeColor: enabled ? style.activeTrackColor : null,
+                  inactiveColor: enabled ? style.inactiveTrackColor : null,
+                  thumbColor: Theme.of(context).colorScheme.primary,
+                  overlayColor: WidgetStateProperty.resolveWith((states) {
+                    final colors = Theme.of(context).colorScheme;
+                    if (states.contains(WidgetState.dragged)) {
+                      return colors.primary.withAlpha(0x1a);
+                    }
+                    if (states.contains(WidgetState.hovered)) {
+                      return colors.primary.withAlpha(0x14);
+                    }
+                    if (states.contains(WidgetState.focused)) {
+                      return colors.primary.withAlpha(0x1a);
+                    }
 
-              return Colors.transparent;
-            }),
-            min: 0,
-            max: duration.inMilliseconds.roundToDouble(),
-            value: position.inMilliseconds
-                .clamp(
-                  loopEnabled ? loopSection.start.inMilliseconds : 0,
-                  loopEnabled
-                      ? loopSection.end.inMilliseconds
-                      : duration.inMilliseconds,
-                )
-                .roundToDouble(),
-            onChangeStart: (_) {
-              wasPlayingBeforeChange = musicPlayer.isPlaying;
-              musicPlayer.pause();
-            },
-            onChanged: musicPlayer.nullIfNoSongElse((double value) {
-              musicPlayer.seek(Duration(milliseconds: value.round()));
-            }),
-            onChangeEnd: (_) {
-              if (wasPlayingBeforeChange) musicPlayer.play();
-            },
-          ),
-        ),
-        Positioned.fill(
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: _buildDurationText(context, duration),
-          ),
-        ),
-      ],
-    );
+                    return Colors.transparent;
+                  }),
+                  min: 0,
+                  max: player.duration.inMilliseconds.roundToDouble(),
+                  value: position.inMilliseconds
+                      .clamp(
+                        enabled ? player.loop.start.inMilliseconds : 0,
+                        enabled
+                            ? player.loop.end.inMilliseconds
+                            : player.duration.inMilliseconds,
+                      )
+                      .roundToDouble(),
+                  onChangeStart: (value) {
+                    wasPlayingBeforeChange = player.isPlaying;
+                    player.pause();
+                  },
+                  onChanged: (double value) {
+                    player.position = Duration(milliseconds: value.round());
+                  },
+                  onChangeEnd: (value) {
+                    player.seek(Duration(milliseconds: value.round()));
+                    if (wasPlayingBeforeChange) player.resume();
+                  },
+                ),
+              ),
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.bottomRight,
+                  child: _buildDurationText(context, player.duration),
+                ),
+              ),
+            ],
+          );
+        });
   }
+
+  /// Whether the player was playing before the user began changing the position.
+  static bool wasPlayingBeforeChange = false;
 
   Widget _buildDurationText(BuildContext context, Duration duration) {
     return Text(
-      (musicPlayer.state != MusicPlayerState.ready)
-          ? "-- : --"
-          : durationString(duration),
+      durationString(duration),
       style: Theme.of(context).textTheme.bodySmall,
     );
   }
 
   SliderTrackShape _buildSliderTrackShape(
     BuildContext context,
-    Duration duration,
     bool loopEnabled,
-    LoopSection loopSection,
   ) {
     PositionSliderStyle style =
         Theme.of(context).extension<PositionSliderStyle>()!;
 
     return HighlightedSectionSliderTrackShape(
       highlightStart:
-          loopSection.start.inMilliseconds / duration.inMilliseconds,
-      highlightEnd: loopSection.end.inMilliseconds / duration.inMilliseconds,
+          player.loop.start.inMilliseconds / player.duration.inMilliseconds,
+      highlightEnd:
+          player.loop.end.inMilliseconds / player.duration.inMilliseconds,
       activeHighlightColor: loopEnabled
           ? style.activeLoopedTrackColor
           : style.disabledActiveLoopedTrackColor,

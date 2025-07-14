@@ -4,9 +4,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
-import 'package:musbx/songs/player/music_player.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_source.dart';
+import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
 import 'package:musbx/utils/persistent_value.dart';
@@ -45,7 +45,12 @@ class Navigation {
     restorationScopeId: "router",
     initialLocation: currentRoute.value,
     routes: [
+      GoRoute(
+        path: "/",
+        redirect: (context, state) => songsRoute,
+      ),
       StatefulShellRoute.indexedStack(
+        restorationScopeId: "shell",
         builder: _buildShell,
         branches: [
           StatefulShellBranch(routes: [
@@ -56,11 +61,17 @@ class Navigation {
               },
             ),
           ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: songsRoute,
                 builder: (context, state) {
-                  MusicPlayer.instance.stop();
+                  // Dispose the previous player.
+                  // This cannot be done in the song routes `onExit` callback,
+                  // since that is called every time we switch tab.
+                  WidgetsBinding.instance.addPostFrameCallback((_) async {
+                    Songs.dispose();
+                  });
 
                   return LibraryPage();
                 },
@@ -69,7 +80,7 @@ class Navigation {
                     path: ":id",
                     redirect: (context, state) {
                       final String? id = state.pathParameters["id"];
-                      if (MusicPlayer.instance.songs.history.values
+                      if (Songs.history.entries.values
                           .where((song) => song.id == id)
                           .isEmpty) {
                         // If the song isn't in the library, redirect to the songs page
@@ -79,36 +90,51 @@ class Navigation {
                       return null;
                     },
                     builder: (context, state) {
-                      final MusicPlayer musicPlayer = MusicPlayer.instance;
-                      final String? id = state.pathParameters["id"];
+                      final String id = state.pathParameters["id"]!;
 
                       // Begin loading song
-                      final Song song = musicPlayer.songs.history.values
+                      final Song song = Songs.history.entries.values
                           .firstWhere((song) => song.id == id);
 
-                      musicPlayer.loadSong(song).then(
-                        (_) {},
-                        onError: (error, _) {
-                          debugPrint("[MUSIC PLAYER] $error");
-                          showExceptionDialog(
-                            error is AccessRestrictedException
-                                ? const MusicPlayerAccessRestrictedDialog()
-                                : song.source is YoutubeSource
-                                    ? const YoutubeUnavailableDialog()
-                                    : const FileCouldNotBeLoadedDialog(),
-                          );
-                          // Restore state
-                          musicPlayer.stateNotifier.value =
-                              MusicPlayerState.idle;
-                          navigatorKey.currentContext?.go(songsRoute);
+                      return FutureBuilder(
+                        future: Songs.load(
+                          song,
+                          ignoreFreeLimit: song.id == demoSong.id,
+                        ).timeout(
+                          const Duration(seconds: 30),
+                        ),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            debugPrint("[MUSIC PLAYER] ${snapshot.error}");
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              showExceptionDialog(
+                                snapshot.error is AccessRestrictedException
+                                    ? const MusicPlayerAccessRestrictedDialog()
+                                    : song.source is YoutubeSource
+                                        ? const YoutubeUnavailableDialog()
+                                        : const FileCouldNotBeLoadedDialog(),
+                              );
+                              context.go(songsRoute);
+                            });
+
+                            return const SizedBox();
+                          }
+
+                          if (snapshot.connectionState !=
+                              ConnectionState.done) {
+                            // TODO: Build loading
+                            return const SizedBox();
+                          }
+
+                          return const SongPage();
                         },
                       );
-
-                      return const SongPage();
                     },
                   ),
-                ]),
-          ]),
+                ],
+              ),
+            ],
+          ),
           StatefulShellBranch(routes: [
             GoRoute(
               path: tunerRoute,
@@ -131,58 +157,64 @@ class Navigation {
       ),
     ],
   )..routerDelegate.addListener(() {
-      // Update the current route whenever it changes
-      currentRoute.value =
-          router.routerDelegate.currentConfiguration.uri.toFilePath();
+      // Update the current route whenever it changes. Only remember the top-level route, not which subroute we were on.
+      final path = router.routerDelegate.currentConfiguration.uri
+          .toFilePath(windows: false);
+      currentRoute.value = "/${path.split("/").first}";
     });
 
-  static Scaffold _buildShell(
+  static Widget _buildShell(
     BuildContext context,
     GoRouterState state,
     StatefulNavigationShell shell,
   ) {
     navigationShell = shell;
-    return Scaffold(
-      body: shell,
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // TODO: Remove bottom padding caused by SafeArea, which leaves a big space between the NavigationBar and the banner ad.
-          NavigationBar(
-            onDestinationSelected: (int index) {
-              shell.goBranch(
-                index,
-                // When tapping the current tab, navigate to the initial location
-                initialLocation: index == shell.currentIndex,
-              );
-            },
-            selectedIndex: shell.currentIndex,
-            destinations: const [
-              NavigationDestination(
-                label: "Metronome",
-                icon: Icon(CustomIcons.metronome),
+    return ValueListenableBuilder(
+      valueListenable: Purchases.hasPremiumNotifier,
+      builder: (context, hasPremium, child) {
+        return Scaffold(
+          body: shell,
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // TODO: Remove bottom padding caused by SafeArea, which leaves a big space between the NavigationBar and the banner ad.
+              NavigationBar(
+                onDestinationSelected: (int index) {
+                  shell.goBranch(
+                    index,
+                    // When tapping the current tab, navigate to the initial location
+                    initialLocation: index == shell.currentIndex,
+                  );
+                },
+                selectedIndex: shell.currentIndex,
+                destinations: const [
+                  NavigationDestination(
+                    label: "Metronome",
+                    icon: Icon(CustomIcons.metronome),
+                  ),
+                  NavigationDestination(
+                    label: "Songs",
+                    icon: Icon(Symbols.library_music),
+                  ),
+                  NavigationDestination(
+                    label: "Tuner",
+                    icon: Icon(Symbols.speed),
+                  ),
+                  NavigationDestination(
+                    label: "Drone",
+                    icon: Icon(CustomIcons.tuning_fork),
+                  ),
+                ],
               ),
-              NavigationDestination(
-                label: "Songs",
-                icon: Icon(Symbols.library_music),
-              ),
-              NavigationDestination(
-                label: "Tuner",
-                icon: Icon(Symbols.speed),
-              ),
-              NavigationDestination(
-                label: "Drone",
-                icon: Icon(CustomIcons.tuning_fork),
-              ),
+              if (!hasPremium)
+                const SafeArea(
+                  top: false,
+                  child: BannerAdWidget(),
+                ),
             ],
           ),
-          if (!Purchases.hasPremium)
-            const SafeArea(
-              top: false,
-              child: BannerAdWidget(),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

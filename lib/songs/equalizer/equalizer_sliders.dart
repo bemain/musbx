@@ -1,29 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:musbx/songs/demixer/stem.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
 import 'package:musbx/songs/equalizer/equalizer_overlay.dart';
 import 'package:musbx/songs/equalizer/inactive_slider_track_shape.dart';
-import 'package:musbx/songs/player/music_player.dart';
+import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/songs/player/songs.dart';
 
 class EqualizerSliders extends StatelessWidget {
   /// A widget used to control the gain on Equalizer's bands.
-  EqualizerSliders({super.key});
+  const EqualizerSliders({super.key, this.enabled = true});
 
-  final MusicPlayer musicPlayer = MusicPlayer.instance;
-  final Equalizer equalizer = MusicPlayer.instance.equalizer;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
-    final bool enabled = equalizer.parameters != null &&
-        equalizer.enabled &&
-        !musicPlayer.isLoading &&
-        musicPlayer.state != MusicPlayerState.idle;
+    final SongPlayer player = Songs.player!;
+    final EqualizerComponent equalizer = player.equalizer;
 
     return RepaintBoundary(
       child: CustomPaint(
         painter: EqualizerOverlayPainter(
-          parameters: equalizer.parameters,
+          bands: equalizer.bands,
           lineColor: enabled
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.onSurface.withAlpha(0x61),
@@ -38,9 +34,8 @@ class EqualizerSliders extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              for (var band
-                  in equalizer.parameters?.bands ?? List.filled(5, null))
-                buildSlider(band: band, enabled: enabled),
+              for (var band in equalizer.bands)
+                buildSlider(band, enabled: enabled),
             ],
           ),
         ),
@@ -49,17 +44,17 @@ class EqualizerSliders extends StatelessWidget {
   }
 
   /// Build a [Slider] for controlling the gain on [band].
-  Widget buildSlider({AndroidEqualizerBand? band, bool enabled = true}) {
-    return StreamBuilder<double>(
-      stream: band?.gainStream,
-      builder: (context, snapshot) {
+  Widget buildSlider(EqualizerBand band, {bool enabled = true}) {
+    return ValueListenableBuilder(
+      valueListenable: band.gainNotifier,
+      builder: (context, value, child) {
         return RotatedBox(
           quarterTurns: -1,
           child: Slider(
-            min: equalizer.parameters?.minDecibels ?? 0,
-            max: equalizer.parameters?.maxDecibels ?? 1,
-            value: band?.gain ?? Stem.defaultVolume,
-            onChanged: !enabled ? null : band?.setGain,
+            min: EqualizerBand.minGain,
+            max: EqualizerBand.maxGain,
+            value: band.gain,
+            onChanged: !enabled ? null : (value) => band.gain = value,
           ),
         );
       },

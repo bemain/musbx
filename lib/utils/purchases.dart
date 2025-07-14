@@ -38,7 +38,11 @@ class Purchases {
       isAvailable = false;
     }
 
-    if (!isAvailable) return;
+    if (!isAvailable) {
+      // Payments are only supported on mobile. On other platforms, simply enable premium.
+      hasPremiumNotifier.value = true;
+      return;
+    }
 
     _inAppPurchase.purchaseStream.listen((newPurchases) async {
       for (PurchaseDetails purchase in newPurchases) {
@@ -46,6 +50,12 @@ class Purchases {
       }
     });
 
+    await _inAppPurchase.restorePurchases();
+  }
+
+  /// Restore all previous purchases.
+  static Future<void> restore() async {
+    if (!isAvailable) return;
     await _inAppPurchase.restorePurchases();
   }
 
@@ -81,7 +91,7 @@ class Purchases {
         switch (purchase.productID) {
           case _premiumID:
             debugPrint(
-                "[PURCHASES] Buying Premium failed: ${purchase.error ?? "Cancelled"}");
+                "[PURCHASES] Buying Premium failed: ${purchase.error?.message ?? "Cancelled"}");
             showExceptionDialog(const PremiumPurchaseFailedDialog());
             break;
         }
