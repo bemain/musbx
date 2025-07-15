@@ -174,47 +174,51 @@ class Navigation {
       builder: (context, hasPremium, child) {
         return Scaffold(
           body: shell,
-          bottomNavigationBar: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // TODO: Remove bottom padding caused by SafeArea, which leaves a big space between the NavigationBar and the banner ad.
-              NavigationBar(
-                onDestinationSelected: (int index) {
-                  shell.goBranch(
-                    index,
-                    // When tapping the current tab, navigate to the initial location
-                    initialLocation: index == shell.currentIndex,
-                  );
-                },
-                selectedIndex: shell.currentIndex,
-                destinations: const [
-                  NavigationDestination(
-                    label: "Metronome",
-                    icon: Icon(CustomIcons.metronome),
-                  ),
-                  NavigationDestination(
-                    label: "Songs",
-                    icon: Icon(Symbols.library_music),
-                  ),
-                  NavigationDestination(
-                    label: "Tuner",
-                    icon: Icon(Symbols.speed),
-                  ),
-                  NavigationDestination(
-                    label: "Drone",
-                    icon: Icon(CustomIcons.tuning_fork),
-                  ),
-                ],
-              ),
-              if (!hasPremium)
-                const SafeArea(
+          bottomNavigationBar: hasPremium
+              ? _buildNavigationBar(shell)
+              : SafeArea(
                   top: false,
-                  child: BannerAdWidget(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildNavigationBar(shell),
+                      const BannerAdWidget(),
+                    ],
+                  ),
                 ),
-            ],
-          ),
         );
       },
+    );
+  }
+
+  static Widget _buildNavigationBar(StatefulNavigationShell shell) {
+    return NavigationBar(
+      onDestinationSelected: (int index) {
+        shell.goBranch(
+          index,
+          // When tapping the current tab, navigate to the initial location
+          initialLocation: index == shell.currentIndex,
+        );
+      },
+      selectedIndex: shell.currentIndex,
+      destinations: const [
+        NavigationDestination(
+          label: "Metronome",
+          icon: Icon(CustomIcons.metronome),
+        ),
+        NavigationDestination(
+          label: "Songs",
+          icon: Icon(Symbols.library_music),
+        ),
+        NavigationDestination(
+          label: "Tuner",
+          icon: Icon(Symbols.speed),
+        ),
+        NavigationDestination(
+          label: "Drone",
+          icon: Icon(CustomIcons.tuning_fork),
+        ),
+      ],
     );
   }
 }
