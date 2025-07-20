@@ -19,27 +19,13 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   /// The file where the chords for this [song] are cached.
   File get cacheFile => File("${song.cacheDirectory.path}/chords.json");
 
-  /// Perform chord analysis on the [source] using the given [host].
-  Future<Map> _analyzeSource(SongSource source, ChordsApiHost host) async {
-    switch (source) {
-      case FileSource():
-        return await host.analyzeFile(source.file);
-      case YoutubeSource():
-        return await host.analyzeYoutubeSong(source.youtubeId);
-      case DemixedSource():
-        return await _analyzeSource(source.parent, host);
-      default:
-        throw "Chord analysis cannot be performed on the source $source.";
-    }
-  }
-
   @override
   Future<Map<Duration, Chord?>> execute() async {
-    Map? chords;
+    Map<String, dynamic>? data;
     // Check cache
     if (await cacheFile.exists()) {
       try {
-        chords = jsonDecode(await cacheFile.readAsString()) as Map;
+        data = jsonDecode(await cacheFile.readAsString());
       } catch (e) {
         debugPrint("[ANALYZER] Malformed chords file: '${cacheFile.path}'");
       }
@@ -47,22 +33,37 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
 
     breakIfCancelled();
 
-    if (chords == null) {
+    if (data == null) {
       // Perform chords identification
       final ChordsApiHost host = await MusbxApi.findChordsHost();
 
-      chords = await _analyzeSource(song.source, host);
+      data = await analyzeSource(song.source, host);
 
       // Save to cache
       await cacheFile.create(recursive: true);
-      await cacheFile.writeAsString(jsonEncode(chords));
+      await cacheFile.writeAsString(jsonEncode(data));
     }
 
     breakIfCancelled();
 
-    return chords.map((key, value) => MapEntry(
+    return data.map((key, value) => MapEntry(
           Duration(milliseconds: (double.parse(key) * 1000).toInt()),
           Chord.tryParse(value),
         ));
+  }
+
+  /// Perform chord analysis on the [source] using the given [host].
+  Future<Map<String, dynamic>> analyzeSource(
+      SongSource source, ChordsApiHost host) async {
+    switch (source) {
+      case FileSource():
+        return await host.analyzeFile(source.file);
+      case YoutubeSource():
+        return await host.analyzeYoutubeSong(source.youtubeId);
+      case DemixedSource():
+        return await analyzeSource(source.parent, host);
+      default:
+        throw "Chord analysis cannot be performed on the source $source.";
+    }
   }
 }

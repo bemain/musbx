@@ -98,7 +98,8 @@ class EqualizerComponent extends SongPlayerComponent {
   void loadPreferencesFromJson(Map<String, dynamic> json) async {
     super.loadPreferencesFromJson(json);
 
-    final Map? gains = tryCast<Map>(json["gain"]);
+    final Map<String, dynamic>? gains =
+        tryCast<Map<String, dynamic>>(json["gain"]);
     for (var i = 0; i < bands.length; i++) {
       final double gain =
           tryCast<double>(gains?["$i"]) ?? EqualizerBand.defaultGain;

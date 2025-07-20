@@ -11,7 +11,7 @@ class AnimatedChildren extends StatelessWidget {
 
   final Animation<double> animation;
   final List<SpeedDialChild> children;
-  final Future Function() close;
+  final Future<void> Function() close;
 
   @override
   Widget build(BuildContext context) {

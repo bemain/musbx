@@ -9,7 +9,7 @@ import 'package:musbx/songs/musbx_api/musbx_api.dart';
 class ChordsApiHost extends MusbxApiHost {
   ChordsApiHost(super.address, {super.https});
 
-  Future<Map> analyzeFile(File file) async {
+  Future<Map<String, dynamic>> analyzeFile(File file) async {
     Uri url = uriConstructor(address, "/analyze");
     var request = http.MultipartRequest("POST", url);
     request.headers.addAll({
@@ -29,11 +29,11 @@ class ChordsApiHost extends MusbxApiHost {
       throw HttpException(json["message"], uri: url);
     }
 
-    final chords = json["chords"] as Map;
+    final chords = json["chords"] as Map<String, dynamic>;
     return chords;
   }
 
-  Future<Map> analyzeYoutubeSong(String youtubeId) async {
+  Future<Map<String, dynamic>> analyzeYoutubeSong(String youtubeId) async {
     var response = await post("/analyze/$youtubeId");
     Map<String, dynamic> json = jsonDecode(response.body);
 
@@ -41,7 +41,8 @@ class ChordsApiHost extends MusbxApiHost {
       throw HttpException(json["message"], uri: response.request?.url);
     }
 
-    final chords = json["chords"] as Map;
+    final chords = json["chords"] as Map<String, dynamic>;
+
     return chords;
   }
 }
