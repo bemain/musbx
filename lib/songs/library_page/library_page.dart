@@ -167,7 +167,6 @@ class LibraryPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
-      showDragHandle: true,
       builder: (context) => _buildOptionsSheet(context, song),
     );
   }
@@ -179,6 +178,7 @@ class LibraryPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          const SizedBox(height: 4),
           ListTile(
             leading: _buildSongIcon(song),
             title: Text(
@@ -195,15 +195,59 @@ class LibraryPage extends StatelessWidget {
             trailing: song.source is DemixedSource
                 ? null
                 : const Tooltip(
-                    message:
-                        "This song has not been separated into instruments",
+                    message: "This song has not been demixed into instruments.",
                     child: Icon(Symbols.piano_off),
                   ),
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Symbols.edit),
+            title: const Text("Rename"),
+            onTap: () {
+              showDialog(
+                context: context,
+                useRootNavigator: true,
+                builder: (context) {
+                  final TextEditingController controller =
+                      TextEditingController(text: song.title);
+
+                  return AlertDialog(
+                    title: const Text("Rename song"),
+                    content: TextField(
+                      controller: controller,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: "Enter title",
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          if (controller.text.isNotEmpty) {
+                            Songs.history.add(song.copyWith(
+                              title: controller.text,
+                            ));
+                          }
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Rename"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          ListTile(
             enabled: song.cacheDirectory.existsSync(),
-            leading: const Icon(Symbols.folder_delete),
+            leading: const Icon(Symbols.delete_sweep),
             title: const Text("Clear cached files"),
             onTap: () {
               showDialog(
@@ -211,7 +255,7 @@ class LibraryPage extends StatelessWidget {
                 useRootNavigator: true,
                 builder: (context) {
                   return AlertDialog(
-                    icon: const Icon(Symbols.folder_delete),
+                    icon: const Icon(Symbols.delete_sweep),
                     title: const Text("Clear cache?"),
                     content: const Text(
                       "This will free up some space on your device. Loading this song will take longer the next time.",
@@ -228,8 +272,8 @@ class LibraryPage extends StatelessWidget {
                           song.cacheDirectory.delete(recursive: true);
                           if (song.source is DemixedSource) {
                             // Override the history entry for the song with a non-demixed variant
-                            Songs.history.add(song.copyWith<SinglePlayable>(
-                              source: (song.source as DemixedSource).rootParent,
+                            Songs.history.add(song.withSource<SinglePlayable>(
+                              (song.source as DemixedSource).rootParent,
                             ));
                           }
                           Navigator.of(context).pop();

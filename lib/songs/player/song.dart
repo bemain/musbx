@@ -131,14 +131,13 @@ class Song<P extends Playable> {
   /// ```dart
   /// final Song newSong = oldSong.copyWith(title: "New title");
   /// ```
-  Song<T> copyWith<T extends Playable>({
+  Song<P> copyWith({
     String? id,
     String? title,
     String? album,
     String? artist,
     String? genre,
     Uri? artUri,
-    SongSource<T>? source,
   }) {
     return Song(
       id: id ?? this.id,
@@ -147,7 +146,20 @@ class Song<P extends Playable> {
       artist: artist ?? this.artist,
       genre: genre ?? this.genre,
       artUri: artUri ?? this.artUri,
-      source: source ?? this.source as SongSource<T>,
+      source: source,
+    );
+  }
+
+  /// Create a copy of this [Song] with the source replaced with a new value.
+  Song<T> withSource<T extends Playable>(SongSource<T> source) {
+    return Song(
+      id: id,
+      title: title,
+      album: album,
+      artist: artist,
+      genre: genre,
+      artUri: artUri,
+      source: source,
     );
   }
 

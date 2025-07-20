@@ -47,8 +47,8 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
         }
 
         /// Override the history entry for the song with a demixed variant.
-        Songs.history.add(widget.song.copyWith<MultiPlayable>(
-          source: DemixedSource(widget.song.source),
+        Songs.history.add(widget.song.withSource<MultiPlayable>(
+          DemixedSource(widget.song.source),
         ));
 
         return Column(
