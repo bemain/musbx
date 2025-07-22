@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/widgets/segmented_tab_control/segment_tab.dart';
 
 /// Widget based on [TabController]. Can simply replace [TabBar].
 ///
@@ -12,6 +13,7 @@ class SegmentedTabControl extends StatefulWidget
     super.key,
     required this.tabs,
     this.height = kTextTabBarHeight,
+    this.enabled = true,
     this.controller,
     this.textColor,
     this.textStyle,
@@ -29,7 +31,11 @@ class SegmentedTabControl extends StatefulWidget
   /// [preferredSize] returns this value.
   final double height;
 
-  final List<Widget> tabs;
+  final List<SegmentTab> tabs;
+
+  /// Whether this widget is enabled.
+  /// TODO: Implement
+  final bool enabled;
 
   /// Can be provided by [DefaultTabController].
   final TabController? controller;
@@ -99,15 +105,17 @@ class _SegmentedTabControlState extends State<SegmentedTabControl> {
     final bool isSelected = _controller.index == i;
 
     final ColorScheme colors = Theme.of(context).colorScheme;
+
+    final Color textColor = widget.enabled
+        ? (isSelected
+            ? widget.selectedTabTextColor ?? colors.onPrimaryContainer
+            : widget.textColor ?? colors.onSurface)
+        : colors.onSurface.withAlpha(0x61);
     final TextStyle? textStyle =
-        ((isSelected ? widget.selectedTabTextStyle : null) ??
-                widget.textStyle ??
-                Theme.of(context).textTheme.titleSmall)
-            ?.copyWith(
-      color: (isSelected
-          ? widget.selectedTabTextColor ?? colors.onPrimaryContainer
-          : widget.textColor ?? colors.onSurface),
-    );
+        (isSelected && widget.selectedTabTextStyle != null
+                ? widget.selectedTabTextStyle
+                : widget.textStyle ?? Theme.of(context).textTheme.titleSmall)
+            ?.copyWith(color: textColor);
 
     final BorderRadius borderRadius = widget.borderRadius
         .subtract(
@@ -136,22 +144,27 @@ class _SegmentedTabControlState extends State<SegmentedTabControl> {
       shape: RoundedRectangleBorder(borderRadius: borderRadius),
       elevation: 0,
       color: isSelected
-          ? widget.selectedTabColor ?? colors.primaryContainer
+          ? widget.enabled
+              ? widget.selectedTabColor ?? colors.primaryContainer
+              : colors.onSurface.withAlpha(0x1e)
           : Colors.transparent,
       margin: widget.selectedTabPadding,
       child: InkWell(
         borderRadius: borderRadius,
         splashColor: widget.splashColor,
-        onTap: isSelected
+        onTap: isSelected || !widget.enabled
             ? null
             : () {
                 _controller.animateTo(i);
               },
         child: Padding(
           padding: widget.tabPadding,
-          child: DefaultTextStyle.merge(
-            style: textStyle,
-            child: widget.tabs[i],
+          child: IconTheme.merge(
+            data: IconThemeData(color: textColor),
+            child: DefaultTextStyle.merge(
+              style: textStyle,
+              child: widget.tabs[i],
+            ),
           ),
         ),
       ),

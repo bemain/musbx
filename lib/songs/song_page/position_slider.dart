@@ -9,9 +9,7 @@ class PositionSlider extends StatelessWidget {
   ///
   /// Includes labels displaying the current position and duration of the current song.
   /// If looping is enabled, highlights the section of the slider being looped.
-  PositionSlider({super.key, this.enabled = true});
-
-  final SongPlayer player = Songs.player!;
+  const PositionSlider({super.key, this.enabled = true});
 
   final bool enabled;
 
@@ -19,6 +17,15 @@ class PositionSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     PositionSliderStyle style =
         Theme.of(context).extension<PositionSliderStyle>()!;
+
+    if (Songs.player == null) {
+      return Slider(
+        value: 0,
+        onChanged: null,
+      );
+    }
+
+    final SongPlayer player = Songs.player!;
 
     return ValueListenableBuilder(
         valueListenable: player.positionNotifier,
@@ -103,6 +110,12 @@ class PositionSlider extends StatelessWidget {
     BuildContext context,
     bool loopEnabled,
   ) {
+    if (Songs.player == null) {
+      return RoundedRectSliderTrackShape();
+    }
+
+    final SongPlayer player = Songs.player!;
+
     PositionSliderStyle style =
         Theme.of(context).extension<PositionSliderStyle>()!;
 

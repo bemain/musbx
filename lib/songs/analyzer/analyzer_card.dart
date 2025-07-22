@@ -4,12 +4,11 @@ import 'package:musbx/songs/analyzer/waveform_widget.dart';
 import 'package:musbx/songs/loop/loop_slider.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/utils/loading.dart';
 import 'package:musbx/widgets/flat_card.dart';
 
 class AnalyzerCard extends StatelessWidget {
-  AnalyzerCard({super.key, this.scaleSpeed = 1 / 256});
-
-  final SongPlayer player = Songs.player!;
+  const AnalyzerCard({super.key, this.scaleSpeed = 1 / 256});
 
   /// Whether the MusicPlayer was playing before the user began dragging.
   static bool wasPlayingBeforeChange = false;
@@ -22,6 +21,17 @@ class AnalyzerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Songs.player == null) {
+      return ShimmerLoading(
+        child: FlatCard(
+          color: Theme.of(context).colorScheme.surfaceContainer,
+          child: const SizedBox.expand(),
+        ),
+      );
+    }
+
+    final SongPlayer player = Songs.player!;
+
     return GestureDetector(
       onScaleStart: (_) {
         durationShownBeforeChange = player.analyzer.durationShown;
