@@ -114,20 +114,19 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                 EqualizerBand.defaultGain.toStringAsFixed(2));
             return AppBar(
               actions: [
-                if (!Platform.isIOS)
-                  IconButton(
-                    onPressed: () {
-                      _showModalBottomSheet(
-                        context,
-                        SlowdownerSheet(),
-                      );
-                    },
-                    isSelected: !isPitchReset,
-                    color: isPitchReset
-                        ? null
-                        : Theme.of(context).colorScheme.primary,
-                    icon: const Icon(CustomIcons.accidentals),
-                  ),
+                IconButton(
+                  onPressed: () {
+                    _showModalBottomSheet(
+                      context,
+                      SlowdownerSheet(),
+                    );
+                  },
+                  isSelected: !isPitchReset,
+                  color: isPitchReset
+                      ? null
+                      : Theme.of(context).colorScheme.primary,
+                  icon: const Icon(CustomIcons.accidentals),
+                ),
                 IconButton(
                   onPressed: () {
                     _showModalBottomSheet(
