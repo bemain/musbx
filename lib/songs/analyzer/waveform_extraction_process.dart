@@ -29,6 +29,12 @@ class WaveformExtractionProcess extends Process<Waveform> {
 
   @override
   Future<Waveform> execute() async {
+    assert(
+      Platform.isAndroid || Platform.isIOS,
+      UnsupportedError(
+          "Waveform extraction is not supported on the current platform"),
+    );
+
     final File outFile = getWaveformFile(song);
     if (await outFile.exists()) {
       // Use cached waveform
