@@ -3,6 +3,7 @@ import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
+import 'package:musbx/utils/loading.dart';
 
 class PositionSlider extends StatelessWidget {
   /// Slider for seeking a position in the current song.
@@ -19,9 +20,23 @@ class PositionSlider extends StatelessWidget {
         Theme.of(context).extension<PositionSliderStyle>()!;
 
     if (Songs.player == null) {
-      return Slider(
-        value: 0,
-        onChanged: null,
+      return ShimmerLoading(
+        child: SizedBox(
+          height: 48,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Center(
+              child: Card(
+                elevation: 0,
+                color: Theme.of(context).colorScheme.surfaceContainer,
+                child: const SizedBox(
+                  height: 4,
+                  width: double.infinity,
+                ),
+              ),
+            ),
+          ),
+        ),
       );
     }
 

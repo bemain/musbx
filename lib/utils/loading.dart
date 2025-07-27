@@ -251,3 +251,38 @@ class TextPlaceholder extends StatelessWidget {
     );
   }
 }
+
+/// A widget that displays a placeholder for an icon with a shimmer effect.
+///
+/// This is useful for indicating that icon content is loading.
+/// It creates a square box with the approximate size of an icon and applies
+/// a [ShimmerLoading] effect to it.
+class IconPlaceholder extends StatelessWidget {
+  /// Creates an [IconPlaceholder] widget.
+  const IconPlaceholder({
+    super.key,
+    this.size,
+  });
+
+  /// The size of the icon.
+  ///
+  /// Defaults to the current [IconThemeData.size].
+  final double? size;
+
+  @override
+  Widget build(BuildContext context) {
+    final double iconSize = size ?? IconTheme.of(context).size ?? 24.0;
+
+    return ShimmerLoading(
+      child: Card(
+        margin: EdgeInsets.zero,
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        elevation: 0,
+        child: SizedBox(
+          height: iconSize,
+          width: iconSize,
+        ),
+      ),
+    );
+  }
+}

@@ -34,7 +34,6 @@ class SegmentedTabControl extends StatefulWidget
   final List<SegmentTab> tabs;
 
   /// Whether this widget is enabled.
-  /// TODO: Implement
   final bool enabled;
 
   /// Can be provided by [DefaultTabController].

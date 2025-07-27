@@ -67,18 +67,21 @@ class SongPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  SegmentedTabControl(
-                    enabled: player != null,
-                    tabs: [
-                      SegmentTab(
-                        text: "Chords",
-                        icon: Icon(CustomIcons.waveform),
-                      ),
-                      SegmentTab(
-                        text: "Instruments",
-                        icon: Icon(Symbols.piano),
-                      ),
-                    ],
+                  ShimmerLoading(
+                    isLoading: player == null,
+                    child: SegmentedTabControl(
+                      enabled: player != null,
+                      tabs: [
+                        SegmentTab(
+                          text: "Chords",
+                          icon: Icon(CustomIcons.waveform),
+                        ),
+                        SegmentTab(
+                          text: "Instruments",
+                          icon: Icon(Symbols.piano),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   PositionSlider(),
@@ -102,7 +105,19 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (Songs.player == null) return AppBar();
+    if (Songs.player == null) {
+      return AppBar(
+        actions: [
+          for (var i = 0; i < 3; i++)
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: IconPlaceholder(),
+            ),
+          const GetPremiumButton(),
+          InfoButton(child: Text(SongPage.helpText)),
+        ],
+      );
+    }
 
     final SongPlayer player = Songs.player!;
 

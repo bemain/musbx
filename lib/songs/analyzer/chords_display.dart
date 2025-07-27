@@ -3,6 +3,7 @@ import 'package:musbx/model/chord.dart';
 import 'package:musbx/songs/analyzer/chord_symbol.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/utils/loading.dart';
 
 class ChordsDisplay extends StatefulWidget {
   const ChordsDisplay({super.key});
@@ -22,7 +23,14 @@ class _ChordsDisplayState extends State<ChordsDisplay> {
         builder: (context, constraints) => ValueListenableBuilder(
           valueListenable: player.analyzer.chordsNotifier,
           builder: (context, chords, child) {
-            if (chords == null) return const SizedBox();
+            if (chords == null) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextPlaceholder(
+                  fontSize: 20.0,
+                ),
+              );
+            }
 
             return ValueListenableBuilder(
               valueListenable: player.analyzer.durationShownNotifier,
