@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,10 @@ Future<void> main() async {
   LaunchHandler.initialize();
 
   // Google Ads
-  unawaited(MobileAds.instance.initialize());
+  if (Platform.isAndroid || Platform.isIOS) {
+    // Google Ads
+    unawaited(MobileAds.instance.initialize());
+  }
   await Purchases.intialize();
 
   // Lock screen orientation
