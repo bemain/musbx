@@ -8,7 +8,6 @@ import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:musbx/songs/library_page/youtube_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -43,18 +42,24 @@ class LibraryPage extends StatelessWidget {
               );
             },
             viewHintText: "Search your library",
-            suggestionsBuilder: (context, SearchController controller) {
-              final String searchPhrase = controller.text.toLowerCase();
-              if (searchPhrase.isEmpty) {
+            suggestionsBuilder: (context, SearchController controller) async {
+              final String query = controller.text.toLowerCase();
+              if (query.isEmpty) {
                 return const [];
               }
 
+              // History entries that match the search query
               final Iterable<Song> songHistory = Songs.history
                   .sorted(ascending: false)
                   .where((song) =>
-                      song.title.toLowerCase().contains(searchPhrase) ||
-                      (song.artist?.toLowerCase().contains(searchPhrase) ??
-                          false));
+                      song.title.toLowerCase().contains(query) ||
+                      (song.artist?.toLowerCase().contains(query) ?? false));
+
+              final List<SoundCloudTrack> searchResults =
+                  await SoundCloudSearch.searchTracks(query)
+                      .timeout(Duration(seconds: 2), onTimeout: () => []);
+
+              if (!context.mounted) return [];
 
               return [
                 const SizedBox(height: 8),
@@ -67,24 +72,27 @@ class LibraryPage extends StatelessWidget {
                       searchController.closeView(null);
                     },
                   ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Center(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        searchController.closeView(null);
-                        YoutubeSearch.pickSong(context, query: controller.text);
-                      },
-                      icon: const Icon(Symbols.search),
-                      label: Text(
-                        "Search for '${controller.text}' online",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                if (searchResults.isNotEmpty) ...[
+                  if (songHistory.isNotEmpty) const Divider(),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      "Results online",
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
-                ),
+                  for (final SoundCloudTrack track in searchResults)
+                    SoundCloudTrackListItem(
+                        track: track,
+                        onTap: () async {
+                          searchController.closeView(null);
+                          await SoundCloudSearch.loadTrack(track);
+                          if (context.mounted) {
+                            context
+                                .go(Navigation.songRoute(track.id.toString()));
+                          }
+                        }),
+                ],
               ];
             },
           ),
