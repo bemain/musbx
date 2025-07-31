@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
@@ -338,7 +339,7 @@ class LibraryPage extends StatelessWidget {
 
         return !Songs.isAccessRestricted;
       },
-      onExpandedPressed: () => YoutubeSearch.pickSong(context),
+      onExpandedPressed: () => SoundCloudSearch.pickSong(context),
       expandedChild: const Icon(Symbols.search),
       expandedLabel: const Text("Search"),
       children: [
@@ -360,8 +361,8 @@ class LibraryPage extends StatelessWidget {
     if (source is FileSource) {
       return Symbols.file_present;
     }
-    if (source is YoutubeSource) {
-      return Symbols.youtube_searched_for;
+    if (source is YoutubeSource || source is SoundCloudSource) {
+      return Symbols.cloud;
     }
     if (source is DemixedSource) {
       return _getSourceIcon(source.parent);

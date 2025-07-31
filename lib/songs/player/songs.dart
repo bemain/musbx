@@ -81,7 +81,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
       }
       Song? song = Song.fromJson(json);
       if (song == null) {
-        throw "[SONG HISTORY] History entry ($json) is missing required fields";
+        throw "[SONG HISTORY] History entry ($json) could not be parsed as a Song.";
       }
       return song;
     },
