@@ -6,7 +6,6 @@ import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
 import 'package:musbx/utils/persistent_value.dart';
@@ -110,9 +109,7 @@ class Navigation {
                               showExceptionDialog(
                                 snapshot.error is AccessRestrictedException
                                     ? const MusicPlayerAccessRestrictedDialog()
-                                    : song.source is YoutubeSource
-                                        ? const YoutubeUnavailableDialog()
-                                        : const FileCouldNotBeLoadedDialog(),
+                                    : const SongCouldNotBeLoadedDialog(),
                               );
                               context.go(songsRoute);
                             });

@@ -10,6 +10,7 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/loading.dart';
+import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/widgets.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:http/http.dart' as http;
@@ -122,7 +123,6 @@ class SoundCloudTrack {
     final Uri uri = Uri.parse(transcodings
             .firstWhere(
               (t) => t.mimeType == "audio/mpeg" && t.protocol == "progressive",
-              orElse: () => transcodings.first,
             )
             .url)
         .replace(queryParameters: {
@@ -176,13 +176,23 @@ class SoundCloudSearch {
 
   /// Loads a track from SoundCloud into the user's library.
   static Future<void> loadTrack(SoundCloudTrack track) async {
+    final Uri url;
+    try {
+      url = await track.getDownloadUrl();
+    } catch (e) {
+      debugPrint("[SOUNDCLOUD] Failed to get download URL for track: $e");
+      if (Navigation.navigatorKey.currentContext?.mounted == true) {
+        showExceptionDialog(SongCouldNotBeLoadedDialog());
+      }
+      return;
+    }
+
     await Songs.history.add(Song<SinglePlayable>(
       id: track.id.toString(),
       title: HtmlUnescape().convert(track.title),
       artist: HtmlUnescape().convert(track.username),
       artUri: track.artworkUrl != null ? Uri.tryParse(track.artworkUrl!) : null,
-      source:
-          SoundCloudSource(track.id.toString(), await track.getDownloadUrl()),
+      source: SoundCloudSource(track.id.toString(), url),
     ));
   }
 
@@ -250,7 +260,7 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (SoundCloudSearch.history.entries.isEmpty) {
+    if (SoundCloudSearch.history.entries.isEmpty && query.isEmpty) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: SizedBox(
@@ -280,6 +290,10 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
     final searchHistory = SoundCloudSearch.history
         .sorted()
         .where((e) => e.toLowerCase().contains(query.toLowerCase()));
+
+    if (searchHistory.isEmpty) {
+      return buildResults(context);
+    }
 
     return ListView(children: [
       for (final historyQuery in searchHistory)
@@ -330,7 +344,7 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
               children: [
                 Icon(Symbols.search_off, size: 64),
                 SizedBox(height: 16),
-                Text("No downloadable tracks found"),
+                Text("No tracks found"),
                 SizedBox(height: 8),
                 Text("Try a different search term"),
               ],
@@ -342,7 +356,11 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
           children: results.map((SoundCloudTrack track) {
             return SoundCloudTrackListItem(
               track: track,
-              onTap: () {
+              onTap: () async {
+                for (final t in track.transcodings) {
+                  print(
+                      "Transcoding: ${t.quality} - ${t.mimeType} (${t.protocol})");
+                }
                 SoundCloudSearch.history.add(query.trim());
                 close(context, track);
               },
