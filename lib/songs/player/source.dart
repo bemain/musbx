@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:http/http.dart' as http;
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
@@ -47,6 +48,8 @@ abstract class SongSource<P extends Playable> {
     switch (type) {
       case "youtube":
         return YoutubeSource.fromJson(json);
+      case "soundcloud":
+        return SoundCloudSource.fromJson(json);
       case "file":
         return FileSource.fromJson(json);
       case "demixed":
@@ -110,6 +113,61 @@ class YoutubeSource extends SongSource<SinglePlayable> {
   Map<String, dynamic> toJson() => {
         "type": "youtube",
         "youtubeId": youtubeId,
+      };
+}
+
+class SoundCloudSource extends SongSource<SinglePlayable> {
+  SoundCloudSource(this.trackId, this.downloadUrl);
+
+  final String trackId;
+  final Uri downloadUrl;
+
+  AudioSource? source;
+  File? cacheFile;
+
+  @override
+  Future<SinglePlayable> load({required Directory cacheDirectory}) async {
+    File cacheFile = File("${cacheDirectory.path}/audio.mp3");
+
+    if (await cacheFile.exists()) {
+      debugPrint("[SOUNDCLOUD] Using cached audio for track '$trackId'");
+    } else {
+      debugPrint("[SOUNDCLOUD] Downloading audio from SoundCloud");
+      final response = await http.get(downloadUrl);
+
+      if (response.statusCode != 200) {
+        throw Exception(
+            'Failed to download SoundCloud track: ${response.statusCode}');
+      }
+
+      await cacheFile.create(recursive: true);
+      await cacheFile.writeAsBytes(response.bodyBytes);
+    }
+    this.cacheFile = cacheFile;
+
+    source ??= await SoLoud.instance.loadFile(cacheFile.path);
+    return SinglePlayable(source!);
+  }
+
+  @override
+  Future<void> dispose() async {
+    if (source == null) return;
+    await SoLoud.instance.disposeSource(source!);
+    source = null;
+  }
+
+  static SoundCloudSource? fromJson(Map<String, dynamic> json) {
+    if (!json.containsKey("trackId") || !json.containsKey("downloadUrl")) {
+      return null;
+    }
+    return SoundCloudSource(json["trackId"], Uri.parse(json["downloadUrl"]));
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "type": "soundcloud",
+        "trackId": trackId,
+        "downloadUrl": downloadUrl.toString(),
       };
 }
 
