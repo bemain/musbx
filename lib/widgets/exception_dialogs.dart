@@ -181,21 +181,21 @@ class UnsupportedFileExtensionDialog extends StatelessWidget {
   }
 }
 
-class FileCouldNotBeLoadedDialog extends StatelessWidget {
+class SongCouldNotBeLoadedDialog extends StatelessWidget {
   /// Creates an alert dialog with the message that the selected file could not be loaded.
-  const FileCouldNotBeLoadedDialog({super.key});
+  const SongCouldNotBeLoadedDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("File could not be loaded"),
+      title: const Text("Song could not be loaded"),
       content: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Symbols.file_present, size: 128),
+          Icon(Symbols.error, size: 128),
           SizedBox(height: 15),
           Text(
-              "An error occurred while loading the file. Please try again later, or try selecting a different file.")
+              "An error occurred while loading the song. Please try again later, or try selecting a different song.")
         ],
       ),
       actions: [
@@ -210,9 +210,9 @@ class FileCouldNotBeLoadedDialog extends StatelessWidget {
   }
 }
 
-class YoutubeUnavailableDialog extends StatelessWidget {
+class SearchUnavailableDialog extends StatelessWidget {
   /// Creates an alert dialog with the message that the Youtube service is unavailable.
-  const YoutubeUnavailableDialog({super.key});
+  const SearchUnavailableDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
