@@ -169,6 +169,13 @@ class SoundCloudSearch {
 
     if (track == null) return;
 
+    await loadTrack(track);
+
+    if (context.mounted) context.go(Navigation.songRoute(track.id.toString()));
+  }
+
+  /// Loads a track from SoundCloud into the user's library.
+  static Future<void> loadTrack(SoundCloudTrack track) async {
     await Songs.history.add(Song<SinglePlayable>(
       id: track.id.toString(),
       title: HtmlUnescape().convert(track.title),
@@ -177,8 +184,6 @@ class SoundCloudSearch {
       source:
           SoundCloudSource(track.id.toString(), await track.getDownloadUrl()),
     ));
-
-    if (context.mounted) context.go(Navigation.songRoute(track.id.toString()));
   }
 
   /// Searches for tracks on SoundCloud using the provided [query].
