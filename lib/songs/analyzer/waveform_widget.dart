@@ -8,6 +8,9 @@ import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/utils/loading.dart';
 
+const int kSamplesPerPixel = 540;
+const int kSampleRate = 48000;
+
 class WaveformWidget extends StatelessWidget {
   WaveformWidget({super.key});
 
@@ -62,8 +65,9 @@ class WaveformWidget extends StatelessWidget {
   ///
   /// It's length matches that of the current song.
   Waveform _generateDummyWaveform() {
-    final int samplesPerPixel = 540;
-    final int sampleRate = 48000;
+    final int samplesPerPixel = kSamplesPerPixel;
+    final int sampleRate = kSampleRate;
+
     final int length =
         (player.duration.inMicroseconds / (1e6 / sampleRate) / samplesPerPixel)
             .ceil();
@@ -74,7 +78,10 @@ class WaveformWidget extends StatelessWidget {
       final seed = sin((i * 1.5 + pow(i, 2) * 0.1) / 100 - pi / 2) * 0.5 + 0.5;
 
       /// Scale to adjust for 16-bit audio.
-      final value = ((seed * 0.6 + 0.1) * 32768).clamp(-32768, 32767).toInt();
+      const min16bit = -32768;
+      const max16bit = 32767;
+      final value =
+          ((seed * 0.6 + 0.1) * 32768).clamp(min16bit, max16bit).toInt();
       data.addAll([value, -value]); // One for each channel
     }
 
