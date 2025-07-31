@@ -10,6 +10,7 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
+import 'package:musbx/utils/loading.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/songs/musbx_api/demixer_api.dart';
@@ -248,18 +249,27 @@ Please update to the latest version to use the Demixer.""",
 }
 
 class DemixerCard extends StatelessWidget {
-  DemixerCard({super.key});
-
-  final SongPlayer player = Songs.player!;
+  const DemixerCard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    if (Songs.player == null) {
+      return ShimmerLoading(
+        child: FlatCard(
+          color: Theme.of(context).colorScheme.surfaceContainer,
+          child: const SizedBox.expand(),
+        ),
+      );
+    }
+
+    final SongPlayer player = Songs.player!;
+
     return FlatCard(
       child: Padding(
           padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
           child: () {
             if (player is SinglePlayer) {
-              return DemixingProcessIndicator(player: player as SinglePlayer);
+              return DemixingProcessIndicator(player: player);
             }
 
             return Column(children: [
@@ -272,9 +282,9 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// Assumes [player] is a [MultiPlayer].
+  /// Assumes [Songs.player] is a [MultiPlayer].
   Widget buildHeader(BuildContext context) {
-    final MultiPlayer player = this.player as MultiPlayer;
+    final MultiPlayer player = Songs.player! as MultiPlayer;
 
     return Stack(
       alignment: Alignment.center,
@@ -311,9 +321,9 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// Assumes [player] is a [MultiPlayer].
+  /// Assumes [Songs.player] is a [MultiPlayer].
   Widget buildBody(BuildContext context) {
-    final MultiPlayer player = this.player as MultiPlayer;
+    final MultiPlayer player = Songs.player! as MultiPlayer;
 
     return ValueListenableBuilder(
       valueListenable: player.demixer.stemsNotifier,

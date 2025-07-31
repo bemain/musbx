@@ -9,6 +9,7 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
 import 'package:musbx/utils/launch_handler.dart';
+import 'package:musbx/utils/loading.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/persistent_value.dart';
 import 'package:musbx/utils/purchases.dart';
@@ -55,6 +56,24 @@ class MyApp extends StatelessWidget {
           darkTheme: darkTheme,
           routerConfig: Navigation.router,
           restorationScopeId: "app",
+          builder: (context, child) {
+            final ColorScheme colors = Theme.of(context).colorScheme;
+
+            return Shimmer(
+              gradient: LinearGradient(
+                colors: [
+                  colors.surfaceContainer,
+                  colors.surfaceContainerLow,
+                  colors.surfaceContainer,
+                ],
+                stops: [0.1, 0.3, 0.4],
+                begin: Alignment(-1.0, -0.3),
+                end: Alignment(1.0, 0.3),
+                tileMode: TileMode.clamp,
+              ),
+              child: child,
+            );
+          },
         );
       },
     );

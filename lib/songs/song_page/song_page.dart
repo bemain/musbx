@@ -11,6 +11,7 @@ import 'package:musbx/songs/song_page/position_slider.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
 import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
+import 'package:musbx/utils/loading.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/segmented_tab_control/segment_tab.dart';
@@ -29,15 +30,13 @@ class SongPage extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: Songs.playerNotifier,
       builder: (context, player, child) {
-        if (player == null) return const SizedBox();
-
         return DefaultTabController(
           length: 2,
           initialIndex: 0,
           animationDuration: const Duration(milliseconds: 200),
           child: Scaffold(
             resizeToAvoidBottomInset: false,
-            appBar: const SongAppBar(),
+            appBar: SongAppBar(),
             body: Padding(
               padding: const EdgeInsets.all(8),
               child: Column(
@@ -49,10 +48,14 @@ class SongPage extends StatelessWidget {
                         Column(
                           children: [
                             ListTile(
-                              title: Text(player.song.title),
+                              title: player == null
+                                  ? TextPlaceholder()
+                                  : Text(player.song.title),
                               titleTextStyle:
                                   Theme.of(context).textTheme.titleLarge,
-                              subtitle: Text(player.song.artist ?? ""),
+                              subtitle: player == null
+                                  ? TextPlaceholder(width: 160)
+                                  : Text(player.song.artist ?? ""),
                             ),
                             Expanded(
                               child: AnalyzerCard(),
@@ -64,21 +67,25 @@ class SongPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const SegmentedTabControl(
-                    tabs: [
-                      SegmentTab(
-                        text: "Chords",
-                        icon: Icon(CustomIcons.waveform),
-                      ),
-                      SegmentTab(
-                        text: "Instruments",
-                        icon: Icon(Symbols.piano),
-                      ),
-                    ],
+                  ShimmerLoading(
+                    isLoading: player == null,
+                    child: SegmentedTabControl(
+                      enabled: player != null,
+                      tabs: [
+                        SegmentTab(
+                          text: "Chords",
+                          icon: Icon(CustomIcons.waveform),
+                        ),
+                        SegmentTab(
+                          text: "Instruments",
+                          icon: Icon(Symbols.piano),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   PositionSlider(),
-                  const ButtonPanel(),
+                  ButtonPanel(),
                   const SizedBox(height: 8),
                 ],
               ),
@@ -98,6 +105,20 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Songs.player == null) {
+      return AppBar(
+        actions: [
+          for (var i = 0; i < 3; i++)
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: IconPlaceholder(),
+            ),
+          const GetPremiumButton(),
+          InfoButton(child: Text(SongPage.helpText)),
+        ],
+      );
+    }
+
     final SongPlayer player = Songs.player!;
 
     return ValueListenableBuilder(

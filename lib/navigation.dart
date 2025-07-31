@@ -120,12 +120,6 @@ class Navigation {
                             return const SizedBox();
                           }
 
-                          if (snapshot.connectionState !=
-                              ConnectionState.done) {
-                            // TODO: Build loading
-                            return const SizedBox();
-                          }
-
                           return const SongPage();
                         },
                       );
