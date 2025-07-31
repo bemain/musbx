@@ -9,7 +9,6 @@ import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
-import 'package:musbx/utils/loading.dart';
 import 'package:musbx/utils/persistent_value.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/ads.dart';
@@ -164,40 +163,25 @@ class Navigation {
     StatefulNavigationShell shell,
   ) {
     navigationShell = shell;
-    final ColorScheme colors = Theme.of(context).colorScheme;
-
-    return Shimmer(
-      gradient: LinearGradient(
-        colors: [
-          colors.surfaceContainer,
-          colors.surfaceContainerLow,
-          colors.surfaceContainer,
-        ],
-        stops: [0.1, 0.3, 0.4],
-        begin: Alignment(-1.0, -0.3),
-        end: Alignment(1.0, 0.3),
-        tileMode: TileMode.clamp,
-      ),
-      child: ValueListenableBuilder(
-        valueListenable: Purchases.hasPremiumNotifier,
-        builder: (context, hasPremium, child) {
-          return Scaffold(
-            body: shell,
-            bottomNavigationBar: hasPremium
-                ? _buildNavigationBar(shell)
-                : SafeArea(
-                    top: false,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildNavigationBar(shell),
-                        const BannerAdWidget(),
-                      ],
-                    ),
+    return ValueListenableBuilder(
+      valueListenable: Purchases.hasPremiumNotifier,
+      builder: (context, hasPremium, child) {
+        return Scaffold(
+          body: shell,
+          bottomNavigationBar: hasPremium
+              ? _buildNavigationBar(shell)
+              : SafeArea(
+                  top: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildNavigationBar(shell),
+                      const BannerAdWidget(),
+                    ],
                   ),
-          );
-        },
-      ),
+                ),
+        );
+      },
     );
   }
 

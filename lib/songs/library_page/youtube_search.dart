@@ -7,10 +7,11 @@ import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
+import 'package:musbx/utils/loading.dart';
+import 'package:musbx/widgets/widgets.dart';
 import 'package:musbx/widgets/youtube_api/video.dart';
 import 'package:musbx/widgets/youtube_api/youtube_api.dart';
 import 'package:musbx/utils/history_handler.dart';
-import 'package:musbx/widgets/widgets.dart';
 
 class YoutubeSearch {
   /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
@@ -140,12 +141,22 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
           return const ErrorPage(
               text: "Search failed. Please try again later.");
         }
-        if (!snapshot.hasData) return const LoadingPage(text: "Searching...");
+        if (!snapshot.hasData) {
+          return ListView(
+            children: List.filled(10, YoutubeVideoListItem(video: null)),
+          );
+        }
 
         List<YoutubeVideo> results = snapshot.data!;
         return ListView(
           children: results.map((YoutubeVideo video) {
-            return _buildListItem(context, video);
+            return YoutubeVideoListItem(
+              video: video,
+              onTap: () {
+                YoutubeSearch.history.add(query.trim());
+                close(context, video);
+              },
+            );
           }).toList(),
         );
       },
@@ -172,36 +183,53 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
     return await YoutubeDataApi.search(query, type: "video", maxResults: 50);
   }
+}
 
-  /// Result item, showing a [YoutubeVideo]'s title, channel and thumbnail.
-  Widget _buildListItem(BuildContext context, YoutubeVideo video) {
-    HtmlUnescape htmlUnescape = HtmlUnescape();
+class YoutubeVideoListItem extends StatelessWidget {
+  static final HtmlUnescape htmlUnescape = HtmlUnescape();
 
-    return GestureDetector(
-      onTap: () {
-        YoutubeSearch.history.add(query.trim());
-        close(context, video);
-      },
-      child: ListTile(
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8.0),
-          child: Image.network(
-            video.thumbnails.medium.url,
-            width: 100.0,
-            fit: BoxFit.cover,
-          ),
-        ),
-        title: Text(
-          htmlUnescape.convert(video.title),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          htmlUnescape.convert(video.channelTitle),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+  /// List item showing a [video]'s title, channel and thumbnail.
+  const YoutubeVideoListItem({super.key, required this.video, this.onTap});
+
+  /// The video whose properties to show.
+  /// If `null`, shows a simple placeholder widget.
+  final YoutubeVideo? video;
+
+  /// Called when the user taps this list tile.
+  final void Function()? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(8.0),
+        child: video == null
+            ? Container(
+                color: Theme.of(context).colorScheme.surfaceContainer,
+                width: 100,
+                height: 100 * 9 / 16,
+              )
+            : Image.network(
+                video!.thumbnails.medium.url,
+                width: 100,
+                fit: BoxFit.cover,
+              ),
       ),
+      title: video == null
+          ? TextPlaceholder()
+          : Text(
+              htmlUnescape.convert(video!.title),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+      subtitle: video == null
+          ? TextPlaceholder(width: 160)
+          : Text(
+              htmlUnescape.convert(video!.channelTitle),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
     );
   }
 }
