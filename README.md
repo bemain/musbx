@@ -1,7 +1,7 @@
 # Musician's Toolbox
 
 <p align="left">
-    <a href='https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1' style="border-radius: 13px; height: 83px;"><img alt='Get it on Google Play' src='assets/images/google-play-badge.png' style="height: 83px;"/></a>
+    <a href='https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1' style="border-radius: 13px; height: 83px;"><img alt='Get it on Google Play' src='https://drive.usercontent.google.com/download?id=1unoM49F6eiZ63AHKnFuY4SrCpvoG6uWq' style="height: 83px;"/></a>
     <a href="https://apps.apple.com/us/app/musicians-toolbox/id1670009655?itsct=apps_box_badge&amp;itscg=30200" style="display: inline-block; border-radius: 13px; width: 250px; height: 83px;"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&amp;releaseDate=1679443200" alt="Download on the App Store" style="border-radius: 13px; width: 250px; height: 83px;"></a>
 </p>
 
@@ -48,17 +48,17 @@ A branch should be named as follows:
 feat/[area]/[issue reference]/<description>
 ```
 
-Example `area`s: `demixer`, `tuner`, `music-player`.
+Example `area`s: `demixer`, `tuner`, `songs`.
 
-The `description` should use dashes (`-`) to separate words.
+The `description` should use kebab-case.
 
 Here's a complete example: 
 ```
-feat/music-player/issue72/configure-audio-session
+feat/songs/issue72/configure-audio-session
 ```
 
 ## Privacy policy
-Privacy policy can be found [here](https://bemain.github.io/musbx/privacy_policy/)
+Privacy policy can be found [here](https://bemain.github.io/musbx/privacy/)
 
 ## Contact information
 If you have any questions, feedback or issues with the app, please reach out:
