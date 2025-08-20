@@ -13,7 +13,6 @@ import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/loading.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/widgets/flat_card.dart';
 import 'package:musbx/utils/purchases.dart';
 
@@ -167,7 +166,12 @@ Please update to the latest version to use the Demixer.""",
         return buildLoadingTextWithInfoButton(
           context,
           "Demixing...",
-          "The server is demixing the song. \nAudio source separation is a complex process, and might take a while. ${(widget.song.source is YoutubeSource ? "\n\nYou may close the app while the demixing is in progress. \n\nThis only needs to be done once, so loading the song next time will be much faster." : "")}",
+          """The server is demixing the song. 
+Audio source separation is a complex process, and might take a while. 
+
+You may close the app while the demixing is in progress. 
+
+This only needs to be done once, so loading the song next time will be much faster.""",
         );
       case DemixingStep.compressing:
         return buildLoadingTextWithInfoButton(

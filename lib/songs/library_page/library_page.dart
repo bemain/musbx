@@ -366,15 +366,11 @@ class LibraryPage extends StatelessWidget {
   }
 
   IconData _getSourceIcon(SongSource source) {
-    if (source is FileSource) {
-      return Symbols.file_present;
-    }
-    if (source is YoutubeSource || source is SoundCloudSource) {
-      return Symbols.cloud;
-    }
-    if (source is DemixedSource) {
-      return _getSourceIcon(source.parent);
-    }
-    return Symbols.music_note;
+    return switch (source) {
+      FileSource() => Symbols.file_present,
+      YtdlpSource() => Symbols.cloud,
+      DemixedSource() => _getSourceIcon(source.parent),
+      _ => Symbols.music_note,
+    };
   }
 }

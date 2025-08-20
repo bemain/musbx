@@ -21,7 +21,7 @@ class WaveformExtractionProcess extends Process<Waveform> {
   File? _cacheFile(SongSource source) {
     return switch (source) {
       FileSource() => source.cacheFile,
-      YoutubeSource() => source.cacheFile,
+      YtdlpSource() => source.cacheFile,
       DemixedSource() => _cacheFile(source.parent),
       _ => null,
     };

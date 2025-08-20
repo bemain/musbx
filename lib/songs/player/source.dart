@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:http/http.dart' as http;
+import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
-import 'package:musbx/songs/musbx_api/demixer_api.dart';
+import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -46,10 +45,8 @@ abstract class SongSource<P extends Playable> {
     String? type = tryCast<String>(json["type"]);
 
     switch (type) {
-      case "youtube":
-        return YoutubeSource.fromJson(json);
-      case "soundcloud":
-        return SoundCloudSource.fromJson(json);
+      case "ytdlp":
+        return YtdlpSource.fromJson(json);
       case "file":
         return FileSource.fromJson(json);
       case "demixed":
@@ -59,12 +56,10 @@ abstract class SongSource<P extends Playable> {
   }
 }
 
-class YoutubeSource extends SongSource<SinglePlayable> {
-  /// A source that pulls audio from YouTube.
-  YoutubeSource(this.youtubeId);
+class YtdlpSource extends SongSource<SinglePlayable> {
+  YtdlpSource(this.url);
 
-  /// The id of the YouTube song to pull.
-  final String youtubeId;
+  final Uri url;
 
   /// The [SoLoud] [AudioSource] that is generated from this source.
   AudioSource? source;
@@ -76,14 +71,13 @@ class YoutubeSource extends SongSource<SinglePlayable> {
   Future<SinglePlayable> load({required Directory cacheDirectory}) async {
     File cacheFile = File("${cacheDirectory.path}/audio.mp3");
 
-    if (await cacheFile.exists()) {
-      debugPrint("[YOUTUBE] Using cached audio for video with id '$youtubeId'");
-    } else {
-      cacheFile = await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
-        youtubeId,
-        destination: cacheFile,
+    if (!await cacheFile.exists()) {
+      final MusbxApiClient client = await MusbxApi.getClient();
+      final FileHandle handle = await client.uploadYtdlp(
+        url,
         fileType: "mp3",
       );
+      cacheFile = await client.download(handle, cacheFile);
     }
     this.cacheFile = cacheFile;
 
@@ -100,74 +94,19 @@ class YoutubeSource extends SongSource<SinglePlayable> {
     source = null;
   }
 
-  /// Try to create a [YoutubeSource] from a [json] object.
-  static YoutubeSource? fromJson(Map<String, dynamic> json) {
-    if (!json.containsKey("youtubeId")) return null;
-    String? id = tryCast<String>(json["youtubeId"]);
-    if (id == null) return null;
+  /// Try to create a [YtdlpSource] from a [json] object.
+  static YtdlpSource? fromJson(Map<String, dynamic> json) {
+    if (!json.containsKey("url")) return null;
+    String? url = tryCast<String>(json["url"]);
+    if (url == null) return null;
 
-    return YoutubeSource(id);
+    return YtdlpSource(Uri.parse(url));
   }
 
   @override
   Map<String, dynamic> toJson() => {
-        "type": "youtube",
-        "youtubeId": youtubeId,
-      };
-}
-
-class SoundCloudSource extends SongSource<SinglePlayable> {
-  SoundCloudSource(this.trackId, this.downloadUrl);
-
-  final String trackId;
-  final Uri downloadUrl;
-
-  AudioSource? source;
-  File? cacheFile;
-
-  @override
-  Future<SinglePlayable> load({required Directory cacheDirectory}) async {
-    File cacheFile = File("${cacheDirectory.path}/audio.mp3");
-
-    if (await cacheFile.exists()) {
-      debugPrint("[SOUNDCLOUD] Using cached audio for track '$trackId'");
-    } else {
-      debugPrint("[SOUNDCLOUD] Downloading audio from SoundCloud");
-      final response = await http.get(downloadUrl);
-
-      if (response.statusCode != 200) {
-        throw Exception(
-            'Failed to download SoundCloud track: ${response.statusCode}');
-      }
-
-      await cacheFile.create(recursive: true);
-      await cacheFile.writeAsBytes(response.bodyBytes);
-    }
-    this.cacheFile = cacheFile;
-
-    source ??= await SoLoud.instance.loadFile(cacheFile.path);
-    return SinglePlayable(source!);
-  }
-
-  @override
-  Future<void> dispose() async {
-    if (source == null) return;
-    await SoLoud.instance.disposeSource(source!);
-    source = null;
-  }
-
-  static SoundCloudSource? fromJson(Map<String, dynamic> json) {
-    if (!json.containsKey("trackId") || !json.containsKey("downloadUrl")) {
-      return null;
-    }
-    return SoundCloudSource(json["trackId"], Uri.parse(json["downloadUrl"]));
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        "type": "soundcloud",
-        "trackId": trackId,
-        "downloadUrl": downloadUrl.toString(),
+        "type": "ytdlp",
+        "url": url.toString(),
       };
 }
 

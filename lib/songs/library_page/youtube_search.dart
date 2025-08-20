@@ -30,7 +30,7 @@ class YoutubeSearch {
       title: HtmlUnescape().convert(video.title),
       artist: HtmlUnescape().convert(video.channelTitle),
       artUri: Uri.tryParse(video.thumbnails.high.url),
-      source: YoutubeSource(video.id),
+      source: YtdlpSource(Uri.parse(video.url)),
     ));
 
     if (context.mounted) context.go(Navigation.songRoute(video.id));

@@ -176,9 +176,8 @@ class SoundCloudSearch {
 
   /// Loads a track from SoundCloud into the user's library.
   static Future<void> loadTrack(SoundCloudTrack track) async {
-    final Uri url;
     try {
-      url = await track.getDownloadUrl();
+      await track.getDownloadUrl();
     } catch (e) {
       debugPrint("[SOUNDCLOUD] Failed to get download URL for track: $e");
       if (Navigation.navigatorKey.currentContext?.mounted == true) {
@@ -192,7 +191,7 @@ class SoundCloudSearch {
       title: HtmlUnescape().convert(track.title),
       artist: HtmlUnescape().convert(track.username),
       artUri: track.artworkUrl != null ? Uri.tryParse(track.artworkUrl!) : null,
-      source: SoundCloudSource(track.id.toString(), url),
+      source: YtdlpSource(Uri.parse(track.permalinkUrl)),
     ));
   }
 

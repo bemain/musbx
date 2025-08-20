@@ -4,6 +4,7 @@ import 'package:musbx/songs/analyzer/chord_identification_process.dart';
 import 'package:musbx/songs/analyzer/waveform_extraction_process.dart';
 import 'package:musbx/model/chord.dart';
 import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 class AnalyzerComponent extends SongPlayerComponent {

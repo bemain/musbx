@@ -3,7 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/model/chord.dart';
-import 'package:musbx/songs/musbx_api/chords_api.dart';
+import 'package:musbx/songs/musbx_api/client.dart';
+import 'package:musbx/songs/musbx_api/jobs/analyze.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/source.dart';
@@ -21,11 +22,12 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
 
   @override
   Future<Map<Duration, Chord?>> execute() async {
-    Map<String, dynamic>? data;
+    Map<double, String>? data;
     // Check cache
     if (await cacheFile.exists()) {
       try {
-        data = jsonDecode(await cacheFile.readAsString());
+        final Json json = jsonDecode(await cacheFile.readAsString());
+        data = json.map((key, value) => MapEntry(double.parse(key), value));
       } catch (e) {
         debugPrint("[ANALYZER] Malformed chords file: '${cacheFile.path}'");
       }
@@ -35,35 +37,46 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
 
     if (data == null) {
       // Perform chords identification
-      final ChordsApiHost host = await MusbxApi.findChordsHost();
+      final MusbxApiClient client = await MusbxApi.getClient();
 
-      data = await analyzeSource(song.source, host);
+      data = await analyzeSource(song.source, client);
 
       // Save to cache
       await cacheFile.create(recursive: true);
-      await cacheFile.writeAsString(jsonEncode(data));
+      await cacheFile.writeAsString(
+          jsonEncode(data.map((key, value) => MapEntry("$key", value))));
     }
 
     breakIfCancelled();
 
     return data.map((key, value) => MapEntry(
-          Duration(milliseconds: (double.parse(key) * 1000).toInt()),
+          Duration(milliseconds: (key * 1000).toInt()),
           Chord.tryParse(value),
         ));
   }
 
-  /// Perform chord analysis on the [source] using the given [host].
-  Future<Map<String, dynamic>> analyzeSource(
-      SongSource source, ChordsApiHost host) async {
+  /// Perform chord analysis on the [source] using the given [client].
+  Future<Map<double, String>> analyzeSource(
+    SongSource source,
+    MusbxApiClient client,
+  ) async {
+    final FileHandle file;
     switch (source) {
       case FileSource():
-        return await host.analyzeFile(source.file);
-      case YoutubeSource():
-        return await host.analyzeYoutubeSong(source.youtubeId);
+        file = await client.uploadFile(source.file);
+        break;
+      case YtdlpSource():
+        file = await client.uploadYtdlp(source.url);
+        break;
       case DemixedSource():
-        return await analyzeSource(source.parent, host);
+        return await analyzeSource(source.parent, client);
+
       default:
-        throw "Chord analysis cannot be performed on the source $source.";
+        throw UnsupportedError(
+            "Chord analysis cannot be performed on the source $source.");
     }
+
+    final AnalyzeJob job = await client.analyze(file);
+    return await job.complete();
   }
 }
