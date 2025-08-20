@@ -101,7 +101,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     final FileHandle file;
     switch (source) {
       case FileSource():
-        file = await client.uploadFile(source.file);
+        file = await client.uploadFile(source.cacheFile!);
         break;
       case YtdlpSource():
         file = await client.uploadYtdlp(source.url);

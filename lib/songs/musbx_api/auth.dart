@@ -54,10 +54,24 @@ class AuthInterceptor extends Interceptor {
     return !requestOptions.path.contains("/token");
   }
 
-  RequestOptions _retryRequest(RequestOptions requestOptions, String newToken) {
-    final newHeaders = Map<String, dynamic>.from(requestOptions.headers);
+  RequestOptions _retryRequest(RequestOptions options, String newToken) {
+    // Inject auth
+    final newHeaders = Map<String, dynamic>.from(options.headers);
     newHeaders["Authorization"] = "Bearer $newToken";
-    return requestOptions.copyWith(headers: newHeaders);
+
+    if (options.data is FormData) {
+      // Clone form data as it cannot be reused
+      final FormData oldData = options.data;
+      final FormData newData = FormData();
+
+      newData.fields.addAll(oldData.fields);
+      for (MapEntry<String, MultipartFile> file in oldData.files) {
+        newData.files.add(MapEntry(file.key, file.value.clone()));
+      }
+      options.data = newData;
+    }
+
+    return options.copyWith(headers: newHeaders);
   }
 
   Future<String?> _refreshAccessToken() async {

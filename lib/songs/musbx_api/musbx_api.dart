@@ -8,7 +8,7 @@ class NoHostAvailableException implements Exception {
   const NoHostAvailableException([this.msg]);
 
   @override
-  String toString() => msg ?? 'No host is available';
+  String toString() => msg ?? "No host is available";
 }
 
 class OutOfDateException implements Exception {
@@ -17,7 +17,7 @@ class OutOfDateException implements Exception {
   const OutOfDateException([this.msg]);
 
   @override
-  String toString() => msg ?? 'The app is out of date with the server';
+  String toString() => msg ?? "The app is out of date with the server";
 }
 
 class MusbxApi {
@@ -28,7 +28,7 @@ class MusbxApi {
   static final List<String> _hostUrls = [
     "http://brunnby.homeip.net:4242",
     "http://musbx.agardh.se:4242",
-    "http://192.168.1.95:4242",
+    "http://192.168.1.152:4242",
   ];
 
   /// Find a host that is available and version is compatible with the app's [version].
