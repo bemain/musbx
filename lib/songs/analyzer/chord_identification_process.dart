@@ -9,6 +9,7 @@ import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/process.dart';
+import 'package:musbx/utils/utils.dart';
 
 class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   /// Perform chord identification on a [song].
