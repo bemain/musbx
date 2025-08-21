@@ -27,7 +27,8 @@ class NotificationIndicator extends StatelessWidget {
   Future<void> _requestPermission(BuildContext context) async {
     if (await Notifications.shouldShowRationale()) {
       if (!context.mounted) return;
-      final bool mayRequestPermission = await showDialog(
+      final bool mayRequestPermission =
+          await showDialog(
             context: context,
             builder: (context) => const NotificationPermissionRationale(),
           ) ??
@@ -53,7 +54,8 @@ class NotificationPermissionRationale extends StatelessWidget {
       title: const Text("Enable notifications"),
       icon: const Icon(Symbols.notifications_active, weight: 600),
       content: const Text(
-          "Turn on notifications to quickly access the Metronome from the notifications drawer."),
+        "Turn on notifications to quickly access the Metronome from the notifications drawer.",
+      ),
       actions: [
         TextButton(
           onPressed: () {

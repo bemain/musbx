@@ -1,3 +1,5 @@
+import 'dart:io' show File, Platform;
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +11,10 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:musbx/widgets/speed_dial/speed_dial.dart';
-import 'package:musbx/widgets/speed_dial/action.dart';
 import 'package:musbx/widgets/permission_builder.dart';
+import 'package:musbx/widgets/speed_dial/action.dart';
+import 'package:musbx/widgets/speed_dial/speed_dial.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:io' show File, Platform;
 
 const List<String> allowedExtensions = [
   "mp3",
@@ -56,23 +57,27 @@ class UploadSongButton extends SpeedDialChild {
 
     final String extension = file!.path!.split(".").last;
     if (!allowedExtensions.contains(extension)) {
-      showExceptionDialog(UnsupportedFileExtensionDialog(extension: extension));
+      await showExceptionDialog(
+        UnsupportedFileExtensionDialog(extension: extension),
+      );
 
       return;
     }
 
     final String id = file.path!.hashCode.toString();
 
-    await Songs.history.add(Song<SinglePlayable>(
-      id: id,
-      title: file.name.split(".").first,
-      source: FileSource(File(file.path!)),
-    ));
+    await Songs.history.add(
+      Song<SinglePlayable>(
+        id: id,
+        title: file.name.split(".").first,
+        source: FileSource(File(file.path!)),
+      ),
+    );
 
     Navigation.navigatorKey.currentContext?.go(Navigation.songRoute(id));
   }
 
-  void pushPermissionBuilder(BuildContext context) async {
+  Future<void> pushPermissionBuilder(BuildContext context) async {
     // On Android sdk 33 or greater, use of granular permissions is required
     final bool useGranularPermissions = !Platform.isAndroid
         ? false
@@ -80,26 +85,35 @@ class UploadSongButton extends SpeedDialChild {
 
     if (!context.mounted) return;
 
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => Scaffold(
-        body: PermissionBuilder(
-          permission:
-              (useGranularPermissions) ? Permission.audio : Permission.storage,
-          permissionName: (useGranularPermissions || Platform.isIOS)
-              ? "audio files"
-              : "external storage",
-          permissionText:
-              "To load audio from the device, give the app permission to access ${(useGranularPermissions || Platform.isIOS) ? "external storage" : "audio files"}.",
-          permissionDeniedIcon: const Icon(Symbols.storage_rounded, size: 128),
-          permissionGrantedIcon: const Icon(Symbols.storage_rounded, size: 128),
-          onPermissionGranted: () {
-            permissionGranted = true;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => Scaffold(
+          body: PermissionBuilder(
+            permission: (useGranularPermissions)
+                ? Permission.audio
+                : Permission.storage,
+            permissionName: (useGranularPermissions || Platform.isIOS)
+                ? "audio files"
+                : "external storage",
+            permissionText:
+                "To load audio from the device, give the app permission to access ${(useGranularPermissions || Platform.isIOS) ? "external storage" : "audio files"}.",
+            permissionDeniedIcon: const Icon(
+              Symbols.storage_rounded,
+              size: 128,
+            ),
+            permissionGrantedIcon: const Icon(
+              Symbols.storage_rounded,
+              size: 128,
+            ),
+            onPermissionGranted: () {
+              permissionGranted = true;
 
-            Navigator.of(context).pop();
-            pickFile(context);
-          },
+              Navigator.of(context).pop();
+              pickFile(context);
+            },
+          ),
         ),
       ),
-    ));
+    );
   }
 }

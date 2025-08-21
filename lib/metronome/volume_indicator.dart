@@ -21,7 +21,7 @@ class _VolumeIndicatorState extends State<VolumeIndicator> {
 
         return IconButton(
           onPressed: () async {
-            metronome.player.setVolume(isMuted ? 1.0 : 0.0);
+            await metronome.player.setVolume(isMuted ? 1.0 : 0.0);
             setState(() {});
           },
           isSelected: isMuted,

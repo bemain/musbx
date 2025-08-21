@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/metronome/count_display.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';
+import 'package:musbx/metronome/count_display.dart';
+import 'package:musbx/metronome/higher.dart';
+import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/notification_indicator.dart';
 import 'package:musbx/metronome/play_button.dart';
-import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/subdivisions.dart';
-import 'package:musbx/metronome/higher.dart';
 import 'package:musbx/metronome/volume_indicator.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/flat_card.dart';
@@ -23,8 +23,12 @@ class MetronomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const EdgeInsets cardPadding =
-        EdgeInsets.only(top: 16, bottom: 8, left: 8, right: 8);
+    const EdgeInsets cardPadding = EdgeInsets.only(
+      top: 16,
+      bottom: 8,
+      left: 8,
+      right: 8,
+    );
 
     return const Scaffold(
       resizeToAvoidBottomInset: true,

@@ -64,8 +64,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
         .toList();
     if ((await Future.wait(
       stemFiles.map((stem) => stem.exists()),
-    ))
-        .every((value) => value)) {
+    )).every((value) => value)) {
       // All stems were found in the cache.
       return {
         for (final stem in StemType.values)
@@ -102,10 +101,8 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     switch (source) {
       case FileSource():
         file = await client.uploadFile(source.cacheFile!);
-        break;
       case YtdlpSource():
         file = await client.uploadYtdlp(source.url);
-        break;
       default:
         throw UnsupportedError(
           "Chord analysis cannot be performed on the source $source.",
@@ -124,13 +121,12 @@ class DemixingProcess extends Process<Map<StemType, File>> {
       stepNotifier.value = switch (report.step) {
         DemixStep.idle ||
         DemixStep.loadingModel ||
-        DemixStep.demixing =>
-          DemixingStep.separating,
+        DemixStep.demixing => DemixingStep.separating,
         DemixStep.saving => DemixingStep.compressing,
       };
       progressNotifier.value = report.progress;
 
-      await Future.delayed(checkStatusInterval); // Short delay
+      await Future<void>.delayed(checkStatusInterval); // Short delay
       breakIfCancelled();
 
       report = await job.get();
@@ -154,10 +150,10 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
     final Map<StemType, File> files = Map.fromEntries(
       await Future.wait(
-        report.result!.keys.map((String stemName) async {
+        report.result!.keys.map((stemName) async {
           final response = await job.dio.get<List<int>>(
             report.result![stemName]!,
-            onReceiveProgress: (int received, int total) {
+            onReceiveProgress: (received, total) {
               downloadProgress[stemName] = received / total;
               final totalProgress = downloadProgress.values.reduce(
                 (a, b) => a + b,
@@ -170,7 +166,9 @@ class DemixingProcess extends Process<Map<StemType, File>> {
             ),
           );
 
-          final File destination = File("${cacheDirectory.path}/$stemName.mp3");
+          final File destination = File(
+            "${cacheDirectory.path}/$stemName.mp3",
+          );
 
           await destination.writeAsBytes(response.data!);
           return MapEntry(

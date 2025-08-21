@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:musbx/keys.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/youtube_api/video.dart';
 
 /// Helper class for interacting with the Youtube Data API (https://developers.google.com/youtube/v3).
@@ -13,7 +14,7 @@ class YoutubeDataApi {
   /// Get the video with [id] from Youtube, or null if no video with that [id].
   static Future<YoutubeVideo?> getVideoById(YoutubeVideoId id) async {
     // Generate search query
-    final Map<String, dynamic> options = {
+    final Json options = {
       "id": [id],
       "part": "snippet",
       "key": youtubeDataApiKey,
@@ -29,9 +30,9 @@ class YoutubeDataApi {
       return null;
     }
 
-    if (jsonData["items"] == null || jsonData["items"].length < 1) return null;
+    if ((jsonData['items'] as List?)?.isEmpty != false) return null;
 
-    return YoutubeVideo.fromJson(jsonData["items"][0]);
+    return YoutubeVideo.fromJson(jsonData['items'][0]);
   }
 
   /// Search Youtube for a given [query].
@@ -43,7 +44,7 @@ class YoutubeDataApi {
     int maxResults = 10,
   }) async {
     // Generate search query
-    final Map<String, dynamic> options = {
+    final Json options = {
       "q": query,
       "part": "snippet",
       "maxResults": "$maxResults",
@@ -65,11 +66,15 @@ class YoutubeDataApi {
     // Map result to [YoutubeVideo]s
     if (jsonData['pageInfo']['totalResults'] == null) return [];
     List<YoutubeVideo> videos = [];
-    for (var videoData in jsonData["items"]) {
-      String kind = videoData['id']['kind'].substring(8);
+    for (var videoData in jsonData['items'] as List) {
+      String kind = videoData['id']['kind'].substring(8) as String;
       if (kind == "video") {
-        videos.add(YoutubeVideo.fromJson(videoData,
-            id: videoData['id'][videoData['id'].keys.elementAt(1)]));
+        videos.add(
+          YoutubeVideo.fromJson(
+            videoData,
+            id: videoData['id'][videoData['id'].keys.elementAt(1)] as String,
+          ),
+        );
       }
     }
 

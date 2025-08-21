@@ -22,12 +22,14 @@ class Drone {
     ..currentIndexStream.listen((value) {
       if ((_player.audioSource is ConcatenatingAudioSource)) {
         final source = _player.audioSource as ConcatenatingAudioSource;
-        source.add(DroneAudioSource(
-          frequencies: [
-            for (Pitch pitch in pitches) pitch.frequency,
-          ],
-          offset: source.length,
-        ));
+        source.add(
+          DroneAudioSource(
+            frequencies: [
+              for (Pitch pitch in pitches) pitch.frequency,
+            ],
+            offset: source.length,
+          ),
+        );
       }
     });
 
@@ -42,30 +44,34 @@ class Drone {
   Pitch get root => rootNotifier.value;
   set root(Pitch value) => rootNotifier.value = value;
   late final ValueNotifier<Pitch> rootNotifier =
-      TransformedPersistentValue<Pitch, String>("drone/roots",
-          initialValue: const Pitch(PitchClass.a(), 3, 220),
-          from: Pitch.parse,
-          to: (pitch) => pitch.toString())
-        ..addListener(_onPitchesChanged);
+      TransformedPersistentValue<Pitch, String>(
+        "drone/roots",
+        initialValue: const Pitch(PitchClass.a(), 3, 220),
+        from: Pitch.parse,
+        to: (pitch) => pitch.toString(),
+      )..addListener(_onPitchesChanged);
 
   /// The temperament used for generating pitches
   Temperament get temperament => temperamentNotifier.value;
-  final ValueNotifier<Temperament> temperamentNotifier =
-      ValueNotifier(const EqualTemperament());
+  final ValueNotifier<Temperament> temperamentNotifier = ValueNotifier(
+    const EqualTemperament(),
+  );
 
   /// The pitches that are currently playing.
   Iterable<Pitch> get pitches => intervals.map(
-      (int interval) => root.transposed(interval, temperament: temperament));
+    (interval) => root.transposed(interval, temperament: temperament),
+  );
 
   /// The intervals relative to the [root] that are currently playing.
   List<int> get intervals => List.unmodifiable(intervalsNotifier.value);
   set intervals(List<int> value) => intervalsNotifier.value = value;
   late final ValueNotifier<List<int>> intervalsNotifier =
-      TransformedPersistentValue<List<int>, List<String>>("drone/intervals",
-          initialValue: [],
-          from: (strings) => [for (final s in strings) int.parse(s)],
-          to: (ints) => [for (final i in ints) "$i"])
-        ..addListener(_onPitchesChanged);
+      TransformedPersistentValue<List<int>, List<String>>(
+        "drone/intervals",
+        initialValue: [],
+        from: (strings) => [for (final s in strings) int.parse(s)],
+        to: (ints) => [for (final i in ints) '$i'],
+      )..addListener(_onPitchesChanged);
 
   /// Whether the drone is playing.
   bool get isPlaying => isPlayingNotifier.value;
@@ -79,9 +85,9 @@ class Drone {
 
   Future<void>? loadAudioLock;
 
-  void _onPitchesChanged() async {
+  Future<void> _onPitchesChanged() async {
     if (intervals.isEmpty) {
-      pause();
+      await pause();
       return;
     }
 
@@ -106,9 +112,13 @@ class Drone {
     ];
 
     // Hack: we use a concatenating audio source so that the current index changes.
-    await _player.setAudioSource(ConcatenatingAudioSource(children: [
-      DroneAudioSource(frequencies: frequencies),
-      DroneAudioSource(frequencies: frequencies, offset: 1),
-    ]));
+    await _player.setAudioSource(
+      ConcatenatingAudioSource(
+        children: [
+          DroneAudioSource(frequencies: frequencies),
+          DroneAudioSource(frequencies: frequencies, offset: 1),
+        ],
+      ),
+    );
   }
 }

@@ -1,16 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/widgets/circular_slider/painter.dart';
-import 'package:musbx/widgets/circular_slider/utils.dart';
-import 'package:musbx/widgets/circular_slider/theme.dart';
 import 'package:musbx/widgets/circular_slider/custom_pan_gesture_recognizer.dart';
+import 'package:musbx/widgets/circular_slider/painter.dart';
+import 'package:musbx/widgets/circular_slider/theme.dart';
+import 'package:musbx/widgets/circular_slider/utils.dart';
 
-enum DraggingMode {
-  none,
-  along,
-  inside;
-}
+enum DraggingMode { none, along, inside }
 
 class CircularSlider extends StatefulWidget {
   /// A circular slider. Similar to [Slider], but drawn as a circle sector.
@@ -126,18 +122,18 @@ class CircularSliderState extends State<CircularSlider> {
     return buildCustomPanGestureDetector(
       recognizer: CustomPanGestureRecognizer(
         onPanDown: onPanDown,
-        onPanUpdate: (PointerMoveEvent event) {
+        onPanUpdate: (event) {
           if (dragging) {
             onPan(event.position);
           }
         },
-        onPanEnd: (PointerUpEvent event) {
+        onPanEnd: (event) {
           setState(() {
             dragging = false;
           });
           widget.onChangeEnd?.call();
         },
-        onPanCancel: (PointerCancelEvent event) {
+        onPanCancel: (event) {
           setState(() {
             dragging = false;
           });
@@ -154,7 +150,9 @@ class CircularSliderState extends State<CircularSlider> {
           startAngle: widget.startAngle,
           endAngle: widget.endAngle,
           divisions: widget.divisionValues
-              ?.map((value) => (value - widget.min) / (widget.max - widget.min))
+              ?.map(
+                (value) => (value - widget.min) / (widget.max - widget.min),
+              )
               .toList(),
           dragging: dragging,
           disabled: widget.onChanged == null,
@@ -173,13 +171,16 @@ class CircularSliderState extends State<CircularSlider> {
   bool onPanDown(PointerEvent event) {
     if (widget.onChanged == null) return false;
 
-    final double thumbAngle = widget.startAngle -
+    final double thumbAngle =
+        widget.startAngle -
         pi / 2 +
         (widget.endAngle - widget.startAngle) * activeFraction;
     final Offset thumbOffset = angleToPoint(thumbAngle, center, radius);
 
-    final double eventAngle =
-        pointToAngle(globalToLocal(event.position), center);
+    final double eventAngle = pointToAngle(
+      globalToLocal(event.position),
+      center,
+    );
 
     if ((isPointAlongCircle(
               globalToLocal(event.position),
@@ -201,8 +202,10 @@ class CircularSliderState extends State<CircularSlider> {
   /// Calculate the new value and invoke [onChanged] callback.
   void onPan(Offset globalPosition) {
     Offset localPosition = globalToLocal(globalPosition);
-    double angle = pointToAngle(localPosition, center)
-        .clamp(widget.startAngle, widget.endAngle);
+    double angle = pointToAngle(
+      localPosition,
+      center,
+    ).clamp(widget.startAngle, widget.endAngle);
     double fraction =
         (angle - widget.startAngle) / (widget.endAngle - widget.startAngle);
     double newValue = fraction * (widget.max - widget.min) + widget.min;

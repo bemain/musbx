@@ -62,28 +62,38 @@ class CircularSliderTheme {
     SliderThemeData sliderTheme, {
     this.thumbRadius = 10.0,
     this.activeTrackAdditionalHeight = 2.0,
-  })  : trackHeight = sliderTheme.trackHeight ?? 4.0,
-        activeTrackColor =
-            sliderTheme.activeTrackColor ?? theme.colorScheme.primary,
-        inactiveTrackColor = sliderTheme.inactiveTrackColor ??
-            theme.colorScheme.surfaceContainerHighest,
-        disabledActiveTrackColor = sliderTheme.disabledActiveTrackColor ??
-            theme.colorScheme.onSurface.withAlpha(0x61),
-        disabledInactiveTrackColor = sliderTheme.disabledInactiveTrackColor ??
-            theme.colorScheme.onSurface.withAlpha(0x1f),
-        activeTickMarkColor = sliderTheme.activeTickMarkColor ??
-            theme.colorScheme.onPrimary.withAlpha(0x61),
-        inactiveTickMarkColor = sliderTheme.inactiveTickMarkColor ??
-            theme.colorScheme.onSurfaceVariant.withAlpha(0x61),
-        disabledActiveTickMarkColor = sliderTheme.disabledActiveTickMarkColor ??
-            theme.colorScheme.onSurface.withAlpha(0x61),
-        disabledInactiveTickMarkColor =
-            sliderTheme.disabledInactiveTickMarkColor ??
-                theme.colorScheme.onSurface.withAlpha(0x61),
-        thumbColor = sliderTheme.thumbColor ?? theme.colorScheme.primary,
-        disabledThumbColor = sliderTheme.disabledThumbColor ??
-            Color.alphaBlend(theme.colorScheme.onSurface.withAlpha(0x61),
-                theme.colorScheme.surface),
-        overlayColor = sliderTheme.overlayColor ??
-            theme.colorScheme.primary.withAlpha(0x1f);
+  }) : trackHeight = sliderTheme.trackHeight ?? 4.0,
+       activeTrackColor =
+           sliderTheme.activeTrackColor ?? theme.colorScheme.primary,
+       inactiveTrackColor =
+           sliderTheme.inactiveTrackColor ??
+           theme.colorScheme.surfaceContainerHighest,
+       disabledActiveTrackColor =
+           sliderTheme.disabledActiveTrackColor ??
+           theme.colorScheme.onSurface.withAlpha(0x61),
+       disabledInactiveTrackColor =
+           sliderTheme.disabledInactiveTrackColor ??
+           theme.colorScheme.onSurface.withAlpha(0x1f),
+       activeTickMarkColor =
+           sliderTheme.activeTickMarkColor ??
+           theme.colorScheme.onPrimary.withAlpha(0x61),
+       inactiveTickMarkColor =
+           sliderTheme.inactiveTickMarkColor ??
+           theme.colorScheme.onSurfaceVariant.withAlpha(0x61),
+       disabledActiveTickMarkColor =
+           sliderTheme.disabledActiveTickMarkColor ??
+           theme.colorScheme.onSurface.withAlpha(0x61),
+       disabledInactiveTickMarkColor =
+           sliderTheme.disabledInactiveTickMarkColor ??
+           theme.colorScheme.onSurface.withAlpha(0x61),
+       thumbColor = sliderTheme.thumbColor ?? theme.colorScheme.primary,
+       disabledThumbColor =
+           sliderTheme.disabledThumbColor ??
+           Color.alphaBlend(
+             theme.colorScheme.onSurface.withAlpha(0x61),
+             theme.colorScheme.surface,
+           ),
+       overlayColor =
+           sliderTheme.overlayColor ??
+           theme.colorScheme.primary.withAlpha(0x1f);
 }

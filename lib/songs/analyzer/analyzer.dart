@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
+import 'package:musbx/model/chord.dart';
 import 'package:musbx/songs/analyzer/chord_identification_process.dart';
 import 'package:musbx/songs/analyzer/waveform_extraction_process.dart';
-import 'package:musbx/model/chord.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -15,10 +17,10 @@ class AnalyzerComponent extends SongPlayerComponent {
   AnalyzerComponent(super.player);
 
   @override
-  void initialize() {
+  Future<void> initialize() async {
     player.slowdowner.pitchNotifier.addListener(_updateChords);
-    waveformProcess.future;
-    chordsProcess.future;
+    unawaited(waveformProcess.future);
+    unawaited(chordsProcess.future);
   }
 
   @override
@@ -32,10 +34,11 @@ class AnalyzerComponent extends SongPlayerComponent {
 
   /// The duration window around the current position shown by widgets.
   Duration get durationShown => durationShownNotifier.value;
-  set durationShown(Duration value) => durationShownNotifier.value =
-      value.clamp(minDurationShown, maxDurationShown);
-  late final ValueNotifier<Duration> durationShownNotifier =
-      ValueNotifier(defaultDurationShown)..addListener(notifyListeners);
+  set durationShown(Duration value) => durationShownNotifier.value = value
+      .clamp(minDurationShown, maxDurationShown);
+  late final ValueNotifier<Duration> durationShownNotifier = ValueNotifier(
+    defaultDurationShown,
+  )..addListener(notifyListeners);
 
   /// The process analyzing the chords of the current song.
   late final ChordIdentificationProcess chordsProcess =
@@ -45,8 +48,9 @@ class AnalyzerComponent extends SongPlayerComponent {
   /// The transposed chords of the current song,
   /// or `null` if no song has been loaded.
   Map<Duration, Chord?>? get chords => chordsNotifier.value;
-  final ValueNotifier<Map<Duration, Chord?>?> chordsNotifier =
-      ValueNotifier(null);
+  final ValueNotifier<Map<Duration, Chord?>?> chordsNotifier = ValueNotifier(
+    null,
+  );
 
   /// The process extracting the waveform from the current song,
   /// or `null` if no song has been loaded.
@@ -77,10 +81,10 @@ class AnalyzerComponent extends SongPlayerComponent {
   /// [json] can contain the following key-value pairs:
   ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
-  void loadPreferencesFromJson(Map<String, dynamic> json) {
+  void loadPreferencesFromJson(Json json) {
     super.loadPreferencesFromJson(json);
 
-    int? durationShown = tryCast<int>(json["durationShown"]);
+    int? durationShown = tryCast<int>(json['durationShown']);
     this.durationShown = Duration(
       milliseconds: durationShown ?? defaultDurationShown.inMilliseconds,
     ).clamp(minDurationShown, maxDurationShown);
@@ -93,7 +97,7 @@ class AnalyzerComponent extends SongPlayerComponent {
   /// Saves the following key-value pairs:
   ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
-  Map<String, dynamic> savePreferencesToJson() {
+  Json savePreferencesToJson() {
     return {
       ...super.savePreferencesToJson(),
       "durationShown": durationShown.inMilliseconds,

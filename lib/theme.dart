@@ -5,7 +5,9 @@ import 'package:musbx/songs/song_page/position_slider_style.dart';
 const Color defaultSeed = Color(0xff578cff);
 
 (ThemeData light, ThemeData dark) generateThemes(
-    ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+  ColorScheme? lightDynamic,
+  ColorScheme? darkDynamic,
+) {
   // Defaults
   final ColorScheme lightDefault = ColorScheme.fromSeed(
     seedColor: defaultSeed,

@@ -26,8 +26,8 @@ class SpeedDial extends StatefulWidget {
     this.animationDuration = const Duration(milliseconds: 200),
     required this.children,
     required this.child,
-  })  : extendDuration = Duration.zero,
-        label = null;
+  }) : extendDuration = Duration.zero,
+       label = null;
 
   const SpeedDial.extended({
     super.key,
@@ -105,10 +105,14 @@ class SpeedDialState extends State<SpeedDial>
   bool _isOpen = false;
   OverlayEntry? _overlayEntry;
 
-  late final AnimationController _controller =
-      AnimationController(vsync: this, duration: widget.animationDuration);
-  late final CurvedAnimation animation =
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic);
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: widget.animationDuration,
+  );
+  late final CurvedAnimation animation = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.easeInOutCubic,
+  );
 
   @override
   void dispose() {
@@ -131,16 +135,20 @@ class SpeedDialState extends State<SpeedDial>
 
   Widget _buildFAB({Key? key}) {
     final backgroundColorTween = ColorTween(
-      begin: widget.backgroundColor ??
+      begin:
+          widget.backgroundColor ??
           Theme.of(context).colorScheme.primaryContainer,
-      end: widget.expandedBackgroundColor ??
+      end:
+          widget.expandedBackgroundColor ??
           widget.backgroundColor ??
           Theme.of(context).colorScheme.primary,
     );
     final foregroundColorTween = ColorTween(
-      begin: widget.foregroundColor ??
+      begin:
+          widget.foregroundColor ??
           Theme.of(context).colorScheme.onPrimaryContainer,
-      end: widget.expandedForegroundColor ??
+      end:
+          widget.expandedForegroundColor ??
           widget.foregroundColor ??
           Theme.of(context).colorScheme.onPrimary,
     );
@@ -158,8 +166,9 @@ class SpeedDialState extends State<SpeedDial>
     final Widget icon = Stack(
       children: [
         Transform.rotate(
-            angle: angleTween.animate(animation).value,
-            child: Opacity(opacity: 1 - animation.value, child: widget.child)),
+          angle: angleTween.animate(animation).value,
+          child: Opacity(opacity: 1 - animation.value, child: widget.child),
+        ),
         Transform.rotate(
           angle: angleTween.animate(animation).value - 1,
           child: Opacity(
@@ -212,7 +221,7 @@ class SpeedDialState extends State<SpeedDial>
     _overlayEntry?.remove();
     _overlayEntry = _buildOverlay();
     Overlay.of(context, rootOverlay: true).insert(_overlayEntry!);
-    _controller.animateTo(1);
+    await _controller.animateTo(1);
   }
 
   Future<bool> _close() async {
@@ -249,7 +258,8 @@ class SpeedDialState extends State<SpeedDial>
                 animation: animation,
                 builder: (context, _) => Container(
                   color: ColorTween(
-                    end: widget.overlayColor ??
+                    end:
+                        widget.overlayColor ??
                         Theme.of(context).colorScheme.surface.withAlpha(0xf2),
                   ).lerp(animation.value),
                 ),
@@ -267,9 +277,7 @@ class SpeedDialState extends State<SpeedDial>
                     children: [
                       if (widget.expandedLabel != null)
                         DefaultTextStyle(
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
+                          style: Theme.of(context).textTheme.bodyMedium!
                               .copyWith(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 overflow: TextOverflow.ellipsis,

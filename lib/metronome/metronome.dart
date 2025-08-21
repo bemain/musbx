@@ -45,11 +45,11 @@ class Metronome {
       if (player.volume == 0.0) {
         // Vibrate
         if (index == 0) {
-          HapticFeedback.vibrate();
+          await HapticFeedback.vibrate();
         } else if (index % subdivisions == 0) {
-          HapticFeedback.heavyImpact();
+          await HapticFeedback.heavyImpact();
         } else {
-          HapticFeedback.selectionClick();
+          await HapticFeedback.selectionClick();
         }
       }
     });
@@ -73,21 +73,26 @@ class Metronome {
   /// Does not actually update the playback. This needs to be done manually by calling [reset].
   int get bpm => bpmNotifier.value;
   set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
-  late final PersistentValue<int> bpmNotifier =
-      PersistentValue("metronome/bpm", initialValue: 60);
+  late final PersistentValue<int> bpmNotifier = PersistentValue(
+    "metronome/bpm",
+    initialValue: 60,
+  );
 
   /// The number of beats per bar.
   int get higher => higherNotifier.value;
   set higher(int value) => higherNotifier.value = value;
-  late final PersistentValue<int> higherNotifier =
-      PersistentValue("metronome/higher", initialValue: 4)..addListener(reset);
+  late final PersistentValue<int> higherNotifier = PersistentValue(
+    "metronome/higher",
+    initialValue: 4,
+  )..addListener(reset);
 
   /// The number of notes each beat is divided into.
   int get subdivisions => subdivisionsNotifier.value;
   set subdivisions(int value) => subdivisionsNotifier.value = value;
-  late final PersistentValue<int> subdivisionsNotifier =
-      PersistentValue("metronome/subdivisions", initialValue: 1)
-        ..addListener(reset);
+  late final PersistentValue<int> subdivisionsNotifier = PersistentValue(
+    "metronome/subdivisions",
+    initialValue: 1,
+  )..addListener(reset);
 
   /// The count of the current beat. Ranges from 0 to [higher] - 1.
   int get count => countNotifier.value;
@@ -146,22 +151,26 @@ class Metronome {
       await awaitBeforeLoading;
     } catch (_) {}
 
-    await player.setAudioSource(ConcatenatingAudioSource(
-      useLazyPreparation: true,
-      children: List.generate(higher * subdivisions, (index) {
-        final beat = index == 0
-            ? BeatSound.accented
-            : index % subdivisions == 0
-                ? BeatSound.primary
-                : BeatSound.subdivision;
+    await player.setAudioSource(
+      ConcatenatingAudioSource(
+        useLazyPreparation: true,
+        children: List.generate(higher * subdivisions, (index) {
+          final beat = index == 0
+              ? BeatSound.accented
+              : index % subdivisions == 0
+              ? BeatSound.primary
+              : BeatSound.subdivision;
 
-        return ClippingAudioSource(
-          start: Duration.zero,
-          end: Duration(microseconds: 60e6 ~/ (bpm * subdivisions)),
-          child: AudioSource.asset("assets/sounds/metronome/${beat.fileName}"),
-        );
-      }),
-    ));
+          return ClippingAudioSource(
+            start: Duration.zero,
+            end: Duration(microseconds: 60e6 ~/ (bpm * subdivisions)),
+            child: AudioSource.asset(
+              "assets/sounds/metronome/${beat.fileName}",
+            ),
+          );
+        }),
+      ),
+    );
   }
 
   Future<void> updateNotification() async {

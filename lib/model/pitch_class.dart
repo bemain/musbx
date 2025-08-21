@@ -34,56 +34,56 @@ class PitchClass {
   final Accidental accidental;
 
   const PitchClass.c()
-      : naturalClass = NaturalPitchClass.c,
-        accidental = Accidental.natural;
+    : naturalClass = NaturalPitchClass.c,
+      accidental = Accidental.natural;
   const PitchClass.cSharp()
-      : naturalClass = NaturalPitchClass.c,
-        accidental = Accidental.sharp;
+    : naturalClass = NaturalPitchClass.c,
+      accidental = Accidental.sharp;
   const PitchClass.dFlat()
-      : naturalClass = NaturalPitchClass.d,
-        accidental = Accidental.flat;
+    : naturalClass = NaturalPitchClass.d,
+      accidental = Accidental.flat;
   const PitchClass.d()
-      : naturalClass = NaturalPitchClass.d,
-        accidental = Accidental.natural;
+    : naturalClass = NaturalPitchClass.d,
+      accidental = Accidental.natural;
   const PitchClass.dSharp()
-      : naturalClass = NaturalPitchClass.d,
-        accidental = Accidental.sharp;
+    : naturalClass = NaturalPitchClass.d,
+      accidental = Accidental.sharp;
   const PitchClass.eFlat()
-      : naturalClass = NaturalPitchClass.e,
-        accidental = Accidental.flat;
+    : naturalClass = NaturalPitchClass.e,
+      accidental = Accidental.flat;
   const PitchClass.e()
-      : naturalClass = NaturalPitchClass.e,
-        accidental = Accidental.natural;
+    : naturalClass = NaturalPitchClass.e,
+      accidental = Accidental.natural;
   const PitchClass.f()
-      : naturalClass = NaturalPitchClass.f,
-        accidental = Accidental.natural;
+    : naturalClass = NaturalPitchClass.f,
+      accidental = Accidental.natural;
   const PitchClass.fSharp()
-      : naturalClass = NaturalPitchClass.f,
-        accidental = Accidental.sharp;
+    : naturalClass = NaturalPitchClass.f,
+      accidental = Accidental.sharp;
   const PitchClass.gFlat()
-      : naturalClass = NaturalPitchClass.g,
-        accidental = Accidental.flat;
+    : naturalClass = NaturalPitchClass.g,
+      accidental = Accidental.flat;
   const PitchClass.g()
-      : naturalClass = NaturalPitchClass.g,
-        accidental = Accidental.natural;
+    : naturalClass = NaturalPitchClass.g,
+      accidental = Accidental.natural;
   const PitchClass.gSharp()
-      : naturalClass = NaturalPitchClass.g,
-        accidental = Accidental.sharp;
+    : naturalClass = NaturalPitchClass.g,
+      accidental = Accidental.sharp;
   const PitchClass.aFlat()
-      : naturalClass = NaturalPitchClass.a,
-        accidental = Accidental.flat;
+    : naturalClass = NaturalPitchClass.a,
+      accidental = Accidental.flat;
   const PitchClass.a()
-      : naturalClass = NaturalPitchClass.a,
-        accidental = Accidental.natural;
+    : naturalClass = NaturalPitchClass.a,
+      accidental = Accidental.natural;
   const PitchClass.aSharp()
-      : naturalClass = NaturalPitchClass.a,
-        accidental = Accidental.sharp;
+    : naturalClass = NaturalPitchClass.a,
+      accidental = Accidental.sharp;
   const PitchClass.bFlat()
-      : naturalClass = NaturalPitchClass.b,
-        accidental = Accidental.flat;
+    : naturalClass = NaturalPitchClass.b,
+      accidental = Accidental.flat;
   const PitchClass.b()
-      : naturalClass = NaturalPitchClass.b,
-        accidental = Accidental.natural;
+    : naturalClass = NaturalPitchClass.b,
+      accidental = Accidental.natural;
 
   /// Creates a pitch class with the given [chroma].
   ///
@@ -96,9 +96,12 @@ class PitchClass {
   }) {
     if (preferredAccidental != null) {
       NaturalPitchClass? preferredNatural = NaturalPitchClass.values
-          .where((natural) =>
-              natural.chroma.semitonesFromC + preferredAccidental.alteration ==
-              chroma.semitonesFromC)
+          .where(
+            (natural) =>
+                natural.chroma.semitonesFromC +
+                    preferredAccidental.alteration ==
+                chroma.semitonesFromC,
+          )
           .firstOrNull;
 
       if (preferredNatural != null) {
@@ -119,9 +122,11 @@ class PitchClass {
     };
 
     return PitchClass(
-      NaturalPitchClass.values.firstWhere((natural) =>
-          natural.chroma.semitonesFromC + commonAccidental.alteration ==
-          chroma.semitonesFromC),
+      NaturalPitchClass.values.firstWhere(
+        (natural) =>
+            natural.chroma.semitonesFromC + commonAccidental.alteration ==
+            chroma.semitonesFromC,
+      ),
       commonAccidental,
     );
   }
@@ -144,8 +149,11 @@ class PitchClass {
         .where((natural) => natural.abbreviation == trimmed[0])
         .singleOrNull;
     final Accidental? accidental = Accidental.values
-        .where((accidental) =>
-            accidental.abbreviation == (trimmed.length > 1 ? trimmed[1] : null))
+        .where(
+          (accidental) =>
+              accidental.abbreviation ==
+              (trimmed.length > 1 ? trimmed[1] : null),
+        )
         .firstOrNull;
 
     if (natural == null) return null;

@@ -29,7 +29,7 @@ class LoopComponent extends SongPlayerComponent {
         ..addListener(notifyListeners);
 
   @override
-  void initialize() {
+  Future<void> initialize() async {
     player.positionNotifier.addListener(() {
       if (player.position < start || player.position > end) {
         if (player.isPlaying) {
@@ -61,12 +61,13 @@ class LoopComponent extends SongPlayerComponent {
   ///
   /// If start and end don't make a valid LoopSection (e.g. if start > end) no values are set.
   @override
-  void loadPreferencesFromJson(Map<String, dynamic> json) {
+  void loadPreferencesFromJson(Json json) {
     super.loadPreferencesFromJson(json);
 
-    Duration start = Duration(milliseconds: tryCast<int>(json["start"]) ?? 0);
+    Duration start = Duration(milliseconds: tryCast<int>(json['start']) ?? 0);
     Duration end = Duration(
-      milliseconds: tryCast<int>(json["end"]) ?? player.duration.inMilliseconds,
+      milliseconds:
+          tryCast<int>(json['end']) ?? player.duration.inMilliseconds,
     );
 
     if (end < start) {
@@ -96,7 +97,7 @@ class LoopComponent extends SongPlayerComponent {
   ///  - `start` [int] The start position of the section being looped, in milliseconds.
   ///  - `end` [int] The end position of the section being looped, in milliseconds.
   @override
-  Map<String, dynamic> savePreferencesToJson() {
+  Json savePreferencesToJson() {
     return {
       ...super.savePreferencesToJson(),
       "start": start.inMilliseconds,

@@ -53,9 +53,11 @@ class WaveformPainter extends CustomPainter {
     final sampleOffset = waveform.positionToPixel(start);
     final sampleStart = -sampleOffset % waveformPixelsPerStep;
     final Path waveformPath = Path();
-    for (var i = sampleStart.toDouble();
-        i <= waveformPixelsPerWindow + 1.0;
-        i += waveformPixelsPerStep) {
+    for (
+      var i = sampleStart.toDouble();
+      i <= waveformPixelsPerWindow + 1.0;
+      i += waveformPixelsPerStep
+    ) {
       final sampleIdx = (sampleOffset + i).toInt();
       final x = i / waveformPixelsPerDevicePixel;
       final minY = normalize(waveform.getPixelMin(sampleIdx), height);

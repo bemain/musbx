@@ -56,14 +56,14 @@ class TunerGauge extends StatelessWidget {
             Colors.green.harmonizeWith(scheme.primary),
           ]
         : (scheme.brightness == Brightness.light)
-            ? [
-                scheme.onSurfaceVariant,
-                scheme.onSurface,
-              ]
-            : [
-                scheme.primary,
-                scheme.inversePrimary,
-              ];
+        ? [
+            scheme.onSurfaceVariant,
+            scheme.onSurface,
+          ]
+        : [
+            scheme.primary,
+            scheme.inversePrimary,
+          ];
 
     return Stack(
       children: [
@@ -72,8 +72,9 @@ class TunerGauge extends StatelessWidget {
             alignment: const Alignment(-0.55, 0.7),
             child: Text(
               pitch.abbreviation,
-              style: GoogleFonts.andikaTextTheme(Theme.of(context).textTheme)
-                  .displayMedium,
+              style: GoogleFonts.andikaTextTheme(
+                Theme.of(context).textTheme,
+              ).displayMedium,
             ),
           ),
         ),
@@ -149,15 +150,16 @@ class TunerGauge extends StatelessWidget {
                       ticksInBetween: 4,
                       length: 0.05,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    )
+                    ),
                   ],
                 ),
                 RadialTicks(
                   values: [for (double i = -9; i <= 9; i++) i]..remove(0),
                   length: 0.05,
-                  color: Colors.green
-                      .harmonizeWith(Theme.of(context).colorScheme.primary),
-                )
+                  color: Colors.green.harmonizeWith(
+                    Theme.of(context).colorScheme.primary,
+                  ),
+                ),
               ],
               pointers: pointers,
             ),

@@ -65,31 +65,36 @@ class EqualizerOverlayPainter extends CustomPainter {
       bands!.length,
       (index) {
         EqualizerBand band = bands![index];
-        double decibelFraction = (band.gain - EqualizerBand.minGain) /
+        double decibelFraction =
+            (band.gain - EqualizerBand.minGain) /
             (EqualizerBand.maxGain - EqualizerBand.minGain);
 
-        return Offset(size.width * (index + 0.5) / bands!.length,
-            sliderTrackPadding + actualHeight * (1 - decibelFraction));
+        return Offset(
+          size.width * (index + 0.5) / bands!.length,
+          sliderTrackPadding + actualHeight * (1 - decibelFraction),
+        );
       },
     );
 
     final CatmullRomSpline spline = CatmullRomSpline(controlPoints);
-    final List<Offset> splinePoints =
-        spline.generateSamples(tolerance: 1).map((e) => e.value).toList();
+    final List<Offset> splinePoints = spline
+        .generateSamples(tolerance: 1)
+        .map((e) => e.value)
+        .toList();
     final Path splinePath = Path()..addPolygon(splinePoints, false);
 
     if (fillColor != null) {
       // Fill
       Shader fillShader({Alignment? start, Alignment? end}) => LinearGradient(
-            begin: start ?? Alignment.center,
-            end: end ?? Alignment.bottomCenter,
-            stops: const [0, 0.2, 1],
-            colors: [
-              fillColor!.withAlpha(0x00),
-              fillColor!.withAlpha(0x61),
-              fillColor!.withAlpha(0xff),
-            ],
-          ).createShader(Offset.zero & size);
+        begin: start ?? Alignment.center,
+        end: end ?? Alignment.bottomCenter,
+        stops: const [0, 0.2, 1],
+        colors: [
+          fillColor!.withAlpha(0x00),
+          fillColor!.withAlpha(0x61),
+          fillColor!.withAlpha(0xff),
+        ],
+      ).createShader(Offset.zero & size);
 
       Path fillPath = Path()
         ..addPolygon(splinePoints, false)

@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/widgets/circular_slider/utils.dart';
 import 'package:musbx/widgets/circular_slider/theme.dart';
+import 'package:musbx/widgets/circular_slider/utils.dart';
 
 class CircularSliderPainter extends CustomPainter {
   CircularSliderPainter({
@@ -43,14 +43,16 @@ class CircularSliderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     Paint activePaint = Paint()
-      ..color =
-          disabled ? theme.disabledActiveTrackColor : theme.activeTrackColor
+      ..color = disabled
+          ? theme.disabledActiveTrackColor
+          : theme.activeTrackColor
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
       ..strokeWidth = theme.trackHeight + theme.activeTrackAdditionalHeight;
     Paint inactivePaint = Paint()
-      ..color =
-          disabled ? theme.disabledInactiveTrackColor : theme.inactiveTrackColor
+      ..color = disabled
+          ? theme.disabledInactiveTrackColor
+          : theme.inactiveTrackColor
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
       ..strokeWidth = theme.trackHeight;
@@ -91,8 +93,11 @@ class CircularSliderPainter extends CustomPainter {
       for (double value in divisions!) {
         double angle = startAngle - pi / 2 + (endAngle - startAngle) * value;
         Offset offset = angleToPoint(angle, center, radius);
-        canvas.drawCircle(offset, theme.trackHeight / 4,
-            (angle < thumbAngle) ? activeTickMarkPaint : inactiveTickMarkPaint);
+        canvas.drawCircle(
+          offset,
+          theme.trackHeight / 4,
+          (angle < thumbAngle) ? activeTickMarkPaint : inactiveTickMarkPaint,
+        );
       }
     }
 

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:musbx/keys.dart';
+import 'package:musbx/utils/utils.dart';
 
 class AuthInterceptor extends Interceptor {
   final Dio dio;
@@ -16,7 +17,7 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     if (accessToken?.isNotEmpty == true) {
-      options.headers["Authorization"] = "Bearer $accessToken";
+      options.headers['Authorization'] = "Bearer $accessToken";
     }
     handler.next(options);
   }
@@ -35,7 +36,7 @@ class AuthInterceptor extends Interceptor {
         // Retry the original request
         final clonedRequest = _retryRequest(err.requestOptions, newToken);
         try {
-          final response = await dio.fetch(clonedRequest);
+          final response = await dio.fetch<dynamic>(clonedRequest);
           return handler.resolve(response);
         } catch (e) {
           return handler.next(e as DioException);
@@ -57,11 +58,11 @@ class AuthInterceptor extends Interceptor {
   RequestOptions _retryRequest(RequestOptions options, String newToken) {
     // Inject auth
     final newHeaders = Map<String, dynamic>.from(options.headers);
-    newHeaders["Authorization"] = "Bearer $newToken";
+    newHeaders['Authorization'] = "Bearer $newToken";
 
     if (options.data is FormData) {
       // Clone form data as it cannot be reused
-      final FormData oldData = options.data;
+      final FormData oldData = options.data as FormData;
       final FormData newData = FormData();
 
       newData.fields.addAll(oldData.fields);
@@ -76,7 +77,7 @@ class AuthInterceptor extends Interceptor {
 
   Future<String?> _refreshAccessToken() async {
     try {
-      final response = await dio.post(
+      final response = await dio.post<Json>(
         "/token",
         data: {
           "grant_type": "password",
@@ -85,7 +86,7 @@ class AuthInterceptor extends Interceptor {
         },
         options: Options(contentType: Headers.formUrlEncodedContentType),
       );
-      accessToken = response.data["access_token"];
+      accessToken = response.data!['access_token'] as String;
       return accessToken;
     } catch (e) {
       // If fail, remove token or force user to re-log

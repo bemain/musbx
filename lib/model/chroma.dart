@@ -20,10 +20,11 @@ enum Chroma {
   /// The number of perfect fifths from this chroma and c, following the circle of fifths.
   ///
   /// Returns a negative number if the fifths are descending (if this key would introduce flat accidentals)
-  int get fifthsFromC => [for (var i = -5; i <= 6; i++) i]
-      .firstWhere((i) => (i * 7) % 12 == semitonesFromC);
+  int get fifthsFromC => [
+    for (var i = -5; i <= 6; i++) i,
+  ].firstWhere((i) => (i * 7) % 12 == semitonesFromC);
 
   Chroma transposed(int semitones) => Chroma.values.singleWhere(
-        (chroma) => chroma.semitonesFromC == (semitonesFromC + semitones) % 12,
-      );
+    (chroma) => chroma.semitonesFromC == (semitonesFromC + semitones) % 12,
+  );
 }

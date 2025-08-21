@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -54,7 +54,7 @@ class GetPremiumButton extends StatelessWidget {
         return IconButton(
           onPressed: () {
             if (!context.mounted) return;
-            showDialog(
+            showDialog<void>(
               context: context,
               builder: (context) => const FreeAccessRestrictedDialog(),
             );
@@ -84,25 +84,26 @@ class InfoButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-        onPressed: () async {
-          packageInfo ??= await PackageInfo.fromPlatform();
+      onPressed: () async {
+        packageInfo ??= await PackageInfo.fromPlatform();
 
-          if (!context.mounted) return;
+        if (!context.mounted) return;
 
-          showAboutDialog(
-            context: context,
-            applicationIcon: const Padding(
-              padding: EdgeInsets.only(top: 8.0),
-              child: ImageIcon(
-                AssetImage("assets/splash/splash.png"),
-                size: 64.0,
-                color: Color(0xff0f58cf),
-              ),
+        showAboutDialog(
+          context: context,
+          applicationIcon: const Padding(
+            padding: EdgeInsets.only(top: 8.0),
+            child: ImageIcon(
+              AssetImage("assets/splash/splash.png"),
+              size: 64.0,
+              color: Color(0xff0f58cf),
             ),
-            applicationVersion: "Version ${packageInfo?.version}",
-            children: (child == null) ? null : [child!],
-          );
-        },
-        icon: const Icon(Symbols.info));
+          ),
+          applicationVersion: "Version ${packageInfo?.version}",
+          children: (child == null) ? null : [child!],
+        );
+      },
+      icon: const Icon(Symbols.info),
+    );
   }
 }

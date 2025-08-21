@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
@@ -17,7 +19,7 @@ Future<void> showExceptionDialog(
     return;
   }
 
-  showDialog(
+  await showDialog<void>(
     context: Navigation.navigatorKey.currentContext!,
     builder: (context) => dialog,
     barrierDismissible: barrierDismissible,
@@ -57,7 +59,8 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                    "${reason == null ? "" : "$reason\n\n"}Upgrade to the Premium version of Musician's Toolbox to get:"),
+                  "${reason == null ? "" : "$reason\n\n"}Upgrade to the Premium version of Musician's Toolbox to get:",
+                ),
                 const SizedBox(height: 8),
                 const Text(" ★ Unlimited songs"),
                 const Text(" ★ Full access to AI-powered Demixing"),
@@ -87,7 +90,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            Purchases.buyPremium();
+            unawaited(Purchases.buyPremium());
             Navigator.of(context).pop();
           },
           child: const Text("Upgrade"),
@@ -106,16 +109,17 @@ class PremiumPurchasedDialog extends StatelessWidget {
       icon: const Icon(Symbols.new_releases, weight: 600),
       title: const Text("Processing purchase"),
       content: const Text(
-          """Thank you for supporting Musician's Toolbox by upgrading to Premium! 
+        """Thank you for supporting Musician's Toolbox by upgrading to Premium! 
 
-Your purchase is processing and premium features will soon be activated. Please note that this can take up to 5 minutes. If nothing happens, try restarting the app."""),
+Your purchase is processing and premium features will soon be activated. Please note that this can take up to 5 minutes. If nothing happens, try restarting the app.""",
+      ),
       actions: [
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
           child: const Text("Close"),
-        )
+        ),
       ],
     );
   }
@@ -130,7 +134,8 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
       icon: const Icon(Symbols.release_alert, weight: 600),
       title: const Text("Purchase failed"),
       content: const Text(
-          """An error occured during your purchase, and your account has not been charged. Please try again in a few moments."""),
+        """An error occured during your purchase, and your account has not been charged. Please try again in a few moments.""",
+      ),
       actions: [
         TextButton(
           onPressed: () {
@@ -140,8 +145,8 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            Purchases.buyPremium();
-            Navigator.of(context).pop();
+            unawaited(Purchases.buyPremium());
+            if (context.mounted) Navigator.of(context).pop();
           },
           child: const Text("Try again"),
         ),
@@ -166,7 +171,8 @@ class UnsupportedFileExtensionDialog extends StatelessWidget {
           const Icon(Symbols.file_present, size: 128),
           const SizedBox(height: 15),
           Text(
-              "The file type '.$extension' is not supported. Try loading a different file.")
+            "The file type '.$extension' is not supported. Try loading a different file.",
+          ),
         ],
       ),
       actions: [
@@ -175,7 +181,7 @@ class UnsupportedFileExtensionDialog extends StatelessWidget {
             Navigator.of(context).pop();
           },
           child: const Text("Dismiss"),
-        )
+        ),
       ],
     );
   }
@@ -195,7 +201,8 @@ class SongCouldNotBeLoadedDialog extends StatelessWidget {
           Icon(Symbols.error, size: 128),
           SizedBox(height: 15),
           Text(
-              "An error occurred while loading the song. Please try again later, or try selecting a different song.")
+            "An error occurred while loading the song. Please try again later, or try selecting a different song.",
+          ),
         ],
       ),
       actions: [
@@ -204,7 +211,7 @@ class SongCouldNotBeLoadedDialog extends StatelessWidget {
             Navigator.of(context).pop();
           },
           child: const Text("Dismiss"),
-        )
+        ),
       ],
     );
   }
@@ -224,7 +231,8 @@ class SearchUnavailableDialog extends StatelessWidget {
           Icon(Symbols.cloud_off, size: 128),
           SizedBox(height: 15),
           Text(
-              "The Search service is currently unavailable. Please try again later.")
+            "The Search service is currently unavailable. Please try again later.",
+          ),
         ],
       ),
       actions: [
@@ -233,7 +241,7 @@ class SearchUnavailableDialog extends StatelessWidget {
             Navigator.of(context).pop();
           },
           child: const Text("Dismiss"),
-        )
+        ),
       ],
     );
   }

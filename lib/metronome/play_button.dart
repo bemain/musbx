@@ -14,7 +14,7 @@ class PlayButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: Metronome.instance.isPlayingNotifier,
-      builder: (context, bool isPlaying, child) {
+      builder: (context, isPlaying, child) {
         return InkWell(
           borderRadius: BorderRadius.circular(32),
           onTap: () => _onPressed(context),
@@ -23,7 +23,9 @@ class PlayButton extends StatelessWidget {
               dimension: 150,
               child: FittedBox(
                 child: Icon(
-                  isPlaying ? Symbols.stop_rounded : Symbols.play_arrow_rounded,
+                  isPlaying
+                      ? Symbols.stop_rounded
+                      : Symbols.play_arrow_rounded,
                   color: Theme.of(context).colorScheme.primary,
                   fill: 1,
                 ),
@@ -49,7 +51,7 @@ class PlayButton extends StatelessWidget {
         !Notifications.hasRequestedPermission.value) {
       if (await Notifications.shouldShowRationale()) {
         if (!context.mounted) return;
-        await showDialog(
+        await showDialog<void>(
           context: context,
           builder: (context) => const NotificationPermissionRationale(),
         );

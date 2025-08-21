@@ -52,14 +52,14 @@ class ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
 
   /// The animated gradient for the shimmer effect.
   LinearGradient get gradient => LinearGradient(
-        colors: widget.gradient.colors,
-        stops: widget.gradient.stops,
-        begin: widget.gradient.begin,
-        end: widget.gradient.end,
-        transform: _SlidingGradientTransform(
-          slidePercent: _shimmerController.value,
-        ),
-      );
+    colors: widget.gradient.colors,
+    stops: widget.gradient.stops,
+    begin: widget.gradient.begin,
+    end: widget.gradient.end,
+    transform: _SlidingGradientTransform(
+      slidePercent: _shimmerController.value,
+    ),
+  );
 
   /// Whether the [Shimmer] widget has been laid out and has a size.
   bool get isSized =>
@@ -82,8 +82,9 @@ class ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    _shimmerController = AnimationController.unbounded(vsync: this)
-      ..repeat(min: -0.5, max: 1.5, period: const Duration(milliseconds: 1000));
+    _shimmerController = AnimationController.unbounded(
+      vsync: this,
+    )..repeat(min: -0.5, max: 1.5, period: const Duration(milliseconds: 1000));
   }
 
   @override
@@ -229,7 +230,9 @@ class TextPlaceholder extends StatelessWidget {
     final TextPainter textPainter = TextPainter(
       text: TextSpan(
         text: "Placeholder",
-        style: DefaultTextStyle.of(context).style.merge(style).copyWith(
+        style: DefaultTextStyle.of(context).style
+            .merge(style)
+            .copyWith(
               fontSize: fontSize,
             ),
       ),
@@ -245,7 +248,8 @@ class TextPlaceholder extends StatelessWidget {
           color: Theme.of(context).colorScheme.surfaceContainer,
           elevation: 0,
           child: SizedBox(
-            height: textPainter.height -
+            height:
+                textPainter.height -
                 8, // Compensate for the margin around the card
             width: width,
           ),

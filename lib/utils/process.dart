@@ -17,7 +17,7 @@ class Cancelled implements Exception {
 abstract class Process<T extends Object> extends ChangeNotifier {
   Process() {
     // Begin executing the future.
-    future;
+    unawaited(future);
   }
 
   /// The future that completes with this task.

@@ -1,3 +1,5 @@
+import 'package:musbx/utils/utils.dart';
+
 class YoutubeVideoThumbnails {
   /// Thumbnail images associated with a [YoutubeVideo].
   YoutubeVideoThumbnails({
@@ -15,10 +17,10 @@ class YoutubeVideoThumbnails {
   /// A high resolution version of the thumbnail image.
   final YoutubeVideoThumbnail high;
 
-  YoutubeVideoThumbnails.fromMap(Map<String, dynamic> map)
-      : small = YoutubeVideoThumbnail.fromMap(map['default']),
-        medium = YoutubeVideoThumbnail.fromMap(map['medium']),
-        high = YoutubeVideoThumbnail.fromMap(map['high']);
+  YoutubeVideoThumbnails.fromMap(Json map)
+    : small = YoutubeVideoThumbnail.fromMap(map['default'] as Json),
+      medium = YoutubeVideoThumbnail.fromMap(map['medium'] as Json),
+      high = YoutubeVideoThumbnail.fromMap(map['high'] as Json);
 
   @override
   String toString() =>
@@ -55,11 +57,11 @@ class YoutubeVideoThumbnail {
   /// The height of the thumbnail.
   final int height;
 
-  factory YoutubeVideoThumbnail.fromMap(Map<String, dynamic> map) {
+  factory YoutubeVideoThumbnail.fromMap(Json map) {
     return YoutubeVideoThumbnail(
-      url: map['url'],
-      width: map['width'],
-      height: map['height'],
+      url: map['url'] as String,
+      width: map['width'] as int,
+      height: map['height'] as int,
     );
   }
 }

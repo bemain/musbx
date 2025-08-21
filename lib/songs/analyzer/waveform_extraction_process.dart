@@ -32,7 +32,8 @@ class WaveformExtractionProcess extends Process<Waveform> {
     assert(
       Platform.isAndroid || Platform.isIOS,
       UnsupportedError(
-          "Waveform extraction is not supported on the current platform"),
+        "Waveform extraction is not supported on the current platform",
+      ),
     );
 
     final File outFile = getWaveformFile(song);

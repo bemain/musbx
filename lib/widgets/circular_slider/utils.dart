@@ -19,7 +19,11 @@ bool isPointInsideCircle(Offset point, Offset center, double rradius) {
 }
 
 bool isPointAlongCircle(
-    Offset point, Offset center, double radius, double trackWidth) {
+  Offset point,
+  Offset center,
+  double radius,
+  double trackWidth,
+) {
   var d1 = pow(point.dx - center.dx, 2);
   var d2 = pow(point.dy - center.dy, 2);
   var distance = sqrt(d1 + d2);

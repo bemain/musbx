@@ -15,8 +15,9 @@ class ButtonPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final SongPlayer? player = Songs.player;
 
-    final Color? disabledColor =
-        player == null ? Theme.of(context).colorScheme.onSurface : null;
+    final Color? disabledColor = player == null
+        ? Theme.of(context).colorScheme.onSurface
+        : null;
 
     return SizedBox(
       height: 64.0,
@@ -40,14 +41,17 @@ class ButtonPanel extends StatelessWidget {
               onContinuousPress: player == null
                   ? null
                   : () {
-                      player.seek(player.position - const Duration(seconds: 1));
+                      player.seek(
+                        player.position - const Duration(seconds: 1),
+                      );
                     },
               child: IconButton(
                 onPressed: player == null
                     ? null
                     : () {
-                        player
-                            .seek(player.position - const Duration(seconds: 1));
+                        player.seek(
+                          player.position - const Duration(seconds: 1),
+                        );
                       },
                 disabledColor: disabledColor,
                 icon: const ExpandedIcon(Symbols.fast_rewind_rounded),
@@ -57,7 +61,7 @@ class ButtonPanel extends StatelessWidget {
             ValueListenableBuilder<bool>(
               valueListenable:
                   player?.isPlayingNotifier ?? ValueNotifier(false),
-              builder: (_, isPlaying, __) {
+              builder: (_, isPlaying, _) {
                 return AspectRatio(
                   aspectRatio: 1.0,
                   child: Padding(
@@ -89,14 +93,17 @@ class ButtonPanel extends StatelessWidget {
               onContinuousPress: player == null
                   ? null
                   : () {
-                      player.seek(player.position + const Duration(seconds: 1));
+                      player.seek(
+                        player.position + const Duration(seconds: 1),
+                      );
                     },
               child: IconButton(
                 onPressed: player == null
                     ? null
                     : () {
-                        player
-                            .seek(player.position + const Duration(seconds: 1));
+                        player.seek(
+                          player.position + const Duration(seconds: 1),
+                        );
                       },
                 disabledColor: disabledColor,
                 icon: const ExpandedIcon(Symbols.fast_forward_rounded),

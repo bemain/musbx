@@ -17,23 +17,25 @@ class SongsAudioHandler extends BaseAudioHandler with SeekHandler {
   static Future<SongsAudioHandler> initialize() async {
     // Configure audio session
     session = await AudioSession.instance;
-    await SongsAudioHandler.session.configure(AudioSessionConfiguration(
-      avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-      avAudioSessionCategoryOptions:
-          AVAudioSessionCategoryOptions.allowBluetooth |
-              AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-              AVAudioSessionCategoryOptions.defaultToSpeaker,
-      avAudioSessionRouteSharingPolicy:
-          AVAudioSessionRouteSharingPolicy.defaultPolicy,
-      avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
-      androidAudioAttributes: const AndroidAudioAttributes(
-        contentType: AndroidAudioContentType.music,
-        flags: AndroidAudioFlags.none,
-        usage: AndroidAudioUsage.media,
+    await SongsAudioHandler.session.configure(
+      AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+        avAudioSessionCategoryOptions:
+            AVAudioSessionCategoryOptions.allowBluetooth |
+            AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+            AVAudioSessionCategoryOptions.defaultToSpeaker,
+        avAudioSessionRouteSharingPolicy:
+            AVAudioSessionRouteSharingPolicy.defaultPolicy,
+        avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+        androidAudioAttributes: const AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.music,
+          flags: AndroidAudioFlags.none,
+          usage: AndroidAudioUsage.media,
+        ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+        androidWillPauseWhenDucked: true,
       ),
-      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-      androidWillPauseWhenDucked: true,
-    ));
+    );
 
     session.interruptionEventStream.listen((event) {
       if (event.begin) {
@@ -43,7 +45,6 @@ class SongsAudioHandler extends BaseAudioHandler with SeekHandler {
           case AudioInterruptionType.pause:
           case AudioInterruptionType.unknown:
             Songs.player?.pause();
-            break;
         }
       } else {
         switch (event.type) {
@@ -88,38 +89,40 @@ class SongsAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> stop() async => await Songs.player?.dispose();
 
   void updateState() {
-    playbackState.add(PlaybackState(
-      controls: [
-        // TODO: Use custom icons
-        if (Songs.player?.isPlaying ?? true)
-          MediaControl.pause
-        else
-          MediaControl.play,
-        const MediaControl(
-          androidIcon: "drawable/ic_replay_10",
-          label: "Rewind",
-          action: MediaAction.rewind,
-        ),
-        const MediaControl(
-          androidIcon: "drawable/ic_forward_10",
-          label: "Fast Forward",
-          action: MediaAction.fastForward,
-        ),
-      ],
-      systemActions: const {
-        MediaAction.playPause,
-        MediaAction.seek,
-        MediaAction.seekForward,
-        MediaAction.seekBackward,
-      },
-      processingState: Songs.player == null
-          ? AudioProcessingState.idle
-          : AudioProcessingState.ready,
-      playing: Songs.player?.isPlaying ?? false,
-      updatePosition: Songs.player?.position ?? Duration.zero,
-      bufferedPosition: Songs.player?.duration ?? Duration.zero,
-      speed: Songs.player?.slowdowner.speed ?? 1.0,
-      repeatMode: AudioServiceRepeatMode.all,
-    ));
+    playbackState.add(
+      PlaybackState(
+        controls: [
+          // TODO: Use custom icons
+          if (Songs.player?.isPlaying ?? true)
+            MediaControl.pause
+          else
+            MediaControl.play,
+          const MediaControl(
+            androidIcon: "drawable/ic_replay_10",
+            label: "Rewind",
+            action: MediaAction.rewind,
+          ),
+          const MediaControl(
+            androidIcon: "drawable/ic_forward_10",
+            label: "Fast Forward",
+            action: MediaAction.fastForward,
+          ),
+        ],
+        systemActions: const {
+          MediaAction.playPause,
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
+        },
+        processingState: Songs.player == null
+            ? AudioProcessingState.idle
+            : AudioProcessingState.ready,
+        playing: Songs.player?.isPlaying ?? false,
+        updatePosition: Songs.player?.position ?? Duration.zero,
+        bufferedPosition: Songs.player?.duration ?? Duration.zero,
+        speed: Songs.player?.slowdowner.speed ?? 1.0,
+        repeatMode: AudioServiceRepeatMode.all,
+      ),
+    );
   }
 }

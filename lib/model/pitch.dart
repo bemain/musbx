@@ -13,9 +13,9 @@ class Pitch {
   );
 
   const Pitch.a440()
-      : pitchClass = const PitchClass.a(),
-        octave = 4,
-        frequency = 440;
+    : pitchClass = const PitchClass.a(),
+      octave = 4,
+      frequency = 440;
 
   /// The name of the pitch.
   final PitchClass pitchClass;
@@ -61,8 +61,9 @@ class Pitch {
   ///
   /// Returns `null` if [string] is not a valid pitch class.
   static Pitch? tryParse(String string) {
-    final match =
-        RegExp(r"^([A-G][b♭#♯]?)(\d+)@(\d+(\.\d+)?)(Hz)?$").firstMatch(string);
+    final match = RegExp(
+      r"^([A-G][b♭#♯]?)(\d+)@(\d+(\.\d+)?)(Hz)?$",
+    ).firstMatch(string);
     if (match == null || match.groupCount < 3) return null;
 
     final PitchClass? pitchClass = PitchClass.tryParse(match.group(1)!);
@@ -87,8 +88,10 @@ class Pitch {
     Accidental? preferredAccidental,
   }) {
     return Pitch(
-      pitchClass.transposed(semitones,
-          preferredAccidental: preferredAccidental),
+      pitchClass.transposed(
+        semitones,
+        preferredAccidental: preferredAccidental,
+      ),
       octave + ((pitchClass.chroma.semitonesFromC + semitones) / 12).floor(),
       frequency * temperament.frequencyRatio(semitones),
     );

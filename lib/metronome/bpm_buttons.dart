@@ -50,7 +50,7 @@ class BpmButtons extends StatelessWidget {
             iconSize: iconSize,
             icon: const Icon(Symbols.add),
           ),
-        )
+        ),
       ],
     );
   }
@@ -60,7 +60,7 @@ class BpmButtons extends StatelessWidget {
       width: 90,
       child: ListenableBuilder(
         listenable: Metronome.instance.bpmNotifier,
-        builder: (context, Widget? child) {
+        builder: (context, child) {
           return NumberField<int>(
             value: Metronome.instance.bpm,
             style: Theme.of(context).textTheme.displayMedium,

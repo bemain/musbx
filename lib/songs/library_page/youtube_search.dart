@@ -7,11 +7,11 @@ import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
+import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/loading.dart';
 import 'package:musbx/widgets/widgets.dart';
 import 'package:musbx/widgets/youtube_api/video.dart';
 import 'package:musbx/widgets/youtube_api/youtube_api.dart';
-import 'package:musbx/utils/history_handler.dart';
 
 class YoutubeSearch {
   /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
@@ -25,13 +25,15 @@ class YoutubeSearch {
 
     if (video == null) return;
 
-    await Songs.history.add(Song<SinglePlayable>(
-      id: video.id,
-      title: HtmlUnescape().convert(video.title),
-      artist: HtmlUnescape().convert(video.channelTitle),
-      artUri: Uri.tryParse(video.thumbnails.high.url),
-      source: YtdlpSource(Uri.parse(video.url)),
-    ));
+    await Songs.history.add(
+      Song<SinglePlayable>(
+        id: video.id,
+        title: HtmlUnescape().convert(video.title),
+        artist: HtmlUnescape().convert(video.channelTitle),
+        artUri: Uri.tryParse(video.thumbnails.high.url),
+        source: YtdlpSource(Uri.parse(video.url)),
+      ),
+    );
 
     if (context.mounted) context.go(Navigation.songRoute(video.id));
   }
@@ -47,11 +49,11 @@ class YoutubeSearch {
 /// [SearchDelegate] for searching for a song on Youtube.
 class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   YoutubeSearchDelegate()
-      : super(
-          searchFieldLabel: "Search for song",
-          keyboardType: TextInputType.text,
-          textInputAction: TextInputAction.search,
-        );
+    : super(
+        searchFieldLabel: "Search for song",
+        keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.search,
+      );
 
   @override
   Widget? buildLeading(BuildContext context) {
@@ -79,7 +81,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
         onPressed: query.isEmpty ? null : () => query = "",
         color: Theme.of(context).colorScheme.onSurfaceVariant,
         icon: const Icon(Symbols.clear),
-      )
+      ),
     ];
   }
 
@@ -93,43 +95,44 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
           width: double.infinity,
           child: Text(
             "Enter a search phrase or paste a URL.",
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
             textAlign: TextAlign.center,
           ),
         ),
       );
     }
 
-    final searchHistory = YoutubeSearch.history
-        .sorted()
-        .where((e) => e.toLowerCase().contains(query.toLowerCase()));
+    final searchHistory = YoutubeSearch.history.sorted().where(
+      (e) => e.toLowerCase().contains(query.toLowerCase()),
+    );
 
     // Show search history
-    return ListView(children: [
-      for (final query in searchHistory)
-        ListTile(
-          leading: Icon(
-            Symbols.history,
-            color: Theme.of(context).colorScheme.outline,
-          ),
-          title: Text(query),
-          trailing: IconButton(
-            onPressed: () => this.query = query,
-            color: Theme.of(context).colorScheme.outline,
-            icon: const RotatedBox(
-              quarterTurns: -1,
-              child: Icon(Symbols.arrow_outward),
+    return ListView(
+      children: [
+        for (final query in searchHistory)
+          ListTile(
+            leading: Icon(
+              Symbols.history,
+              color: Theme.of(context).colorScheme.outline,
             ),
+            title: Text(query),
+            trailing: IconButton(
+              onPressed: () => this.query = query,
+              color: Theme.of(context).colorScheme.outline,
+              icon: const RotatedBox(
+                quarterTurns: -1,
+                child: Icon(Symbols.arrow_outward),
+              ),
+            ),
+            onTap: () {
+              this.query = query;
+              showResults(context);
+            },
           ),
-          onTap: () {
-            this.query = query;
-            showResults(context);
-          },
-        ),
-    ]);
+      ],
+    );
   }
 
   @override
@@ -139,7 +142,8 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const ErrorPage(
-              text: "Search failed. Please try again later.");
+            text: "Search failed. Please try again later.",
+          );
         }
         if (!snapshot.hasData) {
           return ListView(
@@ -149,7 +153,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
         List<YoutubeVideo> results = snapshot.data!;
         return ListView(
-          children: results.map((YoutubeVideo video) {
+          children: results.map((video) {
             return YoutubeVideoListItem(
               video: video,
               onTap: () {
@@ -177,8 +181,9 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
     }
 
     // Try using the [query] as a video id
-    final YoutubeVideo? videoById =
-        await YoutubeDataApi.getVideoById(query.replaceAll(' ', ''));
+    final YoutubeVideo? videoById = await YoutubeDataApi.getVideoById(
+      query.replaceAll(' ', ''),
+    );
     if (videoById != null) return [videoById];
 
     return await YoutubeDataApi.search(query, type: "video", maxResults: 50);

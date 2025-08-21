@@ -13,6 +13,7 @@ import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/songs/slowdowner/slowdowner.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 abstract class SongPlayerComponent<T extends SongPlayer>
@@ -25,7 +26,7 @@ abstract class SongPlayerComponent<T extends SongPlayer>
   /// Initialize and activate this component.
   ///
   /// Called when the [player] is created.
-  void initialize() async {}
+  Future<void> initialize() async {}
 
   /// Free the resources used by this component.
   ///
@@ -45,11 +46,11 @@ abstract class SongPlayerComponent<T extends SongPlayer>
   ///
   /// If any values were changed, this should call [notifyListeners].
   @mustCallSuper
-  void loadPreferencesFromJson(Map<String, dynamic> json) {}
+  void loadPreferencesFromJson(Json json) {}
 
   /// Save settings for a song to a json map.
   @mustCallSuper
-  Map<String, dynamic> savePreferencesToJson() {
+  Json savePreferencesToJson() {
     return {};
   }
 }
@@ -59,7 +60,13 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   static final SoLoud soloud = SoLoud.instance;
 
   SongPlayer._(this.song, this.playable, this.handle) {
-    _positionUpdater;
+    _positionUpdater = Timer.periodic(
+      const Duration(milliseconds: 100),
+      (timer) {
+        if (!isPlaying) return;
+        position = soloud.getPosition(handle);
+      },
+    );
 
     // Initialize components
     for (final SongPlayerComponent component in components) {
@@ -87,17 +94,21 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     final SoundHandle handle = await playable.play();
     final SongPlayer<P> player;
     if (song.source is SongSource<SinglePlayable>) {
-      player = SinglePlayer(
-        song as Song<SinglePlayable>,
-        playable as SinglePlayable,
-        handle,
-      ) as SongPlayer<P>;
+      player =
+          SinglePlayer(
+                song as Song<SinglePlayable>,
+                playable as SinglePlayable,
+                handle,
+              )
+              as SongPlayer<P>;
     } else if (song.source is SongSource<MultiPlayable>) {
-      player = MultiPlayer(
-        song as Song<MultiPlayable>,
-        playable as MultiPlayable,
-        handle,
-      ) as SongPlayer<P>;
+      player =
+          MultiPlayer(
+                song as Song<MultiPlayable>,
+                playable as MultiPlayable,
+                handle,
+              )
+              as SongPlayer<P>;
     } else {
       throw ("No player exists for the given source ${song.source}");
     }
@@ -143,7 +154,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     pause();
     isPlayingNotifier.value = false;
 
-    SongsAudioHandler.session.setActive(false);
+    await SongsAudioHandler.session.setActive(false);
 
     _positionUpdater.cancel();
 
@@ -160,11 +171,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
 
   /// Timer responsible for periodically making sure [position] matches with the
   /// actual position of the audio.
-  late final Timer _positionUpdater =
-      Timer.periodic(const Duration(milliseconds: 100), (Timer timer) {
-    if (!isPlaying) return;
-    position = soloud.getPosition(handle);
-  });
+  late final Timer _positionUpdater;
 
   /// The current position of the player.
   ///
@@ -207,27 +214,27 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
 
   /// Load song preferences from a [json] map.
   @mustCallSuper
-  void loadPreferences(Map<String, dynamic> json) {
-    int? position = tryCast<int>(json["position"]);
+  void loadPreferences(Json json) {
+    int? position = tryCast<int>(json['position']);
     seek(Duration(milliseconds: position ?? 0));
 
     slowdowner.loadPreferencesFromJson(
-      tryCast<Map<String, dynamic>>(json["slowdowner"]) ?? {},
+      tryCast<Json>(json['slowdowner']) ?? {},
     );
     loop.loadPreferencesFromJson(
-      tryCast<Map<String, dynamic>>(json["looper"]) ?? {},
+      tryCast<Json>(json['looper']) ?? {},
     );
     equalizer.loadPreferencesFromJson(
-      tryCast<Map<String, dynamic>>(json["equalizer"]) ?? {},
+      tryCast<Json>(json['equalizer']) ?? {},
     );
     analyzer.loadPreferencesFromJson(
-      tryCast<Map<String, dynamic>>(json["analyzer"]) ?? {},
+      tryCast<Json>(json['analyzer']) ?? {},
     );
   }
 
   /// Create a json map containing the current preferences for this [song].
   @mustCallSuper
-  Map<String, dynamic> toPreferences() {
+  Json toPreferences() {
     return {
       "position": position.inMilliseconds,
       "slowdowner": slowdowner.savePreferencesToJson(),
@@ -299,16 +306,16 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
   }
 
   @override
-  void loadPreferences(Map<String, dynamic> json) {
+  void loadPreferences(Json json) {
     super.loadPreferences(json);
 
     demixer.loadPreferencesFromJson(
-      tryCast<Map<String, dynamic>>(json["demixer"]) ?? {},
+      tryCast<Json>(json['demixer']) ?? {},
     );
   }
 
   @override
-  Map<String, dynamic> toPreferences() {
+  Json toPreferences() {
     return {
       ...super.toPreferences(),
       "demixer": demixer.savePreferencesToJson(),

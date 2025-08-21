@@ -37,88 +37,93 @@ class DroneWheelState extends State<DroneWheel> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, BoxConstraints constraints) {
-      final double radius = constraints.biggest.shortestSide / 2 - 48;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double radius = constraints.biggest.shortestSide / 2 - 48;
 
-      return SizedBox.square(
-        dimension: constraints.biggest.shortestSide,
-        child: GestureDetector(
-          onPanUpdate: (DragUpdateDetails details) {
-            Offset center = Offset(
-              constraints.biggest.shortestSide / 2,
-              constraints.biggest.shortestSide / 2,
-            );
-            Offset a = details.localPosition - center;
-            Offset b = (details.localPosition - details.delta) - center;
+        return SizedBox.square(
+          dimension: constraints.biggest.shortestSide,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              Offset center = Offset(
+                constraints.biggest.shortestSide / 2,
+                constraints.biggest.shortestSide / 2,
+              );
+              Offset a = details.localPosition - center;
+              Offset b = (details.localPosition - details.delta) - center;
 
-            final double deltaAngle = atan2(
-              a.dx * b.dy - a.dy * b.dx,
-              a.dx * b.dx + a.dy * b.dy,
-            );
+              final double deltaAngle = atan2(
+                a.dx * b.dy - a.dy * b.dx,
+                a.dx * b.dx + a.dy * b.dy,
+              );
 
-            setState(() {
-              final int semitones = -(12 * angle / (2 * pi)).round();
-              final int targetSemitonesFromC0 = drone.root.octave * 12 +
-                  drone.root.pitchClass.semitonesFromC +
-                  semitones;
-
-              if (targetSemitonesFromC0 < Drone.minOctave * 12 ||
-                  targetSemitonesFromC0 > Drone.maxOctave * 12 + 11) {
-                angle -= deltaAngle / (angle.abs() * widget.elasticity + 1);
-                return;
-              }
-
-              angle -= deltaAngle;
-
-              if (semitones != 0) {
-                drone.rootNotifier.value = drone.root.transposed(semitones);
-                angle += semitones * 2 * pi / 12;
-              }
-            });
-          },
-          onPanEnd: (details) async {
-            // Smoothly snap the root to the top
-            for (int i = 0; i < 10; i++) {
               setState(() {
-                angle /= widget.elasticity;
-              });
-              await Future.delayed(const Duration(milliseconds: 10));
-            }
+                final int semitones = -(12 * angle / (2 * pi)).round();
+                final int targetSemitonesFromC0 =
+                    drone.root.octave * 12 +
+                    drone.root.pitchClass.semitonesFromC +
+                    semitones;
 
-            setState(() {
-              angle = 0;
-            });
-          },
-          child: ListenableBuilder(
-            listenable: drone.rootNotifier,
-            builder: (context, child) => ListenableBuilder(
-              listenable: drone.intervalsNotifier,
-              builder: (context, child) {
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (drone.intervals.isNotEmpty)
-                      SizedBox.square(
-                        dimension: (radius - 48) * 2,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            buildPlayButton(),
-                            const SizedBox(height: 4),
-                            buildResetButton(),
-                          ],
+                if (targetSemitonesFromC0 < Drone.minOctave * 12 ||
+                    targetSemitonesFromC0 > Drone.maxOctave * 12 + 11) {
+                  angle -= deltaAngle / (angle.abs() * widget.elasticity + 1);
+                  return;
+                }
+
+                angle -= deltaAngle;
+
+                if (semitones != 0) {
+                  drone.rootNotifier.value = drone.root.transposed(semitones);
+                  angle += semitones * 2 * pi / 12;
+                }
+              });
+            },
+            onPanEnd: (details) async {
+              // Smoothly snap the root to the top
+              for (int i = 0; i < 10; i++) {
+                setState(() {
+                  angle /= widget.elasticity;
+                });
+                await Future<void>.delayed(const Duration(milliseconds: 10));
+              }
+
+              setState(() {
+                angle = 0;
+              });
+            },
+            child: ListenableBuilder(
+              listenable: drone.rootNotifier,
+              builder: (context, child) => ListenableBuilder(
+                listenable: drone.intervalsNotifier,
+                builder: (context, child) {
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (drone.intervals.isNotEmpty)
+                        SizedBox.square(
+                          dimension: (radius - 48) * 2,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              buildPlayButton(),
+                              const SizedBox(height: 4),
+                              buildResetButton(),
+                            ],
+                          ),
                         ),
+                      ...List.generate(
+                        12,
+                        (index) => buildPitchButton(index, radius),
                       ),
-                    ...List.generate(
-                        12, (index) => buildPitchButton(index, radius)),
-                  ],
-                );
-              },
+                    ],
+                  );
+                },
+              ),
             ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   Widget buildPlayButton() {
@@ -151,21 +156,24 @@ class DroneWheelState extends State<DroneWheel> {
     final DroneButtonType type = interval == 0
         ? DroneButtonType.root
         : KeyType.major.intervalPattern.contains(interval)
-            ? DroneButtonType.diatonic
-            : DroneButtonType.chromatic;
+        ? DroneButtonType.diatonic
+        : DroneButtonType.chromatic;
 
     Color backgroundColor = switch (type) {
       DroneButtonType.root => Theme.of(context).colorScheme.primary,
-      DroneButtonType.diatonic =>
-        Theme.of(context).colorScheme.primaryContainer,
-      DroneButtonType.chromatic =>
-        Theme.of(context).colorScheme.surfaceContainerHigh
+      DroneButtonType.diatonic => Theme.of(
+        context,
+      ).colorScheme.primaryContainer,
+      DroneButtonType.chromatic => Theme.of(
+        context,
+      ).colorScheme.surfaceContainerHigh,
     };
     Color textColor = switch (type) {
       DroneButtonType.root => Theme.of(context).colorScheme.onPrimary,
-      DroneButtonType.diatonic =>
-        Theme.of(context).colorScheme.onPrimaryContainer,
-      DroneButtonType.chromatic => Theme.of(context).colorScheme.onSurface
+      DroneButtonType.diatonic => Theme.of(
+        context,
+      ).colorScheme.onPrimaryContainer,
+      DroneButtonType.chromatic => Theme.of(context).colorScheme.onSurface,
     };
 
     final bool isPlaying = drone.intervals.contains(interval);
@@ -174,12 +182,14 @@ class DroneWheelState extends State<DroneWheel> {
       offset: Offset(cos(buttonAngle), sin(buttonAngle)) * radius,
       child: FloatingActionButton(
         elevation: isPlaying ? 0 : 6,
-        backgroundColor:
-            isPlaying ? backgroundColor.withAlpha(0x61) : backgroundColor,
+        backgroundColor: isPlaying
+            ? backgroundColor.withAlpha(0x61)
+            : backgroundColor,
         onPressed: () {
           if (isPlaying) {
-            drone.intervals =
-                drone.intervals.where((i) => i != interval).toList();
+            drone.intervals = drone.intervals
+                .where((i) => i != interval)
+                .toList();
           } else {
             drone.intervals = [...drone.intervals, interval];
             drone.play();

@@ -39,120 +39,134 @@ class Navigation {
   static late StatefulNavigationShell navigationShell;
 
   /// The router that handles navigation.
-  static final GoRouter router = GoRouter(
-    navigatorKey: navigatorKey,
-    restorationScopeId: "router",
-    initialLocation: currentRoute.value,
-    routes: [
-      GoRoute(
-        path: "/",
-        redirect: (context, state) => songsRoute,
-      ),
-      StatefulShellRoute.indexedStack(
-        restorationScopeId: "shell",
-        builder: _buildShell,
-        branches: [
-          StatefulShellBranch(routes: [
+  static final GoRouter router =
+      GoRouter(
+          navigatorKey: navigatorKey,
+          restorationScopeId: "router",
+          initialLocation: currentRoute.value,
+          routes: [
             GoRoute(
-              path: metronomeRoute,
-              builder: (context, state) {
-                return const MetronomePage();
-              },
+              path: "/",
+              redirect: (context, state) => songsRoute,
             ),
-          ]),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: songsRoute,
-                builder: (context, state) {
-                  // Dispose the previous player.
-                  // This cannot be done in the song routes `onExit` callback,
-                  // since that is called every time we switch tab.
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    Songs.dispose();
-                  });
+            StatefulShellRoute.indexedStack(
+              restorationScopeId: "shell",
+              builder: _buildShell,
+              branches: [
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: metronomeRoute,
+                      builder: (context, state) {
+                        return const MetronomePage();
+                      },
+                    ),
+                  ],
+                ),
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: songsRoute,
+                      builder: (context, state) {
+                        // Dispose the previous player.
+                        // This cannot be done in the song routes `onExit` callback,
+                        // since that is called every time we switch tab.
+                        WidgetsBinding.instance.addPostFrameCallback((
+                          _,
+                        ) async {
+                          await Songs.dispose();
+                        });
 
-                  return LibraryPage();
-                },
-                routes: [
-                  GoRoute(
-                    path: ":id",
-                    redirect: (context, state) {
-                      final String? id = state.pathParameters["id"];
-                      if (Songs.history.entries.values
-                          .where((song) => song.id == id)
-                          .isEmpty) {
-                        // If the song isn't in the library, redirect to the songs page
-                        return songsRoute;
-                      }
+                        return LibraryPage();
+                      },
+                      routes: [
+                        GoRoute(
+                          path: ":id",
+                          redirect: (context, state) {
+                            final String? id = state.pathParameters['id'];
+                            if (Songs.history.entries.values
+                                .where((song) => song.id == id)
+                                .isEmpty) {
+                              // If the song isn't in the library, redirect to the songs page
+                              return songsRoute;
+                            }
 
-                      return null;
-                    },
-                    builder: (context, state) {
-                      final String id = state.pathParameters["id"]!;
+                            return null;
+                          },
+                          builder: (context, state) {
+                            final String id = state.pathParameters['id']!;
 
-                      // Begin loading song
-                      final Song song = Songs.history.entries.values
-                          .firstWhere((song) => song.id == id);
+                            // Begin loading song
+                            final Song song = Songs.history.entries.values
+                                .firstWhere((song) => song.id == id);
 
-                      return FutureBuilder(
-                        future: Songs.load(
-                          song,
-                          ignoreFreeLimit: song.id == demoSong.id,
-                        ).timeout(
-                          const Duration(seconds: 30),
+                            return FutureBuilder(
+                              future:
+                                  Songs.load(
+                                    song,
+                                    ignoreFreeLimit: song.id == demoSong.id,
+                                  ).timeout(
+                                    const Duration(seconds: 30),
+                                  ),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasError) {
+                                  debugPrint(
+                                    "[MUSIC PLAYER] ${snapshot.error}",
+                                  );
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) {
+                                    showExceptionDialog(
+                                      snapshot.error
+                                              is AccessRestrictedException
+                                          ? const MusicPlayerAccessRestrictedDialog()
+                                          : const SongCouldNotBeLoadedDialog(),
+                                    );
+                                    context.go(songsRoute);
+                                  });
+
+                                  return const SizedBox();
+                                }
+
+                                return const SongPage();
+                              },
+                            );
+                          },
                         ),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            debugPrint("[MUSIC PLAYER] ${snapshot.error}");
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              showExceptionDialog(
-                                snapshot.error is AccessRestrictedException
-                                    ? const MusicPlayerAccessRestrictedDialog()
-                                    : const SongCouldNotBeLoadedDialog(),
-                              );
-                              context.go(songsRoute);
-                            });
-
-                            return const SizedBox();
-                          }
-
-                          return const SongPage();
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: tunerRoute,
-              builder: (context, state) {
-                return const TunerPage();
-              },
+                      ],
+                    ),
+                  ],
+                ),
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: tunerRoute,
+                      builder: (context, state) {
+                        return const TunerPage();
+                      },
+                    ),
+                  ],
+                ),
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: droneRoute,
+                      builder: (context, state) {
+                        return const DronePage();
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ]),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: droneRoute,
-                builder: (context, state) {
-                  return const DronePage();
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    ],
-  )..routerDelegate.addListener(() {
-      // Update the current route whenever it changes. Only remember the top-level route, not which subroute we were on.
-      final path = router.routerDelegate.currentConfiguration.uri
-          .toFilePath(windows: false);
-      currentRoute.value = "/${path.split("/").first}";
-    });
+          ],
+        )
+        ..routerDelegate.addListener(() {
+          // Update the current route whenever it changes. Only remember the top-level route, not which subroute we were on.
+          final path = router.routerDelegate.currentConfiguration.uri
+              .toFilePath(windows: false);
+          currentRoute.value = "/${path.split("/").first}";
+        });
 
   static Widget _buildShell(
     BuildContext context,
@@ -184,7 +198,7 @@ class Navigation {
 
   static Widget _buildNavigationBar(StatefulNavigationShell shell) {
     return NavigationBar(
-      onDestinationSelected: (int index) {
+      onDestinationSelected: (index) {
         shell.goBranch(
           index,
           // When tapping the current tab, navigate to the initial location

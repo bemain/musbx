@@ -10,8 +10,8 @@ class SegmentTab extends StatelessWidget {
     this.icon,
     this.iconMargin,
     this.height,
-  })  : assert(text != null || child != null || icon != null),
-        assert(text == null || child == null);
+  }) : assert(text != null || child != null || icon != null),
+       assert(text == null || child == null);
 
   /// The text to display as the tab's label.
   ///

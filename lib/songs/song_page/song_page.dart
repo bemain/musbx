@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/analyzer/analyzer_card.dart';
+import 'package:musbx/songs/demixer/demixer_card.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
+import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
-import 'package:musbx/songs/demixer/demixer_card.dart';
-import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
-import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/utils/loading.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
@@ -51,8 +51,9 @@ class SongPage extends StatelessWidget {
                               title: player == null
                                   ? TextPlaceholder()
                                   : Text(player.song.title),
-                              titleTextStyle:
-                                  Theme.of(context).textTheme.titleLarge,
+                              titleTextStyle: Theme.of(
+                                context,
+                              ).textTheme.titleLarge,
                               subtitle: player == null
                                   ? TextPlaceholder(width: 160)
                                   : Text(player.song.artist ?? ""),
@@ -130,14 +131,16 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
           builder: (context, bands, child) {
             final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
             final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
-            final bool isEqualizerReset = bands.every((band) =>
-                band.gain.toStringAsFixed(2) ==
-                EqualizerBand.defaultGain.toStringAsFixed(2));
+            final bool isEqualizerReset = bands.every(
+              (band) =>
+                  band.gain.toStringAsFixed(2) ==
+                  EqualizerBand.defaultGain.toStringAsFixed(2),
+            );
             return AppBar(
               actions: [
                 IconButton(
                   onPressed: () {
-                    _showModalBottomSheet(
+                    _showModalBottomSheet<void>(
                       context,
                       SlowdownerSheet(),
                     );
@@ -150,7 +153,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    _showModalBottomSheet(
+                    _showModalBottomSheet<void>(
                       context,
                       SlowdownerSheet(),
                     );
@@ -163,7 +166,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    _showModalBottomSheet(
+                    _showModalBottomSheet<void>(
                       context,
                       const EqualizerSheet(),
                     );

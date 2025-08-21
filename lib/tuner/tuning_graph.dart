@@ -20,10 +20,12 @@ class TuningGraph extends StatelessWidget {
       painter: TuningGraphPainter(
         frequencyHistory: frequencyHistory,
         lineColor: Theme.of(context).colorScheme.primary,
-        textStyle:
-            GoogleFonts.andikaTextTheme(Theme.of(context).textTheme).bodyMedium,
-        inTuneColor:
-            Colors.green.harmonizeWith(Theme.of(context).colorScheme.primary),
+        textStyle: GoogleFonts.andikaTextTheme(
+          Theme.of(context).textTheme,
+        ).bodyMedium,
+        inTuneColor: Colors.green.harmonizeWith(
+          Theme.of(context).colorScheme.primary,
+        ),
         textPlacement: TextPlacement.top,
         newNotePadding: 8,
       ),
@@ -106,17 +108,19 @@ class TuningGraphPainter extends CustomPainter {
 
     // Draw the "in tune"-rect
     canvas.drawRRect(
-        RRect.fromLTRBR(
-          0,
-          size.height * (0.5 - Tuner.inTuneThreshold / 100.0),
-          size.width,
-          size.height * (0.5 + Tuner.inTuneThreshold / 100.0),
-          const Radius.circular(5),
-        ),
-        inTunePaint);
+      RRect.fromLTRBR(
+        0,
+        size.height * (0.5 - Tuner.inTuneThreshold / 100.0),
+        size.width,
+        size.height * (0.5 + Tuner.inTuneThreshold / 100.0),
+        const Radius.circular(5),
+      ),
+      inTunePaint,
+    );
 
-    final List<double> frequencies = frequencyHistory
-        .sublist(max(0, frequencyHistory.length - size.width.toInt()));
+    final List<double> frequencies = frequencyHistory.sublist(
+      max(0, frequencyHistory.length - size.width.toInt()),
+    );
     drawFrequencies(canvas, size, frequencies);
   }
 
@@ -147,17 +151,20 @@ class TuningGraphPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     int index = 0;
-    for (List<double> frequencyChunk
-        in splitFrequenciesByNote(frequencies).reversed) {
+    for (List<double> frequencyChunk in splitFrequenciesByNote(
+      frequencies,
+    ).reversed) {
       double? lastFrequency;
       List<Offset> offsets = [];
       for (double frequency in frequencyChunk.reversed) {
         if (index <= size.width.toInt()) {
-          offsets.add(calculatePointOffset(
-            index,
-            Tuner.instance.getPitchOffset(frequency),
-            size,
-          ));
+          offsets.add(
+            calculatePointOffset(
+              index,
+              Tuner.instance.getPitchOffset(frequency),
+              size,
+            ),
+          );
           index++;
 
           lastFrequency = frequency;
@@ -234,7 +241,9 @@ class TuningGraphPainter extends CustomPainter {
 
       case TextPlacement.bottom:
         return Offset(
-            frequencyPosition.dx, canvasSize.height - textPainter.height);
+          frequencyPosition.dx,
+          canvasSize.height - textPainter.height,
+        );
     }
   }
 }

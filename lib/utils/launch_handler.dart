@@ -15,7 +15,7 @@ class LaunchHandler {
     final PackageInfo info = await PackageInfo.fromPlatform();
 
     if (info.buildNumber != lastVersionLaunched.value) {
-      onFirstLaunchWithVersion(info);
+      await onFirstLaunchWithVersion(info);
       lastVersionLaunched.value = info.buildNumber;
     }
 
@@ -32,14 +32,15 @@ class LaunchHandler {
   );
 
   /// Called when the app is launched for the first time with a new version.
-  static void onFirstLaunchWithVersion(PackageInfo info) async {
+  static Future<void> onFirstLaunchWithVersion(PackageInfo info) async {
     final int buildNumber = int.parse(info.buildNumber);
     final int? previousBuildNumber = lastVersionLaunched.value == "0"
         ? null
         : int.parse(lastVersionLaunched.value);
 
     debugPrint(
-        "[LAUNCH] First launch with version $buildNumber (${info.version})");
+      "[LAUNCH] First launch with version $buildNumber (${info.version})",
+    );
 
     if (buildNumber >= 26 &&
         (previousBuildNumber == null || previousBuildNumber < 26)) {
@@ -54,8 +55,9 @@ class LaunchHandler {
 
       final File songHistory = File("${docsDir.path}/song_history.json");
       if (await songHistory.exists()) await songHistory.delete();
-      final File searchHistory =
-          File("${docsDir.path}/youtube_search_history.json");
+      final File searchHistory = File(
+        "${docsDir.path}/youtube_search_history.json",
+      );
       if (await searchHistory.exists()) await searchHistory.delete();
     }
 

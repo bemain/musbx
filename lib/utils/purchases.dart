@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -76,9 +77,7 @@ class Purchases {
           case _premiumID:
             debugPrint("[PURCHASES] Premium features unlocked");
             hasPremiumNotifier.value = true;
-            break;
         }
-        break;
 
       case PurchaseStatus.pending:
         // On iOS, the pending status is emitted immediately when the native payment dialog opens.
@@ -86,11 +85,11 @@ class Purchases {
         switch (purchase.productID) {
           case _premiumID:
             if (Platform.isAndroid) {
-              showExceptionDialog(const PremiumPurchasedDialog());
+              unawaited(
+                showExceptionDialog(const PremiumPurchasedDialog()),
+              );
             }
-            break;
         }
-        break;
 
       case PurchaseStatus.canceled:
         break;
@@ -98,11 +97,12 @@ class Purchases {
         switch (purchase.productID) {
           case _premiumID:
             debugPrint(
-                "[PURCHASES] Buying Premium failed: ${purchase.error?.message ?? "Cancelled"}");
-            showExceptionDialog(const PremiumPurchaseFailedDialog());
-            break;
+              "[PURCHASES] Buying Premium failed: ${purchase.error?.message ?? "Cancelled"}",
+            );
+            unawaited(
+              showExceptionDialog(const PremiumPurchaseFailedDialog()),
+            );
         }
-        break;
     }
 
     if (purchase.pendingCompletePurchase) {

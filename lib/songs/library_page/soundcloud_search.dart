@@ -1,7 +1,9 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/keys.dart';
 import 'package:musbx/navigation.dart';
@@ -9,10 +11,10 @@ import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
-import 'package:musbx/utils/loading.dart';
-import 'package:musbx/widgets/widgets.dart';
 import 'package:musbx/utils/history_handler.dart';
-import 'package:http/http.dart' as http;
+import 'package:musbx/utils/loading.dart';
+import 'package:musbx/utils/utils.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 /// Represents a transcoding format for a SoundCloud track.
 class SoundCloudTrackTranscoding {
@@ -37,12 +39,12 @@ class SoundCloudTrackTranscoding {
   });
 
   /// Creates a [SoundCloudTrackTranscoding] from a JSON object.
-  factory SoundCloudTrackTranscoding.fromJson(Map<String, dynamic> json) {
+  factory SoundCloudTrackTranscoding.fromJson(Json json) {
     return SoundCloudTrackTranscoding(
-      url: json["url"],
-      mimeType: json["format"]["mime_type"],
-      protocol: json["format"]["protocol"],
-      quality: json["quality"],
+      url: json['url'] as String,
+      mimeType: json['format']['mime_type'] as String,
+      protocol: json['format']['protocol'] as String,
+      quality: json['quality'] as String,
     );
   }
 }
@@ -97,20 +99,21 @@ class SoundCloudTrack {
   });
 
   /// Creates a [SoundCloudTrack] from a JSON object.
-  factory SoundCloudTrack.fromJson(Map<String, dynamic> json) {
+  factory SoundCloudTrack.fromJson(Json json) {
     return SoundCloudTrack(
-      id: json["id"] ?? 0,
-      title: json["title"] ?? "Unknown Title",
-      username: json["user"]?["username"] ?? "Unknown Artist",
-      artworkUrl: json["artwork_url"],
-      waveformUrl: json["waveform_url"],
-      permalinkUrl: json["permalink_url"] ?? "",
-      duration: Duration(milliseconds: json["duration"] ?? 0),
-      streamable: json["streamable"] ?? false,
-      downloadable: json["downloadable"] ?? false,
-      policy: json["policy"] ?? "UNKNOWN",
-      transcodings: (json["media"]["transcodings"] as List<dynamic>?)
-              ?.map((e) => SoundCloudTrackTranscoding.fromJson(e))
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? "Unknown Title",
+      username: json['user']?['username'] as String? ?? "Unknown Artist",
+      artworkUrl: json['artwork_url'] as String?,
+      waveformUrl: json['waveform_url'] as String?,
+      permalinkUrl: json['permalink_url'] as String? ?? "",
+      duration: Duration(milliseconds: json['duration'] as int? ?? 0),
+      streamable: json['streamable'] as bool? ?? false,
+      downloadable: json['downloadable'] as bool? ?? false,
+      policy: json['policy'] as String? ?? "UNKNOWN",
+      transcodings:
+          (json['media']['transcodings'] as List<dynamic>?)
+              ?.map((e) => SoundCloudTrackTranscoding.fromJson(e as Json))
               .toList() ??
           [],
     );
@@ -129,22 +132,28 @@ class SoundCloudTrack {
   /// from SoundCloud's transcoding system. It prefers MP3 format with
   /// progressive protocol for direct downloading.
   Future<Uri> getDownloadUrl() async {
-    final Uri uri = Uri.parse(transcodings
-            .firstWhere(
-              (t) => t.mimeType == "audio/mpeg" && t.protocol == "progressive",
-            )
-            .url)
-        .replace(queryParameters: {
-      "client_id": soundCloudClientId,
-    });
+    final Uri uri =
+        Uri.parse(
+          transcodings
+              .firstWhere(
+                (t) =>
+                    t.mimeType == "audio/mpeg" && t.protocol == "progressive",
+              )
+              .url,
+        ).replace(
+          queryParameters: {
+            "client_id": soundCloudClientId,
+          },
+        );
 
     final res = await http.get(uri);
     if (res.statusCode != 200) {
       throw Exception(
-          "Failed to get SoundCloud download URL: ${res.statusCode}");
+        "Failed to get SoundCloud download URL: ${res.statusCode}",
+      );
     }
 
-    return Uri.parse(json.decode(res.body)["url"]);
+    return Uri.parse(json.decode(res.body)['url'] as String);
   }
 }
 
@@ -181,30 +190,39 @@ class SoundCloudSearch {
 
   /// Loads a track from SoundCloud into the user's library.
   static Future<void> loadTrack(SoundCloudTrack track) async {
-    await Songs.history.add(Song<SinglePlayable>(
-      id: track.id.toString(),
-      title: HtmlUnescape().convert(track.title),
-      artist: HtmlUnescape().convert(track.username),
-      artUri: track.artworkUrl != null ? Uri.tryParse(track.artworkUrl!) : null,
-      source: YtdlpSource(Uri.parse(track.permalinkUrl)),
-    ));
+    await Songs.history.add(
+      Song<SinglePlayable>(
+        id: track.id.toString(),
+        title: HtmlUnescape().convert(track.title),
+        artist: HtmlUnescape().convert(track.username),
+        artUri: track.artworkUrl != null
+            ? Uri.tryParse(track.artworkUrl!)
+            : null,
+        source: YtdlpSource(Uri.parse(track.permalinkUrl)),
+      ),
+    );
   }
 
   /// Searches for tracks on SoundCloud using the provided [query].
   static Future<List<SoundCloudTrack>> searchTracks(String query) async {
-    final uri = Uri.parse("$_baseUrl/search/tracks").replace(queryParameters: {
-      "q": query,
-      "client_id": soundCloudClientId,
-      "limit": "50",
-    });
+    final uri = Uri.parse("$_baseUrl/search/tracks").replace(
+      queryParameters: {
+        "q": query,
+        "client_id": soundCloudClientId,
+        "limit": "50",
+      },
+    );
 
     final response = await http.get(uri);
     if (response.statusCode != 200) {
       throw Exception("Failed to search SoundCloud: ${response.statusCode}");
     }
 
-    final List<dynamic> data = json.decode(response.body)["collection"];
-    return data.map((track) => SoundCloudTrack.fromJson(track)).toList();
+    final List<dynamic> data =
+        json.decode(response.body)['collection'] as List<dynamic>;
+    return data
+        .map((track) => SoundCloudTrack.fromJson(track as Json))
+        .toList();
   }
 
   /// The history of previous search SoundCloud queries.
@@ -218,11 +236,11 @@ class SoundCloudSearch {
 /// A search delegate that provides the SoundCloud search interface.
 class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
   SoundCloudSearchDelegate()
-      : super(
-          searchFieldLabel: "Search online",
-          keyboardType: TextInputType.text,
-          textInputAction: TextInputAction.search,
-        );
+    : super(
+        searchFieldLabel: "Search online",
+        keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.search,
+      );
 
   @override
   Widget? buildLeading(BuildContext context) {
@@ -248,7 +266,7 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
         onPressed: query.isEmpty ? null : () => query = "",
         color: Theme.of(context).colorScheme.onSurfaceVariant,
         icon: const Icon(Symbols.clear),
-      )
+      ),
     ];
   }
 
@@ -271,8 +289,8 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
               Text(
                 "Enter a search phrase to find songs online.",
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -281,36 +299,38 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
       );
     }
 
-    final searchHistory = SoundCloudSearch.history
-        .sorted()
-        .where((e) => e.toLowerCase().contains(query.toLowerCase()));
+    final searchHistory = SoundCloudSearch.history.sorted().where(
+      (e) => e.toLowerCase().contains(query.toLowerCase()),
+    );
 
     if (searchHistory.isEmpty) {
       return buildResults(context);
     }
 
-    return ListView(children: [
-      for (final historyQuery in searchHistory)
-        ListTile(
-          leading: Icon(
-            Symbols.history,
-            color: Theme.of(context).colorScheme.outline,
-          ),
-          title: Text(historyQuery),
-          trailing: IconButton(
-            onPressed: () => query = historyQuery,
-            color: Theme.of(context).colorScheme.outline,
-            icon: const RotatedBox(
-              quarterTurns: -1,
-              child: Icon(Symbols.arrow_outward),
+    return ListView(
+      children: [
+        for (final historyQuery in searchHistory)
+          ListTile(
+            leading: Icon(
+              Symbols.history,
+              color: Theme.of(context).colorScheme.outline,
             ),
+            title: Text(historyQuery),
+            trailing: IconButton(
+              onPressed: () => query = historyQuery,
+              color: Theme.of(context).colorScheme.outline,
+              icon: const RotatedBox(
+                quarterTurns: -1,
+                child: Icon(Symbols.arrow_outward),
+              ),
+            ),
+            onTap: () {
+              query = historyQuery;
+              showResults(context);
+            },
           ),
-          onTap: () {
-            query = historyQuery;
-            showResults(context);
-          },
-        ),
-    ]);
+      ],
+    );
   }
 
   @override
@@ -347,12 +367,12 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
         }
 
         return ListView(
-          children: results.map((SoundCloudTrack track) {
+          children: results.map((track) {
             return SoundCloudTrackListItem(
               track: track,
               onTap: () async {
-                SoundCloudSearch.history.add(query.trim());
-                close(context, track);
+                await SoundCloudSearch.history.add(query.trim());
+                if (context.mounted) close(context, track);
               },
             );
           }).toList(),
@@ -387,67 +407,69 @@ class SoundCloudTrackListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        onTap: onTap,
-        minLeadingWidth: 64,
-        leading: ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: track == null
-                ? ShimmerLoading(
-                    child: Container(
-                      color: Theme.of(context).colorScheme.surfaceContainer,
-                      width: 64,
-                      height: 64,
-                    ),
-                  )
-                : track!.artworkUrl != null
-                    ? Image.network(
-                        track!.artworkUrl!,
-                        width: 64,
-                        height: 64,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            buildDefaultLeading(context),
-                      )
-                    : buildDefaultLeading(context)),
-        title: track == null
-            ? const TextPlaceholder()
-            : Text(
-                htmlUnescape.convert(track!.title),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-        subtitle: track == null
-            ? const TextPlaceholder(width: 160)
-            : RichText(
-                text: TextSpan(
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                  children: [
-                    TextSpan(
-                      text: htmlUnescape.convert(track!.username),
-                    ),
-                    TextSpan(
-                      text: " • ${track!.durationFormatted}  ",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.outline,
-                        fontSize: 12,
-                      ),
-                    ),
-                    if (track!.policy == "SNIP")
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Icon(
-                          Symbols.award_star,
-                          size: 12,
-                        ),
-                      )
-                  ],
+      onTap: onTap,
+      minLeadingWidth: 64,
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(8.0),
+        child: track == null
+            ? ShimmerLoading(
+                child: Container(
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  width: 64,
+                  height: 64,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              )
+            : track!.artworkUrl != null
+            ? Image.network(
+                track!.artworkUrl!,
+                width: 64,
+                height: 64,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    buildDefaultLeading(context),
+              )
+            : buildDefaultLeading(context),
+      ),
+      title: track == null
+          ? const TextPlaceholder()
+          : Text(
+              htmlUnescape.convert(track!.title),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+      subtitle: track == null
+          ? const TextPlaceholder(width: 160)
+          : RichText(
+              text: TextSpan(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                children: [
+                  TextSpan(
+                    text: htmlUnescape.convert(track!.username),
+                  ),
+                  TextSpan(
+                    text: " • ${track!.durationFormatted}  ",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline,
+                      fontSize: 12,
+                    ),
+                  ),
+                  if (track!.policy == "SNIP")
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Icon(
+                        Symbols.award_star,
+                        size: 12,
+                      ),
+                    ),
+                ],
               ),
-        trailing: track == null ? IconPlaceholder() : Icon(Symbols.download));
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+      trailing: track == null ? IconPlaceholder() : Icon(Symbols.download),
+    );
   }
 
   Widget buildDefaultLeading(BuildContext context) {

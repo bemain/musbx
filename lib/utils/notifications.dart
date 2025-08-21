@@ -13,7 +13,9 @@ class Notifications {
 
   /// Whether the user has given the app permission to show notifications
   static bool get hasPermission => hasPermissionNotifier.value;
-  static final ValueNotifier<bool> hasPermissionNotifier = ValueNotifier(false);
+  static final ValueNotifier<bool> hasPermissionNotifier = ValueNotifier(
+    false,
+  );
 
   /// Whether permission to show notifications has been requested at least once.
   ///
@@ -34,11 +36,9 @@ class Notifications {
 
       switch (action.buttonKeyPressed) {
         case "play":
-          Metronome.instance.play();
-          break;
+          await Metronome.instance.play();
         case "pause":
-          Metronome.instance.pause();
-          break;
+          await Metronome.instance.pause();
       }
     }
   }
@@ -108,8 +108,8 @@ class Notifications {
       throw "The `Notifications` service hasn't been initialized. Call `initialize()` first.";
     }
 
-    final lockedPermissions =
-        await _notifications.shouldShowRationaleToRequest();
+    final lockedPermissions = await _notifications
+        .shouldShowRationaleToRequest();
     return lockedPermissions.isNotEmpty;
   }
 

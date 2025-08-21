@@ -20,24 +20,25 @@ class LoopSlider extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: player.loop.sectionNotifier,
       builder: (context, section, _) {
-        PositionSliderStyle style =
-            Theme.of(context).extension<PositionSliderStyle>()!;
+        PositionSliderStyle style = Theme.of(
+          context,
+        ).extension<PositionSliderStyle>()!;
 
         return SliderTheme(
           data: Theme.of(context).sliderTheme.copyWith(
-                rangeThumbShape: LoopSectionThumbShape(
-                  style: style,
-                  color: Theme.of(context).colorScheme.primary,
-                  disabledColor: Theme.of(context).colorScheme.primary,
-                ),
-                rangeTrackShape: LoopSliderTrackShape(
-                  style: style,
-                  outlineColor: Theme.of(context).colorScheme.primary,
-                  disabledOutlineColor: Theme.of(context).colorScheme.primary,
-                ),
-                valueIndicatorColor: Theme.of(context).colorScheme.primary,
-                valueIndicatorStrokeColor: Colors.transparent,
-              ),
+            rangeThumbShape: LoopSectionThumbShape(
+              style: style,
+              color: Theme.of(context).colorScheme.primary,
+              disabledColor: Theme.of(context).colorScheme.primary,
+            ),
+            rangeTrackShape: LoopSliderTrackShape(
+              style: style,
+              outlineColor: Theme.of(context).colorScheme.primary,
+              disabledOutlineColor: Theme.of(context).colorScheme.primary,
+            ),
+            valueIndicatorColor: Theme.of(context).colorScheme.primary,
+            valueIndicatorStrokeColor: Colors.transparent,
+          ),
           child: RangeSlider(
             labels: RangeLabels(
               player.loop.start.toString().substring(2, 10),
@@ -54,14 +55,14 @@ class LoopSlider extends StatelessWidget {
               wasPlayingBeforeChange = player.isPlaying;
               player.pause();
             },
-            onChanged: (RangeValues values) {
+            onChanged: (values) {
               final Duration previousStart = player.loop.start;
               final Duration previousEnd = player.loop.end;
 
               // Update section
               player.loop.section = (
                 Duration(milliseconds: values.start.toInt()),
-                Duration(milliseconds: values.end.toInt())
+                Duration(milliseconds: values.end.toInt()),
               );
 
               if (previousStart.inMilliseconds != values.start) {
@@ -140,13 +141,17 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
     final Paint trackPaint = Paint()
       ..color = trackColorTween.evaluate(enableAnimation)!;
 
-    final (Offset leftThumbOffset, Offset rightThumbOffset) =
-        switch (textDirection) {
+    final (
+      Offset leftThumbOffset,
+      Offset rightThumbOffset,
+    ) = switch (textDirection) {
       TextDirection.ltr => (startThumbCenter, endThumbCenter),
       TextDirection.rtl => (endThumbCenter, startThumbCenter),
     };
-    final Size thumbSize =
-        sliderTheme.rangeThumbShape!.getPreferredSize(isEnabled, isDiscrete);
+    final Size thumbSize = sliderTheme.rangeThumbShape!.getPreferredSize(
+      isEnabled,
+      isDiscrete,
+    );
     final double thumbRadius = thumbSize.width / 2;
     assert(thumbRadius > 0);
 

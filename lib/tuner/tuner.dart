@@ -37,7 +37,9 @@ class Tuner {
   /// Defaults to [Pitch.a440].
   Pitch get tuning => tuningNotifier.value;
   set tuning(Pitch value) => tuningNotifier.value = value;
-  final ValueNotifier<Pitch> tuningNotifier = ValueNotifier(const Pitch.a440());
+  final ValueNotifier<Pitch> tuningNotifier = ValueNotifier(
+    const Pitch.a440(),
+  );
 
   /// The temperament that notes are tuned to.
   ///
@@ -46,8 +48,9 @@ class Tuner {
   /// See [Temperament].
   Temperament get temperament => temperamentNotifier.value;
   set temperament(Temperament value) => temperamentNotifier.value = value;
-  final ValueNotifier<Temperament> temperamentNotifier =
-      ValueNotifier(const EqualTemperament());
+  final ValueNotifier<Temperament> temperamentNotifier = ValueNotifier(
+    const EqualTemperament(),
+  );
 
   /// The previous frequencies detected, unfiltered.
   final List<double> _rawFrequencyHistory = [];
@@ -59,22 +62,24 @@ class Tuner {
   ///
   /// Throws if permission to access the microphone has not been given.
   Stream<double?> get frequencyStream {
-    return audioStream.asyncMap((samples) async {
-      final result = await PitchDetector(
-        audioSampleRate: sampleRate,
-        bufferSize: bufferSize,
-      ).getPitchFromFloatBuffer(samples);
+    return audioStream
+        .asyncMap((samples) async {
+          final result = await PitchDetector(
+            audioSampleRate: sampleRate,
+            bufferSize: bufferSize,
+          ).getPitchFromFloatBuffer(samples);
 
-      if (!result.pitched) return null;
+          if (!result.pitched) return null;
 
-      _rawFrequencyHistory.add(result.pitch);
-      double? avgFrequency = _getAverageFrequency();
-      if (avgFrequency != null) {
-        frequencyHistory.add(avgFrequency);
-        return avgFrequency;
-      }
-      return null;
-    }).where((frequency) => frequency != null);
+          _rawFrequencyHistory.add(result.pitch);
+          double? avgFrequency = _getAverageFrequency();
+          if (avgFrequency != null) {
+            frequencyHistory.add(avgFrequency);
+            return avgFrequency;
+          }
+          return null;
+        })
+        .where((frequency) => frequency != null);
   }
 
   /// Uses the package mic_stream to record audio to a stream.
@@ -88,7 +93,7 @@ class Tuner {
           : AudioFormat.ENCODING_PCM_8BIT,
     );
 
-    return audioStream.asyncMap((Uint8List samples) async {
+    return audioStream.asyncMap((samples) async {
       sampleRate = (await MicStream.sampleRate).toDouble();
       final int bitDepth = await MicStream.bitDepth;
       bufferSize = await MicStream.bufferSize ~/ (bitDepth / 8);
@@ -96,10 +101,10 @@ class Tuner {
       return switch (bitDepth) {
         8 => samples.buffer.asInt8List().map((e) => e.toDouble()).toList(),
         16 => [
-            0,
-            for (var offset = 1; offset < samples.length; offset += 2)
-              (samples.buffer.asByteData().getUint16(offset) & 0xFF) - 128.0
-          ],
+          0,
+          for (var offset = 1; offset < samples.length; offset += 2)
+            (samples.buffer.asByteData().getUint16(offset) & 0xFF) - 128.0,
+        ],
         _ => throw "Unsupported `bitDepth`: $bitDepth",
       };
     });
@@ -112,7 +117,8 @@ class Tuner {
         .sublist(max(0, _rawFrequencyHistory.length - averageFrequenciesN))
         // Only frequencies close to the current
         .where(
-            (frequency) => (frequency - _rawFrequencyHistory.last).abs() < 10)
+          (frequency) => (frequency - _rawFrequencyHistory.last).abs() < 10,
+        )
         .toList();
 
     if (previousFrequencies.length <= averageFrequenciesN / 3) return null;
@@ -135,7 +141,8 @@ class Tuner {
     final Pitch closest = getClosestPitch(frequency);
 
     /// The frequency this note "should" have
-    final double targetFrequency = tuning.frequency *
+    final double targetFrequency =
+        tuning.frequency *
         temperament.frequencyRatio(tuning.semitonesTo(closest));
 
     return 1200 * log(frequency / targetFrequency) / log(2);

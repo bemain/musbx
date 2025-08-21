@@ -17,8 +17,9 @@ class ChordSymbol extends StatefulWidget {
 }
 
 class _ChordSymbolState extends State<ChordSymbol> {
-  late final TextTheme textTheme =
-      GoogleFonts.andikaTextTheme(Theme.of(context).textTheme);
+  late final TextTheme textTheme = GoogleFonts.andikaTextTheme(
+    Theme.of(context).textTheme,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +38,7 @@ class _ChordSymbolState extends State<ChordSymbol> {
             _buildString(
               widget.chord.alterations!,
               superscript: true,
-            )
+            ),
         ],
       ),
     );
@@ -46,25 +47,26 @@ class _ChordSymbolState extends State<ChordSymbol> {
   InlineSpan _buildString(String char, {bool superscript = false}) =>
       switch (char) {
         "♭" => _buildSpan(
-            "♭",
-            superscript: superscript,
-          ),
+          "♭",
+          superscript: superscript,
+        ),
         "♯" => _buildSpan(
-            "♯",
-            superscript: superscript,
-          ),
+          "♯",
+          superscript: superscript,
+        ),
         _ => _buildSpan(
-            char,
-            superscript: superscript,
-          ),
+          char,
+          superscript: superscript,
+        ),
       };
 
   InlineSpan _buildSpan(
     String text, {
     bool superscript = false,
   }) {
-    final TextStyle? style =
-        superscript ? textTheme.labelSmall : textTheme.bodyMedium;
+    final TextStyle? style = superscript
+        ? textTheme.labelSmall
+        : textTheme.bodyMedium;
 
     return WidgetSpan(
       baseline: TextBaseline.alphabetic,

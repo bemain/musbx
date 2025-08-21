@@ -11,10 +11,10 @@ import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/loading.dart';
+import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
-import 'package:musbx/utils/purchases.dart';
 
 class DemixingProcessIndicator extends StatefulWidget {
   const DemixingProcessIndicator({super.key, required this.player});
@@ -47,9 +47,11 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
         }
 
         /// Override the history entry for the song with a demixed variant.
-        Songs.history.add(widget.song.withSource<MultiPlayable>(
-          DemixedSource(widget.song.source),
-        ));
+        Songs.history.add(
+          widget.song.withSource<MultiPlayable>(
+            DemixedSource(widget.song.source),
+          ),
+        );
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -143,7 +145,8 @@ Please update to the latest version to use the Demixer.""",
             child: ValueListenableBuilder(
               valueListenable: process.progressNotifier,
               builder: (context, progress, child) => Text(
-                  (progress == null) ? "" : "${(progress * 100).round()}%"),
+                (progress == null) ? "" : "${(progress * 100).round()}%",
+              ),
             ),
           ),
         ],
@@ -197,8 +200,9 @@ This only needs to be done once, so loading the song next time will be much fast
       mainAxisSize: MainAxisSize.min,
       children: [
         ConstrainedBox(
-          constraints:
-              BoxConstraints(maxWidth: (description == null) ? 256 : 160),
+          constraints: BoxConstraints(
+            maxWidth: (description == null) ? 256 : 160,
+          ),
           child: Text(
             title,
             maxLines: 1,
@@ -208,7 +212,7 @@ This only needs to be done once, so loading the song next time will be much fast
         if (description != null)
           IconButton(
             onPressed: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 builder: (context) {
                   return AlertDialog(
@@ -219,19 +223,20 @@ This only needs to be done once, so loading the song next time will be much fast
               );
             },
             icon: const Icon(Symbols.info),
-          )
+          ),
       ],
     );
   }
 
   /// TODO: Remove? Leaving it here for the moment since I might want to use it later
   Future<void> showCellularWarningDialog(BuildContext context) async {
-    await showDialog(
+    await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Enable Demixer on cellular?"),
         content: const Text(
-            "Your device is connected to a mobile network. Please note that the Demixer requires downloading some data (around 50 MB per song). Are you sure you want to enable the Demixer using cellular?"),
+          "Your device is connected to a mobile network. Please note that the Demixer requires downloading some data (around 50 MB per song). Are you sure you want to enable the Demixer using cellular?",
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -270,19 +275,22 @@ class DemixerCard extends StatelessWidget {
 
     return FlatCard(
       child: Padding(
-          padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
-          child: () {
-            if (player is SinglePlayer) {
-              return DemixingProcessIndicator(player: player);
-            }
+        padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
+        child: () {
+          if (player is SinglePlayer) {
+            return DemixingProcessIndicator(player: player);
+          }
 
-            return Column(children: [
+          return Column(
+            children: [
               buildHeader(context),
               Expanded(
                 child: buildBody(context),
               ),
-            ]);
-          }()),
+            ],
+          );
+        }(),
+      ),
     );
   }
 
@@ -308,8 +316,11 @@ class DemixerCard extends StatelessWidget {
             valueListenable: player.demixer.stemsNotifier,
             builder: (context, stems, child) => IconButton(
               iconSize: 20,
-              onPressed: stems.every((Stem stem) =>
-                      stem.enabled && stem.volume == Stem.defaultVolume)
+              onPressed:
+                  stems.every(
+                    (stem) =>
+                        stem.enabled && stem.volume == Stem.defaultVolume,
+                  )
                   ? null
                   : () {
                       for (Stem stem in stems) {
@@ -378,20 +389,21 @@ class StemControlsState extends State<StemControls> {
             widget.stem.enabled = !allOtherStemsDisabled;
           },
           child: IconButton(
-              isSelected: widget.stem.enabled,
-              onPressed: () {
-                if (allOtherStemsDisabled) return;
+            isSelected: widget.stem.enabled,
+            onPressed: () {
+              if (allOtherStemsDisabled) return;
 
-                if (!Purchases.hasPremium &&
-                    player.song.id != demoSong.id &&
-                    widget.stem.type != StemType.vocals) {
-                  showAccessRestrictedDialog(context);
-                  return;
-                }
+              if (!Purchases.hasPremium &&
+                  player.song.id != demoSong.id &&
+                  widget.stem.type != StemType.vocals) {
+                showAccessRestrictedDialog(context);
+                return;
+              }
 
-                widget.stem.enabled = !widget.stem.enabled;
-              },
-              icon: Icon(getStemIcon(widget.stem.type))),
+              widget.stem.enabled = !widget.stem.enabled;
+            },
+            icon: Icon(getStemIcon(widget.stem.type)),
+          ),
         ),
         Expanded(
           child: ValueListenableBuilder(
@@ -400,7 +412,7 @@ class StemControlsState extends State<StemControls> {
               value: volume,
               onChanged: (!widget.stem.enabled)
                   ? null
-                  : (double value) {
+                  : (value) {
                       if (!Purchases.hasPremium &&
                           player.song.id != demoSong.id &&
                           widget.stem.type != StemType.vocals) {

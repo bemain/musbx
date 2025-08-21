@@ -27,8 +27,13 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
     // Check cache
     if (await cacheFile.exists()) {
       try {
-        final Json json = jsonDecode(await cacheFile.readAsString());
-        data = json.map((key, value) => MapEntry(double.parse(key), value));
+        final Json json = jsonDecode(await cacheFile.readAsString()) as Json;
+        data = json.map(
+          (key, value) => MapEntry(
+            double.parse(key),
+            value as String,
+          ),
+        );
       } catch (e) {
         debugPrint("[ANALYZER] Malformed chords file: '${cacheFile.path}'");
       }
@@ -45,15 +50,18 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
       // Save to cache
       await cacheFile.create(recursive: true);
       await cacheFile.writeAsString(
-          jsonEncode(data.map((key, value) => MapEntry("$key", value))));
+        jsonEncode(data.map((key, value) => MapEntry("$key", value))),
+      );
     }
 
     breakIfCancelled();
 
-    return data.map((key, value) => MapEntry(
-          Duration(milliseconds: (key * 1000).toInt()),
-          Chord.tryParse(value),
-        ));
+    return data.map(
+      (key, value) => MapEntry(
+        Duration(milliseconds: (key * 1000).toInt()),
+        Chord.tryParse(value),
+      ),
+    );
   }
 
   /// Perform chord analysis on the [source] using the given [client].
@@ -65,16 +73,15 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
     switch (source) {
       case FileSource():
         file = await client.uploadFile(source.cacheFile!);
-        break;
       case YtdlpSource():
         file = await client.uploadYtdlp(source.url);
-        break;
       case DemixedSource():
         return await analyzeSource(source.parent, client);
 
       default:
         throw UnsupportedError(
-            "Chord analysis cannot be performed on the source $source.");
+          "Chord analysis cannot be performed on the source $source.",
+        );
     }
 
     final AnalyzeJob job = await client.analyze(file);

@@ -7,6 +7,7 @@ import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 /// An object that contains information about how to [load] a [Playable].
@@ -29,7 +30,7 @@ abstract class SongSource<P extends Playable> {
   /// "youtube": `youtubeId` [String] The id of the Youtube song. \
   /// "file": `path` [String] The path to the file. \
   /// "demixed": `files` [Map<String, String>] The stem files.
-  Map<String, dynamic> toJson();
+  Json toJson();
 
   /// Try to create a [SongSource] from a json map.
   ///
@@ -40,9 +41,9 @@ abstract class SongSource<P extends Playable> {
   /// "youtube": `youtubeId` [String] The id of the Youtube song. \
   /// "file": `path` [String] The path to the file. \
   /// "demixed": `files` [Map<String, String>] The stem files.
-  static SongSource? fromJson(Map<String, dynamic> json) {
+  static SongSource? fromJson(Json json) {
     if (!json.containsKey("type")) return null;
-    String? type = tryCast<String>(json["type"]);
+    String? type = tryCast<String>(json['type']);
 
     switch (type) {
       case "ytdlp":
@@ -95,19 +96,19 @@ class YtdlpSource extends SongSource<SinglePlayable> {
   }
 
   /// Try to create a [YtdlpSource] from a [json] object.
-  static YtdlpSource? fromJson(Map<String, dynamic> json) {
+  static YtdlpSource? fromJson(Json json) {
     if (!json.containsKey("url")) return null;
-    String? url = tryCast<String>(json["url"]);
+    String? url = tryCast<String>(json['url']);
     if (url == null) return null;
 
     return YtdlpSource(Uri.parse(url));
   }
 
   @override
-  Map<String, dynamic> toJson() => {
-        "type": "ytdlp",
-        "url": url.toString(),
-      };
+  Json toJson() => {
+    "type": "ytdlp",
+    "url": url.toString(),
+  };
 }
 
 class FileSource extends SongSource<SinglePlayable> {
@@ -151,19 +152,19 @@ class FileSource extends SongSource<SinglePlayable> {
   }
 
   /// Try to create a [FileSource] from a [json] object.
-  static FileSource? fromJson(Map<String, dynamic> json) {
+  static FileSource? fromJson(Json json) {
     if (!json.containsKey("path")) return null;
-    String? path = tryCast<String>(json["path"]);
+    String? path = tryCast<String>(json['path']);
     if (path == null) return null;
 
     return FileSource(File(path));
   }
 
   @override
-  Map<String, dynamic> toJson() => {
-        "type": "file",
-        "path": file.path,
-      };
+  Json toJson() => {
+    "type": "file",
+    "path": file.path,
+  };
 }
 
 class DemixedSource extends SongSource<MultiPlayable> {
@@ -211,19 +212,19 @@ class DemixedSource extends SongSource<MultiPlayable> {
   }
 
   /// Try to create a [DemixedSource] from a [json] object.
-  static DemixedSource? fromJson(Map<String, dynamic> json) {
+  static DemixedSource? fromJson(Json json) {
     if (!json.containsKey("parent")) return null;
-    SongSource? parent = SongSource.fromJson(json["parent"]);
+    SongSource? parent = SongSource.fromJson(json['parent'] as Json);
     if (parent == null) return null;
 
     return DemixedSource(parent);
   }
 
   @override
-  Map<String, dynamic> toJson() => {
-        "type": "demixed",
-        "parent": {
-          ...parent.toJson(),
-        }
-      };
+  Json toJson() => {
+    "type": "demixed",
+    "parent": {
+      ...parent.toJson(),
+    },
+  };
 }

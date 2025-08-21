@@ -17,12 +17,12 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   final String adUnitId = kDebugMode
       // Test banner ad units, provided by Google
       ? Platform.isAndroid
-          ? "ca-app-pub-3940256099942544/6300978111"
-          : "ca-app-pub-3940256099942544/2934735716"
+            ? "ca-app-pub-3940256099942544/6300978111"
+            : "ca-app-pub-3940256099942544/2934735716"
       // Real ad units
       : Platform.isAndroid
-          ? "ca-app-pub-5107868608906815/7921762904"
-          : "ca-app-pub-5107868608906815/5487171252";
+      ? "ca-app-pub-5107868608906815/7921762904"
+      : "ca-app-pub-5107868608906815/5487171252";
 
   AdSize? _adSize;
 
@@ -61,7 +61,8 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   Future<void> _loadAd() async {
     try {
       _adSize = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-          MediaQuery.of(context).size.width.truncate());
+        MediaQuery.of(context).size.width.truncate(),
+      );
     } catch (e) {
       debugPrint("[ADS] Unable to get height of anchored banner: $e");
       return;
@@ -104,40 +105,41 @@ Future<InterstitialAd?> loadInterstitialAd() async {
   final String adUnitId = kDebugMode
       // Test interstitial ad units, provided by Google
       ? Platform.isAndroid
-          ? "ca-app-pub-3940256099942544/1033173712"
-          : "ca-app-pub-3940256099942544/4411468910"
+            ? "ca-app-pub-3940256099942544/1033173712"
+            : "ca-app-pub-3940256099942544/4411468910"
       // Real ad units
       : Platform.isAndroid
-          ? "ca-app-pub-5107868608906815/5388751299"
-          : "ca-app-pub-5107868608906815/3177520920";
+      ? "ca-app-pub-5107868608906815/5388751299"
+      : "ca-app-pub-5107868608906815/3177520920";
 
   Completer<InterstitialAd?> completer = Completer();
 
   await InterstitialAd.load(
-      adUnitId: adUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdShowedFullScreenContent: (ad) {},
-            onAdImpression: (ad) {},
-            onAdFailedToShowFullScreenContent: (ad, error) {
-              debugPrint("[ADS] InterstitialAd failed to show: $error");
-              ad.dispose();
-            },
-            onAdDismissedFullScreenContent: (ad) {
-              ad.dispose();
-            },
-            onAdClicked: (ad) {},
-          );
+    adUnitId: adUnitId,
+    request: const AdRequest(),
+    adLoadCallback: InterstitialAdLoadCallback(
+      onAdLoaded: (ad) {
+        ad.fullScreenContentCallback = FullScreenContentCallback(
+          onAdShowedFullScreenContent: (ad) {},
+          onAdImpression: (ad) {},
+          onAdFailedToShowFullScreenContent: (ad, error) {
+            debugPrint("[ADS] InterstitialAd failed to show: $error");
+            ad.dispose();
+          },
+          onAdDismissedFullScreenContent: (ad) {
+            ad.dispose();
+          },
+          onAdClicked: (ad) {},
+        );
 
-          completer.complete(ad);
-        },
-        onAdFailedToLoad: (LoadAdError error) {
-          debugPrint("[ADS] InterstitialAd failed to load: $error");
-          completer.completeError(error);
-        },
-      ));
+        completer.complete(ad);
+      },
+      onAdFailedToLoad: (error) {
+        debugPrint("[ADS] InterstitialAd failed to load: $error");
+        completer.completeError(error);
+      },
+    ),
+  );
 
   return await completer.future;
 }

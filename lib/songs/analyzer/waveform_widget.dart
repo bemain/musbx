@@ -48,7 +48,9 @@ class WaveformWidget extends StatelessWidget {
                     style: waveform != null
                         ? Theme.of(context).extension<PositionSliderStyle>()!
                         : dummyStyle,
-                    markerColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                    markerColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
                   ),
                   size: const Size(double.infinity, 64.0),
                 ),
@@ -80,8 +82,9 @@ class WaveformWidget extends StatelessWidget {
       /// Scale to adjust for 16-bit audio.
       const min16bit = -32768;
       const max16bit = 32767;
-      final value =
-          ((seed * 0.6 + 0.1) * 32768).clamp(min16bit, max16bit).toInt();
+      final value = ((seed * 0.6 + 0.1) * 32768)
+          .clamp(min16bit, max16bit)
+          .toInt();
       data.addAll([value, -value]); // One for each channel
     }
 

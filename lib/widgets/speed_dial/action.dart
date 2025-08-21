@@ -36,9 +36,9 @@ class SpeedDialAction extends SpeedDialChild {
         children: [
           DefaultTextStyle(
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  overflow: TextOverflow.ellipsis,
-                ),
+              color: Theme.of(context).colorScheme.onSurface,
+              overflow: TextOverflow.ellipsis,
+            ),
             child: Opacity(
               opacity: animation.value,
               child: Center(child: label),
@@ -52,9 +52,12 @@ class SpeedDialAction extends SpeedDialChild {
               alignment: Alignment.center,
               child: FloatingActionButton.small(
                 onPressed: () {},
-                backgroundColor: backgroundColor ??
+                backgroundColor:
+                    backgroundColor ??
                     Color.alphaBlend(
-                        colors.surfaceTint.withAlpha(0x1a), colors.surface),
+                      colors.surfaceTint.withAlpha(0x1a),
+                      colors.surface,
+                    ),
                 foregroundColor: foregroundColor ?? colors.primary,
                 child: child,
               ),

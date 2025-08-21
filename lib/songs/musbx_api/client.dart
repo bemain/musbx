@@ -16,7 +16,7 @@ class ErrorInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     final String? data = err.response?.data is List<int>
-        ? utf8.decode(err.response?.data)
+        ? utf8.decode(err.response?.data as List<int>)
         : err.response?.data.toString();
     debugPrint("[MUSBX API] Error occured: $data");
 
@@ -36,8 +36,8 @@ class MusbxApiStatus {
 
   factory MusbxApiStatus.fromJson(Json json) {
     return MusbxApiStatus._(
-      Version.parse(json["version"] as String),
-      activeJobs: json["activeJobs"] as int,
+      Version.parse(json['version'] as String),
+      activeJobs: json['activeJobs'] as int,
     );
   }
 
@@ -55,7 +55,7 @@ class FileHandle {
   final String handle;
 
   factory FileHandle.fromJson(Json json) {
-    return FileHandle._(json["file"]["handle"] as String);
+    return FileHandle._(json['file']['handle'] as String);
   }
 }
 
@@ -64,10 +64,12 @@ class MusbxApiClient {
   final Dio _dio;
 
   MusbxApiClient(String baseurl)
-      : _dio = Dio(BaseOptions(
+    : _dio = Dio(
+        BaseOptions(
           baseUrl: baseurl,
           receiveDataWhenStatusError: true,
-        )) {
+        ),
+      ) {
     _dio.interceptors
       ..add(AuthInterceptor(_dio))
       ..add(ErrorInterceptor());
@@ -76,7 +78,7 @@ class MusbxApiClient {
   /// Get the version of the API.
   Future<Version> version() async {
     final response = await _dio.get<Json>("/version");
-    return Version.parse(response.data!["version"] as String);
+    return Version.parse(response.data!['version'] as String);
   }
 
   /// Get the status of the API.
@@ -90,9 +92,12 @@ class MusbxApiClient {
   /// Returns a handle to the uploaded file, which can be used to perform jobs
   /// on the file.
   Future<FileHandle> uploadUrl(Uri url) async {
-    final response = await _dio.post<Json>("/upload/url", queryParameters: {
-      "url": url.toString(),
-    });
+    final response = await _dio.post<Json>(
+      "/upload/url",
+      queryParameters: {
+        "url": url.toString(),
+      },
+    );
     return FileHandle.fromJson(response.data!);
   }
 
@@ -118,10 +123,13 @@ class MusbxApiClient {
     Uri url, {
     String fileType = "mp3",
   }) async {
-    final response = await _dio.post<Json>("/upload/yt-dlp", queryParameters: {
-      "url": url.toString(),
-      "fileType": fileType,
-    });
+    final response = await _dio.post<Json>(
+      "/upload/yt-dlp",
+      queryParameters: {
+        "url": url.toString(),
+        "fileType": fileType,
+      },
+    );
     return FileHandle.fromJson(response.data!);
   }
 
@@ -154,21 +162,27 @@ class MusbxApiClient {
     DemucsModel model = DemucsModel.htdemucs_6s,
     DemixFileType fileType = DemixFileType.mp3,
   }) async {
-    final response = await _dio.post<Json>("/demix", queryParameters: {
-      "handle": file.handle,
-      "model": model.name,
-      "fileType": fileType.name,
-    });
-    return DemixJob(_dio, response.data!["jobId"]);
+    final response = await _dio.post<Json>(
+      "/demix",
+      queryParameters: {
+        "handle": file.handle,
+        "model": model.name,
+        "fileType": fileType.name,
+      },
+    );
+    return DemixJob(_dio, response.data!['jobId'] as String);
   }
 
   /// Start an analyzing job on an uploaded [file].
   Future<AnalyzeJob> analyze(
     FileHandle file,
   ) async {
-    final response = await _dio.post<Json>("/analyze", queryParameters: {
-      "handle": file.handle,
-    });
-    return AnalyzeJob(_dio, response.data!["jobId"]);
+    final response = await _dio.post<Json>(
+      "/analyze",
+      queryParameters: {
+        "handle": file.handle,
+      },
+    );
+    return AnalyzeJob(_dio, response.data!['jobId'] as String);
   }
 }

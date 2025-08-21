@@ -59,9 +59,9 @@ RawGestureDetector buildCustomPanGestureDetector({
     gestures: <Type, GestureRecognizerFactory>{
       CustomPanGestureRecognizer:
           GestureRecognizerFactoryWithHandlers<CustomPanGestureRecognizer>(
-        () => recognizer,
-        (CustomPanGestureRecognizer instance) {},
-      )
+            () => recognizer,
+            (instance) {},
+          ),
     },
     child: child,
   );

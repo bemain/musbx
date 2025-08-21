@@ -60,17 +60,23 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
       isDiscrete: isDiscrete,
     );
 
-    Offset highlightStartOffset =
-        Offset(trackRect.left + trackRect.width * highlightStart, 0);
-    Offset highlightEndOffset =
-        Offset(trackRect.left + trackRect.width * highlightEnd, 0);
+    Offset highlightStartOffset = Offset(
+      trackRect.left + trackRect.width * highlightStart,
+      0,
+    );
+    Offset highlightEndOffset = Offset(
+      trackRect.left + trackRect.width * highlightEnd,
+      0,
+    );
 
     final ColorTween activeTrackColorTween = ColorTween(
-        begin: sliderTheme.disabledActiveTrackColor,
-        end: sliderTheme.activeTrackColor);
+      begin: sliderTheme.disabledActiveTrackColor,
+      end: sliderTheme.activeTrackColor,
+    );
     final ColorTween inactiveTrackColorTween = ColorTween(
-        begin: sliderTheme.disabledInactiveTrackColor,
-        end: sliderTheme.inactiveTrackColor);
+      begin: sliderTheme.disabledInactiveTrackColor,
+      end: sliderTheme.inactiveTrackColor,
+    );
 
     final Paint activePaint = Paint()
       ..color = activeTrackColorTween.evaluate(enableAnimation)!;
@@ -116,17 +122,16 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
     context.canvas.drawPath(
       Path.combine(
         PathOperation.difference,
-        Path()
-          ..addRRect(
-            RRect.fromLTRBAndCorners(
-              trackRect.left,
-              trackRect.top,
-              highlightStartOffset.dx + activeTrackRadius.x,
-              trackRect.bottom,
-              topLeft: inactiveTrackRadius,
-              bottomLeft: inactiveTrackRadius,
-            ),
+        Path()..addRRect(
+          RRect.fromLTRBAndCorners(
+            trackRect.left,
+            trackRect.top,
+            highlightStartOffset.dx + activeTrackRadius.x,
+            trackRect.bottom,
+            topLeft: inactiveTrackRadius,
+            bottomLeft: inactiveTrackRadius,
           ),
+        ),
         Path()..addRRect(activeHighlightRRect),
       ),
       activePaint,
@@ -134,17 +139,16 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
     context.canvas.drawPath(
       Path.combine(
         PathOperation.difference,
-        Path()
-          ..addRRect(
-            RRect.fromLTRBAndCorners(
-              highlightEndOffset.dx - inactiveTrackRadius.x,
-              trackRect.top,
-              trackRect.right,
-              trackRect.bottom,
-              topRight: inactiveTrackRadius,
-              bottomRight: inactiveTrackRadius,
-            ),
+        Path()..addRRect(
+          RRect.fromLTRBAndCorners(
+            highlightEndOffset.dx - inactiveTrackRadius.x,
+            trackRect.top,
+            trackRect.right,
+            trackRect.bottom,
+            topRight: inactiveTrackRadius,
+            bottomRight: inactiveTrackRadius,
           ),
+        ),
         Path()..addRRect(inactiveHighlightRRect),
       ),
       inactivePaint,

@@ -41,8 +41,8 @@ class SinglePlayable extends Playable {
 
   @override
   Filters filters({SoundHandle? handle}) => Filters((apply) {
-        apply(source.filters, handle: handle);
-      });
+    apply(source.filters, handle: handle);
+  });
 
   @override
   Duration get duration => SoLoud.instance.getLength(source);
@@ -71,10 +71,10 @@ class MultiPlayable extends Playable {
 
   @override
   Filters filters({SoundHandle? handle}) => Filters((apply) {
-        sources.forEach((stem, source) {
-          apply(source.filters, handle: handles?[stem]);
-        });
-      });
+    sources.forEach((stem, source) {
+      apply(source.filters, handle: handles?[stem]);
+    });
+  });
 
   @override
   Duration get duration => SoLoud.instance.getLength(sources.values.first);

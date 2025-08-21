@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +34,7 @@ class ContinuousButton extends StatelessWidget {
   Widget build(BuildContext context) {
     Timer timer = Timer(const Duration(), () {});
     return GestureDetector(
-      onLongPressStart: (LongPressStartDetails details) {
+      onLongPressStart: (details) {
         timer = Timer.periodic(interval, (_) => onContinuousPress?.call());
       },
       onLongPressUp: () {
@@ -105,12 +105,13 @@ class LoadingPage extends StatelessWidget {
 T? tryCast<T>(dynamic x, {T? fallback}) => x is T ? x : fallback;
 
 extension StringCasingExtension on String {
-  String toCapitalized() =>
-      length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
-  String toTitleCase() => replaceAll(RegExp(' +'), ' ')
-      .split(' ')
-      .map((str) => str.toCapitalized())
-      .join(' ');
+  String toCapitalized() => length > 0
+      ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}'
+      : '';
+  String toTitleCase() => replaceAll(
+    RegExp(' +'),
+    ' ',
+  ).split(' ').map((str) => str.toCapitalized()).join(' ');
 }
 
 /// Whether the phone is connected to a mobile network.
@@ -193,12 +194,14 @@ class Directories {
       _appDocsDir = await getApplicationDocumentsDirectory();
     } catch (e) {
       debugPrint(
-          "[DIRECTORIES] Unable to get application documents; falling back to temporary directory. $e");
+        "[DIRECTORIES] Unable to get application documents; falling back to temporary directory. $e",
+      );
       _appDocsDir = _tempDir;
     }
 
     debugPrint(
-        "[DIRECTORIES] Initialized with temporary directory at ${_tempDir.path}, application documents at ${_appDocsDir.path}");
+      "[DIRECTORIES] Initialized with temporary directory at ${_tempDir.path}, application documents at ${_appDocsDir.path}",
+    );
   }
 }
 
@@ -294,12 +297,13 @@ class NumberField<T extends num> extends StatelessWidget {
   );
 
   /// Optional text prefix to place on the line before the input.
-  late final ValueNotifier<String?> prefixText =
-      ValueNotifier(!prefixWithSign || value == null
-          ? null
-          : value! >= 0
-              ? "+"
-              : "-");
+  late final ValueNotifier<String?> prefixText = ValueNotifier(
+    !prefixWithSign || value == null
+        ? null
+        : value! >= 0
+        ? "+"
+        : "-",
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -315,12 +319,15 @@ class NumberField<T extends num> extends StatelessWidget {
         style: style,
         textAlign: TextAlign.center,
         textAlignVertical: TextAlignVertical.center,
-        keyboardType:
-            const TextInputType.numberWithOptions(signed: true, decimal: true),
+        keyboardType: const TextInputType.numberWithOptions(
+          signed: true,
+          decimal: true,
+        ),
         textInputAction: TextInputAction.done,
         inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(
-              r"^(-|-?\d+(?:\.\d*)?)$")), // Allow positive and negative decimal numbers, as well as just a minus sign
+          FilteringTextInputFormatter.allow(
+            RegExp(r"^(-|-?\d+(?:\.\d*)?)$"),
+          ), // Allow positive and negative decimal numbers, as well as just a minus sign
           ...?inputFormatters,
         ],
         maxLines: 1,
@@ -340,10 +347,12 @@ class NumberField<T extends num> extends StatelessWidget {
             return;
           }
 
-          T clamped = parsed.clamp(
-            min ?? double.negativeInfinity,
-            max ?? double.infinity,
-          ) as T;
+          T clamped =
+              parsed.clamp(
+                    min ?? double.negativeInfinity,
+                    max ?? double.infinity,
+                  )
+                  as T;
           controller.text = clamped.toString();
           onSubmitted?.call(clamped);
         },

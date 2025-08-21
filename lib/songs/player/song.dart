@@ -3,12 +3,14 @@ import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/source.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 /// The default album art.
 /// TODO: Make this a local asset.
-final Uri defaultAlbumArt =
-    Uri.parse("https://bemain.github.io/musbx/default_album_art.png");
+final Uri defaultAlbumArt = Uri.parse(
+  "https://bemain.github.io/musbx/default_album_art.png",
+);
 
 class Song<P extends Playable> {
   /// Representation of a song, to be played by a [SongPlayer].
@@ -52,13 +54,13 @@ class Song<P extends Playable> {
   ///
   /// Note that the returned media item does not include the duration of the audio.
   MediaItem get mediaItem => MediaItem(
-        id: id,
-        title: title,
-        album: album,
-        artist: artist,
-        genre: genre,
-        artUri: artUri ?? defaultAlbumArt,
-      );
+    id: id,
+    title: title,
+    album: album,
+    artist: artist,
+    genre: genre,
+    artUri: artUri ?? defaultAlbumArt,
+  );
 
   /// The directory where files relating to this song are cached.
   Directory get cacheDirectory =>
@@ -74,8 +76,8 @@ class Song<P extends Playable> {
   /// The map will always contain the following keys:
   /// - `id` [String] A unique id.
   /// - `title` [String] The title of this song.
-  /// - `source` [Map<String, dynamic>] Where this song's audio was loaded from. Will contain the key `type` and other values depending on the type.
-  Map<String, dynamic> toJson() {
+  /// - `source` [Json] Where this song's audio was loaded from. Will contain the key `type` and other values depending on the type.
+  Json toJson() {
     return {
       "id": id,
       "title": title,
@@ -92,25 +94,25 @@ class Song<P extends Playable> {
   /// The map should always contain the following keys:
   /// - `id` [String] A unique id.
   /// - `title` [String] The title of this song.
-  /// - `source` [Map<String, dynamic>] Json describing how to create a [SongSource]. Should contain the key `type` and other values depending on the type.
-  static Song? fromJson(Map<String, dynamic> json) {
+  /// - `source` [Json] Json describing how to create a [SongSource]. Should contain the key `type` and other values depending on the type.
+  static Song? fromJson(Json json) {
     if (!json.containsKey("id") ||
         !json.containsKey("title") ||
         !json.containsKey("source")) {
       return null;
     }
 
-    SongSource? source = SongSource.fromJson(json["source"]);
+    SongSource? source = SongSource.fromJson(json['source'] as Json);
     if (source == null) return null;
-    final String? artUri = tryCast<String>(json["artUri"]);
+    final String? artUri = tryCast<String>(json['artUri']);
 
     Song<T> song<T extends Playable>() {
       return Song<T>(
-        id: json["id"] as String,
-        title: json["title"] as String,
-        album: tryCast<String>(json["album"]),
-        artist: tryCast<String>(json["artist"]),
-        genre: tryCast<String>(json["genre"]),
+        id: json['id'] as String,
+        title: json['title'] as String,
+        album: tryCast<String>(json['album']),
+        artist: tryCast<String>(json['artist']),
+        genre: tryCast<String>(json['genre']),
         artUri: artUri == null ? null : Uri.tryParse(artUri),
         source: source as SongSource<T>,
       );

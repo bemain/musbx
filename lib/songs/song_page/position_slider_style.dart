@@ -27,10 +27,12 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
     return PositionSliderStyle(
       activeLoopedTrackColor: theme.colorScheme.primary,
       inactiveLoopedTrackColor: theme.colorScheme.primary.withAlpha(0x1f),
-      disabledActiveLoopedTrackColor:
-          theme.colorScheme.onSurface.withAlpha(0x61),
-      disabledInactiveLoopedTrackColor:
-          theme.colorScheme.onSurface.withAlpha(0x1f),
+      disabledActiveLoopedTrackColor: theme.colorScheme.onSurface.withAlpha(
+        0x61,
+      ),
+      disabledInactiveLoopedTrackColor: theme.colorScheme.onSurface.withAlpha(
+        0x1f,
+      ),
       activeTrackColor: theme.colorScheme.surfaceContainer,
       inactiveTrackColor: theme.colorScheme.surfaceContainer,
       disabledActiveTrackColor: theme.colorScheme.onSurface.withAlpha(0x1f),
@@ -67,8 +69,10 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
       inactiveLoopedTrackColor:
           inactiveLoopedTrackColor ?? this.inactiveLoopedTrackColor,
       disabledActiveLoopedTrackColor:
-          disabledActiveLoopedTrackColor ?? this.disabledActiveLoopedTrackColor,
-      disabledInactiveLoopedTrackColor: disabledInactiveLoopedTrackColor ??
+          disabledActiveLoopedTrackColor ??
+          this.disabledActiveLoopedTrackColor,
+      disabledInactiveLoopedTrackColor:
+          disabledInactiveLoopedTrackColor ??
           this.disabledInactiveLoopedTrackColor,
       activeTrackColor: activeTrackColor ?? this.activeTrackColor,
       inactiveTrackColor: inactiveTrackColor ?? this.inactiveTrackColor,
@@ -81,26 +85,50 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
 
   @override
   ThemeExtension<PositionSliderStyle> lerp(
-      covariant PositionSliderStyle? other, double t) {
+    covariant PositionSliderStyle? other,
+    double t,
+  ) {
     return PositionSliderStyle(
-      activeLoopedTrackColor:
-          Color.lerp(activeLoopedTrackColor, other!.activeLoopedTrackColor, t)!,
+      activeLoopedTrackColor: Color.lerp(
+        activeLoopedTrackColor,
+        other!.activeLoopedTrackColor,
+        t,
+      )!,
       inactiveLoopedTrackColor: Color.lerp(
-          inactiveLoopedTrackColor, other.inactiveLoopedTrackColor, t)!,
-      disabledActiveLoopedTrackColor: Color.lerp(disabledActiveLoopedTrackColor,
-          other.disabledActiveLoopedTrackColor, t)!,
+        inactiveLoopedTrackColor,
+        other.inactiveLoopedTrackColor,
+        t,
+      )!,
+      disabledActiveLoopedTrackColor: Color.lerp(
+        disabledActiveLoopedTrackColor,
+        other.disabledActiveLoopedTrackColor,
+        t,
+      )!,
       disabledInactiveLoopedTrackColor: Color.lerp(
-          disabledInactiveLoopedTrackColor,
-          other.disabledInactiveLoopedTrackColor,
-          t)!,
-      activeTrackColor:
-          Color.lerp(activeTrackColor, other.activeTrackColor, t)!,
-      inactiveTrackColor:
-          Color.lerp(inactiveTrackColor, other.inactiveTrackColor, t)!,
+        disabledInactiveLoopedTrackColor,
+        other.disabledInactiveLoopedTrackColor,
+        t,
+      )!,
+      activeTrackColor: Color.lerp(
+        activeTrackColor,
+        other.activeTrackColor,
+        t,
+      )!,
+      inactiveTrackColor: Color.lerp(
+        inactiveTrackColor,
+        other.inactiveTrackColor,
+        t,
+      )!,
       disabledActiveTrackColor: Color.lerp(
-          disabledActiveTrackColor, other.disabledActiveTrackColor, t)!,
+        disabledActiveTrackColor,
+        other.disabledActiveTrackColor,
+        t,
+      )!,
       disabledInactiveTrackColor: Color.lerp(
-          disabledInactiveTrackColor, other.disabledInactiveTrackColor, t)!,
+        disabledInactiveTrackColor,
+        other.disabledInactiveTrackColor,
+        t,
+      )!,
     );
   }
 }

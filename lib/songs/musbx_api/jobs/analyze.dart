@@ -14,20 +14,20 @@ class AnalyzeJobReport extends JobReport<AnalyzeJobResult> {
   }) : super(task: JobTask.analyze);
 
   factory AnalyzeJobReport.fromJson(Json json) {
-    assert(json["task"] == JobTask.analyze.name);
+    assert(json['task'] == JobTask.analyze.name);
 
-    final List<dynamic>? result = json["result"] as List?;
+    final List<dynamic>? result = json['result'] as List?;
 
     return AnalyzeJobReport._(
-      json["id"] as String,
-      status: JobStatus.values.byName(json["status"]),
+      json['id'] as String,
+      status: JobStatus.values.byName(json['status'] as String),
       result: result == null
           ? null
           : {
               for (var data in result)
-                data["timestamp"] as double: data["chord"] as String,
+                data['timestamp'] as double: data['chord'] as String,
             },
-      error: json["error"] as Object?,
+      error: json['error'] as Object?,
     );
   }
 

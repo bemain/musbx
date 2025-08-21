@@ -107,8 +107,8 @@ class _SegmentedTabControlState extends State<SegmentedTabControl> {
 
     final Color textColor = widget.enabled
         ? (isSelected
-            ? widget.selectedTabTextColor ?? colors.onPrimaryContainer
-            : widget.textColor ?? colors.onSurface)
+              ? widget.selectedTabTextColor ?? colors.onPrimaryContainer
+              : widget.textColor ?? colors.onSurface)
         : colors.onSurface.withAlpha(0x61);
     final TextStyle? textStyle =
         (isSelected && widget.selectedTabTextStyle != null
@@ -119,22 +119,30 @@ class _SegmentedTabControlState extends State<SegmentedTabControl> {
     final BorderRadius borderRadius = widget.borderRadius
         .subtract(
           BorderRadius.only(
-            topRight: Radius.circular(max(
-              widget.selectedTabPadding.right,
-              widget.selectedTabPadding.top,
-            )),
-            topLeft: Radius.circular(max(
-              widget.selectedTabPadding.left,
-              widget.selectedTabPadding.top,
-            )),
-            bottomRight: Radius.circular(max(
-              widget.selectedTabPadding.right,
-              widget.selectedTabPadding.bottom,
-            )),
-            bottomLeft: Radius.circular(max(
-              widget.selectedTabPadding.left,
-              widget.selectedTabPadding.bottom,
-            )),
+            topRight: Radius.circular(
+              max(
+                widget.selectedTabPadding.right,
+                widget.selectedTabPadding.top,
+              ),
+            ),
+            topLeft: Radius.circular(
+              max(
+                widget.selectedTabPadding.left,
+                widget.selectedTabPadding.top,
+              ),
+            ),
+            bottomRight: Radius.circular(
+              max(
+                widget.selectedTabPadding.right,
+                widget.selectedTabPadding.bottom,
+              ),
+            ),
+            bottomLeft: Radius.circular(
+              max(
+                widget.selectedTabPadding.left,
+                widget.selectedTabPadding.bottom,
+              ),
+            ),
           ),
         )
         .resolve(null);
@@ -144,8 +152,8 @@ class _SegmentedTabControlState extends State<SegmentedTabControl> {
       elevation: 0,
       color: isSelected
           ? widget.enabled
-              ? widget.selectedTabColor ?? colors.primaryContainer
-              : colors.onSurface.withAlpha(0x1e)
+                ? widget.selectedTabColor ?? colors.primaryContainer
+                : colors.onSurface.withAlpha(0x1e)
           : Colors.transparent,
       margin: widget.selectedTabPadding,
       child: InkWell(

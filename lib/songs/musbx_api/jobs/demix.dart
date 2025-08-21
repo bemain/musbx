@@ -41,17 +41,18 @@ class DemixJobReport extends JobReport<DemixJobResult> {
   /// The progress of the current [step], as a fraction between `0.0` and `1.0`.
   final double progress;
 
-  factory DemixJobReport.fromJson(Map<String, dynamic> json) {
-    assert(json["task"] == JobTask.demix.name);
+  factory DemixJobReport.fromJson(Json json) {
+    assert(json['task'] == JobTask.demix.name);
 
     return DemixJobReport._(
-      json["id"] as String,
-      status: JobStatus.values.byName(json["status"]),
-      result: (json["result"] as Map<String, dynamic>?)
-          ?.map((key, value) => MapEntry(key, value as String)),
-      error: json["error"] as Object?,
-      step: DemixStep.values.byName(json["step"]),
-      progress: json["progress"] as double,
+      json['id'] as String,
+      status: JobStatus.values.byName(json['status'] as String),
+      result: (json['result'] as Json?)?.map(
+        (key, value) => MapEntry(key, value as String),
+      ),
+      error: json['error'] as Object?,
+      step: DemixStep.values.byName(json['step'] as String),
+      progress: json['progress'] as double,
     );
   }
 

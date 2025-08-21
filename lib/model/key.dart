@@ -35,44 +35,42 @@ class Key {
 
   /// The type of accidental that this key signature introduces.
   Accidental get accidental => switch (_majorParallel.tonic.chroma) {
-        Chroma.c => Accidental.natural,
-        Chroma.g ||
-        Chroma.d ||
-        Chroma.a ||
-        Chroma.e ||
-        Chroma.b ||
-        Chroma.fSharp =>
-          Accidental.sharp,
-        Chroma.f ||
-        Chroma.aSharp ||
-        Chroma.dSharp ||
-        Chroma.gSharp ||
-        Chroma.cSharp ||
-        Chroma.fSharp =>
-          Accidental.flat,
-      };
+    Chroma.c => Accidental.natural,
+    Chroma.g ||
+    Chroma.d ||
+    Chroma.a ||
+    Chroma.e ||
+    Chroma.b ||
+    Chroma.fSharp => Accidental.sharp,
+    Chroma.f ||
+    Chroma.aSharp ||
+    Chroma.dSharp ||
+    Chroma.gSharp ||
+    Chroma.cSharp ||
+    Chroma.fSharp => Accidental.flat,
+  };
 
   /// The number of accidentals that this key signature introduces.
   int get nAccidentals => switch (_majorParallel.tonic.chroma) {
-        Chroma.c => 0,
-        Chroma.g || Chroma.f => 1,
-        Chroma.d || Chroma.aSharp => 2,
-        Chroma.a || Chroma.dSharp => 3,
-        Chroma.e || Chroma.gSharp => 4,
-        Chroma.b || Chroma.cSharp => 5,
-        Chroma.fSharp => 6,
-      };
+    Chroma.c => 0,
+    Chroma.g || Chroma.f => 1,
+    Chroma.d || Chroma.aSharp => 2,
+    Chroma.a || Chroma.dSharp => 3,
+    Chroma.e || Chroma.gSharp => 4,
+    Chroma.b || Chroma.cSharp => 5,
+    Chroma.fSharp => 6,
+  };
 
   /// All the notes in this ḱey.
   Iterable<PitchClass> get notes =>
-      type.intervalPattern.map((int interval) => tonic.transposed(interval));
+      type.intervalPattern.map((interval) => tonic.transposed(interval));
 
   /// The key parallel to this one.
   /// It contains the same [notes] as this, but has a different [tonic] and [type].
   Key get parallel => switch (type) {
-        KeyType.major => Key(tonic.transposed(-3), KeyType.minor),
-        KeyType.minor => Key(tonic.transposed(3), KeyType.major),
-      };
+    KeyType.major => Key(tonic.transposed(-3), KeyType.minor),
+    KeyType.minor => Key(tonic.transposed(3), KeyType.major),
+  };
 
   /// Returns [this] if this is major, or [parallel] otherwise.
   Key get _majorParallel => type == KeyType.major ? this : parallel;

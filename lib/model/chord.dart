@@ -91,13 +91,14 @@ class Chord {
   /// Parse [string] as a chord.
   /// Returns `null` if [string] is not a valid chord.
   static Chord? tryParse(String string) {
-    RegExp regExp = RegExp(r"([A-G][#♯b♭]?)" // Root
-        r"(m(?!aj)|dim|aug)?" // Quality
-        r"((maj|Δ)?\d*)?" // Extension
-        r"(sus\d*)?" // Sus
-        r"((([#♯b♭]|add)\d+)*)?" // Alterations
-        r"\/?([A-G])?$" // Bass note
-        );
+    RegExp regExp = RegExp(
+      r"([A-G][#♯b♭]?)" // Root
+      r"(m(?!aj)|dim|aug)?" // Quality
+      r"((maj|Δ)?\d*)?" // Extension
+      r"(sus\d*)?" // Sus
+      r"((([#♯b♭]|add)\d+)*)?" // Alterations
+      r"\/?([A-G])?$", // Bass note
+    );
     var matches = regExp.allMatches(string);
     if (matches.isEmpty) return null;
     RegExpMatch match = matches.elementAt(0);

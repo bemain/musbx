@@ -55,13 +55,13 @@ class JobReport<T> {
   /// Whether the job has thrown an error.
   bool get hasError => error != null;
 
-  factory JobReport.fromJson(Map<String, dynamic> json) {
+  factory JobReport.fromJson(Json json) {
     return JobReport(
-      json["id"] as String,
-      task: JobTask.values.byName(json["task"]),
-      status: JobStatus.values.byName(json["status"]),
-      result: json["result"] as T?,
-      error: json["error"] as Object?,
+      json['id'] as String,
+      task: JobTask.values.byName(json['task'] as String),
+      status: JobStatus.values.byName(json['status'] as String),
+      result: json['result'] as T?,
+      error: json['error'] as Object?,
     );
   }
 
@@ -112,7 +112,7 @@ abstract class Job<T> {
   }) async {
     JobReport<T> report = await get();
     while (report.status == JobStatus.running) {
-      await Future.delayed(checkStatusInterval);
+      await Future<void>.delayed(checkStatusInterval);
       report = await get();
     }
 

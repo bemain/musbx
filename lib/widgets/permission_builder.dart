@@ -82,10 +82,12 @@ class PermissionBuilderState extends State<PermissionBuilder>
     if (status == null) return const LoadingPage(text: "");
 
     if (status == PermissionStatus.granted) {
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => widget.onPermissionGranted());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => widget.onPermissionGranted(),
+      );
       return InfoPage(
-        icon: widget.permissionGrantedIcon ?? const CircularProgressIndicator(),
+        icon:
+            widget.permissionGrantedIcon ?? const CircularProgressIndicator(),
         text: "Access to the ${widget.permissionName} granted.",
       );
     }
@@ -131,10 +133,12 @@ class PermissionBuilderState extends State<PermissionBuilder>
     required String buttonText,
     required void Function() onButtonPressed,
   }) {
-    additionalInfoText =
-        (additionalInfoText != null) ? "\n\n$additionalInfoText" : "";
-    String permissionText =
-        (widget.permissionText != null) ? "\n\n${widget.permissionText}" : "";
+    additionalInfoText = (additionalInfoText != null)
+        ? "\n\n$additionalInfoText"
+        : "";
+    String permissionText = (widget.permissionText != null)
+        ? "\n\n${widget.permissionText}"
+        : "";
     return Padding(
       padding: const EdgeInsets.all(30),
       child: Center(

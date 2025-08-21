@@ -24,7 +24,7 @@ class AnimatedChildren extends StatelessWidget {
           ...List.generate(
             children.length,
             (i) => _buildAnimatedSpeedDialChild(context, i),
-          )
+          ),
         ],
       ),
     );

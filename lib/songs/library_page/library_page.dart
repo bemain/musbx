@@ -3,14 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
+import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
-import 'package:musbx/songs/player/song.dart';
 
 class LibraryPage extends StatelessWidget {
   const LibraryPage({super.key});
@@ -18,33 +18,37 @@ class LibraryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(slivers: [
-        SliverAppBar.medium(
-          pinned: true,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          scrolledUnderElevation: 0,
-          toolbarHeight: 68,
-          expandedHeight: 128,
-          title: LibrarySearchBar(),
-          actions: const [
-            GetPremiumButton(),
-            InfoButton(),
-          ],
-        ),
-        ListenableBuilder(
-          listenable: Songs.history,
-          builder: (context, child) {
-            return SliverList.list(
-              children: [
-                const SizedBox(height: 8),
-                for (final Song song in Songs.history.sorted(ascending: false))
-                  _buildSongTile(context, song),
-                const SizedBox(height: 80),
-              ],
-            );
-          },
-        )
-      ]),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar.medium(
+            pinned: true,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            scrolledUnderElevation: 0,
+            toolbarHeight: 68,
+            expandedHeight: 128,
+            title: LibrarySearchBar(),
+            actions: const [
+              GetPremiumButton(),
+              InfoButton(),
+            ],
+          ),
+          ListenableBuilder(
+            listenable: Songs.history,
+            builder: (context, child) {
+              return SliverList.list(
+                children: [
+                  const SizedBox(height: 8),
+                  for (final Song song in Songs.history.sorted(
+                    ascending: false,
+                  ))
+                    _buildSongTile(context, song),
+                  const SizedBox(height: 80),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
       floatingActionButton: _buildLoadSongFAB(context),
     );
   }
@@ -52,13 +56,15 @@ class LibraryPage extends StatelessWidget {
   Widget _buildSongTile(
     BuildContext context,
     Song song, {
-    Function()? onSelected,
+    void Function()? onSelected,
   }) {
-    final bool isLocked = Songs.isAccessRestricted &&
+    final bool isLocked =
+        Songs.isAccessRestricted &&
         !Songs.songsPlayedThisWeek.contains(song) &&
         song != demoSong;
-    final TextStyle? textStyle =
-        !isLocked ? null : TextStyle(color: Theme.of(context).disabledColor);
+    final TextStyle? textStyle = !isLocked
+        ? null
+        : TextStyle(color: Theme.of(context).disabledColor);
 
     return ListTile(
       contentPadding: const EdgeInsets.only(left: 20, right: 8),
@@ -86,7 +92,9 @@ class LibraryPage extends StatelessWidget {
       ),
       onTap: () async {
         if (isLocked) {
-          showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
+          await showExceptionDialog(
+            const MusicPlayerAccessRestrictedDialog(),
+          );
           return;
         }
 
@@ -100,7 +108,7 @@ class LibraryPage extends StatelessWidget {
   }
 
   void _showOptionsSheet(BuildContext context, Song song) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
       builder: (context) => _buildOptionsSheet(context, song),
@@ -123,15 +131,16 @@ class LibraryPage extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             titleTextStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+              fontWeight: FontWeight.bold,
+            ),
             subtitle: Text(
               song.artist ?? "Unknown artist",
             ),
             trailing: song.source is DemixedSource
                 ? null
                 : const Tooltip(
-                    message: "This song has not been demixed into instruments.",
+                    message:
+                        "This song has not been demixed into instruments.",
                     child: Icon(Symbols.piano_off),
                   ),
           ),
@@ -140,7 +149,7 @@ class LibraryPage extends StatelessWidget {
             leading: const Icon(Symbols.edit),
             title: const Text("Rename"),
             onTap: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 useRootNavigator: true,
                 builder: (context) {
@@ -166,9 +175,11 @@ class LibraryPage extends StatelessWidget {
                       TextButton(
                         onPressed: () {
                           if (controller.text.isNotEmpty) {
-                            Songs.history.add(song.copyWith(
-                              title: controller.text,
-                            ));
+                            Songs.history.add(
+                              song.copyWith(
+                                title: controller.text,
+                              ),
+                            );
                           }
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
@@ -186,7 +197,7 @@ class LibraryPage extends StatelessWidget {
             leading: const Icon(Symbols.delete_sweep),
             title: const Text("Clear cached files"),
             onTap: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 useRootNavigator: true,
                 builder: (context) {
@@ -208,9 +219,11 @@ class LibraryPage extends StatelessWidget {
                           song.cacheDirectory.delete(recursive: true);
                           if (song.source is DemixedSource) {
                             // Override the history entry for the song with a non-demixed variant
-                            Songs.history.add(song.withSource<SinglePlayable>(
-                              (song.source as DemixedSource).rootParent,
-                            ));
+                            Songs.history.add(
+                              song.withSource<SinglePlayable>(
+                                (song.source as DemixedSource).rootParent,
+                              ),
+                            );
                           }
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
@@ -227,7 +240,7 @@ class LibraryPage extends StatelessWidget {
             leading: const Icon(Symbols.delete_forever),
             title: const Text("Remove from library"),
             onTap: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 useRootNavigator: true,
                 builder: (context) {
@@ -333,7 +346,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         );
       },
       viewHintText: "Search your library",
-      suggestionsBuilder: (context, SearchController controller) async {
+      suggestionsBuilder: (context, controller) async {
         final String query = controller.text.toLowerCase();
         if (query.isEmpty) {
           return const [];
@@ -342,19 +355,21 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         // History entries that match the search query
         final Iterable<Song> songHistory = Songs.history
             .sorted(ascending: false)
-            .where((song) =>
-                song.title.toLowerCase().contains(query) ||
-                (song.artist?.toLowerCase().contains(query) ?? false));
+            .where(
+              (song) =>
+                  song.title.toLowerCase().contains(query) ||
+                  (song.artist?.toLowerCase().contains(query) ?? false),
+            );
 
         futureSearchResults = SoundCloudSearch.searchTracks(query)
             .timeout(Duration(seconds: 2), onTimeout: () => [])
             .then((value) {
-          if (value.isEmpty) return;
+              if (value.isEmpty) return;
 
-          setState(() {
-            searchResults = value;
-          });
-        });
+              setState(() {
+                searchResults = value;
+              });
+            });
 
         if (!context.mounted) return [];
 
@@ -398,13 +413,15 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
   Widget _buildSongTile(
     BuildContext context,
     Song song, {
-    Function()? onSelected,
+    void Function()? onSelected,
   }) {
-    final bool isLocked = Songs.isAccessRestricted &&
+    final bool isLocked =
+        Songs.isAccessRestricted &&
         !Songs.songsPlayedThisWeek.contains(song) &&
         song != demoSong;
-    final TextStyle? textStyle =
-        !isLocked ? null : TextStyle(color: Theme.of(context).disabledColor);
+    final TextStyle? textStyle = !isLocked
+        ? null
+        : TextStyle(color: Theme.of(context).disabledColor);
 
     return ListTile(
       minLeadingWidth: 64,
@@ -433,7 +450,9 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
       ),
       onTap: () async {
         if (isLocked) {
-          showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
+          await showExceptionDialog(
+            const MusicPlayerAccessRestrictedDialog(),
+          );
           return;
         }
 

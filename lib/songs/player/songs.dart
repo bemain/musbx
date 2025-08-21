@@ -5,15 +5,16 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/library_page/youtube_search.dart';
+import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/songs/player/preferences.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/preferences.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/ads.dart';
 
 /// The demo song loaded the first time the user launches the app.
@@ -52,7 +53,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
 
     // Initialize audio handler
     handler = await SongsAudioHandler.initialize();
-    AudioService.notificationClicked.listen((bool event) {
+    AudioService.notificationClicked.listen((event) {
       if (event) {
         // Navigate to the music player page
         // TODO: Don't hard code this value
@@ -61,12 +62,14 @@ class Songs extends BaseAudioHandler with SeekHandler {
     });
 
     // Begin fetching history from disk
-    YoutubeSearch.history.fetch();
-    history.fetch().then((_) {
-      if (history.entries.isEmpty) {
-        history.add(demoSong);
-      }
-    });
+    unawaited(SoundCloudSearch.history.fetch());
+    unawaited(
+      history.fetch().then((_) {
+        if (history.entries.isEmpty) {
+          history.add(demoSong);
+        }
+      }),
+    );
   }
 
   /// Used internally to load and save preferences for songs.
@@ -76,7 +79,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
   static final HistoryHandler<Song> history = HistoryHandler<Song>(
     historyFileName: "song_history",
     fromJson: (json) {
-      if (json is! Map<String, dynamic>) {
+      if (json is! Json) {
         throw "[SONG HISTORY] Incorrectly formatted entry in history file: ($json)";
       }
       Song? song = Song.fromJson(json);
@@ -89,7 +92,8 @@ class Songs extends BaseAudioHandler with SeekHandler {
     onEntryRemoved: (entry) async {
       // Remove cached files
       debugPrint(
-          "[SONG HISTORY] Deleting cached files for song ${entry.value.id}");
+        "[SONG HISTORY] Deleting cached files for song ${entry.value.id}",
+      );
       final Directory directory = entry.value.cacheDirectory;
       if (await directory.exists()) await directory.delete(recursive: true);
     },
@@ -100,8 +104,11 @@ class Songs extends BaseAudioHandler with SeekHandler {
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
   static Iterable<Song> get songsPlayedThisWeek => history.entries.entries
-      .where((entry) =>
-          entry.key.difference(DateTime.now()).abs() < const Duration(days: 7))
+      .where(
+        (entry) =>
+            entry.key.difference(DateTime.now()).abs() <
+            const Duration(days: 7),
+      )
       .where((entry) => entry.value.id != demoSong.id) // Exclude demo song
       .map((e) => e.value);
 
@@ -130,12 +137,13 @@ class Songs extends BaseAudioHandler with SeekHandler {
       // Make sure the weekly limit has not been exceeded
       if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
         throw const AccessRestrictedException(
-            "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.");
+          "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.",
+        );
       }
 
       try {
         // Show interstitial ad
-        (await loadInterstitialAd())?.show();
+        unawaited((await loadInterstitialAd())?.show());
       } catch (e) {
         debugPrint("[ADS] Failed to load interstitial ad: $e");
       }

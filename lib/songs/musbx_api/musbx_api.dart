@@ -47,7 +47,8 @@ class MusbxApi {
         }
 
         debugPrint(
-            "[MUSBX API] The host's version ($clientVersion) is not compatible with the app's version ($version): $hostUrl");
+          "[MUSBX API] The host's version ($clientVersion) is not compatible with the app's version ($version): $hostUrl",
+        );
         hostAvailable = true;
       } catch (_) {
         debugPrint("[MUSBX API] Host is not available: $hostUrl");

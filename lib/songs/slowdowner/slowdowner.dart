@@ -6,6 +6,7 @@ import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:flutter_soloud/src/filters/pitchshift_filter.dart';
 import 'package:musbx/songs/player/filter.dart';
 import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 class SlowdownerComponent extends SongPlayerComponent {
@@ -16,7 +17,7 @@ class SlowdownerComponent extends SongPlayerComponent {
       player.playable.filters(handle: player.handle).pitchShift;
 
   @override
-  void initialize() {
+  Future<void> initialize() async {
     // Note that this activation is redundant.
     // We have to activate the filter before the sound is played, and so we
     // activate it already when the [Playable] is created.
@@ -63,11 +64,11 @@ class SlowdownerComponent extends SongPlayerComponent {
   ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
-  void loadPreferencesFromJson(Map<String, dynamic> json) {
+  void loadPreferencesFromJson(Json json) {
     super.loadPreferencesFromJson(json);
 
-    pitch = tryCast<double>(json["pitch"])?.clamp(-12, 12) ?? 0.0;
-    speed = tryCast<double>(json["speed"])?.clamp(0.5, 2) ?? 1.0;
+    pitch = tryCast<double>(json['pitch'])?.clamp(-12, 12) ?? 0.0;
+    speed = tryCast<double>(json['speed'])?.clamp(0.5, 2) ?? 1.0;
 
     notifyListeners();
   }
@@ -78,7 +79,7 @@ class SlowdownerComponent extends SongPlayerComponent {
   ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
-  Map<String, dynamic> savePreferencesToJson() {
+  Json savePreferencesToJson() {
     return {
       ...super.savePreferencesToJson(),
       "pitch": pitch,

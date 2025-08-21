@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/utils/utils.dart';
 
 /// Helper class for saving preferences for songs to disk.
 class SongPreferences {
@@ -11,15 +12,15 @@ class SongPreferences {
   }
 
   /// Load preferences for a [song].
-  Future<Map<String, dynamic>?> load(Song song) async {
+  Future<Json?> load(Song song) async {
     File file = _getFileForSong(song);
     if (!await file.exists()) return null;
 
-    return jsonDecode(await file.readAsString());
+    return jsonDecode(await file.readAsString()) as Json;
   }
 
   /// Save preferences for a [song].
-  Future<void> save(Song song, Map<String, dynamic> preferences) async {
+  Future<void> save(Song song, Json preferences) async {
     File file = _getFileForSong(song);
 
     await file.create(recursive: true);

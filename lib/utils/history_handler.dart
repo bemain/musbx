@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Helper class for persisting history entries to disk.
@@ -38,10 +39,10 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// The previously played songs, sorted by date.
   List<T> sorted({bool ascending = false}) {
-    List<T> sorted = (entries.entries.toList()
-          ..sort((a, b) => a.key.compareTo(b.key)))
-        .map((entry) => entry.value)
-        .toList();
+    List<T> sorted =
+        (entries.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))
+            .map((entry) => entry.value)
+            .toList();
     return ascending ? sorted : sorted.reversed.toList();
   }
 
@@ -51,7 +52,7 @@ class HistoryHandler<T> extends ChangeNotifier {
   Future<void> fetch() async {
     File file = await _historyFile;
     if (!await file.exists()) return;
-    Map<String, dynamic> json = jsonDecode(await file.readAsString());
+    Json json = jsonDecode(await file.readAsString()) as Json;
 
     entries.clear();
 
@@ -81,8 +82,10 @@ class HistoryHandler<T> extends ChangeNotifier {
 
     // Only keep the [maxEntries] newest entries
     while (maxEntries != null && entries.length > maxEntries!) {
-      final oldestEntry = entries.entries.reduce((oldest, element) =>
-          element.key.isBefore(oldest.key) ? element : oldest);
+      final oldestEntry = entries.entries.reduce(
+        (oldest, element) =>
+            element.key.isBefore(oldest.key) ? element : oldest,
+      );
       entries.remove(oldestEntry.key);
       onEntryRemoved?.call(oldestEntry);
     }
@@ -104,12 +107,16 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// Save history entries to disk.
   Future<void> save() async {
-    await (await _historyFile).writeAsString(jsonEncode(entries.map(
-      (date, song) => MapEntry(
-        date.toString(),
-        toJson(song),
+    await (await _historyFile).writeAsString(
+      jsonEncode(
+        entries.map(
+          (date, song) => MapEntry(
+            date.toString(),
+            toJson(song),
+          ),
+        ),
       ),
-    )));
+    );
   }
 
   /// Remove all history entries.

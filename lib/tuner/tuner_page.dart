@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/widgets/default_app_bar.dart';
-import 'package:musbx/widgets/permission_builder.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/tuner/tuning_graph.dart';
+import 'package:musbx/widgets/default_app_bar.dart';
+import 'package:musbx/widgets/permission_builder.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class TunerPage extends StatefulWidget {
@@ -26,17 +26,18 @@ class TunerPageState extends State<TunerPage> {
   Widget build(BuildContext context) {
     if (!tuner.hasPermission) {
       return PermissionBuilder(
-          permission: Permission.microphone,
-          permissionName: "microphone",
-          permissionText:
-              "To use the tuner, give the app permission to access the microphone.",
-          permissionDeniedIcon: const Icon(Symbols.mic_off_rounded, size: 128),
-          permissionGrantedIcon: const Icon(Symbols.mic_rounded, size: 128),
-          onPermissionGranted: () async {
-            setState(() {
-              tuner.hasPermission = true;
-            });
+        permission: Permission.microphone,
+        permissionName: "microphone",
+        permissionText:
+            "To use the tuner, give the app permission to access the microphone.",
+        permissionDeniedIcon: const Icon(Symbols.mic_off_rounded, size: 128),
+        permissionGrantedIcon: const Icon(Symbols.mic_rounded, size: 128),
+        onPermissionGranted: () async {
+          setState(() {
+            tuner.hasPermission = true;
           });
+        },
+      );
     }
 
     return StreamBuilder(
@@ -44,31 +45,32 @@ class TunerPageState extends State<TunerPage> {
       builder: (context, snapshot) => ValueListenableBuilder(
         valueListenable: tuner.tuningNotifier,
         builder: (context, tuning, child) => ValueListenableBuilder(
-            valueListenable: tuner.temperamentNotifier,
-            builder: (context, temperament, child) {
-              return Scaffold(
-                appBar: const DefaultAppBar(),
-                body: Padding(
-                  padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TunerGauge(
-                          frequency: (tuner.frequencyHistory.isNotEmpty)
-                              ? tuner.frequencyHistory.last
-                              : null,
-                        ),
+          valueListenable: tuner.temperamentNotifier,
+          builder: (context, temperament, child) {
+            return Scaffold(
+              appBar: const DefaultAppBar(),
+              body: Padding(
+                padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TunerGauge(
+                        frequency: (tuner.frequencyHistory.isNotEmpty)
+                            ? tuner.frequencyHistory.last
+                            : null,
                       ),
-                      const SizedBox(height: 16.0),
-                      const Divider(),
-                      TuningGraph(frequencyHistory: tuner.frequencyHistory),
-                      const Divider(),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    const Divider(),
+                    TuningGraph(frequencyHistory: tuner.frequencyHistory),
+                    const Divider(),
+                  ],
                 ),
-              );
-            }),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

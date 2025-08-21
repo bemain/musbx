@@ -70,7 +70,7 @@ class DroneAudioSource extends StreamAudioSource {
       ...shortToBytes(2 * channels), // block align
       ...shortToBytes(bitsPerSample), // bits per sample
       ..."data".codeUnits, // DATA tag
-      ...longToBytes(channels * length * 2) // data length
+      ...longToBytes(channels * length * 2), // data length
     ];
   }
 
@@ -79,15 +79,18 @@ class DroneAudioSource extends StreamAudioSource {
   List<int> generateWave() {
     List<int> wave = [];
     for (int i = 0; i < length; i++) {
-      wave.addAll(shortToBytes(
-        amplitude *
-            frequencies.fold(0.0, (sum, frequency) {
-              final double value =
-                  sin((offset * length + i) * frequency * 2 * pi / sampleRate);
-              return sum + value;
-            }) ~/
-            frequencies.length,
-      ));
+      wave.addAll(
+        shortToBytes(
+          amplitude *
+              frequencies.fold(0.0, (sum, frequency) {
+                final double value = sin(
+                  (offset * length + i) * frequency * 2 * pi / sampleRate,
+                );
+                return sum + value;
+              }) ~/
+              frequencies.length,
+        ),
+      );
     }
 
     return wave;

@@ -13,9 +13,11 @@ class TransformedPersistentValue<T, S> extends ValueNotifier<T> {
     required T initialValue,
     required this.to,
     required this.from,
-  })  : _primitiveValue =
-            PersistentValue<S>(key, initialValue: to(initialValue)),
-        super(initialValue) {
+  }) : _primitiveValue = PersistentValue<S>(
+         key,
+         initialValue: to(initialValue),
+       ),
+       super(initialValue) {
     value = from(_primitiveValue.value);
   }
 

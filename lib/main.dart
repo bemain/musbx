@@ -25,7 +25,7 @@ Future<void> main() async {
   await Songs.initialize();
   await Notifications.initialize();
 
-  LaunchHandler.initialize();
+  await LaunchHandler.initialize();
 
   // Google Ads
   if (Platform.isAndroid || Platform.isIOS) {
@@ -46,9 +46,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DynamicColorBuilder(
-      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        final (ThemeData lightTheme, ThemeData darkTheme) =
-            generateThemes(lightDynamic, darkDynamic);
+      builder: (lightDynamic, darkDynamic) {
+        final (ThemeData lightTheme, ThemeData darkTheme) = generateThemes(
+          lightDynamic,
+          darkDynamic,
+        );
 
         return MaterialApp.router(
           title: "Musician's Toolbox",

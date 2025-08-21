@@ -31,8 +31,9 @@ class InactiveSliderTrackShape extends SliderTrackShape
     }
 
     final ColorTween trackColorTween = ColorTween(
-        begin: sliderTheme.disabledInactiveTrackColor,
-        end: sliderTheme.inactiveTrackColor);
+      begin: sliderTheme.disabledInactiveTrackColor,
+      end: sliderTheme.inactiveTrackColor,
+    );
     final Paint paint = Paint()
       ..color = trackColorTween.evaluate(enableAnimation)!;
 
@@ -59,10 +60,12 @@ class InactiveSliderTrackShape extends SliderTrackShape
     bool isEnabled = false,
     bool isDiscrete = false,
   }) {
-    final double thumbWidth =
-        sliderTheme.thumbShape!.getPreferredSize(isEnabled, isDiscrete).width;
-    final double overlayWidth =
-        sliderTheme.overlayShape!.getPreferredSize(isEnabled, isDiscrete).width;
+    final double thumbWidth = sliderTheme.thumbShape!
+        .getPreferredSize(isEnabled, isDiscrete)
+        .width;
+    final double overlayWidth = sliderTheme.overlayShape!
+        .getPreferredSize(isEnabled, isDiscrete)
+        .width;
     final double trackHeight = sliderTheme.trackHeight!;
     assert(overlayWidth >= 0);
     assert(trackHeight >= 0);
@@ -72,7 +75,11 @@ class InactiveSliderTrackShape extends SliderTrackShape
         offset.dy + (parentBox.size.height - trackHeight) / 2;
     final double trackRight = trackLeft + parentBox.size.width - thumbWidth;
     final double trackBottom = trackTop + trackHeight;
-    return Rect.fromLTRB(min(trackLeft, trackRight), trackTop,
-        max(trackLeft, trackRight), trackBottom);
+    return Rect.fromLTRB(
+      min(trackLeft, trackRight),
+      trackTop,
+      max(trackLeft, trackRight),
+      trackBottom,
+    );
   }
 }

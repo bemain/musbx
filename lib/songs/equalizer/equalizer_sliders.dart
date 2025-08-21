@@ -23,13 +23,14 @@ class EqualizerSliders extends StatelessWidget {
           lineColor: enabled
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.onSurface.withAlpha(0x61),
-          fillColor:
-              enabled ? Theme.of(context).colorScheme.inversePrimary : null,
+          fillColor: enabled
+              ? Theme.of(context).colorScheme.inversePrimary
+              : null,
         ),
         child: SliderTheme(
           data: Theme.of(context).sliderTheme.copyWith(
-                trackShape: InactiveSliderTrackShape(),
-              ),
+            trackShape: InactiveSliderTrackShape(),
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
