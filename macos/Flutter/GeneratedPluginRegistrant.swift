@@ -22,7 +22,7 @@ import package_info_plus
 import path_provider_foundation
 import shared_preferences_foundation
 import soundpool_macos
-import sqflite
+import sqflite_darwin
 import webview_flutter_wkwebview
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {

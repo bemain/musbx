@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:musbx/songs/musbx_api/demixer_api.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/widgets/widgets.dart';
+
+/// The stems that can be requested from the server.
+enum StemType {
+  vocals,
+  piano,
+  guitar,
+  bass,
+  drums,
+  other,
+}
 
 class Stem {
   /// The default [volume]

@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
-import 'package:musbx/songs/musbx_api/demixer_api.dart';
+import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -45,8 +45,8 @@ abstract class SongSource<P extends Playable> {
     String? type = tryCast<String>(json["type"]);
 
     switch (type) {
-      case "youtube":
-        return YoutubeSource.fromJson(json);
+      case "ytdlp":
+        return YtdlpSource.fromJson(json);
       case "file":
         return FileSource.fromJson(json);
       case "demixed":
@@ -56,12 +56,10 @@ abstract class SongSource<P extends Playable> {
   }
 }
 
-class YoutubeSource extends SongSource<SinglePlayable> {
-  /// A source that pulls audio from YouTube.
-  YoutubeSource(this.youtubeId);
+class YtdlpSource extends SongSource<SinglePlayable> {
+  YtdlpSource(this.url);
 
-  /// The id of the YouTube song to pull.
-  final String youtubeId;
+  final Uri url;
 
   /// The [SoLoud] [AudioSource] that is generated from this source.
   AudioSource? source;
@@ -73,14 +71,13 @@ class YoutubeSource extends SongSource<SinglePlayable> {
   Future<SinglePlayable> load({required Directory cacheDirectory}) async {
     File cacheFile = File("${cacheDirectory.path}/audio.mp3");
 
-    if (await cacheFile.exists()) {
-      debugPrint("[YOUTUBE] Using cached audio for video with id '$youtubeId'");
-    } else {
-      cacheFile = await (await MusbxApi.findYoutubeHost()).downloadYoutubeSong(
-        youtubeId,
-        destination: cacheFile,
+    if (!await cacheFile.exists()) {
+      final MusbxApiClient client = await MusbxApi.getClient();
+      final FileHandle handle = await client.uploadYtdlp(
+        url,
         fileType: "mp3",
       );
+      cacheFile = await client.download(handle, cacheFile);
     }
     this.cacheFile = cacheFile;
 
@@ -97,19 +94,19 @@ class YoutubeSource extends SongSource<SinglePlayable> {
     source = null;
   }
 
-  /// Try to create a [YoutubeSource] from a [json] object.
-  static YoutubeSource? fromJson(Map<String, dynamic> json) {
-    if (!json.containsKey("youtubeId")) return null;
-    String? id = tryCast<String>(json["youtubeId"]);
-    if (id == null) return null;
+  /// Try to create a [YtdlpSource] from a [json] object.
+  static YtdlpSource? fromJson(Map<String, dynamic> json) {
+    if (!json.containsKey("url")) return null;
+    String? url = tryCast<String>(json["url"]);
+    if (url == null) return null;
 
-    return YoutubeSource(id);
+    return YtdlpSource(Uri.parse(url));
   }
 
   @override
   Map<String, dynamic> toJson() => {
-        "type": "youtube",
-        "youtubeId": youtubeId,
+        "type": "ytdlp",
+        "url": url.toString(),
       };
 }
 

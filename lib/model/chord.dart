@@ -122,6 +122,14 @@ class Chord {
     );
   }
 
+  static Chord parse(String string) {
+    Chord? chord = tryParse(string);
+    if (chord == null) {
+      throw FormatException("Unable to parse string as a Chord: $string");
+    }
+    return chord;
+  }
+
   /// Transpose this chord a number of semitones.
   Chord transposed(int semitones) {
     return Chord(

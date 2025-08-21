@@ -56,7 +56,7 @@ abstract class SongPlayerComponent<T extends SongPlayer>
 
 /// A
 abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
-  static final SoLoud _soloud = SoLoud.instance;
+  static final SoLoud soloud = SoLoud.instance;
 
   SongPlayer._(this.song, this.playable, this.handle) {
     _positionUpdater;
@@ -122,13 +122,13 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
 
   /// Pause playback.
   void pause() {
-    _soloud.setPause(handle, true);
+    soloud.setPause(handle, true);
     isPlayingNotifier.value = false;
   }
 
   /// Resume playback.
   Future<void> resume() async {
-    _soloud.setPause(handle, false);
+    soloud.setPause(handle, false);
     isPlayingNotifier.value = true;
     await SongsAudioHandler.session.setActive(true);
   }
@@ -163,7 +163,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   late final Timer _positionUpdater =
       Timer.periodic(const Duration(milliseconds: 100), (Timer timer) {
     if (!isPlaying) return;
-    position = _soloud.getPosition(handle);
+    position = soloud.getPosition(handle);
   });
 
   /// The current position of the player.
@@ -183,7 +183,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// set the [position] value continously, and only [seek] once at the end.
   void seek(Duration position) {
     position = loop.clamp(position);
-    _soloud.seek(handle, position);
+    soloud.seek(handle, position);
     positionNotifier.value = position;
     notifyListeners();
   }
@@ -276,11 +276,27 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
   Iterable<SoundHandle> get handles => playable.handles!.values;
 
   @override
+  Future<void> dispose() async {
+    await super.dispose();
+    SoLoud.instance.destroyVoiceGroup(handle);
+  }
+
+  @override
   List<SongPlayerComponent> get components =>
       List.unmodifiable([...super.components, demixer]);
 
   /// Component for isolating or muting specific instruments in the song.
   late final DemixerComponent demixer = DemixerComponent(this);
+
+  @override
+  void seek(Duration position) {
+    position = loop.clamp(position);
+    for (SoundHandle handle in handles) {
+      SongPlayer.soloud.seek(handle, position);
+    }
+    positionNotifier.value = position;
+    notifyListeners();
+  }
 
   @override
   void loadPreferences(Map<String, dynamic> json) {
@@ -297,11 +313,5 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
       ...super.toPreferences(),
       "demixer": demixer.savePreferencesToJson(),
     };
-  }
-
-  @override
-  Future<void> dispose() async {
-    await super.dispose();
-    SoLoud.instance.destroyVoiceGroup(handle);
   }
 }

@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:musbx/songs/library_page/youtube_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
 import 'package:musbx/songs/player/song.dart';
 
 class LibraryPage extends StatelessWidget {
-  LibraryPage({super.key});
-
-  final SearchController searchController = SearchController();
+  const LibraryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,66 +25,7 @@ class LibraryPage extends StatelessWidget {
           scrolledUnderElevation: 0,
           toolbarHeight: 68,
           expandedHeight: 128,
-          title: SearchAnchor(
-            searchController: searchController,
-            builder: (context, controller) {
-              return const AbsorbPointer(
-                child: SearchBar(
-                  elevation: WidgetStatePropertyAll(0.0),
-                  padding: WidgetStatePropertyAll(
-                    EdgeInsets.symmetric(horizontal: 16.0),
-                  ),
-                  leading: Icon(Symbols.search),
-                  hintText: "Search your library",
-                ),
-              );
-            },
-            viewHintText: "Search your library",
-            suggestionsBuilder: (context, SearchController controller) {
-              final String searchPhrase = controller.text.toLowerCase();
-              if (searchPhrase.isEmpty) {
-                return const [];
-              }
-
-              final Iterable<Song> songHistory = Songs.history
-                  .sorted(ascending: false)
-                  .where((song) =>
-                      song.title.toLowerCase().contains(searchPhrase) ||
-                      (song.artist?.toLowerCase().contains(searchPhrase) ??
-                          false));
-
-              return [
-                const SizedBox(height: 8),
-                for (final Song song in songHistory)
-                  _buildSongTile(
-                    context,
-                    song,
-                    showOptions: false,
-                    onSelected: () {
-                      searchController.closeView(null);
-                    },
-                  ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Center(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        searchController.closeView(null);
-                        YoutubeSearch.pickSong(context, query: controller.text);
-                      },
-                      icon: const Icon(Symbols.search),
-                      label: Text(
-                        "Search for '${controller.text}' online",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ),
-              ];
-            },
-          ),
+          title: LibrarySearchBar(),
           actions: const [
             GetPremiumButton(),
             InfoButton(),
@@ -113,7 +52,6 @@ class LibraryPage extends StatelessWidget {
   Widget _buildSongTile(
     BuildContext context,
     Song song, {
-    bool showOptions = true,
     Function()? onSelected,
   }) {
     final bool isLocked = Songs.isAccessRestricted &&
@@ -140,14 +78,12 @@ class LibraryPage extends StatelessWidget {
         song.artist ?? "Unknown artist",
         style: textStyle,
       ),
-      trailing: showOptions
-          ? IconButton(
-              onPressed: () {
-                _showOptionsSheet(context, song);
-              },
-              icon: const Icon(Symbols.more_vert),
-            )
-          : null,
+      trailing: IconButton(
+        onPressed: () {
+          _showOptionsSheet(context, song);
+        },
+        icon: const Icon(Symbols.more_vert),
+      ),
       onTap: () async {
         if (isLocked) {
           showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
@@ -338,7 +274,7 @@ class LibraryPage extends StatelessWidget {
 
         return !Songs.isAccessRestricted;
       },
-      onExpandedPressed: () => YoutubeSearch.pickSong(context),
+      onExpandedPressed: () => SoundCloudSearch.pickSong(context),
       expandedChild: const Icon(Symbols.search),
       expandedLabel: const Text("Search"),
       children: [
@@ -355,17 +291,162 @@ class LibraryPage extends StatelessWidget {
     }
     return Icon(_getSourceIcon(song.source));
   }
+}
 
-  IconData _getSourceIcon(SongSource source) {
-    if (source is FileSource) {
-      return Symbols.file_present;
+IconData _getSourceIcon(SongSource source) {
+  return switch (source) {
+    FileSource() => Symbols.file_present,
+    YtdlpSource() => Symbols.cloud,
+    DemixedSource() => _getSourceIcon(source.parent),
+    _ => Symbols.music_note,
+  };
+}
+
+class LibrarySearchBar extends StatefulWidget {
+  const LibrarySearchBar({super.key});
+
+  @override
+  State<LibrarySearchBar> createState() => _LibrarySearchBarState();
+}
+
+class _LibrarySearchBarState extends State<LibrarySearchBar> {
+  final SearchController controller = SearchController();
+
+  List<SoundCloudTrack>? searchResults;
+
+  Future<void>? futureSearchResults;
+
+  @override
+  Widget build(BuildContext context) {
+    return SearchAnchor(
+      searchController: controller,
+      builder: (context, controller) {
+        return const AbsorbPointer(
+          child: SearchBar(
+            elevation: WidgetStatePropertyAll(0.0),
+            padding: WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 16.0),
+            ),
+            leading: Icon(Symbols.search),
+            hintText: "Search your library",
+          ),
+        );
+      },
+      viewHintText: "Search your library",
+      suggestionsBuilder: (context, SearchController controller) async {
+        final String query = controller.text.toLowerCase();
+        if (query.isEmpty) {
+          return const [];
+        }
+
+        // History entries that match the search query
+        final Iterable<Song> songHistory = Songs.history
+            .sorted(ascending: false)
+            .where((song) =>
+                song.title.toLowerCase().contains(query) ||
+                (song.artist?.toLowerCase().contains(query) ?? false));
+
+        futureSearchResults = SoundCloudSearch.searchTracks(query)
+            .timeout(Duration(seconds: 2), onTimeout: () => [])
+            .then((value) {
+          if (value.isEmpty) return;
+
+          setState(() {
+            searchResults = value;
+          });
+        });
+
+        if (!context.mounted) return [];
+
+        return [
+          const SizedBox(height: 8),
+          for (final Song song in songHistory)
+            _buildSongTile(
+              context,
+              song,
+              onSelected: () {
+                controller.closeView(null);
+              },
+            ),
+          if (songHistory.isNotEmpty) const Divider(),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              "Results online",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          if (searchResults != null)
+            for (final SoundCloudTrack track in searchResults!)
+              SoundCloudTrackListItem(
+                track: track,
+                onTap: () async {
+                  this.controller.closeView(null);
+                  await SoundCloudSearch.loadTrack(track);
+                  if (context.mounted) {
+                    context.go(Navigation.songRoute(track.id.toString()));
+                  }
+                },
+              )
+          else
+            for (var i = 0; i < 10; i++) SoundCloudTrackListItem(track: null),
+        ];
+      },
+    );
+  }
+
+  Widget _buildSongTile(
+    BuildContext context,
+    Song song, {
+    Function()? onSelected,
+  }) {
+    final bool isLocked = Songs.isAccessRestricted &&
+        !Songs.songsPlayedThisWeek.contains(song) &&
+        song != demoSong;
+    final TextStyle? textStyle =
+        !isLocked ? null : TextStyle(color: Theme.of(context).disabledColor);
+
+    return ListTile(
+      minLeadingWidth: 64,
+      leading: SizedBox(
+        width: 64,
+        height: 64,
+        child: Card(
+          margin: EdgeInsets.zero,
+          child: isLocked
+              ? Icon(
+                  Symbols.lock,
+                  color: Theme.of(context).disabledColor,
+                )
+              : _buildSongIcon(song),
+        ),
+      ),
+      title: Text(
+        song.title,
+        style: textStyle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        song.artist ?? "Unknown artist",
+        style: textStyle,
+      ),
+      onTap: () async {
+        if (isLocked) {
+          showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
+          return;
+        }
+
+        onSelected?.call();
+        context.go(Navigation.songRoute(song.id));
+      },
+    );
+  }
+
+  Widget _buildSongIcon(Song song) {
+    if (song == demoSong) {
+      return const Icon(Symbols.science);
     }
-    if (source is YoutubeSource) {
-      return Symbols.youtube_searched_for;
-    }
-    if (source is DemixedSource) {
-      return _getSourceIcon(source.parent);
-    }
-    return Symbols.music_note;
+    return Icon(_getSourceIcon(song.source));
   }
 }

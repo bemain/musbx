@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:musbx/songs/musbx_api/demixer_api.dart';
+import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/player/filter.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/source.dart';

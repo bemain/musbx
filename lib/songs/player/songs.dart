@@ -23,7 +23,7 @@ final Song<SinglePlayable> demoSong = Song(
   title: "In Treble, Spilled Some Jazz Jam",
   artist: "Erik Lagerstedt",
   artUri: Uri.parse("https://bemain.github.io/musbx/demo_album_art.png"),
-  source: YoutubeSource("9ytqRUjYJ7s"),
+  source: YtdlpSource(Uri.parse("https://youtu.be/9ytqRUjYJ7s")),
 );
 
 /// A helper class for loading songs.
@@ -81,7 +81,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
       }
       Song? song = Song.fromJson(json);
       if (song == null) {
-        throw "[SONG HISTORY] History entry ($json) is missing required fields";
+        throw "[SONG HISTORY] History entry ($json) could not be parsed as a Song.";
       }
       return song;
     },

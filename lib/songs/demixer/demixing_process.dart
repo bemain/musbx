@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/songs/musbx_api/demixer_api.dart';
+import 'package:musbx/songs/demixer/demixer.dart';
+import 'package:musbx/songs/musbx_api/client.dart';
+import 'package:musbx/songs/musbx_api/jobs/demix.dart';
+import 'package:musbx/songs/musbx_api/jobs/job.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/process.dart';
@@ -30,32 +34,42 @@ enum DemixingStep {
 class DemixingProcess extends Process<Map<StemType, File>> {
   /// Upload, separate and download stem files for a song.
   ///
-  /// TODO: Improve progress tracking for upload and download.
-  DemixingProcess(this.parentSource, {required this.cacheDirectory});
+  /// TODO: Improve progress tracking for upload.
+  DemixingProcess(
+    this.parentSource, {
+    required this.cacheDirectory,
+    this.checkStatusInterval = const Duration(seconds: 1),
+  });
 
   final SongSource parentSource;
 
   final Directory cacheDirectory;
 
+  final Duration checkStatusInterval;
+
   /// The current step of the demixing process.
   DemixingStep get step => stepNotifier.value;
-  final ValueNotifier<DemixingStep> stepNotifier =
-      ValueNotifier(DemixingStep.checkingCache);
+  final ValueNotifier<DemixingStep> stepNotifier = ValueNotifier(
+    DemixingStep.checkingCache,
+  );
 
   /// Get stems for the song, if all stems (see [StemType]) were found with the correct [fileExtension].
   Future<Map<StemType, File>?> getStemsInCache({
     String fileExtension = "mp3",
   }) async {
     List<File> stemFiles = StemType.values
-        .map((stem) =>
-            File("${cacheDirectory.path}/${stem.name}.$fileExtension"))
+        .map(
+          (stem) => File("${cacheDirectory.path}/${stem.name}.$fileExtension"),
+        )
         .toList();
-    if ((await Future.wait(stemFiles.map((stem) => stem.exists())))
+    if ((await Future.wait(
+      stemFiles.map((stem) => stem.exists()),
+    ))
         .every((value) => value)) {
       // All stems were found in the cache.
       return {
         for (final stem in StemType.values)
-          stem: File("${cacheDirectory.path}/${stem.name}.$fileExtension")
+          stem: File("${cacheDirectory.path}/${stem.name}.$fileExtension"),
       };
     }
 
@@ -76,54 +90,58 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
     stepNotifier.value = DemixingStep.findingHost;
 
-    final DemixerApiHost host = await MusbxApi.findDemixerHost();
+    final MusbxApiClient client = await MusbxApi.getClient();
 
     breakIfCancelled();
 
-    // Upload song to server
     stepNotifier.value = DemixingStep.uploading;
 
-    final UploadResponse response;
-    if (parentSource is FileSource) {
-      response = await host.uploadFile(
-        (parentSource as FileSource).file,
-      );
-    } else {
-      response = await host.uploadYoutubeSong(
-        (parentSource as YoutubeSource).youtubeId,
-      );
+    // Upload song to server
+    final SongSource source = parentSource;
+    final FileHandle file;
+    switch (source) {
+      case FileSource():
+        file = await client.uploadFile(source.cacheFile!);
+        break;
+      case YtdlpSource():
+        file = await client.uploadYtdlp(source.url);
+        break;
+      default:
+        throw UnsupportedError(
+          "Chord analysis cannot be performed on the source $source.",
+        );
     }
 
     breakIfCancelled();
 
-    if (response.jobId != null) {
-      // Wait for demixing job to complete
-      stepNotifier.value = DemixingStep.separating;
+    // Wait for demixing job to complete
+    stepNotifier.value = DemixingStep.separating;
 
-      var subscription = host.jobProgress(response.jobId!).handleError((error) {
-        if (error is! HttpException ||
-            error.message != "The requested Job does not exist") {
-          throw error;
-        }
-      }).listen(null, cancelOnError: true);
-      subscription.onData((response) {
-        if (isCancelled) {
-          subscription.cancel();
-        }
+    final DemixJob job = await client.demix(file);
 
-        if (response.progress == 100) {
-          // The server is converting files to mp3
-          stepNotifier.value = DemixingStep.compressing;
-          progressNotifier.value = null;
-        } else {
-          // Update demixing progress
-          progressNotifier.value = response.progress / 100;
-        }
-      });
+    DemixJobReport report = await job.get();
+    while (report.status == JobStatus.running) {
+      stepNotifier.value = switch (report.step) {
+        DemixStep.idle ||
+        DemixStep.loadingModel ||
+        DemixStep.demixing =>
+          DemixingStep.separating,
+        DemixStep.saving => DemixingStep.compressing,
+      };
+      progressNotifier.value = report.progress;
 
-      await subscription.asFuture();
-      progressNotifier.value = null;
+      await Future.delayed(checkStatusInterval); // Short delay
+      breakIfCancelled();
+
+      report = await job.get();
     }
+
+    if (report.hasError) throw report.error!;
+    if (!report.hasResult) {
+      throw Exception("Demixing process didn't return a result.");
+    }
+
+    progressNotifier.value = null;
 
     breakIfCancelled();
 
@@ -131,21 +149,40 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     stepNotifier.value = DemixingStep.downloading;
     progressNotifier.value = 0;
 
-    final Map<StemType, File> stemFiles = Map.fromEntries(await Future.wait(
-      StemType.values.map((stem) async {
-        File file = await host.downloadStem(
-          response.songId,
-          stem,
-          cacheDirectory,
-        );
-        progressNotifier.value = (progress ?? 0) + 1 ~/ StemType.values.length;
+    /// The progress of each of the download operations.
+    Map<String, double> downloadProgress = {};
 
-        return MapEntry(stem, file);
-      }),
-    ));
+    final Map<StemType, File> files = Map.fromEntries(
+      await Future.wait(
+        report.result!.keys.map((String stemName) async {
+          final response = await job.dio.get<List<int>>(
+            report.result![stemName]!,
+            onReceiveProgress: (int received, int total) {
+              downloadProgress[stemName] = received / total;
+              final totalProgress = downloadProgress.values.reduce(
+                (a, b) => a + b,
+              );
+              progressNotifier.value = totalProgress / report.result!.length;
+            },
+            options: Options(
+              responseType: ResponseType.bytes,
+              followRedirects: false,
+            ),
+          );
+
+          final File destination = File("${cacheDirectory.path}/$stemName.mp3");
+
+          await destination.writeAsBytes(response.data!);
+          return MapEntry(
+            StemType.values.firstWhere((stem) => stem.name == stemName),
+            destination,
+          );
+        }),
+      ),
+    );
 
     breakIfCancelled();
 
-    return stemFiles;
+    return files;
   }
 }
