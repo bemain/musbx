@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:musbx/utils/persistent_value.dart';
+import 'package:musbx/widgets/widgets.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 
 class LaunchHandler {
   static bool initialized = false;
@@ -42,26 +40,11 @@ class LaunchHandler {
       "[LAUNCH] First launch with version $buildNumber (${info.version})",
     );
 
-    if (buildNumber >= 26 &&
-        (previousBuildNumber == null || previousBuildNumber < 26)) {
-      // Remove old cached files
-      final Directory tempDir = await getTemporaryDirectory();
-      final Directory demixerDir = Directory("${tempDir.path}/demixer");
-      if (await demixerDir.exists()) await demixerDir.delete(recursive: true);
-
-      final Directory docsDir = await getApplicationDocumentsDirectory();
-      final Directory prefsDir = Directory("${docsDir.path}/song_preferences");
-      if (await prefsDir.exists()) await prefsDir.delete(recursive: true);
-
-      final File songHistory = File("${docsDir.path}/song_history.json");
-      if (await songHistory.exists()) await songHistory.delete();
-      final File searchHistory = File(
-        "${docsDir.path}/youtube_search_history.json",
-      );
-      if (await searchHistory.exists()) await searchHistory.delete();
+    if (buildNumber >= 35 &&
+        previousBuildNumber != null &&
+        previousBuildNumber < 35) {
+      // Remove all cached songs
+      await Directories.applicationDocumentsDir("songs").delete();
     }
-
-    if (buildNumber >= 33 &&
-        (previousBuildNumber == null || previousBuildNumber < 33)) {}
   }
 }
