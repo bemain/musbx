@@ -10,7 +10,6 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/loading.dart';
-import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/widgets.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:http/http.dart' as http;
@@ -62,6 +61,9 @@ class SoundCloudTrack {
   /// URL to the track's artwork image, if available.
   final String? artworkUrl;
 
+  /// URL to the track's waveform.
+  final String? waveformUrl;
+
   /// The permalink URL to view this track on SoundCloud.
   final String permalinkUrl;
 
@@ -74,6 +76,9 @@ class SoundCloudTrack {
   /// Whether the track is available for download.
   final bool downloadable;
 
+  /// The policy of the track (e.g. SNIP for tracks that only provide a preview).
+  final String policy;
+
   /// List of available transcoding formats for this track.
   final List<SoundCloudTrackTranscoding> transcodings;
 
@@ -82,10 +87,12 @@ class SoundCloudTrack {
     required this.title,
     required this.username,
     this.artworkUrl,
+    this.waveformUrl,
     required this.permalinkUrl,
     required this.duration,
     this.streamable = false,
     this.downloadable = false,
+    required this.policy,
     required this.transcodings,
   });
 
@@ -96,10 +103,12 @@ class SoundCloudTrack {
       title: json["title"] ?? "Unknown Title",
       username: json["user"]?["username"] ?? "Unknown Artist",
       artworkUrl: json["artwork_url"],
+      waveformUrl: json["waveform_url"],
       permalinkUrl: json["permalink_url"] ?? "",
       duration: Duration(milliseconds: json["duration"] ?? 0),
       streamable: json["streamable"] ?? false,
       downloadable: json["downloadable"] ?? false,
+      policy: json["policy"] ?? "UNKNOWN",
       transcodings: (json["media"]["transcodings"] as List<dynamic>?)
               ?.map((e) => SoundCloudTrackTranscoding.fromJson(e))
               .toList() ??
@@ -141,15 +150,11 @@ class SoundCloudTrack {
 
 /// Provides functionality for searching and selecting SoundCloud tracks.
 ///
-/// This class handles all SoundCloud API interactions, including searching
-/// for tracks and managing search history. It serves as the main entry point
-/// for SoundCloud integration in the app.
-///
 /// **Important**: This implementation uses SoundCloud's streaming API, which
 /// may have terms of service restrictions. Ensure compliance with SoundCloud's
 /// developer terms before using in production.
 class SoundCloudSearch {
-  /// Base URL for SoundCloud's API v2.
+  /// Base URL for SoundCloud's API.
   static const String _baseUrl = "https://api-v2.soundcloud.com";
 
   /// Opens a SoundCloud search interface and allows the user to pick a song.
@@ -176,16 +181,6 @@ class SoundCloudSearch {
 
   /// Loads a track from SoundCloud into the user's library.
   static Future<void> loadTrack(SoundCloudTrack track) async {
-    try {
-      await track.getDownloadUrl();
-    } catch (e) {
-      debugPrint("[SOUNDCLOUD] Failed to get download URL for track: $e");
-      if (Navigation.navigatorKey.currentContext?.mounted == true) {
-        showExceptionDialog(SongCouldNotBeLoadedDialog());
-      }
-      return;
-    }
-
     await Songs.history.add(Song<SinglePlayable>(
       id: track.id.toString(),
       title: HtmlUnescape().convert(track.title),
@@ -356,10 +351,6 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
             return SoundCloudTrackListItem(
               track: track,
               onTap: () async {
-                for (final t in track.transcodings) {
-                  print(
-                      "Transcoding: ${t.quality} - ${t.mimeType} (${t.protocol})");
-                }
                 SoundCloudSearch.history.add(query.trim());
                 close(context, track);
               },
@@ -401,10 +392,12 @@ class SoundCloudTrackListItem extends StatelessWidget {
         leading: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: track == null
-                ? Container(
-                    color: Theme.of(context).colorScheme.surfaceContainer,
-                    width: 64,
-                    height: 64,
+                ? ShimmerLoading(
+                    child: Container(
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                      width: 64,
+                      height: 64,
+                    ),
                   )
                 : track!.artworkUrl != null
                     ? Image.network(
@@ -435,12 +428,20 @@ class SoundCloudTrackListItem extends StatelessWidget {
                       text: htmlUnescape.convert(track!.username),
                     ),
                     TextSpan(
-                      text: " • ${track!.durationFormatted}",
+                      text: " • ${track!.durationFormatted}  ",
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
                         fontSize: 12,
                       ),
                     ),
+                    if (track!.policy == "SNIP")
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Icon(
+                          Symbols.award_star,
+                          size: 12,
+                        ),
+                      )
                   ],
                 ),
                 maxLines: 1,
