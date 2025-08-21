@@ -31,7 +31,7 @@ class MusbxApiStatus {
   /// The version of the API.
   final Version version;
 
-  /// The number
+  /// The number of active jobs currently running on the server.
   final int activeJobs;
 
   factory MusbxApiStatus.fromJson(Json json) {

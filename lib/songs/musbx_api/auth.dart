@@ -6,7 +6,7 @@ class AuthInterceptor extends Interceptor {
   Future<String?>? _refreshTokenFuture;
 
   /// Helper for persisting access tokens.
-  /// TODO: Use a persistance storage such as FlutterSecureStorage
+  /// TODO: Use a persistent storage such as FlutterSecureStorage
   static String? accessToken;
   AuthInterceptor(this.dio);
 

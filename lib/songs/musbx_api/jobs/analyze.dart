@@ -33,7 +33,7 @@ class AnalyzeJobReport extends JobReport<AnalyzeJobResult> {
 
   @override
   String toString() {
-    return "AnanlyzeJobStatus($id, task: ${task.name}, status: $status)";
+    return "AnalyzeJobStatus($id, task: ${task.name}, status: $status)";
   }
 }
 

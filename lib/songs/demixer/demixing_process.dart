@@ -130,7 +130,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
       };
       progressNotifier.value = report.progress;
 
-      await Future.delayed(Duration(seconds: 1)); // Short delay
+      await Future.delayed(checkStatusInterval); // Short delay
       breakIfCancelled();
 
       report = await job.get();
