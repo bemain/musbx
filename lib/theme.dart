@@ -29,7 +29,7 @@ const Color defaultSeed = Color(0xff578cff);
     lightTheme.copyWith(
       textTheme: GoogleFonts.interTextTheme(lightTheme.textTheme),
       sliderTheme: lightTheme.sliderTheme.copyWith(
-        showValueIndicator: ShowValueIndicator.always,
+        showValueIndicator: ShowValueIndicator.onDrag,
       ),
       iconTheme: lightTheme.iconTheme.copyWith(weight: 600),
       extensions: [PositionSliderStyle.fromTheme(theme: lightTheme)],
@@ -37,7 +37,7 @@ const Color defaultSeed = Color(0xff578cff);
     darkTheme.copyWith(
       textTheme: GoogleFonts.interTextTheme(darkTheme.textTheme),
       sliderTheme: darkTheme.sliderTheme.copyWith(
-        showValueIndicator: ShowValueIndicator.always,
+        showValueIndicator: ShowValueIndicator.onDrag,
       ),
       iconTheme: darkTheme.iconTheme.copyWith(weight: 600),
       extensions: [PositionSliderStyle.fromTheme(theme: darkTheme)],
