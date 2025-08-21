@@ -105,6 +105,11 @@ class MultiPlayable extends Playable {
 
   @override
   Future<void> dispose() async {
-    handles = null;
+    if (handles != null) {
+      for (final handle in handles!.values) {
+        await SoLoud.instance.stop(handle);
+      }
+      handles = null;
+    }
   }
 }

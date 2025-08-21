@@ -151,7 +151,6 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   ///  - [SongPlayerComponent.dispose]
   @override
   Future<void> dispose() async {
-    pause();
     isPlayingNotifier.value = false;
 
     await SongsAudioHandler.session.setActive(false);
@@ -265,9 +264,11 @@ class SinglePlayer extends SongPlayer<SinglePlayable> {
   }
 
   @override
-  Future<void> dispose() {
+  Future<void> dispose() async {
+    await SongPlayer.soloud.stop(handle);
+
     demixingProcess.cancel();
-    return super.dispose();
+    return await super.dispose();
   }
 }
 
