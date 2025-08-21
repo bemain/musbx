@@ -16,6 +16,12 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+    
+    - name: Write secret to file
+      run: |
+        cat << EOF > ./lib/keys.dart
+        ${{ secrets.KEYS_FILE }}
+        EOF
 
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
