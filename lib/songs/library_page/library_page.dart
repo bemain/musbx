@@ -309,7 +309,7 @@ class LibraryPage extends StatelessWidget {
 IconData _getSourceIcon(SongSource source) {
   return switch (source) {
     FileSource() => Symbols.file_present,
-    YtdlpSource() => Symbols.cloud,
+    YtdlpSource() => Symbols.music_note,
     DemixedSource() => _getSourceIcon(source.parent),
     _ => Symbols.music_note,
   };
@@ -323,11 +323,7 @@ class LibrarySearchBar extends StatefulWidget {
 }
 
 class _LibrarySearchBarState extends State<LibrarySearchBar> {
-  final SearchController controller = SearchController();
-
-  List<SoundCloudTrack>? searchResults;
-
-  Future<void>? futureSearchResults;
+  late final SearchController controller = SearchController();
 
   @override
   Widget build(BuildContext context) {
@@ -346,11 +342,9 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         );
       },
       viewHintText: "Search your library",
-      suggestionsBuilder: (context, controller) async {
+      suggestionsBuilder: (context, controller) {
         final String query = controller.text.toLowerCase();
-        if (query.isEmpty) {
-          return const [];
-        }
+        if (query.isEmpty) return const [];
 
         // History entries that match the search query
         final Iterable<Song> songHistory = Songs.history
@@ -360,18 +354,6 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                   song.title.toLowerCase().contains(query) ||
                   (song.artist?.toLowerCase().contains(query) ?? false),
             );
-
-        futureSearchResults = SoundCloudSearch.searchTracks(query)
-            .timeout(Duration(seconds: 2), onTimeout: () => [])
-            .then((value) {
-              if (value.isEmpty) return;
-
-              setState(() {
-                searchResults = value;
-              });
-            });
-
-        if (!context.mounted) return [];
 
         return [
           const SizedBox(height: 8),
@@ -391,20 +373,37 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
-          if (searchResults != null)
-            for (final SoundCloudTrack track in searchResults!)
-              SoundCloudTrackListItem(
-                track: track,
-                onTap: () async {
-                  this.controller.closeView(null);
-                  await SoundCloudSearch.loadTrack(track);
-                  if (context.mounted) {
-                    context.go(Navigation.songRoute(track.id.toString()));
-                  }
-                },
-              )
-          else
-            for (var i = 0; i < 10; i++) SoundCloudTrackListItem(track: null),
+          FutureBuilder(
+            future: SoundCloudSearch.searchTracks(
+              query,
+            ).timeout(Duration(seconds: 2), onTimeout: () => []),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) return SizedBox();
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (snapshot.hasData)
+                    for (final SoundCloudTrack track in snapshot.requireData)
+                      SoundCloudTrackListItem(
+                        track: track,
+                        onTap: () async {
+                          this.controller.closeView(null);
+                          await SoundCloudSearch.loadTrack(track);
+                          if (context.mounted) {
+                            context.go(
+                              Navigation.songRoute(track.id.toString()),
+                            );
+                          }
+                        },
+                      )
+                  else
+                    for (var i = 0; i < 10; i++)
+                      SoundCloudTrackListItem(track: null),
+                ],
+              );
+            },
+          ),
         ];
       },
     );
@@ -430,6 +429,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         height: 64,
         child: Card(
           margin: EdgeInsets.zero,
+          elevation: 0,
           child: isLocked
               ? Icon(
                   Symbols.lock,
