@@ -4,67 +4,86 @@ import 'dart:io';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/persistent_value.dart';
 
-enum BeatSound {
-  accented("beat_accented.mp3"),
-  primary("beat_primary.mp3"),
-  subdivision("beat_subdivision.mp3");
+/// A sound used by the metronome.
+class Tick {
+  const Tick._(this.source, this.handle);
 
-  const BeatSound(this.fileName);
+  /// Create a [Tick] by loading an audio file.
+  static Future<Tick> load(String filename) async {
+    final source = await SoLoud.instance.loadAsset(
+      "assets/sounds/metronome/$filename",
+      mode: LoadMode.memory,
+    );
+    final handle = await SoLoud.instance.play(source, paused: true);
+    return Tick._(source, handle);
+  }
 
-  /// Name of the file used when playing this sound.
-  final String fileName;
+  final AudioSource source;
+
+  final SoundHandle handle;
 }
 
-/// TODO: Rewrite using flutter_soloud
+class Ticks {
+  const Ticks({
+    required this.accented,
+    required this.primary,
+    required this.subdivision,
+  });
+
+  final Tick accented;
+  final Tick primary;
+  final Tick subdivision;
+
+  List<Tick> get all => [accented, primary, subdivision];
+}
+
 class Metronome {
-  Metronome._() {
+  Metronome._(this.ticks) {
     // Listen to app lifecycle
     AppLifecycleListener(
       onHide: () async {
         if (isPlaying) await updateNotification();
       },
       onDetach: () async {
-        // TODO: This doesn't work... The future never completes
+        // FIXME: This doesn't work... The future never completes
         await Notifications.cancelAll();
       },
     );
-
-    player.playingStream.listen((playing) {
-      isPlayingNotifier.value = playing;
-    });
-
-    player.currentIndexStream.listen((index) async {
-      index ??= 0;
-      countNotifier.value = (index) ~/ subdivisions;
-
-      // TODO: Vibration doesn't work when [higher] equals 1.
-      if (player.volume == 0.0) {
-        // Vibrate
-        if (index == 0) {
-          await HapticFeedback.vibrate();
-        } else if (index % subdivisions == 0) {
-          await HapticFeedback.heavyImpact();
-        } else {
-          await HapticFeedback.selectionClick();
-        }
-      }
-    });
 
     reset();
   }
 
   /// The instance of this singleton.
-  static final Metronome instance = Metronome._();
+  static late final Metronome instance;
 
   /// Minimum [bpm] allowed. [bpm] can never be less than this.
   static const int minBpm = 20;
 
   /// Maximum [bpm] allowed. [bpm] can never be more than this.
   static const int maxBpm = 250;
+
+  /// Whether this has been initialized.
+  ///
+  /// See [initialize].
+  static bool isInitialized = false;
+
+  /// Initialize the [Metronome] and prepare playback.
+  static Future<void> initialize() async {
+    print(isInitialized);
+    if (isInitialized) return;
+
+    final ticks = Ticks(
+      accented: await Tick.load("beat_accented.wav"),
+      primary: await Tick.load("beat_primary.wav"),
+      subdivision: await Tick.load("beat_subdivision.wav"),
+    );
+    instance = Metronome._(ticks);
+    isInitialized = true;
+  }
 
   /// Beats per minutes.
   ///
@@ -77,6 +96,10 @@ class Metronome {
     "metronome/bpm",
     initialValue: 60,
   );
+
+  /// The duration of a beat.
+  Duration get beatDuration =>
+      Duration(microseconds: 60e6 ~/ (bpm * subdivisions));
 
   /// The number of beats per bar.
   int get higher => higherNotifier.value;
@@ -98,79 +121,71 @@ class Metronome {
   int get count => countNotifier.value;
   final ValueNotifier<int> countNotifier = ValueNotifier(0);
 
+  final Ticks ticks;
+
+  /// The volume of the metronome. Should be between `0.0` and `1.0`.
+  double get volume => volumeNotifier.value;
+  set volume(double value) => volumeNotifier.value = value;
+  late final ValueNotifier<double> volumeNotifier = ValueNotifier(1.0)
+    ..addListener(() {
+      for (Tick tick in ticks.all) {
+        SoLoud.instance.setVolume(tick.handle, volume);
+      }
+    });
+
   /// Whether the metronome is playing.
   bool get isPlaying => isPlayingNotifier.value;
-  set isPlaying(bool value) => value ? play() : pause();
+  set isPlaying(bool value) => value ? resume() : pause();
   late final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false)
     ..addListener(updateNotification);
 
-  /// The [AudioPlayer] used for playback.
-  final AudioPlayer player = AudioPlayer()..setLoopMode(LoopMode.all);
-
-  /// The process currently loading an [AudioSource], or `null` if no source has been loaded.
-  ///
-  /// This is used to make sure two processes don't try to load a song at the same time.
-  /// Every process wanting to set [player]'s audio source must:
-  ///  1. Create a future that first awaits [loadAudioLock] and then sets [player]'s audio source.
-  ///  2. Override [loadAudioLock] with the newly created future.
-  ///  3. Await the future it created.
-  ///
-  /// Here is an example of how that could be done:
-  /// ```
-  /// Future<void> loadAudioSource() async {
-  ///   loadSongLock = _loadAudioSource(loadSongLock);
-  ///   await loadSongLock;
-  /// }
-  ///
-  /// Future<void> _loadAudioSource(Future<void>? awaitBeforeLoading) async {
-  ///   try { // This needs to be done in a `try` block. Otherwise when one load fails, all the following ones will fail, too.
-  ///     await awaitBeforeLoading;
-  ///   } catch (_) {}
-  ///   await player.setAudioSource(...)
-  /// }
-  ///
-  /// ```
-  Future<void>? loadAudioLock;
+  Stream<int>? _stream;
+  StreamSubscription<int>? _subscription;
 
   /// Start the metronome.
-  Future<void> play() async => await player.play();
+  void resume() {
+    _subscription?.resume();
+    isPlayingNotifier.value = true;
+  }
 
   /// Pause the metronome.
-  Future<void> pause() async => await player.pause();
+  void pause() {
+    _subscription?.pause();
+    isPlayingNotifier.value = false;
+  }
 
   /// Reset [count] and restart playback.
   Future<void> reset() async {
+    await _subscription?.cancel();
+    _stream = Stream.periodic(beatDuration, (i) => i);
+    _subscription = _stream?.listen(_timeout);
+    pause();
+    countNotifier.value = 0;
     await updateNotification();
-    loadAudioLock = _updateAudioSource(awaitBeforeLoading: loadAudioLock);
-    await loadAudioLock;
   }
 
-  /// Awaits [awaitBeforeLoading] and then updates the [player]'s audio source.
-  Future<void> _updateAudioSource({Future<void>? awaitBeforeLoading}) async {
-    try {
-      await awaitBeforeLoading;
-    } catch (_) {}
+  Future<void> _timeout(int index) async {
+    countNotifier.value = (index ~/ subdivisions) % higher;
+    final int subcount = index % subdivisions;
 
-    await player.setAudioSource(
-      ConcatenatingAudioSource(
-        useLazyPreparation: true,
-        children: List.generate(higher * subdivisions, (index) {
-          final beat = index == 0
-              ? BeatSound.accented
-              : index % subdivisions == 0
-              ? BeatSound.primary
-              : BeatSound.subdivision;
-
-          return ClippingAudioSource(
-            start: Duration.zero,
-            end: Duration(microseconds: 60e6 ~/ (bpm * subdivisions)),
-            child: AudioSource.asset(
-              "assets/sounds/metronome/${beat.fileName}",
-            ),
-          );
-        }),
-      ),
-    );
+    if (volume != 0.0) {
+      // Play sound
+      final Tick tick = (count == 0 && subcount == 0)
+          ? ticks.accented
+          : (subcount == 0)
+          ? ticks.primary
+          : ticks.subdivision;
+      SoLoud.instance.seek(tick.handle, Duration.zero);
+      SoLoud.instance.setPause(tick.handle, false);
+    } else {
+      // Vibrate
+      final feedback = (count == 0 && subcount == 0)
+          ? HapticFeedback.vibrate
+          : (subcount == 0)
+          ? HapticFeedback.heavyImpact
+          : HapticFeedback.selectionClick;
+      await feedback();
+    }
   }
 
   Future<void> updateNotification() async {

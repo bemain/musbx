@@ -14,14 +14,14 @@ class _VolumeIndicatorState extends State<VolumeIndicator> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: metronome.player.volumeStream,
-      builder: (context, snapshot) {
-        final bool isMuted = metronome.player.volume == 0.0;
+    return ValueListenableBuilder(
+      valueListenable: metronome.volumeNotifier,
+      builder: (context, volume, child) {
+        final bool isMuted = volume == 0.0;
 
         return IconButton(
           onPressed: () async {
-            await metronome.player.setVolume(isMuted ? 1.0 : 0.0);
+            metronome.volume = isMuted ? 1.0 : 0.0;
             setState(() {});
           },
           isSelected: isMuted,

@@ -30,59 +30,68 @@ class MetronomePage extends StatelessWidget {
       right: 8,
     );
 
-    return const Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: DefaultAppBar(),
-      body: Padding(
-        padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
-        child: Column(
-          children: [
-            Higher(),
-            SizedBox(height: 8),
-            Subdivisions(),
-            SizedBox(height: 8),
-            Expanded(
-              child: FlatCard(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    PlayButton(),
-                    Padding(
-                      padding: cardPadding,
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: CountDisplay(),
-                      ),
-                    ),
-                    Padding(
-                      padding: cardPadding,
-                      child: Align(
-                        alignment: Alignment.bottomRight,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            VolumeIndicator(),
-                            NotificationIndicator(),
-                          ],
+    return FutureBuilder(
+      future: Metronome.initialize(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Placeholder();
+        }
+
+        return const Scaffold(
+          resizeToAvoidBottomInset: true,
+          appBar: DefaultAppBar(),
+          body: Padding(
+            padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
+            child: Column(
+              children: [
+                Higher(),
+                SizedBox(height: 8),
+                Subdivisions(),
+                SizedBox(height: 8),
+                Expanded(
+                  child: FlatCard(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        PlayButton(),
+                        Padding(
+                          padding: cardPadding,
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: CountDisplay(),
+                          ),
                         ),
-                      ),
+                        Padding(
+                          padding: cardPadding,
+                          child: Align(
+                            alignment: Alignment.bottomRight,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                VolumeIndicator(),
+                                NotificationIndicator(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    BpmButtons(),
+                    BpmTapper(),
                   ],
                 ),
-              ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                BpmButtons(),
-                BpmTapper(),
+                BpmSlider(),
               ],
             ),
-            BpmSlider(),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

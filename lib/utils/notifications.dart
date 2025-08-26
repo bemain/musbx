@@ -36,9 +36,9 @@ class Notifications {
 
       switch (action.buttonKeyPressed) {
         case "play":
-          await Metronome.instance.play();
+          Metronome.instance.resume();
         case "pause":
-          await Metronome.instance.pause();
+          Metronome.instance.pause();
       }
     }
   }
