@@ -21,7 +21,6 @@ Future<void> main() async {
   await PersistentValue.initialize();
   await Directories.initialize();
 
-  // Create audio service
   await Songs.initialize();
   await Notifications.initialize();
 
@@ -29,7 +28,6 @@ Future<void> main() async {
 
   // Google Ads
   if (Platform.isAndroid || Platform.isIOS) {
-    // Google Ads
     unawaited(MobileAds.instance.initialize());
   }
   await Purchases.intialize();

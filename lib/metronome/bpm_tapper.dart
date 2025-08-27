@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_volume_controller/flutter_volume_controller.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
-import 'package:soundpool/soundpool.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 class BpmTapper extends StatelessWidget {
   /// Button that sets [Metronome.bpm] based on you tapping.
@@ -17,13 +17,8 @@ class BpmTapper extends StatelessWidget {
     this.tapsRemembered = 10,
   });
 
-  /// [Soundpool] used internally for playing sound.
-  static final Soundpool _pool = Soundpool.fromOptions(
-    options: const SoundpoolOptions(streamType: StreamType.music),
-  );
-
-  /// Id for the sound played when this button is pressed.
-  static int? soundId;
+  /// The sound played when this button is pressed.
+  static AudioSource? sound;
 
   /// How long between two taps for them to be considered seperate, and not
   /// part of the same tempo.
@@ -40,21 +35,21 @@ class BpmTapper extends StatelessWidget {
     List<int> tapBpms = [];
 
     // Make sure sound has been loaded.
-    if (soundId == null) {
-      rootBundle
-          .load("assets/sounds/metronome/bpm_tapper.wav")
-          .then(
-            (soundData) =>
-                _pool.load(soundData).then((value) => soundId = value),
-          );
+    if (sound == null) {
+      () async {
+        sound = await SoLoud.instance.loadAsset(
+          "assets/sounds/metronome/bpm_tapper.mp3",
+        );
+      }();
     }
 
     return Listener(
       onPointerDown: (_) async {
         // Play sound
-        if (soundId != null) await _pool.play(soundId!);
+        if (sound != null) await SoLoud.instance.play(sound!);
 
-        if (await FlutterVolumeController.getMute() == true) {
+        if (await VolumeController.instance.isMuted() ||
+            Metronome.instance.volume == 0.0) {
           // Vibrate
           await HapticFeedback.vibrate();
         }
@@ -69,7 +64,7 @@ class BpmTapper extends StatelessWidget {
         }
 
         // Stop metronome so it doesn't play sound while user is tapping
-        await Metronome.instance.pause();
+        Metronome.instance.pause();
 
         // Add bpm
         if (stopwatch.elapsed > Duration.zero) {

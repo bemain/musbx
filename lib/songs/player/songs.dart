@@ -28,7 +28,7 @@ final Song<SinglePlayable> demoSong = Song(
 );
 
 /// A helper class for loading songs.
-class Songs extends BaseAudioHandler with SeekHandler {
+class Songs {
   Songs._();
 
   /// The [AudioHandler] that handles interaction with the media notification.
@@ -49,7 +49,7 @@ class Songs extends BaseAudioHandler with SeekHandler {
     if (isInitialized) return;
     isInitialized = true;
 
-    if (!SoLoud.instance.isInitialized) await SoLoud.instance.init();
+    await SoLoud.instance.init(bufferSize: 512);
 
     // Initialize audio handler
     handler = await SongsAudioHandler.initialize();

@@ -41,7 +41,7 @@ class PlayButton extends StatelessWidget {
     if (Metronome.instance.isPlaying) {
       Metronome.instance.pause();
     } else {
-      Metronome.instance.play();
+      Metronome.instance.resume();
       _requestNotificationPermission(context);
     }
   }
