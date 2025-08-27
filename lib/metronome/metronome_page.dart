@@ -34,7 +34,7 @@ class MetronomePage extends StatelessWidget {
       future: Metronome.initialize(),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return Placeholder();
+          return const SizedBox(); // TODO: Show shimmer loading
         }
 
         return const Scaffold(
