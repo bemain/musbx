@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 class BpmTapper extends StatelessWidget {
   /// Button that sets [Metronome.bpm] based on you tapping.
@@ -48,7 +48,7 @@ class BpmTapper extends StatelessWidget {
         // Play sound
         if (sound != null) await SoLoud.instance.play(sound!);
 
-        if (await FlutterVolumeController.getMute() == true ||
+        if (await VolumeController.instance.isMuted() ||
             Metronome.instance.volume == 0.0) {
           // Vibrate
           await HapticFeedback.vibrate();

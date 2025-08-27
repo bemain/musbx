@@ -7,8 +7,8 @@ list(APPEND FLUTTER_PLUGIN_LIST
   awesome_notifications_core
   connectivity_plus
   dynamic_color
-  flutter_volume_controller
   permission_handler_windows
+  volume_controller
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
