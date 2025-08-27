@@ -13,8 +13,9 @@ class LaunchHandler {
     final PackageInfo info = await PackageInfo.fromPlatform();
 
     if (info.buildNumber != lastVersionLaunched.value) {
-      await onFirstLaunchWithVersion(info);
+      final String previousVersion = lastVersionLaunched.value;
       lastVersionLaunched.value = info.buildNumber;
+      await onFirstLaunchWithVersion(info, previousVersion);
     }
 
     onLaunch(info);
@@ -30,7 +31,10 @@ class LaunchHandler {
   );
 
   /// Called when the app is launched for the first time with a new version.
-  static Future<void> onFirstLaunchWithVersion(PackageInfo info) async {
+  static Future<void> onFirstLaunchWithVersion(
+    PackageInfo info,
+    previousVersion,
+  ) async {
     final int buildNumber = int.parse(info.buildNumber);
     final int? previousBuildNumber = lastVersionLaunched.value == "0"
         ? null
@@ -44,7 +48,8 @@ class LaunchHandler {
         previousBuildNumber != null &&
         previousBuildNumber < 35) {
       // Remove all cached songs
-      await Directories.applicationDocumentsDir("songs").delete();
+      final dir = Directories.applicationDocumentsDir("songs");
+      if (await dir.exists()) await dir.delete();
     }
   }
 }
