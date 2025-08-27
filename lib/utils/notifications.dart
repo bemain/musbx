@@ -4,6 +4,7 @@ import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/utils/persistent_value.dart';
 
+@pragma("vm:entry-point")
 class Notifications {
   /// Whether the notification plugin has been initialized by running [initialize].
   static bool isInitialized = false;
