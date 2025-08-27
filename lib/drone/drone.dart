@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:musbx/drone/drone_audio_source.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/pitch_class.dart';
 import 'package:musbx/model/temperament.dart';
@@ -9,29 +8,14 @@ import 'package:musbx/utils/persistent_value.dart';
 /// Singleton for playing drone tones.
 class Drone {
   // Only way to access is through [instance].
-  Drone._() {
+  Drone._() : handle = _soloud.createVoiceGroup() {
     _onPitchesChanged();
   }
 
   /// The instance of this singleton.
   static final Drone instance = Drone._();
 
-  /// The [AudioPlayer] used internally to play audio.
-  late final AudioPlayer _player = AudioPlayer()
-    ..playingStream.listen((value) => isPlayingNotifier.value = value)
-    ..currentIndexStream.listen((value) {
-      if ((_player.audioSource is ConcatenatingAudioSource)) {
-        final source = _player.audioSource as ConcatenatingAudioSource;
-        source.add(
-          DroneAudioSource(
-            frequencies: [
-              for (Pitch pitch in pitches) pitch.frequency,
-            ],
-            offset: source.length,
-          ),
-        );
-      }
-    });
+  static final SoLoud _soloud = SoLoud.instance;
 
   /// The minimum octave of the [root].
   static int minOctave = 2;
@@ -45,7 +29,7 @@ class Drone {
   set root(Pitch value) => rootNotifier.value = value;
   late final ValueNotifier<Pitch> rootNotifier =
       TransformedPersistentValue<Pitch, String>(
-        "drone/roots",
+        "drone/root",
         initialValue: const Pitch(PitchClass.a(), 3, 220),
         from: Pitch.parse,
         to: (pitch) => pitch.toString(),
@@ -53,9 +37,9 @@ class Drone {
 
   /// The temperament used for generating pitches
   Temperament get temperament => temperamentNotifier.value;
-  final ValueNotifier<Temperament> temperamentNotifier = ValueNotifier(
+  late final ValueNotifier<Temperament> temperamentNotifier = ValueNotifier(
     const EqualTemperament(),
-  );
+  )..addListener(_onPitchesChanged);
 
   /// The pitches that are currently playing.
   Iterable<Pitch> get pitches => intervals.map(
@@ -77,48 +61,75 @@ class Drone {
   bool get isPlaying => isPlayingNotifier.value;
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 
-  /// Start playing the current [pitches].
-  Future<void> play() => _player.play();
+  final List<FrequencyPlayer> players = [];
+
+  final SoundHandle handle;
 
   /// Pause playback.
-  Future<void> pause() => _player.pause();
+  void pause() {
+    _soloud.setPause(handle, true);
+    isPlayingNotifier.value = false;
+  }
 
-  Future<void>? loadAudioLock;
+  /// Resume playback.
+  void resume() {
+    _soloud.setPause(handle, false);
+    isPlayingNotifier.value = true;
+  }
 
   Future<void> _onPitchesChanged() async {
-    if (intervals.isEmpty) {
-      await pause();
-      return;
+    // Add missing players
+    for (int i = players.length; i < intervals.length; i++) {
+      final player = await FrequencyPlayer.load();
+      _soloud.addVoicesToGroup(handle, [player.handle]);
+      players.add(player);
     }
 
-    // Make sure no other process is currently setting the audio source
-    loadAudioLock = _updateAudioSource(
-      awaitBeforeLoading: loadAudioLock,
-    );
-    await loadAudioLock;
+    // Remove excess players
+    for (int i = players.length - 1; i >= intervals.length; i--) {
+      await players[i].dispose();
+      players.removeAt(i);
+    }
+
+    // Set frequencies
+    for (int i = 0; i < players.length; i++) {
+      players[i].frequency = pitches.toList()[i].frequency;
+    }
+
+    if (intervals.isEmpty) {
+      pause();
+    } else if (isPlaying) {
+      resume();
+    }
+  }
+}
+
+class FrequencyPlayer {
+  static final SoLoud _soloud = SoLoud.instance;
+
+  /// Helper class for playing a single [frequency], using [SoLoud] waveforms.
+  FrequencyPlayer._(this.source, this.handle, {double frequency = 440}) {
+    this.frequency = frequency;
   }
 
-  /// Awaits [awaitBeforeLoading] and updates the audio source.
-  /// This is used to implement locking.
-  Future<void> _updateAudioSource({
-    Future<void>? awaitBeforeLoading,
+  static Future<FrequencyPlayer> load({
+    WaveForm type = WaveForm.sin,
+    double frequency = 440,
   }) async {
-    try {
-      await awaitBeforeLoading;
-    } catch (_) {}
-
-    final List<double> frequencies = [
-      for (Pitch pitch in pitches) pitch.frequency,
-    ];
-
-    // Hack: we use a concatenating audio source so that the current index changes.
-    await _player.setAudioSource(
-      ConcatenatingAudioSource(
-        children: [
-          DroneAudioSource(frequencies: frequencies),
-          DroneAudioSource(frequencies: frequencies, offset: 1),
-        ],
-      ),
-    );
+    final source = await _soloud.loadWaveform(type, false, 1.0, 0.0);
+    final handle = await _soloud.play(source, paused: true);
+    return FrequencyPlayer._(source, handle, frequency: frequency);
   }
+
+  final AudioSource source;
+
+  final SoundHandle handle;
+
+  /// Free the resources used by this player.
+  Future<void> dispose() async {
+    await _soloud.stop(handle);
+    await _soloud.disposeSource(source);
+  }
+
+  set frequency(double value) => _soloud.setWaveformFreq(source, value);
 }

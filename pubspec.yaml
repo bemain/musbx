@@ -45,7 +45,6 @@ dependencies:
   in_app_purchase: ^3.2.3
   awesome_notifications_core: ^0.10.1
   awesome_notifications: ^0.10.1
-  just_audio: ^0.9.41
   audio_service: ^0.18.17
   audio_session: ^0.1.19
   file_picker: ^10.2.0
