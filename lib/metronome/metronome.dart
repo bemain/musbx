@@ -10,7 +10,7 @@ import 'package:musbx/utils/persistent_value.dart';
 
 /// A sound used by the metronome.
 class Tick {
-  const Tick._(this.source, this.handle);
+  const Tick._(this.source);
 
   /// Create a [Tick] by loading an audio file.
   static Future<Tick> load(String filename) async {
@@ -18,13 +18,10 @@ class Tick {
       "assets/sounds/metronome/$filename",
       mode: LoadMode.memory,
     );
-    final handle = await SoLoud.instance.play(source, paused: true);
-    return Tick._(source, handle);
+    return Tick._(source);
   }
 
   final AudioSource source;
-
-  final SoundHandle handle;
 }
 
 class Ticks {
@@ -73,13 +70,12 @@ class Metronome {
 
   /// Initialize the [Metronome] and prepare playback.
   static Future<void> initialize() async {
-    print(isInitialized);
     if (isInitialized) return;
 
     final ticks = Ticks(
-      accented: await Tick.load("beat_accented.wav"),
-      primary: await Tick.load("beat_primary.wav"),
-      subdivision: await Tick.load("beat_subdivision.wav"),
+      accented: await Tick.load("beat_accented.mp3"),
+      primary: await Tick.load("beat_primary.mp3"),
+      subdivision: await Tick.load("beat_subdivision.mp3"),
     );
     instance = Metronome._(ticks);
     isInitialized = true;
@@ -126,12 +122,7 @@ class Metronome {
   /// The volume of the metronome. Should be between `0.0` and `1.0`.
   double get volume => volumeNotifier.value;
   set volume(double value) => volumeNotifier.value = value;
-  late final ValueNotifier<double> volumeNotifier = ValueNotifier(1.0)
-    ..addListener(() {
-      for (Tick tick in ticks.all) {
-        SoLoud.instance.setVolume(tick.handle, volume);
-      }
-    });
+  late final ValueNotifier<double> volumeNotifier = ValueNotifier(1.0);
 
   /// Whether the metronome is playing.
   bool get isPlaying => isPlayingNotifier.value;
@@ -159,8 +150,12 @@ class Metronome {
     await _subscription?.cancel();
     _stream = Stream.periodic(beatDuration, (i) => i);
     _subscription = _stream?.listen(_timeout);
+
+    final bool wasPlaying = isPlaying;
     pause();
     countNotifier.value = 0;
+    if (wasPlaying) resume();
+
     await updateNotification();
   }
 
@@ -175,8 +170,7 @@ class Metronome {
           : (subcount == 0)
           ? ticks.primary
           : ticks.subdivision;
-      SoLoud.instance.seek(tick.handle, Duration.zero);
-      SoLoud.instance.setPause(tick.handle, false);
+      await SoLoud.instance.play(tick.source, volume: volume);
     } else {
       // Vibrate
       final feedback = (count == 0 && subcount == 0)
