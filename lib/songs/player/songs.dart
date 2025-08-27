@@ -46,12 +46,10 @@ class Songs {
   ///
   /// If [isInitialized] is `true`, do nothing.
   static Future<void> initialize() async {
-    if (!SoLoud.instance.isInitialized) {
-      await SoLoud.instance.init(bufferSize: 512);
-    }
-
     if (isInitialized) return;
     isInitialized = true;
+
+    await SoLoud.instance.init(bufferSize: 512);
 
     // Initialize audio handler
     handler = await SongsAudioHandler.initialize();
