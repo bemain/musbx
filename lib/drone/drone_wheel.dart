@@ -130,7 +130,7 @@ class DroneWheelState extends State<DroneWheel> {
     return ValueListenableBuilder(
       valueListenable: drone.isPlayingNotifier,
       builder: (context, isPlaying, _) => IconButton.filled(
-        onPressed: isPlaying ? drone.pause : drone.play,
+        onPressed: isPlaying ? drone.pause : drone.resume,
         iconSize: 75,
         icon: Icon(
           isPlaying ? Symbols.stop_rounded : Symbols.play_arrow_rounded,
@@ -192,7 +192,7 @@ class DroneWheelState extends State<DroneWheel> {
                 .toList();
           } else {
             drone.intervals = [...drone.intervals, interval];
-            drone.play();
+            drone.resume();
           }
         },
         child: Text(
