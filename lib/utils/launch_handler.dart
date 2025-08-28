@@ -10,46 +10,55 @@ class LaunchHandler {
     if (initialized) return;
     initialized = true;
 
-    final PackageInfo info = await PackageInfo.fromPlatform();
+    try {
+      info = await PackageInfo.fromPlatform();
 
-    if (info.buildNumber != lastVersionLaunched.value) {
-      final String previousVersion = lastVersionLaunched.value;
-      lastVersionLaunched.value = info.buildNumber;
-      await onFirstLaunchWithVersion(info, previousVersion);
+      buildNumber = int.parse(info.buildNumber);
+      previousBuildNumber = _lastVersionLaunched.value == "0"
+          ? null
+          : int.tryParse(_lastVersionLaunched.value);
+      _lastVersionLaunched.value = info.buildNumber;
+
+      if (buildNumber != previousBuildNumber) {
+        await onFirstLaunchWithVersion();
+      }
+
+      await onLaunch();
+    } catch (e) {
+      debugPrint("[LAUNCH] Error occured during launch: $e");
     }
-
-    onLaunch(info);
   }
 
-  /// Called whenever the app launches.
-  static void onLaunch(PackageInfo info) {}
+  /// Application metadata.
+  static late PackageInfo info;
+
+  /// The current build number of the app.
+  static late int buildNumber;
+
+  /// The build number of the app the last time it was launched.
+  static late int? previousBuildNumber;
 
   /// The version of the app the last time it was launched.
-  static PersistentValue<String> lastVersionLaunched = PersistentValue(
+  static final PersistentValue<String> _lastVersionLaunched = PersistentValue(
     "lastVersionLaunched",
     initialValue: "0",
   );
 
-  /// Called when the app is launched for the first time with a new version.
-  static Future<void> onFirstLaunchWithVersion(
-    PackageInfo info,
-    previousVersion,
-  ) async {
-    final int buildNumber = int.parse(info.buildNumber);
-    final int? previousBuildNumber = lastVersionLaunched.value == "0"
-        ? null
-        : int.parse(lastVersionLaunched.value);
+  /// Called whenever the app launches.
+  static Future<void> onLaunch() async {}
 
+  /// Called when the app is launched for the first time with a new version.
+  static Future<void> onFirstLaunchWithVersion() async {
     debugPrint(
       "[LAUNCH] First launch with version $buildNumber (${info.version})",
     );
 
     if (buildNumber >= 35 &&
         previousBuildNumber != null &&
-        previousBuildNumber < 35) {
+        previousBuildNumber! < 35) {
       // Remove all cached songs
       final dir = Directories.applicationDocumentsDir("songs");
-      if (await dir.exists()) await dir.delete();
+      if (await dir.exists()) await dir.delete(recursive: true);
     }
   }
 }
