@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:mic_stream/mic_stream.dart';
+import 'package:flutter_recorder/flutter_recorder.dart';
 import 'package:musbx/model/accidental.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/temperament.dart';
-import 'package:pitch_detector_dart/pitch_detector.dart';
+import 'package:musbx/tuner/yin.dart';
 
 /// Singleton for detecting what pitch is being played.
 class Tuner {
@@ -18,16 +17,36 @@ class Tuner {
   static final Tuner instance = Tuner._();
 
   /// The number of notes to take average of.
-  static const int averageFrequenciesN = 15;
+  static const int averageFrequenciesN = 3;
 
   /// How many cents off a frequency can be to be considered in tune.
   static const double inTuneThreshold = 10;
 
-  /// The amount of recorded data per sample, in bytes.
-  late int bufferSize;
-
   /// The sample rate of the recording.
-  late double sampleRate;
+  static const int sampleRate = 22050;
+
+  /// The format used for recording.
+  static const PCMFormat format = PCMFormat.f32le;
+
+  /// Whether this has been initialized.
+  ///
+  /// See [initialize].
+  static bool isInitialized = false;
+
+  /// Initialize the [Tuner] and prepare playback.
+  static Future<void> initialize() async {
+    if (isInitialized) return;
+    isInitialized = true;
+
+    await Recorder.instance.init(
+      format: format,
+      sampleRate: sampleRate,
+      channels: RecorderChannels.mono,
+    );
+    Recorder.instance.start();
+  }
+
+  late int bufferSize;
 
   /// Whether permission to access the microphone has been given.
   bool hasPermission = false;
@@ -44,8 +63,6 @@ class Tuner {
   /// The temperament that notes are tuned to.
   ///
   /// Defaults to [EqualTemperament].
-  ///
-  /// See [Temperament].
   Temperament get temperament => temperamentNotifier.value;
   set temperament(Temperament value) => temperamentNotifier.value = value;
   final ValueNotifier<Temperament> temperamentNotifier = ValueNotifier(
@@ -58,57 +75,47 @@ class Tuner {
   /// The previous frequencies detected, averaged and filtered.
   final List<double> frequencyHistory = [];
 
+  void _startStreaming() => Recorder.instance.startStreamingData();
+  void _stopStreaming() {
+    print("[DEBUG] Stop streaming");
+    Recorder.instance.stopStreamingData();
+  }
+
+  late final StreamController<double> _controller = StreamController(
+    onListen: _startStreaming,
+    onPause: _stopStreaming,
+    onResume: _startStreaming,
+    onCancel: _stopStreaming,
+  )..addStream(_frequencyStream);
+
+  Stream<double> get frequencyStream => _controller.stream;
+
   /// The current frequency detected, or null if no frequency could be detected.
   ///
   /// Throws if permission to access the microphone has not been given.
-  Stream<double?> get frequencyStream {
-    return audioStream
-        .asyncMap((samples) async {
-          final result = await PitchDetector(
-            audioSampleRate: sampleRate,
-            bufferSize: bufferSize,
-          ).getPitchFromFloatBuffer(samples);
+  late final Stream<double> _frequencyStream = Recorder
+      .instance
+      .uint8ListStream
+      .map((data) {
+        final result = Yin(
+          sampleRate.toDouble(),
+          // We need to use a small buffer size so the operation completes before the next data arrives
+          // TODO: Maybe use a different method
+          min(2048, data.length),
+        ).getPitch(data.toF32List(from: format));
 
-          if (!result.pitched) return null;
+        if (result == null) return null;
 
-          _rawFrequencyHistory.add(result.pitch);
-          double? avgFrequency = _getAverageFrequency();
-          if (avgFrequency != null) {
-            frequencyHistory.add(avgFrequency);
-            return avgFrequency;
-          }
-          return null;
-        })
-        .where((frequency) => frequency != null);
-  }
-
-  /// Uses the package mic_stream to record audio to a stream.
-  ///
-  /// The returned list contains [double]s between -128 and 127.
-  Stream<List<double>> get audioStream {
-    final Stream<Uint8List> audioStream = MicStream.microphone(
-      channelConfig: ChannelConfig.CHANNEL_IN_MONO,
-      audioFormat: Platform.isIOS
-          ? AudioFormat.ENCODING_PCM_16BIT
-          : AudioFormat.ENCODING_PCM_8BIT,
-    );
-
-    return audioStream.asyncMap((samples) async {
-      sampleRate = (await MicStream.sampleRate).toDouble();
-      final int bitDepth = await MicStream.bitDepth;
-      bufferSize = await MicStream.bufferSize ~/ (bitDepth / 8);
-
-      return switch (bitDepth) {
-        8 => samples.buffer.asInt8List().map((e) => e.toDouble()).toList(),
-        16 => [
-          0,
-          for (var offset = 1; offset < samples.length; offset += 2)
-            (samples.buffer.asByteData().getUint16(offset) & 0xFF) - 128.0,
-        ],
-        _ => throw "Unsupported `bitDepth`: $bitDepth",
-      };
-    });
-  }
+        _rawFrequencyHistory.add(result.frequency);
+        double? avgFrequency = _getAverageFrequency();
+        if (avgFrequency != null) {
+          frequencyHistory.add(avgFrequency);
+          return avgFrequency;
+        }
+        return null;
+      })
+      .where((frequency) => frequency != null)
+      .map((frequency) => frequency!);
 
   /// Calculate the average of the last [averageFrequenciesN] frequencies.
   double? _getAverageFrequency() {
@@ -147,4 +154,11 @@ class Tuner {
 
     return 1200 * log(frequency / targetFrequency) / log(2);
   }
+}
+
+class TuningResult {
+  TuningResult({required this.frequency, required this.confidence});
+
+  final double frequency;
+  final double confidence;
 }

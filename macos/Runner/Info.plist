@@ -29,5 +29,8 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSAppTransportSecurity</key>
+	<!--Permission added by flutter_recorder package-->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Access to the microphone is required to use the tuner</string>
 </dict>
 </plist>
