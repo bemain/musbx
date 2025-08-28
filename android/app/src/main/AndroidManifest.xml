@@ -2,8 +2,7 @@
    <application
         android:label="Musician's Toolbox"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true"> <!-- Required by just_audio package. -->
+        android:icon="@mipmap/ic_launcher">
         <!-- android:name has been overwritten by audio_service package. -->
         <activity
             android:name="com.ryanheise.audioservice.AudioServiceActivity"
@@ -51,15 +50,14 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-    <!-- Required by flutter_audio_capture package. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- Required by mic_stream package. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <!-- Required by audio_service package. -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
-    <!-- Required by just_audio package. -->
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <!-- Required for haptic feedback. -->
     <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- Required for file_picker to work on Android 13. -->

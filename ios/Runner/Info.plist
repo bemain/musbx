@@ -45,14 +45,6 @@
 		<true/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
-		<!--Added by just_audio package-->
-		<key>NSAppTransportSecurity</key>
-		<dict>
-			<key>NSAllowsArbitraryLoads</key>
-			<true/>
-			<key>NSAllowsArbitraryLoadsForMedia</key>
-			<true/>
-		</dict>
 		<!--Permission added by mic_stream package-->
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Access to the microphone is required to use the tuner</string>
