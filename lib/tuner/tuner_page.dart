@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/tuner/fft_graph.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/tuner/tuning_graph.dart';
+import 'package:musbx/tuner/waveform_graph.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/permission_builder.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -76,6 +78,18 @@ class TunerPageState extends State<TunerPage> {
                     const Divider(),
                     TuningGraph(frequencyHistory: tuner.frequencyHistory),
                     const Divider(),
+                    StreamBuilder(
+                      stream: tuner.waveStream,
+                      builder: (context, snapshot) => WaveformGraph(
+                        data: tuner.waveBuffer,
+                      ),
+                    ),
+                    StreamBuilder(
+                      stream: tuner.fftStream,
+                      builder: (context, snapshot) => FftGraph(
+                        data: tuner.fftBuffer,
+                      ),
+                    ),
                   ],
                 ),
               ),
