@@ -31,10 +31,10 @@ class Tuner {
   /// Whether this has been initialized.
   ///
   /// See [initialize].
-  static bool isInitialized = false;
+  bool isInitialized = false;
 
   /// Initialize the [Tuner] and prepare playback.
-  static Future<void> initialize() async {
+  Future<void> initialize() async {
     if (isInitialized) return;
     isInitialized = true;
 
@@ -45,8 +45,6 @@ class Tuner {
     );
     Recorder.instance.start();
   }
-
-  late int bufferSize;
 
   /// Whether permission to access the microphone has been given.
   bool hasPermission = false;
@@ -75,24 +73,21 @@ class Tuner {
   /// The previous frequencies detected, averaged and filtered.
   final List<double> frequencyHistory = [];
 
-  void _startStreaming() => Recorder.instance.startStreamingData();
-  void _stopStreaming() {
-    print("[DEBUG] Stop streaming");
-    Recorder.instance.stopStreamingData();
+  void _startStreaming() {
+    Recorder.instance.start();
+    Recorder.instance.startStreamingData();
   }
 
-  late final StreamController<double> _controller = StreamController(
-    onListen: _startStreaming,
-    onPause: _stopStreaming,
-    onResume: _startStreaming,
-    onCancel: _stopStreaming,
-  )..addStream(_frequencyStream);
+  void _stopStreaming() {
+    Recorder.instance.stopStreamingData();
+    Recorder.instance.stop();
+  }
 
-  Stream<double> get frequencyStream => _controller.stream;
-
-  /// The current frequency detected, or null if no frequency could be detected.
+  /// The stream used internally to receive data.
   ///
-  /// Throws if permission to access the microphone has not been given.
+  /// Note that this won't receive any data until streaming is started.
+  /// For a [Stream] that automatically starts streaming when listened to,
+  /// use [frequencyStream].
   late final Stream<double> _frequencyStream = Recorder
       .instance
       .uint8ListStream
@@ -115,7 +110,18 @@ class Tuner {
         return null;
       })
       .where((frequency) => frequency != null)
-      .map((frequency) => frequency!);
+      .map((frequency) => frequency!)
+      .asBroadcastStream();
+
+  /// The current frequency detected, or null if no frequency could be detected.
+  ///
+  /// Throws if permission to access the microphone has not been given.
+  Stream<double> get frequencyStream => (StreamController<double>(
+    onListen: _startStreaming,
+    onPause: _stopStreaming,
+    onResume: _startStreaming,
+    onCancel: _stopStreaming,
+  )..addStream(_frequencyStream)).stream;
 
   /// Calculate the average of the last [averageFrequenciesN] frequencies.
   double? _getAverageFrequency() {
@@ -134,6 +140,7 @@ class Tuner {
         previousFrequencies.length;
   }
 
+  /// Get the pitch closest to the given [frequency].
   Pitch getClosestPitch(double frequency) {
     return Pitch.closest(
       frequency,

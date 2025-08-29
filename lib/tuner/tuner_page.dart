@@ -40,57 +40,49 @@ class TunerPageState extends State<TunerPage> {
       );
     }
 
-    return FutureBuilder(
-      future: Tuner.initialize(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const SizedBox(); // TODO: Show shimmer loading
-        }
+    if (!tuner.isInitialized) {
+      tuner.initialize().then((_) {
+        setState(() {});
+      });
+      return const SizedBox(); // TODO: Show shimmer loading
+    }
 
-        return StreamBuilder(
-          stream: tuner.frequencyStream,
-          builder: (context, snapshot) => ValueListenableBuilder(
-            valueListenable: tuner.tuningNotifier,
-            builder: (context, tuning, child) => ValueListenableBuilder(
-              valueListenable: tuner.temperamentNotifier,
-              builder: (context, temperament, child) {
-                return Scaffold(
-                  appBar: const DefaultAppBar(),
-                  body: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 8,
-                      right: 8,
-                      bottom: 8,
+    return StreamBuilder(
+      stream: tuner.frequencyStream,
+      builder: (context, snapshot) => ValueListenableBuilder(
+        valueListenable: tuner.tuningNotifier,
+        builder: (context, tuning, child) => ValueListenableBuilder(
+          valueListenable: tuner.temperamentNotifier,
+          builder: (context, temperament, child) {
+            return Scaffold(
+              appBar: const DefaultAppBar(),
+              body: Padding(
+                padding: const EdgeInsets.only(
+                  left: 8,
+                  right: 8,
+                  bottom: 8,
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TunerGauge(
+                        frequency: (tuner.frequencyHistory.isNotEmpty)
+                            ? tuner.frequencyHistory.last
+                            : null,
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TunerGauge(
-                            frequency: (tuner.frequencyHistory.isNotEmpty)
-                                ? tuner.frequencyHistory.last
-                                : null,
-                          ),
-                        ),
-                        const SizedBox(height: 16.0),
-                        const Divider(),
-                        TuningGraph(frequencyHistory: tuner.frequencyHistory),
-                        const Divider(),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
+                    const SizedBox(height: 16.0),
+                    const Divider(),
+                    TuningGraph(frequencyHistory: tuner.frequencyHistory),
+                    const Divider(),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    print("[DEBUG] Dispose");
-    super.dispose();
   }
 }
