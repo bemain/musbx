@@ -311,6 +311,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.29"
+  flutter_recorder:
+    dependency: "direct main"
+    description:
+      name: flutter_recorder
+      sha256: bccb7b0b0727f094d575b8d6f7a349a17c61252d25f3528f2b53b51380c2c096
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.2"
   flutter_soloud:
     dependency: "direct main"
     description:
@@ -545,14 +553,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.16.0"
-  mic_stream:
-    dependency: "direct main"
-    description:
-      name: mic_stream
-      sha256: "854f60f840f3075ebc0049993495976b64313b1fcfe2a5c5b76f611bbf761a01"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.3-dev"
   mime:
     dependency: transitive
     description:
@@ -697,14 +697,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
-  pitch_detector_dart:
-    dependency: "direct main"
-    description:
-      name: pitch_detector_dart
-      sha256: "47b5dd1f1cd1fb6af553a9b920e271eba62b8a1b9e77fdfaa9421ae1dacb8a90"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.7"
   platform:
     dependency: transitive
     description:

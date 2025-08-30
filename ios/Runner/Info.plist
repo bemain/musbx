@@ -45,7 +45,7 @@
 		<true/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
-		<!--Permission added by mic_stream package-->
+		<!--Permission added by flutter_recorder package-->
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Access to the microphone is required to use the tuner</string>
 		<!--Permissions added by file_picker package-->
