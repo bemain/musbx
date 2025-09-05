@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/tuner/tuner.dart';
+import 'package:musbx/tuner/waveform_graph.dart';
 
 class PitchGraphStyle {
   PitchGraphStyle({
@@ -60,23 +61,41 @@ class PitchGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: PitchGraphPainter(
-        data: data,
-        style: PitchGraphStyle(
-          continuous: true,
-          lineColor: Theme.of(context).colorScheme.primary,
-          dataWidth: 2 * 7.0,
-          textStyle: GoogleFonts.andikaTextTheme(
-            Theme.of(context).textTheme,
-          ).bodyMedium,
-          inTuneColor: Colors.green.harmonizeWith(
-            Theme.of(context).colorScheme.primary,
+    return ClipRect(
+      child: Stack(
+        children: [
+          CustomPaint(
+            painter: PitchGraphPainter(
+              data: data,
+              style: PitchGraphStyle(
+                continuous: true,
+                lineColor: Theme.of(context).colorScheme.primary,
+                dataWidth: 2 * 7.0,
+                textStyle: GoogleFonts.andikaTextTheme(
+                  Theme.of(context).textTheme,
+                ).bodyMedium,
+                inTuneColor: Colors.green.harmonizeWith(
+                  Theme.of(context).colorScheme.primary,
+                ),
+                textPlacement: TextPlacement.top,
+              ),
+            ),
+            size: const Size(double.infinity, 150),
           ),
-          textPlacement: TextPlacement.top,
-        ),
+          CustomPaint(
+            painter: WavePainter(
+              data: data,
+              style: WaveformGraphStyle.fromTheme(Theme.of(context)).copyWith(
+                barColor: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withAlpha(0x1f),
+              ),
+              audioScale: 48.0,
+            ),
+            size: const Size(double.infinity, 150),
+          ),
+        ],
       ),
-      size: const Size(double.infinity, 150),
     );
   }
 }

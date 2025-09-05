@@ -12,10 +12,19 @@ class TunerGauge extends StatelessWidget {
   /// and how many cents out of tune it is.
   ///
   /// If [pitch] is `null`, instead displays a "listening" label.
-  const TunerGauge({super.key, required this.pitch});
+  const TunerGauge({
+    super.key,
+    required this.pitch,
+    this.showPitchText = true,
+    this.maxAngle = 70,
+  });
 
   /// The frequency to display.
   final Pitch? pitch;
+
+  final bool showPitchText;
+
+  final double maxAngle;
 
   @override
   Widget build(BuildContext context) {
@@ -66,17 +75,18 @@ class TunerGauge extends StatelessWidget {
 
     return Stack(
       children: [
-        Positioned.fill(
-          child: Align(
-            alignment: const Alignment(-0.55, 0.7),
-            child: Text(
-              pitch!.abbreviation,
-              style: GoogleFonts.andikaTextTheme(
-                Theme.of(context).textTheme,
-              ).displayMedium,
+        if (showPitchText)
+          Positioned.fill(
+            child: Align(
+              alignment: const Alignment(-0.55, 0.7),
+              child: Text(
+                pitch!.abbreviation,
+                style: GoogleFonts.andikaTextTheme(
+                  Theme.of(context).textTheme,
+                ).displayMedium,
+              ),
             ),
           ),
-        ),
         Positioned.fill(
           child: Align(
             alignment: const Alignment(0.6, 0.7),
@@ -125,8 +135,8 @@ class TunerGauge extends StatelessWidget {
             RadialGaugeAxis(
               minValue: -1,
               maxValue: 1,
-              minAngle: -18,
-              maxAngle: 18,
+              minAngle: -maxAngle / 5,
+              maxAngle: maxAngle / 5,
               radius: 0,
               width: 0.8,
               color: Colors.green
@@ -136,8 +146,8 @@ class TunerGauge extends StatelessWidget {
             RadialGaugeAxis(
               minValue: -50,
               maxValue: 50,
-              minAngle: -90,
-              maxAngle: 90,
+              minAngle: -maxAngle,
+              maxAngle: maxAngle,
               ticks: [
                 RadialTicks(
                   interval: 10,

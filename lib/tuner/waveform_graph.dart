@@ -18,6 +18,28 @@ class WaveformGraphStyle {
 
   double get effectiveBarWidth => barWidth + barPadding;
 
+  WaveformGraphStyle({
+    this.barWidth = 4.0,
+    this.barPadding = 3.0,
+    this.barRadius = const Radius.circular(4.0),
+    this.barColor = Colors.blue,
+  });
+
+  /// Returns a copy of this style with the given fields replaced.
+  WaveformGraphStyle copyWith({
+    double? barWidth,
+    double? barPadding,
+    Radius? barRadius,
+    Color? barColor,
+  }) {
+    return WaveformGraphStyle(
+      barWidth: barWidth ?? this.barWidth,
+      barPadding: barPadding ?? this.barPadding,
+      barRadius: barRadius ?? this.barRadius,
+      barColor: barColor ?? this.barColor,
+    );
+  }
+
   /// Create [WaveformGraphStyle] based on the given [theme].
   WaveformGraphStyle.fromTheme(
     ThemeData theme, {
@@ -90,14 +112,13 @@ class WavePainter extends CustomPainter {
       // Add remaining
       averages.add(chunk.fold(0.0, (a, b) => a + b) / chunk.length);
     }
-
     return averages.reversed.toList();
   }
 
   /// Calculates the effective number of bars that can be drawn
   /// given the current canvas width and the bar width.
   int _calculateEffectiveBarCount(double width) {
-    return (width / style.effectiveBarWidth).floor();
+    return (width / style.effectiveBarWidth).floor() + 2;
   }
 
   @override
