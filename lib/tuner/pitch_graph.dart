@@ -11,7 +11,6 @@ import 'package:musbx/tuner/waveform_graph.dart';
 class PitchGraphStyle {
   PitchGraphStyle({
     this.continuous = false,
-    this.dataWidth = 32.0,
     this.inTuneColor = Colors.green,
     required this.lineColor,
     this.lineWidth = 4.0,
@@ -24,9 +23,6 @@ class PitchGraphStyle {
   /// Whether to render the frequencies as a continuous line.
   /// Otherwise renders them as points.
   final bool continuous;
-
-  /// The width that one data entry should fill.
-  final double dataWidth;
 
   /// The color used for the segment indicating where the frequency is in tune.
   final Color inTuneColor;
@@ -70,7 +66,6 @@ class PitchGraph extends StatelessWidget {
               style: PitchGraphStyle(
                 continuous: true,
                 lineColor: Theme.of(context).colorScheme.primary,
-                dataWidth: 2 * 7.0,
                 textStyle: GoogleFonts.andikaTextTheme(
                   Theme.of(context).textTheme,
                 ).bodyMedium,
@@ -79,6 +74,7 @@ class PitchGraph extends StatelessWidget {
                 ),
                 textPlacement: TextPlacement.top,
               ),
+              dataLength: Tuner.bufferLength,
             ),
             size: const Size(double.infinity, 150),
           ),
@@ -90,6 +86,7 @@ class PitchGraph extends StatelessWidget {
                   context,
                 ).colorScheme.onSurface.withAlpha(0x1f),
               ),
+              chunks: Tuner.bufferLength * 2,
               audioScale: 48.0,
             ),
             size: const Size(double.infinity, 150),
@@ -120,12 +117,15 @@ class PitchGraphPainter extends CustomPainter {
   PitchGraphPainter({
     required this.data,
     required this.style,
+    this.dataLength,
   });
 
   /// The data to render.
   final List<RecordingData> data;
 
   final PitchGraphStyle style;
+
+  final int? dataLength;
 
   late final Paint linePaint = Paint()
     ..color = style.lineColor
@@ -139,6 +139,9 @@ class PitchGraphPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    /// The width that one data entry should fill.
+    double dataWidth = size.width / (dataLength ?? data.length);
+
     Paint inTunePaint = Paint()..color = style.inTuneColor.withAlpha(0x1a);
 
     // Draw the "in tune"-rect
@@ -154,7 +157,7 @@ class PitchGraphPainter extends CustomPainter {
     );
 
     final List<double?> frequencies = data
-        .sublist(max(0, data.length - size.width ~/ style.dataWidth - 3))
+        .sublist(max(0, data.length - size.width ~/ dataWidth - 3))
         .map((e) => e.frequency)
         .toList()
         .reversed
@@ -231,10 +234,11 @@ class PitchGraphPainter extends CustomPainter {
     }
   }
 
-  Offset calculatePointOffset(int index, double pitchOffset, Size canvasSize) {
+  Offset calculatePointOffset(int index, double pitchOffset, Size size) {
+    double dataWidth = size.width / (dataLength ?? data.length);
     return Offset(
-      canvasSize.width - index * style.dataWidth,
-      canvasSize.height / 2 - canvasSize.height * pitchOffset / 100,
+      size.width - index * dataWidth,
+      size.height / 2 - size.height * pitchOffset / 100,
     );
   }
 

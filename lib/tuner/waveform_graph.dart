@@ -4,9 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class WaveformGraphStyle {
-  /// The width of the bars.
-  final double barWidth;
-
   /// The number of empty pixels between each bar.
   final double barPadding;
 
@@ -16,10 +13,7 @@ class WaveformGraphStyle {
   /// The color of the bars.
   final Color barColor;
 
-  double get effectiveBarWidth => barWidth + barPadding;
-
   WaveformGraphStyle({
-    this.barWidth = 4.0,
     this.barPadding = 3.0,
     this.barRadius = const Radius.circular(4.0),
     this.barColor = Colors.blue,
@@ -33,7 +27,6 @@ class WaveformGraphStyle {
     Color? barColor,
   }) {
     return WaveformGraphStyle(
-      barWidth: barWidth ?? this.barWidth,
       barPadding: barPadding ?? this.barPadding,
       barRadius: barRadius ?? this.barRadius,
       barColor: barColor ?? this.barColor,
@@ -43,7 +36,6 @@ class WaveformGraphStyle {
   /// Create [WaveformGraphStyle] based on the given [theme].
   WaveformGraphStyle.fromTheme(
     ThemeData theme, {
-    this.barWidth = 4.0,
     this.barPadding = 3.0,
     this.barRadius = const Radius.circular(4.0),
   }) : barColor = theme.colorScheme.primary;
@@ -77,6 +69,7 @@ class WavePainter extends CustomPainter {
     required this.data,
     required this.style,
     this.chunkSize = 128,
+    this.chunks = 64,
     this.audioScale = 1.0,
   });
 
@@ -90,6 +83,9 @@ class WavePainter extends CustomPainter {
 
   /// The size of the chunks that the data is grouped into.
   final int chunkSize;
+
+  /// The number of chunks to display.
+  final int chunks;
 
   final double audioScale;
 
@@ -115,18 +111,10 @@ class WavePainter extends CustomPainter {
     return averages.reversed.toList();
   }
 
-  /// Calculates the effective number of bars that can be drawn
-  /// given the current canvas width and the bar width.
-  int _calculateEffectiveBarCount(double width) {
-    return (width / style.effectiveBarWidth).floor() + 2;
-  }
-
   @override
   void paint(Canvas canvas, Size size) {
-    final effectiveBarCount = min(
-      dataChunks.length,
-      _calculateEffectiveBarCount(size.width),
-    );
+    final double effectiveBarWidth = size.width / chunks;
+    final effectiveBarCount = min(dataChunks.length, chunks);
 
     final paint = Paint()..color = style.barColor;
 
@@ -135,14 +123,14 @@ class WavePainter extends CustomPainter {
       final double value =
           dataChunks[dataChunks.length - effectiveBarCount + i];
       final double barHeight = size.height * value * 2 * audioScale;
-      final double barX = size.width - i * style.effectiveBarWidth;
+      final double barX = size.width - i * effectiveBarWidth;
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(
-            barX,
+            barX + style.barPadding / 2,
             (size.height - barHeight) * 0.5,
-            style.barWidth,
+            effectiveBarWidth - style.barPadding,
             barHeight,
           ),
           style.barRadius,
