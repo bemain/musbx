@@ -6,20 +6,20 @@ import 'package:musbx/model/pitch.dart';
 import 'package:musbx/tuner/tuner.dart';
 
 class TunerGauge extends StatelessWidget {
-  /// Gauge for showing how out of tune [frequency] is.
+  /// Gauge for showing how out of tune [pitch] is.
   ///
-  /// Includes labels displaying the name of the note closest to [frequency]
+  /// Includes labels displaying the name of the note closest to [pitch]
   /// and how many cents out of tune it is.
   ///
-  /// If [frequency] is `null`, instead displays a "listening" label.
-  const TunerGauge({super.key, required this.frequency});
+  /// If [pitch] is `null`, instead displays a "listening" label.
+  const TunerGauge({super.key, required this.pitch});
 
   /// The frequency to display.
-  final double? frequency;
+  final Pitch? pitch;
 
   @override
   Widget build(BuildContext context) {
-    return (frequency == null)
+    return (pitch == null)
         ? buildListeningGauge(context)
         : buildGaugeAndText(context);
   }
@@ -42,10 +42,9 @@ class TunerGauge extends StatelessWidget {
     );
   }
 
-  /// Build gage showing [frequency]'s name and tuning.
+  /// Build gage showing [pitch]'s name and tuning.
   Widget buildGaugeAndText(BuildContext context) {
-    final Pitch pitch = Tuner.instance.getClosestPitch(frequency!);
-    final double pitchOffset = Tuner.instance.getPitchOffset(frequency!);
+    final double pitchOffset = Tuner.instance.getPitchOffset(pitch!);
 
     ColorScheme scheme = Theme.of(context).colorScheme;
 
@@ -71,7 +70,7 @@ class TunerGauge extends StatelessWidget {
           child: Align(
             alignment: const Alignment(-0.55, 0.7),
             child: Text(
-              pitch.abbreviation,
+              pitch!.abbreviation,
               style: GoogleFonts.andikaTextTheme(
                 Theme.of(context).textTheme,
               ).displayMedium,

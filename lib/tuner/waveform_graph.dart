@@ -1,7 +1,7 @@
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/tuner/tuner.dart';
 
 class WaveformGraphStyle {
   /// The width of the bars.
@@ -31,7 +31,7 @@ class WaveformGraphStyle {
 class WaveformGraph extends StatelessWidget {
   const WaveformGraph({super.key, required this.data});
 
-  final Float32List data;
+  final List<RecordingData> data;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class WaveformGraph extends StatelessWidget {
         painter: WavePainter(
           data: data,
           style: WaveformGraphStyle.fromTheme(Theme.of(context)),
-          audioScale: 8.0,
+          audioScale: 48.0,
         ),
         size: const Size(double.infinity, 64),
       ),
@@ -54,15 +54,45 @@ class WavePainter extends CustomPainter {
   WavePainter({
     required this.data,
     required this.style,
+    this.chunkSize = 128,
     this.audioScale = 1.0,
   });
 
   /// The wave data to draw.
-  final Float32List data;
+  final List<RecordingData> data;
+
+  /// Averaged wave data.
+  late final List<double> dataChunks = _getDataChunks();
 
   final WaveformGraphStyle style;
 
+  /// The size of the chunks that the data is grouped into.
+  final int chunkSize;
+
   final double audioScale;
+
+  /// Process wave [data] by splitting it into chunks.
+  List<double> _getDataChunks() {
+    List<double> averages = [];
+    List<double> chunk = [];
+    for (var dataEntry in data) {
+      chunk.addAll(dataEntry.wave);
+      while (chunk.length >= chunkSize) {
+        final double sum = chunk
+            .sublist(0, chunkSize)
+            .fold(0.0, (a, b) => a + b);
+        averages.add(sum / chunkSize);
+        chunk = chunk.sublist(chunkSize);
+      }
+    }
+
+    if (chunk.isNotEmpty) {
+      // Add remaining
+      averages.add(chunk.fold(0.0, (a, b) => a + b) / chunk.length);
+    }
+
+    return averages.reversed.toList();
+  }
 
   /// Calculates the effective number of bars that can be drawn
   /// given the current canvas width and the bar width.
@@ -73,7 +103,7 @@ class WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final effectiveBarCount = min(
-      data.length,
+      dataChunks.length,
       _calculateEffectiveBarCount(size.width),
     );
 
@@ -81,9 +111,10 @@ class WavePainter extends CustomPainter {
 
     // Draw the bars
     for (var i = 0; i < effectiveBarCount; i++) {
-      final double value = data[data.length - effectiveBarCount + i];
+      final double value =
+          dataChunks[dataChunks.length - effectiveBarCount + i];
       final double barHeight = size.height * value * 2 * audioScale;
-      final double barX = i * style.effectiveBarWidth;
+      final double barX = size.width - i * style.effectiveBarWidth;
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(

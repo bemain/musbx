@@ -1,5 +1,3 @@
-import 'dart:typed_data' show Float32List;
-
 import 'package:flutter/material.dart';
 import 'package:musbx/tuner/tuner.dart';
 
@@ -25,7 +23,7 @@ class FftGraph extends StatelessWidget {
     required this.data,
   });
 
-  final Float32List data;
+  final List<RecordingData> data;
 
   @override
   Widget build(BuildContext context) {
@@ -48,25 +46,73 @@ class FftPainter extends CustomPainter {
     required this.data,
     required this.style,
     this.audioScale = 1.0,
+    this.minBinIndex = 0,
+    this.maxBinIndex = 255,
   });
 
-  final Float32List data;
+  final List<RecordingData> data;
+
+  /// Averaged FFT data.
+  late final List<double> dataChunks = _getDataChunks();
 
   final FftGraphStyle style;
 
   final double audioScale;
 
+  /// Minimum bin index for FFT data.
+  final int minBinIndex;
+
+  /// Maximum bin index for FFT data.
+  final int maxBinIndex;
+
+  /// Process the FFT data and calculate averages.
+  ///
+  /// This is an O(n) operation, where n is the length of the FFT data.
+  ///
+  /// The buffer is divided into `barCount` chunks, and for each chunk the
+  /// average of the wave data is calculated and stored in the buffer.
+  List<double> _getDataChunks() {
+    final barCount = maxBinIndex - minBinIndex;
+    final range = maxBinIndex - minBinIndex + 1;
+    final chunkSize = range / barCount;
+
+    List<double> averages = [];
+
+    if (data.isEmpty) return [];
+
+    for (var i = 0; i < barCount; i++) {
+      var sum = 0.0;
+      var count = 0;
+
+      // Calculate chunk boundaries
+      final startIdx = (i * chunkSize + minBinIndex).floor();
+      final endIdx = ((i + 1) * chunkSize + minBinIndex).ceil();
+
+      // Ensure we don't exceed maxIndex
+      final effectiveEndIdx = endIdx.clamp(0, maxBinIndex + 1);
+
+      for (var j = startIdx; j < effectiveEndIdx; j++) {
+        sum += data.last.fft[j];
+        count++;
+      }
+
+      // Store the average for this chunk
+      averages.add(count > 0 ? sum / count : 0.0);
+    }
+    return averages;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
-    // params.dataManager.ensureCapacity(effectiveBarCount);
-
     final paint = Paint()..color = style.barColor;
 
+    if (dataChunks.isEmpty) return;
+
     // Draw the bars
-    final barCount = Tuner.fftMaxBinIndex - Tuner.fftMinBinIndex;
+    final barCount = maxBinIndex - minBinIndex;
     final barWidth = size.width / barCount;
     for (var i = 0; i < barCount; i++) {
-      final value = data[i];
+      final value = dataChunks[i];
       final barHeight = size.height * value * audioScale;
       final barX = i * barWidth;
 

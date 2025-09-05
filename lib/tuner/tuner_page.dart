@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/tuner/fft_graph.dart';
+import 'package:musbx/tuner/pitch_graph.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
-import 'package:musbx/tuner/tuning_graph.dart';
 import 'package:musbx/tuner/waveform_graph.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/permission_builder.dart';
@@ -50,7 +50,7 @@ class TunerPageState extends State<TunerPage> {
     }
 
     return StreamBuilder(
-      stream: tuner.frequencyStream,
+      stream: tuner.dataStream,
       builder: (context, snapshot) => ValueListenableBuilder(
         valueListenable: tuner.tuningNotifier,
         builder: (context, tuning, child) => ValueListenableBuilder(
@@ -68,27 +68,17 @@ class TunerPageState extends State<TunerPage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: TunerGauge(
-                        frequency: (tuner.frequencyHistory.isNotEmpty)
-                            ? tuner.frequencyHistory.last
-                            : null,
-                      ),
+                      child: TunerGauge(pitch: tuner.pitch),
                     ),
                     const SizedBox(height: 16.0),
                     const Divider(),
-                    TuningGraph(frequencyHistory: tuner.frequencyHistory),
+                    PitchGraph(data: tuner.dataBuffer),
                     const Divider(),
-                    StreamBuilder(
-                      stream: tuner.waveStream,
-                      builder: (context, snapshot) => WaveformGraph(
-                        data: tuner.waveBuffer,
-                      ),
+                    WaveformGraph(
+                      data: tuner.dataBuffer,
                     ),
-                    StreamBuilder(
-                      stream: tuner.fftStream,
-                      builder: (context, snapshot) => FftGraph(
-                        data: tuner.fftBuffer,
-                      ),
+                    FftGraph(
+                      data: tuner.dataBuffer,
                     ),
                   ],
                 ),
