@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/keys.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -142,7 +141,7 @@ class SoundCloudTrack {
               .url,
         ).replace(
           queryParameters: {
-            "client_id": soundCloudClientId,
+            "client_id": await SoundCloudSearch.clientId,
           },
         );
 
@@ -165,6 +164,36 @@ class SoundCloudTrack {
 class SoundCloudSearch {
   /// Base URL for SoundCloud's API.
   static const String _baseUrl = "https://api-v2.soundcloud.com";
+
+  /// The SoundCloud client ID used for requests.
+  static Future<String> clientId = generateClientId();
+
+  /// Generates a SoundCloud client ID.
+  static Future<String> generateClientId() async {
+    var response = await http.get(Uri.parse("https://soundcloud.com"));
+    if (response.statusCode != 200) {
+      throw Exception("Unable to reach SoundCloud: ${response.statusCode}");
+    }
+    final RegExpMatch? match = RegExp(
+      r'src\=\"(https:\/\/a-v2\.sndcdn\.com/assets/0-[^\.]+\.js)\"',
+    ).firstMatch(response.body);
+    if (match == null || match.groupCount < 1) {
+      throw Exception("No asset scripts found.");
+    }
+    final Uri url = Uri.parse(match.group(1)!);
+
+    response = await http.get(url);
+    if (response.statusCode != 200) {
+      throw Exception("Unable to reach $url: ${response.statusCode}");
+    }
+    final RegExpMatch? clientIdMatch = RegExp(
+      r'client_id:\"([^\"]+)\"',
+    ).firstMatch(response.body);
+    if (clientIdMatch == null || clientIdMatch.groupCount < 1) {
+      throw Exception("Could not find client_id in script '{url}'");
+    }
+    return clientIdMatch.group(1)!;
+  }
 
   /// Opens a SoundCloud search interface and allows the user to pick a song.
   ///
@@ -208,7 +237,7 @@ class SoundCloudSearch {
     final uri = Uri.parse("$_baseUrl/search/tracks").replace(
       queryParameters: {
         "q": query,
-        "client_id": soundCloudClientId,
+        "client_id": await SoundCloudSearch.clientId,
         "limit": "50",
       },
     );
