@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "218081465637",
+    "project_id": "musicians-toolbox",
+    "storage_bucket": "musicians-toolbox.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:218081465637:android:a5e3d56b594ae8df45b6cc",
+        "android_client_info": {
+          "package_name": "se.agardh.musbx"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgTmhrOWN0dRTg7Mp5SM6EMhcH8OuBz0s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

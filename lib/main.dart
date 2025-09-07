@@ -5,6 +5,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:musbx/analytics.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
@@ -20,6 +21,8 @@ Future<void> main() async {
 
   await PersistentValue.initialize();
   await Directories.initialize();
+
+  await Analytics.initialize();
 
   await Songs.initialize();
   await Notifications.initialize();
