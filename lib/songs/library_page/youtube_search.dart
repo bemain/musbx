@@ -229,7 +229,10 @@ class YoutubeVideoListItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
       subtitle: video == null
-          ? TextPlaceholder(width: 160)
+          ? Align(
+              alignment: Alignment.centerLeft,
+              child: TextPlaceholder(width: 160),
+            )
           : Text(
               htmlUnescape.convert(video!.channelTitle),
               maxLines: 1,

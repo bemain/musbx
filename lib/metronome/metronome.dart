@@ -78,6 +78,7 @@ class Metronome {
       subdivision: await Tick.load("beat_subdivision.mp3"),
     );
     instance = Metronome._(ticks);
+
     isInitialized = true;
   }
 

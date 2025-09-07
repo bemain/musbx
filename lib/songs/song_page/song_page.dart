@@ -55,7 +55,10 @@ class SongPage extends StatelessWidget {
                                 context,
                               ).textTheme.titleLarge,
                               subtitle: player == null
-                                  ? TextPlaceholder(width: 160)
+                                  ? Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: TextPlaceholder(width: 160),
+                                    )
                                   : Text(player.song.artist ?? ""),
                             ),
                             Expanded(

@@ -49,11 +49,18 @@ class Navigation {
               path: "/",
               redirect: (context, state) => songsRoute,
             ),
-            StatefulShellRoute.indexedStack(
+            StatefulShellRoute(
               restorationScopeId: "shell",
               builder: _buildShell,
+              navigatorContainerBuilder: (context, navigationShell, children) {
+                return ExtendedShellBranchContainer(
+                  currentIndex: navigationShell.currentIndex,
+                  children: children,
+                );
+              },
               branches: [
-                StatefulShellBranch(
+                ExtendedShellBranch(
+                  restorationScopeId: "metronome",
                   routes: [
                     GoRoute(
                       path: metronomeRoute,
@@ -63,7 +70,8 @@ class Navigation {
                     ),
                   ],
                 ),
-                StatefulShellBranch(
+                ExtendedShellBranch(
+                  restorationScopeId: "songs",
                   routes: [
                     GoRoute(
                       path: songsRoute,
@@ -137,7 +145,9 @@ class Navigation {
                     ),
                   ],
                 ),
-                StatefulShellBranch(
+                ExtendedShellBranch(
+                  restorationScopeId: "tuner",
+                  saveState: false,
                   routes: [
                     GoRoute(
                       path: tunerRoute,
@@ -147,7 +157,8 @@ class Navigation {
                     ),
                   ],
                 ),
-                StatefulShellBranch(
+                ExtendedShellBranch(
+                  restorationScopeId: "drone",
                   routes: [
                     GoRoute(
                       path: droneRoute,
@@ -226,4 +237,73 @@ class Navigation {
       ],
     );
   }
+}
+
+class ExtendedShellBranchContainer extends StatelessWidget {
+  const ExtendedShellBranchContainer({
+    required this.currentIndex,
+    required this.children,
+    super.key,
+  });
+
+  final int currentIndex;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> stackItems = [
+      for (int i = 0; i < children.length; i++)
+        _buildRouteBranchContainer(
+          context,
+          currentIndex == i,
+          children[i],
+        ),
+    ];
+
+    final child = children[currentIndex];
+    final branch = (child as dynamic).branch as ExtendedShellBranch;
+
+    return Stack(
+      children: [
+        IndexedStack(
+          index: currentIndex,
+          children: stackItems,
+        ),
+        if (!branch.saveState) children[currentIndex],
+      ],
+    );
+  }
+
+  Widget _buildRouteBranchContainer(
+    BuildContext context,
+    bool isActive,
+    Widget child,
+  ) {
+    final branch = (child as dynamic).branch as ExtendedShellBranch;
+    if (!branch.saveState) return const SizedBox.shrink();
+
+    return Offstage(
+      offstage: !isActive,
+      child: TickerMode(
+        enabled: isActive,
+        child: child,
+      ),
+    );
+  }
+}
+
+/// An extended `StatefulShellBranch` that adds the option to not save state.
+/// See https://github.com/flutter/flutter/issues/142258.
+class ExtendedShellBranch extends StatefulShellBranch {
+  ExtendedShellBranch({
+    this.saveState = true,
+    super.initialLocation,
+    super.navigatorKey,
+    super.observers,
+    super.restorationScopeId,
+    required super.routes,
+  });
+
+  /// Whether to save the state for this branch.
+  final bool saveState;
 }

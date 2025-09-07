@@ -241,18 +241,15 @@ class TextPlaceholder extends StatelessWidget {
     textPainter.layout();
 
     return ShimmerLoading(
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Card(
-          margin: EdgeInsets.symmetric(vertical: 4),
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          elevation: 0,
-          child: SizedBox(
-            height:
-                textPainter.height -
-                8, // Compensate for the margin around the card
-            width: width,
-          ),
+      child: Card(
+        margin: EdgeInsets.symmetric(vertical: 4),
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        elevation: 0,
+        child: SizedBox(
+          height:
+              textPainter.height -
+              8, // Compensate for the margin around the card
+          width: width,
         ),
       ),
     );

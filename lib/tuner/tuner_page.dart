@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/tuner/fft_graph.dart';
+import 'package:musbx/tuner/pitch_graph.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
-import 'package:musbx/tuner/tuning_graph.dart';
+import 'package:musbx/utils/loading.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
+import 'package:musbx/widgets/flat_card.dart';
 import 'package:musbx/widgets/permission_builder.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -40,8 +44,15 @@ class TunerPageState extends State<TunerPage> {
       );
     }
 
+    if (!tuner.isInitialized) {
+      tuner.initialize().then((_) {
+        setState(() {});
+      });
+      return const SizedBox(); // TODO: Show shimmer loading
+    }
+
     return StreamBuilder(
-      stream: tuner.frequencyStream,
+      stream: tuner.dataStream,
       builder: (context, snapshot) => ValueListenableBuilder(
         valueListenable: tuner.tuningNotifier,
         builder: (context, tuning, child) => ValueListenableBuilder(
@@ -50,21 +61,34 @@ class TunerPageState extends State<TunerPage> {
             return Scaffold(
               appBar: const DefaultAppBar(),
               body: Padding(
-                padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                padding: const EdgeInsets.only(
+                  left: 8,
+                  right: 8,
+                  bottom: 8,
+                ),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TunerGauge(
-                        frequency: (tuner.frequencyHistory.isNotEmpty)
-                            ? tuner.frequencyHistory.last
-                            : null,
+                    FlatCard(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 32),
+                          _buildPitchLabel(context),
+                          const SizedBox(height: 32),
+                          TunerGauge(
+                            pitch: tuner.pitch,
+                            showPitchText: false,
+                          ),
+                          const SizedBox(height: 16),
+                          const Divider(),
+                          PitchGraph(data: tuner.dataBuffer),
+                          const SizedBox(height: 4),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16.0),
-                    const Divider(),
-                    TuningGraph(frequencyHistory: tuner.frequencyHistory),
-                    const Divider(),
+                    FftGraph(
+                      data: tuner.dataBuffer,
+                    ),
                   ],
                 ),
               ),
@@ -72,6 +96,25 @@ class TunerPageState extends State<TunerPage> {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildPitchLabel(BuildContext context) {
+    final TextStyle? style = GoogleFonts.andikaTextTheme(
+      Theme.of(context).textTheme,
+    ).displayMedium;
+
+    if (tuner.pitch == null) {
+      return Center(
+        child: TextPlaceholder(
+          style: style,
+          width: 48.0,
+        ),
+      );
+    }
+    return Text(
+      tuner.pitch!.abbreviation,
+      style: style,
     );
   }
 }

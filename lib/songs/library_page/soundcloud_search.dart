@@ -438,7 +438,10 @@ class SoundCloudTrackListItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
       subtitle: track == null
-          ? const TextPlaceholder(width: 160)
+          ? const Align(
+              alignment: Alignment.centerLeft,
+              child: TextPlaceholder(width: 160),
+            )
           : RichText(
               text: TextSpan(
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
