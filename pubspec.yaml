@@ -36,29 +36,28 @@ dependencies:
       url: https://github.com/hasali19/material-foundation-flutter-packages.git
       ref: main
       path: packages/dynamic_color/
-  permission_handler: ^11.3.1
+  permission_handler: ^12.0.1
   device_info_plus: ^11.5.0
   path_provider: ^2.1.5
   shared_preferences: ^2.5.3
-  google_fonts: ^6.2.1
+  google_fonts: ^6.3.1
   google_mobile_ads: ^6.0.0
   in_app_purchase: ^3.2.3
   awesome_notifications_core: ^0.10.1
   awesome_notifications: ^0.10.1
-  audio_service: ^0.18.17
-  audio_session: ^0.1.19
-  file_picker: ^10.2.0
-  http: ^1.2.1
+  audio_service: ^0.18.18
+  audio_session: ^0.2.2
+  file_picker: ^10.3.2
+  http: ^1.5.0
   html_unescape: ^2.0.0
-  http_parser: ^4.0.2
-  connectivity_plus: ^6.1.4
-  just_waveform: ^0.0.5
-  flutter_soloud: ^3.3.0
+  connectivity_plus: ^6.1.5
+  just_waveform: ^0.0.7
+  flutter_soloud: ^3.3.3
   dio: ^5.9.0
   pub_semver: ^2.2.0
   gauges: ^1.0.0 # TODO: Migrate away from this package
-  material_symbols_icons: ^4.2815.1
-  go_router: ^16.0.0
+  material_symbols_icons: ^4.2872.0
+  go_router: ^16.2.1
   volume_controller: ^3.4.0
   flutter_recorder: ^1.1.2
 
