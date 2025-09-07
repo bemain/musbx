@@ -71,7 +71,6 @@ class Metronome {
   /// Initialize the [Metronome] and prepare playback.
   static Future<void> initialize() async {
     if (isInitialized) return;
-    isInitialized = true;
 
     final ticks = Ticks(
       accented: await Tick.load("beat_accented.mp3"),
@@ -79,6 +78,8 @@ class Metronome {
       subdivision: await Tick.load("beat_subdivision.mp3"),
     );
     instance = Metronome._(ticks);
+
+    isInitialized = true;
   }
 
   /// Beats per minutes.

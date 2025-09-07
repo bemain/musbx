@@ -193,7 +193,7 @@ class Tuner {
         .where(
           (frequency) => (frequency - _rawFrequencyHistory.last).abs() < 10,
         )
-        .toList(); // Add remaining
+        .toList();
 
     if (previousFrequencies.length <= averageFrequenciesN / 3) return null;
 
