@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/analyzer/analyzer_card.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
-import 'package:musbx/songs/equalizer/equalizer.dart';
-import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
@@ -112,7 +110,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
     if (Songs.player == null) {
       return AppBar(
         actions: [
-          for (var i = 0; i < 3; i++)
+          for (var i = 0; i < 2; i++)
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: IconPlaceholder(),
@@ -134,11 +132,11 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
           builder: (context, bands, child) {
             final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
             final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
-            final bool isEqualizerReset = bands.every(
-              (band) =>
-                  band.gain.toStringAsFixed(2) ==
-                  EqualizerBand.defaultGain.toStringAsFixed(2),
-            );
+            // final bool isEqualizerReset = bands.every(
+            //   (band) =>
+            //       band.gain.toStringAsFixed(2) ==
+            //       EqualizerBand.defaultGain.toStringAsFixed(2),
+            // );
             return AppBar(
               actions: [
                 IconButton(
@@ -167,19 +165,20 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                       : Theme.of(context).colorScheme.primary,
                   icon: const Icon(Symbols.avg_pace),
                 ),
-                IconButton(
-                  onPressed: () {
-                    _showModalBottomSheet<void>(
-                      context,
-                      const EqualizerSheet(),
-                    );
-                  },
-                  isSelected: !isEqualizerReset,
-                  color: isEqualizerReset
-                      ? null
-                      : Theme.of(context).colorScheme.primary,
-                  icon: const Icon(Symbols.instant_mix),
-                ),
+                // FIXME: Equalizer temporarily disabled to reduce artifacts.
+                // IconButton(
+                //   onPressed: () {
+                //     _showModalBottomSheet<void>(
+                //       context,
+                //       const EqualizerSheet(),
+                //     );
+                //   },
+                //   isSelected: !isEqualizerReset,
+                //   color: isEqualizerReset
+                //       ? null
+                //       : Theme.of(context).colorScheme.primary,
+                //   icon: const Icon(Symbols.instant_mix),
+                // ),
                 const GetPremiumButton(),
                 InfoButton(child: Text(SongPage.helpText)),
               ],

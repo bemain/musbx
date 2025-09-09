@@ -87,9 +87,10 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
       cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
     );
     // Activate filters. This needs to be done before the sound is played.
-    playable.filters()
-      ..pitchShift.activate()
-      ..equalizer.activate();
+    playable.filters().pitchShift.activate();
+    // FIXME: Equalizer temporarily disabled to reduce artifacts.
+    // ..equalizer.activate();
+
     // Play sound
     final SoundHandle handle = await playable.play();
     final SongPlayer<P> player;
