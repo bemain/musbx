@@ -7,6 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   awesome_notifications_core
   connectivity_plus
   dynamic_color
+  firebase_core
   permission_handler_windows
   volume_controller
 )

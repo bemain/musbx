@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/analytics.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
@@ -173,10 +174,12 @@ class Navigation {
           ],
         )
         ..routerDelegate.addListener(() {
-          // Update the current route whenever it changes. Only remember the top-level route, not which subroute we were on.
-          final path = router.routerDelegate.currentConfiguration.uri
-              .toFilePath(windows: false);
-          currentRoute.value = "/${path.split("/").first}";
+          final String location = router.state.matchedLocation;
+          // Report to analytics
+          Analytics.logScreenView(location);
+
+          // Update the current route. Only remember the top-level route, not which subroute we were on.
+          currentRoute.value = "/${location.substring(1).split("/").first}";
         });
 
   static Widget _buildShell(

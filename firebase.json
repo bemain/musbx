@@ -1,0 +1,25 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "musicians-toolbox",
+                    "appId": "1:218081465637:android:a5e3d56b594ae8df45b6cc",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "musicians-toolbox",
+                    "configurations": {
+                        "android": "1:218081465637:android:a5e3d56b594ae8df45b6cc",
+                        "ios": "1:218081465637:ios:bc54885b544f9ef045b6cc",
+                        "macos": "1:218081465637:ios:27374b6f5ff79a8945b6cc",
+                        "web": "1:218081465637:web:7405cfa79f01edfc45b6cc",
+                        "windows": "1:218081465637:web:298208a6ef59578d45b6cc"
+                    }
+                }
+            }
+        }
+    }
+}
