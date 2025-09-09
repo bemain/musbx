@@ -11,6 +11,7 @@ class Analytics {
 
   /// Log that the current screen has changed.
   static Future<void> logScreenView(String? name) async {
+    if (!isAvailable) return;
     await FirebaseAnalytics.instance.logScreenView(screenName: name);
   }
 
