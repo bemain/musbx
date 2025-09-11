@@ -2,7 +2,7 @@ title: Musician's Toolbox
 description: A mobile app that offers everything a musician needs for transcribing, practicing and performing.
 url: https://bemain.github.io/musbx/
 
-theme: minima
+remote_theme: "jekyll/minima"
 minima:
   skin: auto
   social_links:
