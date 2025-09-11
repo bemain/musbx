@@ -16,12 +16,11 @@ minima:
       icon: google-play
       url: "https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx-website-footer-social-link"
     - title: Musician's Toolbox on App Store
-      icon: app-store
+      icon: app-store-ios
       url: "https://apps.apple.com/us/app/musicians-toolbox/id1670009655"
-
-
-header_pages:
--
+  hide_site_feed_link: true
+  nav_pages:
+    - privacy_policy.md
 
 author: 
   name: Benjamin Agardh

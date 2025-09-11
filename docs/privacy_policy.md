@@ -1,5 +1,5 @@
 ---
-layout: musbx
+layout: page
 title: Privacy Policy
 permalink: /privacy
 ---
