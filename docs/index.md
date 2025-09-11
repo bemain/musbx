@@ -4,9 +4,10 @@ permalink: /
 ---
 
 <p align="center">
-    <a href='https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1' style="border-radius: 13px; height: 83px;"><img alt='Get it on Google Play' src='/assets/google-play-badge.png' style="height: 83px;"/></a>
+    <a href='https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1' style="border-radius: 13px; height: 83px;"><img alt='Get it on Google Play' src='https://drive.usercontent.google.com/download?id=1unoM49F6eiZ63AHKnFuY4SrCpvoG6uWq' style="height: 83px;"/></a>
     <a href="https://apps.apple.com/us/app/musicians-toolbox/id1670009655?itsct=apps_box_badge&amp;itscg=30200" style="display: inline-block; border-radius: 13px; width: 250px; height: 83px;"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&amp;releaseDate=1679443200" alt="Download on the App Store" style="border-radius: 13px; width: 250px; height: 83px;"></a>
 </p>
+
 
 Pick a song from YouTube or your device. Musician's Toolbox... \
  ★ Removes instruments or voice for karaoke \
