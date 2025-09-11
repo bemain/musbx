@@ -7,16 +7,16 @@ minima:
   skin: auto
   social_links:
     - title: Go to my GitHub
-      platform: github
+      icon: github
       url: "https://github.com/bemain"
     - title: Follow me on LinkedIn
-      platform: linkedin
+      icon: linkedin
       url: "https://www.linkedin.com/in/benjamin-agardh"
     - title: Musician's Toolbox on Google Play
-      platform: google-play
+      icon: google-play
       url: "https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx-website-footer-social-link"
     - title: Musician's Toolbox on App Store
-      platform: app-store-ios
+      icon: app-store
       url: "https://apps.apple.com/us/app/musicians-toolbox/id1670009655"
 
 
