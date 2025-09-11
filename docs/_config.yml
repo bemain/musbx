@@ -5,10 +5,20 @@ url: https://bemain.github.io/musbx/
 theme: minima
 minima:
   skin: auto
-  # TODO: Fix social links, and add Google Play and App Store
   social_links:
-    - { platform: github,  user_url: "https://github.com/BeMain" }
-    - { platform: linkedin, user_url: "https://www.linkedin.com/in/benjamin-agardh" }
+    - title: Go to my GitHub
+      platform: github
+      url: "https://github.com/bemain"
+    - title: Follow me on LinkedIn
+      platform: linkedin
+      url: "https://www.linkedin.com/in/benjamin-agardh"
+    - title: Musician's Toolbox on Google Play
+      platform: google-play
+      url: "https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx-website-footer-social-link"
+    - title: Musician's Toolbox on App Store
+      platform: app-store-ios
+      url: "https://apps.apple.com/us/app/musicians-toolbox/id1670009655"
+
 
 header_pages:
 -
