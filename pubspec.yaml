@@ -69,7 +69,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  flutter_launcher_icons: ^0.14.1
+  flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -90,7 +90,12 @@ flutter_launcher_icons:
   image_path: "assets/logo/logo.png"
   adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: "assets/logo/adaptive_foreground.png"
+  adaptive_icon_foreground_inset: 0 # We could probably use this, but currently the image contains padding in itself.
   adaptive_icon_monochrome: "assets/logo/adaptive_monochrome.png"
+
+  windows:
+    generate: true
+    icon_size: 256 # min:48, max:256, default: 48
 
 # To apply changes to the splash screen configuration, run:
 # `dart run flutter_native_splash:create`
