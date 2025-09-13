@@ -91,12 +91,6 @@ class Tuner {
     const EqualTemperament(),
   );
 
-  /// The previous frequencies detected, unfiltered.
-  final List<double> _rawFrequencyHistory = [];
-
-  /// The previous frequencies detected, averaged and filtered.
-  final List<double> frequencyHistory = [];
-
   void _startStreaming() {
     Recorder.instance.start();
     Recorder.instance.startStreamingData();
@@ -132,9 +126,14 @@ class Tuner {
   /// use [dataStream].
   final List<RecordingData> dataBuffer = [];
 
-  /// The most recent pitch detected, if any.
-  Pitch? get pitch =>
-      frequencyHistory.isEmpty ? null : getClosestPitch(frequencyHistory.last);
+  /// The "raw" (not averaged) pitches buffered.
+  Iterable<Pitch> get pitchHistory => dataBuffer
+      .map((data) => data.frequency)
+      .nonNulls
+      .map((frequency) => getClosestPitch(frequency));
+
+  /// The most recent pitch detected, averaged and filtered.
+  Pitch? pitch;
 
   /// The current pitch detected, averaged from the recent history.
   ///
@@ -164,41 +163,37 @@ class Tuner {
       dataBuffer.removeRange(0, dataBuffer.length - bufferLength);
     }
 
+    final double? avgFreq = _getAverageFrequency();
+    if (avgFreq != null) pitch = getClosestPitch(avgFreq);
+
     return out;
   }
 
   /// Use pitch detection to try and detect a pitch in the given [data].
   double? _detectFrequency(Float32List data) {
-    final result = Yin(
+    return Yin(
       sampleRate.toDouble(),
       // We need to use a small buffer size so the operation completes before the next data arrives
       // TODO: Maybe use a different method
       min(1024, data.length),
-    ).getPitch(data);
-
-    if (result == null) return null;
-
-    _rawFrequencyHistory.add(result.frequency);
-    final double? avgFrequency = _getAverageFrequency();
-    if (avgFrequency != null) frequencyHistory.add(avgFrequency);
-    return result.frequency;
+    ).getPitch(data)?.frequency;
   }
 
   /// Calculate the average of the last [averageFrequenciesN] frequencies.
   double? _getAverageFrequency() {
-    List<double> previousFrequencies = _rawFrequencyHistory
+    Iterable<double> frequenciesToAverage = pitchHistory
+        .map((pitch) => pitch.frequency)
         // Only the [averageFrequenciesN] last entries
-        .sublist(max(0, _rawFrequencyHistory.length - averageFrequenciesN))
+        .skip(max(0, pitchHistory.length - averageFrequenciesN))
         // Only frequencies close to the current
         .where(
-          (frequency) => (frequency - _rawFrequencyHistory.last).abs() < 10,
-        )
-        .toList();
+          (frequency) => (frequency - pitchHistory.last.frequency).abs() < 10,
+        );
 
-    if (previousFrequencies.length <= averageFrequenciesN / 3) return null;
+    if (frequenciesToAverage.length < averageFrequenciesN) return null;
 
-    return previousFrequencies.reduce((a, b) => a + b) /
-        previousFrequencies.length;
+    return frequenciesToAverage.reduce((a, b) => a + b) /
+        frequenciesToAverage.length;
   }
 
   /// Get the pitch closest to the given [frequency].

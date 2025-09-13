@@ -106,9 +106,12 @@ class TunerPageState extends State<TunerPage> {
 
     if (tuner.pitch == null) {
       return Center(
-        child: TextPlaceholder(
-          style: style,
-          width: 48.0,
+        child: SizedBox(
+          height: 52,
+          child: TextPlaceholder(
+            style: style,
+            width: 48.0,
+          ),
         ),
       );
     }
