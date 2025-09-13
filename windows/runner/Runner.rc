@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "se.agardh" "\0"
-            VALUE "FileDescription", "musbx" "\0"
+            VALUE "CompanyName", "Benjamin Agardh" "\0"
+            VALUE "FileDescription", "Musician's Toolbox" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "musbx" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2022 se.agardh. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 Benjamin Agardh. All rights reserved." "\0"
             VALUE "OriginalFilename", "musbx.exe" "\0"
-            VALUE "ProductName", "musbx" "\0"
+            VALUE "ProductName", "Musician's Toolbox" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
