@@ -74,7 +74,7 @@ class UploadSongButton extends SpeedDialChild {
       ),
     );
 
-    Navigation.navigatorKey.currentContext?.go(Navigation.songRoute(id));
+    Navigation.navigatorKey.currentContext?.go(Routes.song(id));
   }
 
   Future<void> pushPermissionBuilder(BuildContext context) async {

@@ -65,7 +65,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
             const SizedBox(height: 8),
             FilledButton(
               onPressed: () {
-                context.replace(Navigation.songRoute(widget.song.id));
+                context.replace(Routes.song(widget.song.id));
               },
               child: const Text("Reload"),
             ),

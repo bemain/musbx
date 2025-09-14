@@ -4,28 +4,40 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/analytics.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
+import 'package:musbx/settings/contact_page.dart';
+import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
+import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/persistent_value.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/ads.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
-class Navigation {
-  static const String metronomeRoute = "/metronome";
-  static const String songsRoute = "/songs";
-  static String songRoute(String songId) => "$songsRoute/$songId";
-  static const String tunerRoute = "/tuner";
-  static const String droneRoute = "/drone";
+class Routes {
+  static const String metronome = "/metronome";
+  static const String library = "/songs";
+  static String song(String songId) => "$library/$songId";
+  static const String tuner = "/tuner";
+  static const String drone = "/drone";
 
-  // The current route. This is persisted across app restarts.
-  static final PersistentValue<String> currentRoute = PersistentValue(
-    "currentRoute",
-    initialValue: songsRoute,
+  static const String settings = "/settings";
+  static const String licenses = "/settings/licenses";
+  static const String contact = "/settings/contact";
+
+  /// The top-level shell branches.
+  static const List<String> branches = [metronome, library, tuner, drone];
+}
+
+class Navigation {
+  // The current shell branch. This is persisted across app restarts.
+  static final PersistentValue<int> currentBranch = PersistentValue(
+    "currentBranch",
+    initialValue: 1,
   );
 
   /// The key for the navigator used by the app.
@@ -44,12 +56,44 @@ class Navigation {
       GoRouter(
           navigatorKey: navigatorKey,
           restorationScopeId: "router",
-          initialLocation: currentRoute.value,
+          initialLocation: Routes.branches[currentBranch.value],
           routes: [
             GoRoute(
               path: "/",
-              redirect: (context, state) => songsRoute,
+              redirect: (context, state) => Routes.library,
             ),
+            GoRoute(
+              path: Routes.settings,
+              builder: (context, state) {
+                return const SettingsPage();
+              },
+              routes: [
+                GoRoute(
+                  path: Routes.licenses.split("/").last,
+                  builder: (context, state) {
+                    return LicensePage(
+                      applicationIcon: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: ImageIcon(
+                          AssetImage("assets/splash/splash.png"),
+                          size: 64.0,
+                          color: Color(0xff0f58cf),
+                        ),
+                      ),
+                      applicationVersion:
+                          "Version ${LaunchHandler.info.version}",
+                    );
+                  },
+                ),
+                GoRoute(
+                  path: Routes.contact.split("/").last,
+                  builder: (context, state) {
+                    return const ContactPage();
+                  },
+                ),
+              ],
+            ),
+
             StatefulShellRoute(
               restorationScopeId: "shell",
               builder: _buildShell,
@@ -64,7 +108,7 @@ class Navigation {
                   restorationScopeId: "metronome",
                   routes: [
                     GoRoute(
-                      path: metronomeRoute,
+                      path: Routes.metronome,
                       builder: (context, state) {
                         return const MetronomePage();
                       },
@@ -75,7 +119,7 @@ class Navigation {
                   restorationScopeId: "songs",
                   routes: [
                     GoRoute(
-                      path: songsRoute,
+                      path: Routes.library,
                       builder: (context, state) {
                         // Dispose the previous player.
                         // This cannot be done in the song routes `onExit` callback,
@@ -97,7 +141,7 @@ class Navigation {
                                 .where((song) => song.id == id)
                                 .isEmpty) {
                               // If the song isn't in the library, redirect to the songs page
-                              return songsRoute;
+                              return Routes.library;
                             }
 
                             return null;
@@ -131,7 +175,7 @@ class Navigation {
                                           ? const MusicPlayerAccessRestrictedDialog()
                                           : const SongCouldNotBeLoadedDialog(),
                                     );
-                                    context.go(songsRoute);
+                                    context.go(Routes.library);
                                   });
 
                                   return const SizedBox();
@@ -151,7 +195,7 @@ class Navigation {
                   saveState: false,
                   routes: [
                     GoRoute(
-                      path: tunerRoute,
+                      path: Routes.tuner,
                       builder: (context, state) {
                         return const TunerPage();
                       },
@@ -162,7 +206,7 @@ class Navigation {
                   restorationScopeId: "drone",
                   routes: [
                     GoRoute(
-                      path: droneRoute,
+                      path: Routes.drone,
                       builder: (context, state) {
                         return const DronePage();
                       },
@@ -174,12 +218,8 @@ class Navigation {
           ],
         )
         ..routerDelegate.addListener(() {
-          final String location = router.state.matchedLocation;
           // Report to analytics
-          Analytics.logScreenView(location);
-
-          // Update the current route. Only remember the top-level route, not which subroute we were on.
-          currentRoute.value = "/${location.substring(1).split("/").first}";
+          Analytics.logScreenView(router.state.matchedLocation);
         });
 
   static Widget _buildShell(
@@ -211,6 +251,33 @@ class Navigation {
   }
 
   static Widget _buildNavigationBar(StatefulNavigationShell shell) {
+    NavigationDestination buildDestination(String route) {
+      switch (route) {
+        case Routes.metronome:
+          return NavigationDestination(
+            label: "Metronome",
+            icon: Icon(CustomIcons.metronome),
+          );
+        case Routes.library:
+          return NavigationDestination(
+            label: "Songs",
+            icon: Icon(Symbols.library_music),
+          );
+        case Routes.tuner:
+          return NavigationDestination(
+            label: "Tuner",
+            icon: Icon(Symbols.speed),
+          );
+        case Routes.drone:
+          return NavigationDestination(
+            label: "Drone",
+            icon: Icon(CustomIcons.tuning_fork),
+          );
+        default:
+          throw ("Unknown destination: $route");
+      }
+    }
+
     return NavigationBar(
       onDestinationSelected: (index) {
         shell.goBranch(
@@ -218,26 +285,10 @@ class Navigation {
           // When tapping the current tab, navigate to the initial location
           initialLocation: index == shell.currentIndex,
         );
+        currentBranch.value = index;
       },
       selectedIndex: shell.currentIndex,
-      destinations: const [
-        NavigationDestination(
-          label: "Metronome",
-          icon: Icon(CustomIcons.metronome),
-        ),
-        NavigationDestination(
-          label: "Songs",
-          icon: Icon(Symbols.library_music),
-        ),
-        NavigationDestination(
-          label: "Tuner",
-          icon: Icon(Symbols.speed),
-        ),
-        NavigationDestination(
-          label: "Drone",
-          icon: Icon(CustomIcons.tuning_fork),
-        ),
-      ],
+      destinations: Routes.branches.map(buildDestination).toList(),
     );
   }
 }

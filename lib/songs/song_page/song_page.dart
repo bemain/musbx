@@ -116,7 +116,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: IconPlaceholder(),
             ),
           const GetPremiumButton(),
-          InfoButton(child: Text(SongPage.helpText)),
+          SettingsButton(),
         ],
       );
     }
@@ -180,7 +180,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                 //   icon: const Icon(Symbols.instant_mix),
                 // ),
                 const GetPremiumButton(),
-                InfoButton(child: Text(SongPage.helpText)),
+                const SettingsButton(),
               ],
             );
           },

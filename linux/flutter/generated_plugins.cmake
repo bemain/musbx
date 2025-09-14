@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   awesome_notifications
   awesome_notifications_core
   dynamic_color
+  url_launcher_linux
   volume_controller
 )
 

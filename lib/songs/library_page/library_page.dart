@@ -29,7 +29,7 @@ class LibraryPage extends StatelessWidget {
             title: LibrarySearchBar(),
             actions: const [
               GetPremiumButton(),
-              InfoButton(),
+              SettingsButton(),
             ],
           ),
           ListenableBuilder(
@@ -99,7 +99,7 @@ class LibraryPage extends StatelessWidget {
         }
 
         onSelected?.call();
-        context.go(Navigation.songRoute(song.id));
+        context.go(Routes.song(song.id));
       },
       onLongPress: () {
         _showOptionsSheet(context, song);
@@ -392,7 +392,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                           await SoundCloudSearch.loadTrack(track);
                           if (context.mounted) {
                             context.go(
-                              Navigation.songRoute(track.id.toString()),
+                              Routes.song(track.id.toString()),
                             );
                           }
                         },
@@ -457,7 +457,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         }
 
         onSelected?.call();
-        context.go(Navigation.songRoute(song.id));
+        context.go(Routes.song(song.id));
       },
     );
   }

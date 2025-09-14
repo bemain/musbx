@@ -214,7 +214,7 @@ class SoundCloudSearch {
 
     await loadTrack(track);
 
-    if (context.mounted) context.go(Navigation.songRoute(track.id.toString()));
+    if (context.mounted) context.go(Routes.song(track.id.toString()));
   }
 
   /// Loads a track from SoundCloud into the user's library.
