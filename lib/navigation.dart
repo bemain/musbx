@@ -4,7 +4,6 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/analytics.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
-import 'package:musbx/settings/contact_page.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -64,31 +63,33 @@ class Navigation {
             ),
             GoRoute(
               path: Routes.settings,
-              builder: (context, state) {
-                return const SettingsPage();
+              pageBuilder: (context, state) {
+                return settingsPage(
+                  context: context,
+                  state: state,
+                  child: const SettingsPage(),
+                );
               },
               routes: [
                 GoRoute(
                   path: Routes.licenses.split("/").last,
-                  builder: (context, state) {
-                    return LicensePage(
-                      applicationIcon: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: ImageIcon(
-                          AssetImage("assets/splash/splash.png"),
-                          size: 64.0,
-                          color: Color(0xff0f58cf),
+                  pageBuilder: (context, state) {
+                    return settingsPage(
+                      context: context,
+                      state: state,
+                      child: LicensePage(
+                        applicationIcon: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                          child: ImageIcon(
+                            AssetImage("assets/splash/splash.png"),
+                            size: 64.0,
+                            color: Color(0xff0f58cf),
+                          ),
                         ),
+                        applicationVersion:
+                            "Version ${LaunchHandler.info.version}",
                       ),
-                      applicationVersion:
-                          "Version ${LaunchHandler.info.version}",
                     );
-                  },
-                ),
-                GoRoute(
-                  path: Routes.contact.split("/").last,
-                  builder: (context, state) {
-                    return const ContactPage();
                   },
                 ),
               ],
