@@ -82,6 +82,14 @@ class Metronome {
     isInitialized = true;
   }
 
+  /// Whether to show a notification while the Metronome is playing.
+  bool get showNotification => showNotificationNotifier.value;
+  set showNotification(bool value) => showNotificationNotifier.value = value;
+  late final PersistentValue<bool> showNotificationNotifier = PersistentValue(
+    "metronome/notification",
+    initialValue: true,
+  )..addListener(reset);
+
   /// Beats per minutes.
   ///
   /// Clamped between [minBpm] and [maxBpm].
@@ -184,6 +192,8 @@ class Metronome {
   }
 
   Future<void> updateNotification() async {
+    if (!showNotification) return;
+
     await Notifications.create(
       content: NotificationContent(
         id: 0,

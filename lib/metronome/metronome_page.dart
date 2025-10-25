@@ -69,7 +69,7 @@ class MetronomePage extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 VolumeIndicator(),
-                                NotificationIndicator(),
+                                MetronomeNotificationIndicator(),
                               ],
                             ),
                           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/model/accidental.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
@@ -95,6 +96,27 @@ class SettingsPage extends StatelessWidget {
       ),
       body: SettingsList(
         children: [
+          SectionTitle(text: "Metronome"),
+          ValueListenableBuilder(
+            valueListenable: Metronome.instance.showNotificationNotifier,
+            builder: (context, showNotification, child) => ListTile(
+              leading: Icon(Symbols.notification_settings),
+              title: Text("Show notification"),
+              subtitle: Text(
+                "Control the Metronome from the notifications drawer.",
+              ),
+              onTap: () async {
+                Metronome.instance.showNotification =
+                    !Metronome.instance.showNotification;
+              },
+              trailing: Switch(
+                value: Metronome.instance.showNotification,
+                onChanged: (value) =>
+                    Metronome.instance.showNotification = value,
+              ),
+            ),
+          ),
+
           SectionTitle(text: "Tuner"),
           ValueListenableBuilder(
             valueListenable: Tuner.instance.tuningNotifier,
