@@ -4,22 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/model/accidental.dart';
+import 'package:musbx/model/pitch.dart';
+import 'package:musbx/model/pitch_class.dart';
+import 'package:musbx/tuner/tuner.dart';
+import 'package:musbx/widgets/alert_sheet.dart';
 
 class TuningSelector extends StatelessWidget {
   /// Widget for selecting a frequency to use as the tuning of A4.
-  TuningSelector({
+  const TuningSelector({
     super.key,
-    this.initialFrequency = 440,
     this.minFrequency = 415,
     this.maxFrequency = 456,
-  }) : controller = TextEditingController(text: "$initialFrequency");
-
-  final TextEditingController controller;
+  });
 
   static const int baseFrequency = 440;
-
-  /// The initial pre-selected frequency, in Hz.
-  final int initialFrequency;
 
   /// The minimum frequency that can be entered, in Hz.
   final int minFrequency;
@@ -27,53 +25,57 @@ class TuningSelector extends StatelessWidget {
   /// The maximum frequency that can be entered, in Hz.
   final int maxFrequency;
 
-  /// The current frequency entered.
-  int get frequency =>
-      (int.tryParse(controller.text) ?? initialFrequency).clamp(
-        minFrequency,
-        maxFrequency,
-      );
+  void _setTuning(num frequency) {
+    Tuner.instance.tuning = Pitch(PitchClass.a(), 4, frequency.toDouble());
+  }
+
+  int _parseFrequency(String text) {
+    return (int.tryParse(text) ?? baseFrequency).clamp(
+      minFrequency,
+      maxFrequency,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text("Select tuning"),
-          ListenableBuilder(
-            listenable: controller,
-            builder: (context, child) {
-              return IconButton(
-                onPressed: frequency == baseFrequency
+    return ValueListenableBuilder(
+      valueListenable: Tuner.instance.tuningNotifier,
+      builder: (context, tuning, child) {
+        final TextEditingController controller = TextEditingController(
+          text: tuning.frequency.toInt().toString(),
+        );
+
+        return AlertSheet(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Select tuning"),
+              IconButton(
+                onPressed: tuning.frequency == baseFrequency
                     ? null
                     : () {
-                        controller.text = "$baseFrequency";
+                        _setTuning(baseFrequency);
                       },
                 icon: Icon(Symbols.refresh),
                 iconSize: 20,
-              );
-            },
+              ),
+            ],
           ),
-        ],
-      ),
-      content: ListenableBuilder(
-        listenable: controller,
-        builder: (context, child) {
-          return Padding(
-            padding: EdgeInsetsGeometry.symmetric(vertical: 8),
+          content: Padding(
+            padding: EdgeInsetsGeometry.symmetric(vertical: 32),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  onPressed: frequency > minFrequency
+                  onPressed: tuning.frequency > minFrequency
                       ? () {
-                          controller.text = (frequency - 1).toString();
+                          _setTuning(tuning.frequency - 1);
                         }
                       : null,
                   icon: Icon(Symbols.remove),
                 ),
-                Expanded(
+                SizedBox(
+                  width: 128,
                   child: TextField(
                     controller: controller,
                     decoration: InputDecoration(
@@ -110,51 +112,41 @@ class TuningSelector extends StatelessWidget {
                       ),
                     ],
                     onSubmitted: (value) {
-                      // Clamp frequency
-                      controller.text = "$frequency";
+                      _setTuning(_parseFrequency(value));
                     },
                   ),
                 ),
                 IconButton(
-                  onPressed: frequency < maxFrequency
+                  onPressed: tuning.frequency < maxFrequency
                       ? () {
-                          controller.text = (frequency + 1).toString();
+                          _setTuning(tuning.frequency + 1);
                         }
                       : null,
                   icon: Icon(Symbols.add),
                 ),
               ],
             ),
-          );
-        },
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text("Cancel"),
-        ),
-        FilledButton(
-          onPressed: () {
-            Navigator.of(context).pop(frequency.toDouble());
-          },
-          child: Text("Apply"),
-        ),
-      ],
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                _setTuning(_parseFrequency(controller.text));
+                Navigator.of(context).pop();
+              },
+              child: Text("Done"),
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
-class AccidentalSelector extends StatefulWidget {
+class AccidentalSelector extends StatelessWidget {
   /// Widget for selecting an accidental.
   const AccidentalSelector({
     super.key,
-    this.initialAccidental = Accidental.flat,
   });
-
-  /// The initial pre-selected accidental.
-  final Accidental initialAccidental;
 
   /// Generate a short description for the given [accidental].
   static String accidentalDescription(Accidental accidental) {
@@ -165,62 +157,60 @@ class AccidentalSelector extends StatefulWidget {
     };
   }
 
-  @override
-  State<AccidentalSelector> createState() => _AccidentalSelectorState();
-}
-
-class _AccidentalSelectorState extends State<AccidentalSelector> {
-  late Accidental? accidental = widget.initialAccidental;
+  void _setAccidental(Accidental accidental) {
+    Tuner.instance.preferredAccidental = accidental;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text("Select accidental"),
-      content: RadioGroup<Accidental>(
-        groupValue: accidental,
-        onChanged: (value) {
-          setState(() {
-            accidental = value;
-          });
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (Accidental accidental in Accidental.values)
-              Card(
-                clipBehavior: Clip.antiAlias,
-                elevation: 0,
-                margin: EdgeInsets.zero,
-                color: Colors.transparent,
-                child: ListTile(
-                  leading: Radio(value: accidental),
-                  title: Text(
-                    AccidentalSelector.accidentalDescription(accidental),
+    return ValueListenableBuilder(
+      valueListenable: Tuner.instance.preferredAccidentalNotifier,
+      builder: (context, accidental, child) {
+        return AlertSheet(
+          title: Text("Select accidental"),
+          content: RadioGroup<Accidental>(
+            groupValue: accidental,
+            onChanged: (value) {
+              if (value != null) _setAccidental(value);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (Accidental accidental in Accidental.values)
+                  Card(
+                    clipBehavior: Clip.antiAlias,
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    color: Colors.transparent,
+                    child: ListTile(
+                      leading: Radio(value: accidental),
+                      title: Text(
+                        AccidentalSelector.accidentalDescription(accidental),
+                      ),
+                      subtitle: Text(switch (accidental) {
+                        Accidental.natural =>
+                          "Uses sharps or flats depending on which key has fewest accidentals.",
+                        Accidental.sharp => "Only uses sharps (♯).",
+                        Accidental.flat => "Only uses flats (♭).",
+                      }),
+                      onTap: () {
+                        _setAccidental(accidental);
+                      },
+                    ),
                   ),
-                  onTap: () {
-                    setState(() {
-                      this.accidental = accidental;
-                    });
-                  },
-                ),
-              ),
+              ],
+            ),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Done"),
+            ),
           ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text("Cancel"),
-        ),
-        FilledButton(
-          onPressed: () {
-            Navigator.of(context).pop(accidental);
-          },
-          child: Text("Apply"),
-        ),
-      ],
+        );
+      },
     );
   }
 }

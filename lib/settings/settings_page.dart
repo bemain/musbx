@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/model/accidental.dart';
-import 'package:musbx/model/pitch.dart';
-import 'package:musbx/model/pitch_class.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/tuner/tuner.dart';
@@ -107,15 +105,10 @@ class SettingsPage extends StatelessWidget {
                 "${tuning.frequency.toStringAsFixed(0)} Hz",
               ),
               onTap: () async {
-                final double? frequency = await showDialog<double>(
-                  context: context,
-                  builder: (context) => TuningSelector(
-                    initialFrequency: tuning.frequency.toInt(),
-                  ),
+                await _showModalBottomSheet<double>(
+                  context,
+                  TuningSelector(),
                 );
-                if (frequency == null) return;
-
-                Tuner.instance.tuning = Pitch(PitchClass.a(), 4, frequency);
               },
             ),
           ),
@@ -128,15 +121,10 @@ class SettingsPage extends StatelessWidget {
                 AccidentalSelector.accidentalDescription(accidental),
               ),
               onTap: () async {
-                final Accidental? value = await showDialog<Accidental>(
-                  context: context,
-                  builder: (context) => AccidentalSelector(
-                    initialAccidental: accidental,
-                  ),
+                await _showModalBottomSheet<Accidental>(
+                  context,
+                  AccidentalSelector(),
                 );
-                if (value == null) return;
-
-                Tuner.instance.preferredAccidental = value;
               },
             ),
           ),
@@ -221,6 +209,23 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Future<T?> _showModalBottomSheet<T>(BuildContext context, Widget? child) {
+    return showModalBottomSheet<T>(
+      context: context,
+      useRootNavigator: true,
+      showDragHandle: false,
+      isScrollControlled: false,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: child,
+        );
+      },
     );
   }
 }
