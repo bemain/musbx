@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
-import 'package:musbx/model/accidental.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/tuner/tuner.dart';
@@ -119,22 +119,6 @@ class SettingsPage extends StatelessWidget {
 
           SectionTitle(text: "Tuner"),
           ValueListenableBuilder(
-            valueListenable: Tuner.instance.tuningNotifier,
-            builder: (context, tuning, child) => ListTile(
-              leading: Icon(CustomIcons.tuning_fork),
-              title: Text("Tuning"),
-              subtitle: Text(
-                "${tuning.frequency.toStringAsFixed(0)} Hz",
-              ),
-              onTap: () async {
-                await _showModalBottomSheet<double>(
-                  context,
-                  TuningSelector(),
-                );
-              },
-            ),
-          ),
-          ValueListenableBuilder(
             valueListenable: Tuner.instance.preferredAccidentalNotifier,
             builder: (context, accidental, child) => ListTile(
               leading: Icon(CustomIcons.accidentals),
@@ -143,9 +127,86 @@ class SettingsPage extends StatelessWidget {
                 AccidentalSelector.accidentalDescription(accidental),
               ),
               onTap: () async {
-                await _showModalBottomSheet<Accidental>(
+                await _showModalBottomSheet<void>(
                   context,
-                  AccidentalSelector(),
+                  AccidentalSelector(
+                    accidentalNotifier:
+                        Tuner.instance.preferredAccidentalNotifier,
+                  ),
+                );
+              },
+            ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: Tuner.instance.tuningNotifier,
+            builder: (context, tuning, child) => ListTile(
+              leading: Icon(CustomIcons.tuning_fork),
+              title: Text("Tuning"),
+              subtitle: Text(
+                "${tuning.frequency.toStringAsFixed(0)} Hz",
+              ),
+              onTap: () async {
+                await _showModalBottomSheet<void>(
+                  context,
+                  TuningSelector(
+                    tuningNotifier: Tuner.instance.tuningNotifier,
+                  ),
+                );
+              },
+            ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: Tuner.instance.temperamentNotifier,
+            builder: (context, temperament, child) => ListTile(
+              leading: Icon(Symbols.tune),
+              title: Text("Temperament"),
+              subtitle: Text(
+                TemperamentSelector.temperamentDescription(temperament),
+              ),
+              onTap: () async {
+                await _showModalBottomSheet<void>(
+                  context,
+                  TemperamentSelector(
+                    temperamentNotifier: Tuner.instance.temperamentNotifier,
+                  ),
+                );
+              },
+            ),
+          ),
+
+          SectionTitle(text: "Drone"),
+          ValueListenableBuilder(
+            valueListenable: Drone.instance.tuningNotifier,
+            builder: (context, tuning, child) => ListTile(
+              leading: Icon(CustomIcons.tuning_fork),
+              title: Text("Tuning"),
+              subtitle: Text(
+                "${tuning.frequency.toStringAsFixed(0)} Hz",
+              ),
+              onTap: () async {
+                await _showModalBottomSheet<void>(
+                  context,
+                  TuningSelector(
+                    tuningNotifier: Drone.instance.tuningNotifier,
+                  ),
+                );
+              },
+            ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: Drone.instance.temperamentNotifier,
+            builder: (context, temperament, child) => ListTile(
+              leading: Icon(Symbols.tune),
+              title: Text("Temperament"),
+              subtitle: Text(
+                TemperamentSelector.temperamentDescription(temperament),
+              ),
+              onTap: () async {
+                await _showModalBottomSheet<void>(
+                  context,
+                  TemperamentSelector(
+                    temperamentNotifier: Drone.instance.temperamentNotifier,
+                  ),
                 );
               },
             ),

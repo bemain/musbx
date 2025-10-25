@@ -73,7 +73,7 @@ class DroneWheelState extends State<DroneWheel> {
                 angle -= deltaAngle;
 
                 if (semitones != 0) {
-                  drone.rootNotifier.value = drone.root.transposed(semitones);
+                  drone.rootStepNotifier.value += semitones;
                   angle += semitones * 2 * pi / 12;
                 }
               });
@@ -92,7 +92,7 @@ class DroneWheelState extends State<DroneWheel> {
               });
             },
             child: ListenableBuilder(
-              listenable: drone.rootNotifier,
+              listenable: drone.rootStepNotifier,
               builder: (context, child) => ListenableBuilder(
                 listenable: drone.intervalsNotifier,
                 builder: (context, child) {
@@ -181,6 +181,7 @@ class DroneWheelState extends State<DroneWheel> {
     return Transform.translate(
       offset: Offset(cos(buttonAngle), sin(buttonAngle)) * radius,
       child: FloatingActionButton(
+        heroTag: "drone-pitch-$interval",
         elevation: isPlaying ? 0 : 6,
         backgroundColor: isPlaying
             ? backgroundColor.withAlpha(0x61)

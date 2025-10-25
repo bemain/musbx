@@ -39,7 +39,7 @@ class Ticks {
 }
 
 class Metronome {
-  Metronome._(this.ticks) {
+  Metronome._() {
     // Listen to app lifecycle
     AppLifecycleListener(
       onHide: () async {
@@ -55,7 +55,7 @@ class Metronome {
   }
 
   /// The instance of this singleton.
-  static late final Metronome instance;
+  static final Metronome instance = Metronome._();
 
   /// Minimum [bpm] allowed. [bpm] can never be less than this.
   static const int minBpm = 20;
@@ -72,12 +72,11 @@ class Metronome {
   static Future<void> initialize() async {
     if (isInitialized) return;
 
-    final ticks = Ticks(
+    instance.ticks = Ticks(
       accented: await Tick.load("beat_accented.mp3"),
       primary: await Tick.load("beat_primary.mp3"),
       subdivision: await Tick.load("beat_subdivision.mp3"),
     );
-    instance = Metronome._(ticks);
 
     isInitialized = true;
   }
@@ -126,7 +125,7 @@ class Metronome {
   int get count => countNotifier.value;
   final ValueNotifier<int> countNotifier = ValueNotifier(0);
 
-  final Ticks ticks;
+  late final Ticks ticks;
 
   /// The volume of the metronome. Should be between `0.0` and `1.0`.
   double get volume => volumeNotifier.value;

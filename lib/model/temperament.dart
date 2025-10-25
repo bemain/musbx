@@ -4,6 +4,11 @@ import 'package:flutter/cupertino.dart';
 
 @immutable
 abstract class Temperament {
+  static const List<Temperament> temperaments = [
+    EqualTemperament(),
+    PythagoreanTuning(),
+  ];
+
   /// Representation of a musical temperament, determining what frequencies pitches are placed at.
   const Temperament();
 

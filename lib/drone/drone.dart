@@ -23,17 +23,25 @@ class Drone {
   /// The maximum octave of the [root].
   static int maxOctave = 5;
 
-  /// The [Pitch] at the root of the scale.
-  /// Used as a reference when selecting what pitches to present to the user.
-  Pitch get root => rootNotifier.value;
-  set root(Pitch value) => rootNotifier.value = value;
-  late final ValueNotifier<Pitch> rootNotifier =
+  /// The frequency of A4, in Hz. Used as a reference for all other notes.
+  ///
+  /// Defaults to [Pitch.a440].
+  Pitch get tuning => tuningNotifier.value;
+  set tuning(Pitch value) => tuningNotifier.value = value;
+  late final ValueNotifier<Pitch> tuningNotifier =
       TransformedPersistentValue<Pitch, String>(
-        "drone/root",
-        initialValue: const Pitch(PitchClass.a(), 3, 220),
+        "drone/tuning",
+        initialValue: const Pitch(PitchClass.a(), 4, 440),
         from: Pitch.parse,
         to: (pitch) => pitch.toString(),
       )..addListener(_onPitchesChanged);
+
+  Pitch get root => tuning.transposed(rootStepNotifier.value);
+  set root(Pitch value) => rootStepNotifier.value = tuning.semitonesTo(value);
+  late final ValueNotifier<int> rootStepNotifier = PersistentValue(
+    "drone/root",
+    initialValue: -12,
+  )..addListener(_onPitchesChanged);
 
   /// The temperament used for generating pitches
   Temperament get temperament => temperamentNotifier.value;

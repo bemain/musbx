@@ -6,18 +6,21 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/model/accidental.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/pitch_class.dart';
-import 'package:musbx/tuner/tuner.dart';
+import 'package:musbx/model/temperament.dart';
 import 'package:musbx/widgets/alert_sheet.dart';
 
 class TuningSelector extends StatelessWidget {
   /// Widget for selecting a frequency to use as the tuning of A4.
   const TuningSelector({
     super.key,
+    required this.tuningNotifier,
     this.minFrequency = 415,
     this.maxFrequency = 456,
   });
 
   static const int baseFrequency = 440;
+
+  final ValueNotifier<Pitch> tuningNotifier;
 
   /// The minimum frequency that can be entered, in Hz.
   final int minFrequency;
@@ -26,7 +29,7 @@ class TuningSelector extends StatelessWidget {
   final int maxFrequency;
 
   void _setTuning(num frequency) {
-    Tuner.instance.tuning = Pitch(PitchClass.a(), 4, frequency.toDouble());
+    tuningNotifier.value = Pitch(PitchClass.a(), 4, frequency.toDouble());
   }
 
   int _parseFrequency(String text) {
@@ -39,7 +42,7 @@ class TuningSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: Tuner.instance.tuningNotifier,
+      valueListenable: tuningNotifier,
       builder: (context, tuning, child) {
         final TextEditingController controller = TextEditingController(
           text: tuning.frequency.toInt().toString(),
@@ -145,8 +148,11 @@ class TuningSelector extends StatelessWidget {
 class AccidentalSelector extends StatelessWidget {
   /// Widget for selecting an accidental.
   const AccidentalSelector({
+    required this.accidentalNotifier,
     super.key,
   });
+
+  final ValueNotifier<Accidental> accidentalNotifier;
 
   /// Generate a short description for the given [accidental].
   static String accidentalDescription(Accidental accidental) {
@@ -158,16 +164,30 @@ class AccidentalSelector extends StatelessWidget {
   }
 
   void _setAccidental(Accidental accidental) {
-    Tuner.instance.preferredAccidental = accidental;
+    accidentalNotifier.value = accidental;
   }
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: Tuner.instance.preferredAccidentalNotifier,
+      valueListenable: accidentalNotifier,
       builder: (context, accidental, child) {
         return AlertSheet(
-          title: Text("Select accidental"),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Select accidental"),
+              IconButton(
+                onPressed: accidental == Accidental.natural
+                    ? null
+                    : () {
+                        _setAccidental(Accidental.natural);
+                      },
+                icon: Icon(Symbols.refresh),
+                iconSize: 20,
+              ),
+            ],
+          ),
           content: RadioGroup<Accidental>(
             groupValue: accidental,
             onChanged: (value) {
@@ -195,6 +215,100 @@ class AccidentalSelector extends StatelessWidget {
                       }),
                       onTap: () {
                         _setAccidental(accidental);
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Done"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class TemperamentSelector extends StatelessWidget {
+  /// Widget for selecting an accidental.
+  const TemperamentSelector({
+    required this.temperamentNotifier,
+    super.key,
+  });
+
+  final ValueNotifier<Temperament> temperamentNotifier;
+
+  /// Generate a short description for the given [temperament].
+  static String temperamentDescription(Temperament temperament) {
+    return switch (temperament) {
+      EqualTemperament() => "Equal",
+      PythagoreanTuning() => "Pythagorean",
+      _ => "Unknown",
+    };
+  }
+
+  void _setTemperament(Temperament temperament) {
+    temperamentNotifier.value = temperament;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: temperamentNotifier,
+      builder: (context, temperament, child) {
+        return AlertSheet(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Select temperament"),
+              IconButton(
+                onPressed: temperament is EqualTemperament
+                    ? null
+                    : () {
+                        _setTemperament(Temperament.temperaments.first);
+                      },
+                icon: Icon(Symbols.refresh),
+                iconSize: 20,
+              ),
+            ],
+          ),
+          content: RadioGroup<Temperament>(
+            groupValue: temperament,
+            onChanged: (value) {
+              if (value != null) _setTemperament(value);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (Temperament temperament in Temperament.temperaments)
+                  Card(
+                    clipBehavior: Clip.antiAlias,
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    color: Colors.transparent,
+                    child: ListTile(
+                      leading: Radio(value: temperament),
+                      title: Text(
+                        switch (temperament) {
+                          EqualTemperament() => "Equal temperament",
+                          PythagoreanTuning() => "Pythagorean tuning",
+                          _ => "Unknown",
+                        },
+                      ),
+                      subtitle: Text(switch (temperament) {
+                        EqualTemperament() =>
+                          "Equispaced steps, like a piano.",
+                        PythagoreanTuning() => "Based on pure perfect fifths.",
+                        _ => "",
+                      }),
+                      onTap: () {
+                        _setTemperament(temperament);
                       },
                     ),
                   ),
