@@ -44,9 +44,7 @@ class LaunchHandler {
   );
 
   /// Called whenever the app launches.
-  static Future<void> onLaunch() async {
-    await PersistentValue.preferences.clear();
-  }
+  static Future<void> onLaunch() async {}
 
   /// Called when the app is launched for the first time with a new version.
   static Future<void> onFirstLaunchWithVersion() async {
@@ -54,9 +52,10 @@ class LaunchHandler {
       "[LAUNCH] First launch with version $buildNumber (${info.version})",
     );
 
-    if (buildNumber == 39) {
+    if (buildNumber >= 39 && (previousBuildNumber ?? 0) < 39) {
       // Remove old settings
       await PersistentValue.preferences.clear();
+      _lastVersionLaunched.value = buildNumber.toString();
     }
   }
 }
