@@ -10,7 +10,6 @@ import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:simple_icons/simple_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// A page with a slide-from-right transition.
@@ -110,6 +109,12 @@ class SettingsPage extends StatelessWidget {
                     !Metronome.instance.showNotification;
               },
               trailing: Switch(
+                thumbIcon: WidgetStateProperty<Icon>.fromMap(
+                  <WidgetStatesConstraint, Icon>{
+                    WidgetState.selected: Icon(Icons.check),
+                    WidgetState.any: Icon(Icons.close),
+                  },
+                ),
                 value: Metronome.instance.showNotification,
                 onChanged: (value) =>
                     Metronome.instance.showNotification = value,
@@ -150,24 +155,6 @@ class SettingsPage extends StatelessWidget {
                   context,
                   TuningSelector(
                     tuningNotifier: Tuner.instance.tuningNotifier,
-                  ),
-                );
-              },
-            ),
-          ),
-          ValueListenableBuilder(
-            valueListenable: Tuner.instance.temperamentNotifier,
-            builder: (context, temperament, child) => ListTile(
-              leading: Icon(Symbols.tune),
-              title: Text("Temperament"),
-              subtitle: Text(
-                TemperamentSelector.temperamentDescription(temperament),
-              ),
-              onTap: () async {
-                await _showModalBottomSheet<void>(
-                  context,
-                  TemperamentSelector(
-                    temperamentNotifier: Tuner.instance.temperamentNotifier,
                   ),
                 );
               },
@@ -258,14 +245,6 @@ class SettingsPage extends StatelessWidget {
               launchUrl(Uri.parse("https://bemain.github.io"));
             },
           ),
-          ListTile(
-            leading: Icon(SimpleIcons.github),
-            title: Text("GitHub"),
-            trailing: Icon(Symbols.launch),
-            onTap: () {
-              launchUrl(Uri.parse("https://github.com/bemain"));
-            },
-          ),
 
           const SizedBox(height: 32),
           RichText(
@@ -295,12 +274,12 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Future<T?> _showModalBottomSheet<T>(BuildContext context, Widget? child) {
+  Future<T?> _showModalBottomSheet<T>(BuildContext context, Widget child) {
     return showModalBottomSheet<T>(
       context: context,
-      useRootNavigator: true,
+      useRootNavigator: false,
       showDragHandle: false,
-      isScrollControlled: false,
+      isScrollControlled: true,
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
