@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -65,6 +66,23 @@ class Song<P extends Playable> {
   /// The directory where files relating to this song are cached.
   Directory get cacheDirectory =>
       Directories.applicationDocumentsDir("songs/$id");
+
+  /// Whether the cache for this song is not empty.
+  bool get hasCache => cacheDirectory.existsSync();
+
+  /// Remove all the cache files relating to this song.
+  Future<void> clearCache() async {
+    await cacheDirectory.delete(recursive: true);
+
+    if (source is DemixedSource) {
+      // Override the history entry for the song with a non-demixed variant
+      await Songs.history.add(
+        withSource<SinglePlayable>(
+          (source as DemixedSource).rootParent,
+        ),
+      );
+    }
+  }
 
   @override
   String toString() {

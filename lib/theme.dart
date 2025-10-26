@@ -34,6 +34,14 @@ const Color defaultSeed = Color(0xff578cff);
         showValueIndicator: ShowValueIndicator.onDrag,
       ),
       iconTheme: lightTheme.iconTheme.copyWith(weight: 600),
+      switchTheme: lightTheme.switchTheme.copyWith(
+        thumbIcon: WidgetStateProperty<Icon>.fromMap(
+          <WidgetStatesConstraint, Icon>{
+            WidgetState.selected: Icon(Icons.check),
+            WidgetState.any: Icon(Icons.close),
+          },
+        ),
+      ),
       extensions: [PositionSliderStyle.fromTheme(theme: lightTheme)],
     ),
     darkTheme.copyWith(
@@ -42,6 +50,14 @@ const Color defaultSeed = Color(0xff578cff);
         showValueIndicator: ShowValueIndicator.onDrag,
       ),
       iconTheme: darkTheme.iconTheme.copyWith(weight: 600),
+      switchTheme: darkTheme.switchTheme.copyWith(
+        thumbIcon: WidgetStateProperty<Icon>.fromMap(
+          <WidgetStatesConstraint, Icon>{
+            WidgetState.selected: Icon(Icons.check),
+            WidgetState.any: Icon(Icons.close),
+          },
+        ),
+      ),
       extensions: [PositionSliderStyle.fromTheme(theme: darkTheme)],
     ),
   );

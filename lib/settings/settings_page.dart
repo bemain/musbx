@@ -5,6 +5,7 @@ import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/purchases.dart';
@@ -53,6 +54,7 @@ class SettingsList extends StatelessWidget {
     return ListTileTheme(
       data: ListTileThemeData(
         minTileHeight: 56,
+        contentPadding: EdgeInsetsDirectional.symmetric(horizontal: 24),
       ),
       child: ListView(
         children: [
@@ -102,19 +104,13 @@ class SettingsPage extends StatelessWidget {
               leading: Icon(Symbols.notification_settings),
               title: Text("Show notification"),
               subtitle: Text(
-                "Control the Metronome from the notifications drawer.",
+                "Control the Metronome from the notifications drawer",
               ),
               onTap: () async {
                 Metronome.instance.showNotification =
                     !Metronome.instance.showNotification;
               },
               trailing: Switch(
-                thumbIcon: WidgetStateProperty<Icon>.fromMap(
-                  <WidgetStatesConstraint, Icon>{
-                    WidgetState.selected: Icon(Icons.check),
-                    WidgetState.any: Icon(Icons.close),
-                  },
-                ),
                 value: Metronome.instance.showNotification,
                 onChanged: (value) =>
                     Metronome.instance.showNotification = value,
@@ -122,7 +118,125 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
 
+          SectionTitle(text: "Songs"),
+          ListenableBuilder(
+            listenable: Songs.history,
+            builder: (context, child) => ListTile(
+              enabled:
+                  Songs.history.entries.isNotEmpty &&
+                  Songs.history.entries.values.every(
+                    (song) => song.hasCache,
+                  ),
+              leading: Icon(Symbols.cloud_off),
+              title: Text("Free up storage"),
+              onTap: () async {
+                final bool? shouldContinue = await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      icon: Icon(Symbols.cloud_off),
+                      title: Text("Clear cache?"),
+                      content: Text(
+                        "Offloading songs will free up some space on your device. Loading a song will take longer the next time.",
+                      ),
+                      actions: [
+                        FilledButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(false);
+                          },
+                          child: Text("Cancel"),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(true);
+                          },
+                          child: Text("Proceed"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                if (shouldContinue == true) {
+                  // Make sure a song is not open
+                  Navigation.navigationShell.goBranch(
+                    Navigation.currentBranch.value,
+                    initialLocation: true,
+                  );
+
+                  for (final song in Songs.history.entries.values.toList()) {
+                    await song.clearCache();
+                  }
+                }
+              },
+            ),
+          ),
+          ListenableBuilder(
+            listenable: Songs.history,
+            builder: (context, child) => ListTile(
+              enabled: Songs.history.entries.isNotEmpty,
+              leading: Icon(Symbols.delete_sweep),
+              title: Text("Remove all songs"),
+              onTap: () async {
+                final bool? shouldContinue = await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      icon: Icon(Symbols.delete_sweep),
+                      title: Text("Clear songs?"),
+                      content: Text(
+                        "Are you sure you want to remove all songs from your library?\n\nThis action cannot be undone.",
+                      ),
+                      actions: [
+                        FilledButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(false);
+                          },
+                          child: Text("Cancel"),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(true);
+                          },
+                          child: Text("Proceed"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                if (shouldContinue == true) {
+                  // Make sure a song is not open
+                  Navigation.navigationShell.goBranch(
+                    Navigation.currentBranch.value,
+                    initialLocation: true,
+                  );
+
+                  await Songs.history.clear();
+                }
+              },
+            ),
+          ),
+
           SectionTitle(text: "Tuner"),
+          ValueListenableBuilder(
+            valueListenable: Tuner.instance.tuningNotifier,
+            builder: (context, tuning, child) => ListTile(
+              leading: Icon(CustomIcons.tuning_fork),
+              title: Text("Tuning"),
+              subtitle: Text(
+                "${tuning.frequency.toStringAsFixed(0)} Hz",
+              ),
+              onTap: () async {
+                await _showModalBottomSheet<void>(
+                  context,
+                  TuningSelector(
+                    tuningNotifier: Tuner.instance.tuningNotifier,
+                  ),
+                );
+              },
+            ),
+          ),
           ValueListenableBuilder(
             valueListenable: Tuner.instance.preferredAccidentalNotifier,
             builder: (context, accidental, child) => ListTile(
@@ -137,24 +251,6 @@ class SettingsPage extends StatelessWidget {
                   AccidentalSelector(
                     accidentalNotifier:
                         Tuner.instance.preferredAccidentalNotifier,
-                  ),
-                );
-              },
-            ),
-          ),
-          ValueListenableBuilder(
-            valueListenable: Tuner.instance.tuningNotifier,
-            builder: (context, tuning, child) => ListTile(
-              leading: Icon(CustomIcons.tuning_fork),
-              title: Text("Tuning"),
-              subtitle: Text(
-                "${tuning.frequency.toStringAsFixed(0)} Hz",
-              ),
-              onTap: () async {
-                await _showModalBottomSheet<void>(
-                  context,
-                  TuningSelector(
-                    tuningNotifier: Tuner.instance.tuningNotifier,
                   ),
                 );
               },
@@ -228,7 +324,7 @@ class SettingsPage extends StatelessWidget {
               },
             ),
 
-          SectionTitle(text: "Contact me"),
+          SectionTitle(text: "Contact"),
           ListTile(
             leading: Icon(Symbols.mail),
             title: Text("Mail"),

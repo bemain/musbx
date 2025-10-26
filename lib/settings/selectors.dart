@@ -203,6 +203,7 @@ class AccidentalSelector extends StatelessWidget {
                     margin: EdgeInsets.zero,
                     color: Colors.transparent,
                     child: ListTile(
+                      contentPadding: EdgeInsetsDirectional.only(end: 24.0),
                       leading: Radio(value: accidental),
                       title: Text(
                         AccidentalSelector.accidentalDescription(accidental),
@@ -293,6 +294,7 @@ class TemperamentSelector extends StatelessWidget {
                     margin: EdgeInsets.zero,
                     color: Colors.transparent,
                     child: ListTile(
+                      contentPadding: EdgeInsetsDirectional.only(end: 24.0),
                       leading: Radio(value: temperament),
                       title: Text(
                         switch (temperament) {
