@@ -32,8 +32,9 @@ class Notifications {
   static Future<void> _onActionReceived(ReceivedAction action) async {
     if (action.channelKey == "metronome-controls") {
       // Navigate to the metronome page
-      // TODO: Don't hard code this value
-      Navigation.navigationShell.goBranch(0);
+      Navigation.navigationShell.goBranch(
+        Routes.branches.indexOf(Routes.metronome),
+      );
 
       switch (action.buttonKeyPressed) {
         case "play":

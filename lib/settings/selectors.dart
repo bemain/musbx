@@ -67,7 +67,7 @@ class TuningSelector extends StatelessWidget {
             ],
           ),
           content: Padding(
-            padding: EdgeInsetsGeometry.symmetric(vertical: 32),
+            padding: EdgeInsets.symmetric(vertical: 32),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

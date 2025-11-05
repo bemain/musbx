@@ -56,8 +56,9 @@ class Songs {
     AudioService.notificationClicked.listen((event) {
       if (event) {
         // Navigate to the music player page
-        // TODO: Don't hard code this value
-        Navigation.navigationShell.goBranch(1);
+        Navigation.navigationShell.goBranch(
+          Routes.branches.indexOf(Routes.library),
+        );
       }
     });
 

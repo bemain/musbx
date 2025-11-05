@@ -76,7 +76,7 @@ class SettingsButton extends StatelessWidget {
       onPressed: () {
         context.push(Routes.settings);
       },
-      icon: Icon(Symbols.settings),
+      icon: const Icon(Symbols.settings),
     );
   }
 }

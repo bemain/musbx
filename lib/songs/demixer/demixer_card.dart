@@ -227,34 +227,6 @@ This only needs to be done once, so loading the song next time will be much fast
       ],
     );
   }
-
-  /// TODO: Remove? Leaving it here for the moment since I might want to use it later
-  Future<void> showCellularWarningDialog(BuildContext context) async {
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Enable Demixer on cellular?"),
-        content: const Text(
-          "Your device is connected to a mobile network. Please note that the Demixer requires downloading some data (around 50 MB per song). Are you sure you want to enable the Demixer using cellular?",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              // player.demixer.enabled = true;
-              Navigator.of(context).pop();
-            },
-            child: const Text("Enable"),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class DemixerCard extends StatelessWidget {
