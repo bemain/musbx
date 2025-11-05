@@ -7,6 +7,7 @@ import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
@@ -98,7 +99,7 @@ class LibraryPage extends StatelessWidget {
         }
 
         onSelected?.call();
-        context.go(Routes.song(song.id));
+        await context.push(Routes.song(song.id));
       },
       onLongPress: () {
         _showOptionsSheet(context, song);
@@ -107,9 +108,8 @@ class LibraryPage extends StatelessWidget {
   }
 
   void _showOptionsSheet(BuildContext context, Song song) {
-    showModalBottomSheet<void>(
+    showAlertSheet<void>(
       context: context,
-      useRootNavigator: true,
       builder: (context) => _buildOptionsSheet(context, song),
     );
   }

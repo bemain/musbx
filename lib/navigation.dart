@@ -5,6 +5,8 @@ import 'package:musbx/analytics.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/settings/settings_page.dart';
+import 'package:musbx/settings/slide_from_right_transition_page.dart';
+import 'package:musbx/settings/sub_pages.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
@@ -25,6 +27,11 @@ class Routes {
   static const String drone = "/drone";
 
   static const String settings = "/settings";
+  static String get metronomeSettings => "$settings$metronome";
+  static String get songsSettings => "$settings$library";
+  static String get tunerSettings => "$settings$tuner";
+  static String get droneSettings => "$settings$drone";
+
   static const String licenses = "/settings/licenses";
   static const String contact = "/settings/contact";
 
@@ -50,6 +57,14 @@ class Navigation {
   /// This is used to navigate to different branches of the app.
   static late StatefulNavigationShell navigationShell;
 
+  static SlideFromRightTransitionPage Function(BuildContext, GoRouterState)
+  _settingPageBuilder(Widget child) => (context, state) {
+    return SlideFromRightTransitionPage(
+      key: state.pageKey,
+      child: child,
+    );
+  };
+
   /// The router that handles navigation.
   static final GoRouter router =
       GoRouter(
@@ -63,34 +78,50 @@ class Navigation {
             ),
             GoRoute(
               path: Routes.settings,
-              pageBuilder: (context, state) {
-                return settingsPage(
-                  context: context,
-                  state: state,
-                  child: const SettingsPage(),
-                );
-              },
+              pageBuilder: _settingPageBuilder(
+                const SettingsPage(),
+              ),
               routes: [
                 GoRoute(
+                  path: Routes.metronome.replaceFirst("/", ""),
+                  pageBuilder: _settingPageBuilder(
+                    const MetronomeSettingsPage(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.library.replaceFirst("/", ""),
+                  pageBuilder: _settingPageBuilder(
+                    const SongsSettingsPage(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.tuner.replaceFirst("/", ""),
+                  pageBuilder: _settingPageBuilder(
+                    const TunerSettingsPage(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.drone.replaceFirst("/", ""),
+                  pageBuilder: _settingPageBuilder(
+                    const DroneSettingsPage(),
+                  ),
+                ),
+                GoRoute(
                   path: Routes.licenses.split("/").last,
-                  pageBuilder: (context, state) {
-                    return settingsPage(
-                      context: context,
-                      state: state,
-                      child: LicensePage(
-                        applicationIcon: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child: ImageIcon(
-                            AssetImage("assets/splash/splash.png"),
-                            size: 64.0,
-                            color: Color(0xff0f58cf),
-                          ),
+                  pageBuilder: _settingPageBuilder(
+                    LicensePage(
+                      applicationIcon: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: ImageIcon(
+                          AssetImage("assets/splash/splash.png"),
+                          size: 64.0,
+                          color: Color(0xff0f58cf),
                         ),
-                        applicationVersion:
-                            "Version ${LaunchHandler.info.version}",
                       ),
-                    );
-                  },
+                      applicationVersion:
+                          "Version ${LaunchHandler.info.version}",
+                    ),
+                  ),
                 ),
               ],
             ),

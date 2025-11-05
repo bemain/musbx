@@ -1,43 +1,26 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/drone/drone.dart';
-import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
-import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
+import 'package:simple_icons/simple_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// A page with a slide-from-right transition.
-CustomTransitionPage<void> settingsPage({
-  required BuildContext context,
-  required GoRouterState state,
-  required Widget child,
-}) {
-  return CustomTransitionPage(
-    key: state.pageKey,
-    transitionDuration: const Duration(milliseconds: 200),
-    reverseTransitionDuration: const Duration(milliseconds: 200),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return SlideTransition(
-        position: animation.drive(
-          Tween<Offset>(
-            begin: Offset(1, 0),
-            end: Offset.zero,
-          ).chain(CurveTween(curve: Curves.easeIn)),
-        ),
-        child: child,
-      );
-    },
-    child: child,
-  );
-}
+final Uri? storeUrl = Platform.isAndroid
+    ? Uri.parse(
+        "https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx_settings",
+      )
+    : Platform.isIOS
+    ? Uri.parse("https://apps.apple.com/us/app/musicians-toolbox/id1670009655")
+    : null;
 
 class SettingsList extends StatelessWidget {
   /// Displays a list of [children] with formatting appropriate for a page in
@@ -78,7 +61,7 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 16, top: 16, right: 16, bottom: 4),
+      padding: EdgeInsets.only(left: 16, top: 32, right: 16, bottom: 4),
       child: Text(
         text,
         style: TextStyle(color: Theme.of(context).colorScheme.primary),
@@ -98,202 +81,38 @@ class SettingsPage extends StatelessWidget {
       ),
       body: SettingsList(
         children: [
-          SectionTitle(text: "Metronome"),
-          ValueListenableBuilder(
-            valueListenable: Metronome.instance.showNotificationNotifier,
-            builder: (context, showNotification, child) => ListTile(
-              leading: Icon(Symbols.notification_settings),
-              title: Text("Show notification"),
-              subtitle: Text(
-                "Control the Metronome from the notifications drawer",
-              ),
-              onTap: () async {
-                Metronome.instance.showNotification =
-                    !Metronome.instance.showNotification;
-              },
-              trailing: Switch(
-                value: Metronome.instance.showNotification,
-                onChanged: (value) =>
-                    Metronome.instance.showNotification = value,
-              ),
-            ),
+          SectionTitle(text: "Tools"),
+          ListTile(
+            leading: Icon(CustomIcons.metronome),
+            title: Text("Metronome"),
+            trailing: Icon(Symbols.chevron_forward),
+            onTap: () {
+              context.push(Routes.metronomeSettings);
+            },
           ),
-
-          SectionTitle(text: "Songs"),
-          ListenableBuilder(
-            listenable: Songs.history,
-            builder: (context, child) => ListTile(
-              enabled:
-                  Songs.history.entries.isNotEmpty &&
-                  Songs.history.entries.values.every(
-                    (song) => song.hasCache,
-                  ),
-              leading: Icon(Symbols.cloud_off),
-              title: Text("Free up storage"),
-              onTap: () async {
-                final bool? shouldContinue = await showDialog<bool>(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      icon: Icon(Symbols.cloud_off),
-                      title: Text("Clear cache?"),
-                      content: Text(
-                        "Offloading songs will free up some space on your device. Loading a song will take longer the next time.",
-                      ),
-                      actions: [
-                        FilledButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(false);
-                          },
-                          child: Text("Cancel"),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(true);
-                          },
-                          child: Text("Proceed"),
-                        ),
-                      ],
-                    );
-                  },
-                );
-
-                if (shouldContinue == true) {
-                  // Make sure a song is not open
-                  Navigation.navigationShell.goBranch(
-                    Navigation.currentBranch.value,
-                    initialLocation: true,
-                  );
-
-                  for (final song in Songs.history.entries.values.toList()) {
-                    await song.clearCache();
-                  }
-                }
-              },
-            ),
+          ListTile(
+            leading: Icon(Symbols.library_music),
+            title: Text("Songs"),
+            trailing: Icon(Symbols.chevron_forward),
+            onTap: () {
+              context.push(Routes.songsSettings);
+            },
           ),
-          ListenableBuilder(
-            listenable: Songs.history,
-            builder: (context, child) => ListTile(
-              enabled: Songs.history.entries.isNotEmpty,
-              leading: Icon(Symbols.delete_sweep),
-              title: Text("Remove all songs"),
-              onTap: () async {
-                final bool? shouldContinue = await showDialog<bool>(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      icon: Icon(Symbols.delete_sweep),
-                      title: Text("Clear songs?"),
-                      content: Text(
-                        "Are you sure you want to remove all songs from your library?\n\nThis action cannot be undone.",
-                      ),
-                      actions: [
-                        FilledButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(false);
-                          },
-                          child: Text("Cancel"),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(true);
-                          },
-                          child: Text("Proceed"),
-                        ),
-                      ],
-                    );
-                  },
-                );
-
-                if (shouldContinue == true) {
-                  // Make sure a song is not open
-                  Navigation.navigationShell.goBranch(
-                    Navigation.currentBranch.value,
-                    initialLocation: true,
-                  );
-
-                  await Songs.history.clear();
-                }
-              },
-            ),
+          ListTile(
+            leading: Icon(Symbols.speed),
+            title: Text("Tuner"),
+            trailing: Icon(Symbols.chevron_forward),
+            onTap: () {
+              context.push(Routes.tunerSettings);
+            },
           ),
-
-          SectionTitle(text: "Tuner"),
-          ValueListenableBuilder(
-            valueListenable: Tuner.instance.tuningNotifier,
-            builder: (context, tuning, child) => ListTile(
-              leading: Icon(CustomIcons.tuning_fork),
-              title: Text("Tuning"),
-              subtitle: Text(
-                "${tuning.frequency.toStringAsFixed(0)} Hz",
-              ),
-              onTap: () async {
-                await _showModalBottomSheet<void>(
-                  context,
-                  TuningSelector(
-                    tuningNotifier: Tuner.instance.tuningNotifier,
-                  ),
-                );
-              },
-            ),
-          ),
-          ValueListenableBuilder(
-            valueListenable: Tuner.instance.preferredAccidentalNotifier,
-            builder: (context, accidental, child) => ListTile(
-              leading: Icon(CustomIcons.accidentals),
-              title: Text("Preferred accidentals"),
-              subtitle: Text(
-                AccidentalSelector.accidentalDescription(accidental),
-              ),
-              onTap: () async {
-                await _showModalBottomSheet<void>(
-                  context,
-                  AccidentalSelector(
-                    accidentalNotifier:
-                        Tuner.instance.preferredAccidentalNotifier,
-                  ),
-                );
-              },
-            ),
-          ),
-
-          SectionTitle(text: "Drone"),
-          ValueListenableBuilder(
-            valueListenable: Drone.instance.tuningNotifier,
-            builder: (context, tuning, child) => ListTile(
-              leading: Icon(CustomIcons.tuning_fork),
-              title: Text("Tuning"),
-              subtitle: Text(
-                "${tuning.frequency.toStringAsFixed(0)} Hz",
-              ),
-              onTap: () async {
-                await _showModalBottomSheet<void>(
-                  context,
-                  TuningSelector(
-                    tuningNotifier: Drone.instance.tuningNotifier,
-                  ),
-                );
-              },
-            ),
-          ),
-          ValueListenableBuilder(
-            valueListenable: Drone.instance.temperamentNotifier,
-            builder: (context, temperament, child) => ListTile(
-              leading: Icon(Symbols.tune),
-              title: Text("Temperament"),
-              subtitle: Text(
-                TemperamentSelector.temperamentDescription(temperament),
-              ),
-              onTap: () async {
-                await _showModalBottomSheet<void>(
-                  context,
-                  TemperamentSelector(
-                    temperamentNotifier: Drone.instance.temperamentNotifier,
-                  ),
-                );
-              },
-            ),
+          ListTile(
+            leading: Icon(CustomIcons.tuning_fork),
+            title: Text("Drone"),
+            trailing: Icon(Symbols.chevron_forward),
+            onTap: () {
+              context.push(Routes.droneSettings);
+            },
           ),
 
           SectionTitle(text: "General"),
@@ -306,9 +125,9 @@ class SettingsPage extends StatelessWidget {
                 ThemeSelector.themeDescription(themeMode),
               ),
               onTap: () async {
-                await _showModalBottomSheet<void>(
-                  context,
-                  ThemeSelector(
+                await showAlertSheet<void>(
+                  context: context,
+                  builder: (context) => ThemeSelector(
                     themeNotifier: AppTheme.themeModeNotifier,
                   ),
                 );
@@ -352,6 +171,22 @@ class SettingsPage extends StatelessWidget {
               launchUrl(Uri.parse("mailto:bemain.dev@gmail.com"));
             },
           ),
+          if (Platform.isAndroid | Platform.isIOS)
+            ListTile(
+              leading: Icon(
+                Platform.isAndroid
+                    ? SimpleIcons.googleplay
+                    : SimpleIcons.appstore,
+              ),
+
+              title: Text(
+                Platform.isAndroid ? "Google Play" : "App Store",
+              ),
+              trailing: Icon(Symbols.launch),
+              onTap: () {
+                if (storeUrl != null) launchUrl(storeUrl!);
+              },
+            ),
           ListTile(
             leading: Icon(Symbols.captive_portal),
             title: Text("Website"),
@@ -386,23 +221,6 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Future<T?> _showModalBottomSheet<T>(BuildContext context, Widget child) {
-    return showModalBottomSheet<T>(
-      context: context,
-      useRootNavigator: false,
-      showDragHandle: false,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.viewInsetsOf(context).bottom,
-          ),
-          child: child,
-        );
-      },
     );
   }
 }
