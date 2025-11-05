@@ -6,6 +6,7 @@ import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/theme.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/purchases.dart';
@@ -296,6 +297,24 @@ class SettingsPage extends StatelessWidget {
           ),
 
           SectionTitle(text: "General"),
+          ValueListenableBuilder(
+            valueListenable: AppTheme.themeModeNotifier,
+            builder: (context, themeMode, child) => ListTile(
+              leading: Icon(Symbols.routine),
+              title: Text("Theme"),
+              subtitle: Text(
+                ThemeSelector.themeDescription(themeMode),
+              ),
+              onTap: () async {
+                await _showModalBottomSheet<void>(
+                  context,
+                  ThemeSelector(
+                    themeNotifier: AppTheme.themeModeNotifier,
+                  ),
+                );
+              },
+            ),
+          ),
           ListTile(
             leading: Icon(Symbols.policy),
             title: Text("Privacy policy"),

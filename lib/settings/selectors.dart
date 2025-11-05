@@ -330,3 +330,93 @@ class TemperamentSelector extends StatelessWidget {
     );
   }
 }
+
+class ThemeSelector extends StatelessWidget {
+  /// Widget for selecting an accidental.
+  const ThemeSelector({
+    required this.themeNotifier,
+    super.key,
+  });
+
+  final ValueNotifier<ThemeMode> themeNotifier;
+
+  /// Generate a short description for the given [themeMode].
+  static String themeDescription(ThemeMode themeMode) {
+    return switch (themeMode) {
+      ThemeMode.system => "System default",
+      ThemeMode.light => "Light",
+      ThemeMode.dark => "Dark",
+    };
+  }
+
+  void _setTheme(ThemeMode theme) {
+    themeNotifier.value = theme;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: themeNotifier,
+      builder: (context, themeMode, child) {
+        return AlertSheet(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Select accidental"),
+              IconButton(
+                onPressed: themeMode == ThemeMode.system
+                    ? null
+                    : () {
+                        _setTheme(ThemeMode.system);
+                      },
+                icon: Icon(Symbols.refresh),
+                iconSize: 20,
+              ),
+            ],
+          ),
+          content: RadioGroup<ThemeMode>(
+            groupValue: themeMode,
+            onChanged: (value) {
+              if (value != null) _setTheme(value);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (ThemeMode themeMode in ThemeMode.values)
+                  Card(
+                    clipBehavior: Clip.antiAlias,
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    color: Colors.transparent,
+                    child: ListTile(
+                      contentPadding: EdgeInsetsDirectional.only(end: 24.0),
+                      leading: Radio(value: themeMode),
+                      title: Text(
+                        ThemeSelector.themeDescription(themeMode),
+                      ),
+                      subtitle: Text(switch (themeMode) {
+                        ThemeMode.system => "Adapts to your device settings.",
+                        ThemeMode.light => "Always use the light mode.",
+                        ThemeMode.dark => "Always use the dark mode.",
+                      }),
+                      onTap: () {
+                        _setTheme(themeMode);
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Done"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}

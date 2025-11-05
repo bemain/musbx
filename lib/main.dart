@@ -48,35 +48,42 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
-        final (ThemeData lightTheme, ThemeData darkTheme) = generateThemes(
+        final (
+          ThemeData lightTheme,
+          ThemeData darkTheme,
+        ) = AppTheme.generate(
           lightDynamic,
           darkDynamic,
         );
 
-        return MaterialApp.router(
-          title: "Musician's Toolbox",
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          routerConfig: Navigation.router,
-          restorationScopeId: "app",
-          builder: (context, child) {
-            final ColorScheme colors = Theme.of(context).colorScheme;
+        return ValueListenableBuilder(
+          valueListenable: AppTheme.themeModeNotifier,
+          builder: (context, themeMode, child) => MaterialApp.router(
+            title: "Musician's Toolbox",
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            routerConfig: Navigation.router,
+            themeMode: themeMode,
+            restorationScopeId: "app",
+            builder: (context, child) {
+              final ColorScheme colors = Theme.of(context).colorScheme;
 
-            return Shimmer(
-              gradient: LinearGradient(
-                colors: [
-                  colors.surfaceContainer,
-                  colors.surfaceContainerLow,
-                  colors.surfaceContainer,
-                ],
-                stops: [0.1, 0.3, 0.4],
-                begin: Alignment(-1.0, -0.3),
-                end: Alignment(1.0, 0.3),
-                tileMode: TileMode.clamp,
-              ),
-              child: child,
-            );
-          },
+              return Shimmer(
+                gradient: LinearGradient(
+                  colors: [
+                    colors.surfaceContainer,
+                    colors.surfaceContainerLow,
+                    colors.surfaceContainer,
+                  ],
+                  stops: [0.1, 0.3, 0.4],
+                  begin: Alignment(-1.0, -0.3),
+                  end: Alignment(1.0, 0.3),
+                  tileMode: TileMode.clamp,
+                ),
+                child: child,
+              );
+            },
+          ),
         );
       },
     );

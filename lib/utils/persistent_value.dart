@@ -23,8 +23,8 @@ class TransformedPersistentValue<T, S> extends ValueNotifier<T> {
 
   final PersistentValue<S> _primitiveValue;
 
-  final S Function(T) to;
-  final T Function(S) from;
+  final S Function(T value) to;
+  final T Function(S value) from;
 
   @override
   set value(T value) {
