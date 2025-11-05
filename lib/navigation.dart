@@ -5,7 +5,6 @@ import 'package:musbx/analytics.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/settings/settings_page.dart';
-import 'package:musbx/settings/slide_from_right_transition_page.dart';
 import 'package:musbx/settings/sub_pages.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -57,14 +56,6 @@ class Navigation {
   /// This is used to navigate to different branches of the app.
   static late StatefulNavigationShell navigationShell;
 
-  static SlideFromRightTransitionPage Function(BuildContext, GoRouterState)
-  _settingPageBuilder(Widget child) => (context, state) {
-    return SlideFromRightTransitionPage(
-      key: state.pageKey,
-      child: child,
-    );
-  };
-
   /// The router that handles navigation.
   static final GoRouter router =
       GoRouter(
@@ -78,37 +69,35 @@ class Navigation {
             ),
             GoRoute(
               path: Routes.settings,
-              pageBuilder: _settingPageBuilder(
-                const SettingsPage(),
-              ),
+              builder: (context, state) => SettingsPage(),
               routes: [
                 GoRoute(
                   path: Routes.metronome.replaceFirst("/", ""),
-                  pageBuilder: _settingPageBuilder(
+                  pageBuilder: settingsPageBuilder(
                     const MetronomeSettingsPage(),
                   ),
                 ),
                 GoRoute(
                   path: Routes.library.replaceFirst("/", ""),
-                  pageBuilder: _settingPageBuilder(
+                  pageBuilder: settingsPageBuilder(
                     const SongsSettingsPage(),
                   ),
                 ),
                 GoRoute(
                   path: Routes.tuner.replaceFirst("/", ""),
-                  pageBuilder: _settingPageBuilder(
+                  pageBuilder: settingsPageBuilder(
                     const TunerSettingsPage(),
                   ),
                 ),
                 GoRoute(
                   path: Routes.drone.replaceFirst("/", ""),
-                  pageBuilder: _settingPageBuilder(
+                  pageBuilder: settingsPageBuilder(
                     const DroneSettingsPage(),
                   ),
                 ),
                 GoRoute(
                   path: Routes.licenses.split("/").last,
-                  pageBuilder: _settingPageBuilder(
+                  pageBuilder: settingsPageBuilder(
                     LicensePage(
                       applicationIcon: const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8.0),

@@ -36,6 +36,26 @@ class Drone {
         to: (pitch) => pitch.toString(),
       )..addListener(_onPitchesChanged);
 
+  /// The shape of the waveform played.
+  ///
+  /// Defaults to [WaveForm.sin].
+  WaveForm get waveform => waveformNotifier.value;
+  set waveform(WaveForm value) => waveformNotifier.value = value;
+  late final ValueNotifier<WaveForm> waveformNotifier =
+      TransformedPersistentValue<WaveForm, String>(
+        "drone/waveform",
+        initialValue: WaveForm.sin,
+        to: (waveform) => waveform.name,
+        from: (value) => WaveForm.values.firstWhere(
+          (waveform) => waveform.name == value,
+          orElse: () => WaveForm.sin,
+        ),
+      )..addListener(() {
+        for (final player in players) {
+          player.waveform = waveform;
+        }
+      });
+
   Pitch get root => tuning.transposed(rootStepNotifier.value);
   set root(Pitch value) => rootStepNotifier.value = tuning.semitonesTo(value);
   late final ValueNotifier<int> rootStepNotifier = PersistentValue(
@@ -121,10 +141,10 @@ class FrequencyPlayer {
   }
 
   static Future<FrequencyPlayer> load({
-    WaveForm type = WaveForm.sin,
+    WaveForm waveform = WaveForm.sin,
     double frequency = 440,
   }) async {
-    final source = await _soloud.loadWaveform(type, false, 1.0, 0.0);
+    final source = await _soloud.loadWaveform(waveform, false, 1.0, 0.0);
     final handle = await _soloud.play(source, paused: true);
     return FrequencyPlayer._(source, handle, frequency: frequency);
   }
@@ -140,4 +160,5 @@ class FrequencyPlayer {
   }
 
   set frequency(double value) => _soloud.setWaveformFreq(source, value);
+  set waveform(WaveForm value) => _soloud.setWaveform(source, value);
 }

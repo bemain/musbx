@@ -2,12 +2,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/model/accidental.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/model/pitch_class.dart';
 import 'package:musbx/model/temperament.dart';
 import 'package:musbx/widgets/alert_sheet.dart';
+import 'package:musbx/widgets/custom_icons.dart';
 
 class TuningSelector extends StatelessWidget {
   /// Widget for selecting a frequency to use as the tuning of A4.
@@ -331,6 +333,113 @@ class TemperamentSelector extends StatelessWidget {
   }
 }
 
+class WaveformShapeSelector extends StatelessWidget {
+  /// Widget for selecting a wave shape.
+  const WaveformShapeSelector({
+    required this.waveformNotifier,
+    super.key,
+  });
+
+  static const Set<WaveForm> availableWaveforms = {
+    WaveForm.sin,
+    WaveForm.fSaw,
+    WaveForm.fSquare,
+    WaveForm.triangle,
+  };
+
+  final ValueNotifier<WaveForm> waveformNotifier;
+
+  /// Generate a short description for the given [waveform] shape.
+  static String waveformDescription(WaveForm waveform) {
+    return switch (waveform) {
+      WaveForm.sin => "Sine",
+      WaveForm.fSaw => "Sawtooth",
+      WaveForm.fSquare => "Square",
+      WaveForm.triangle => "Triangle",
+      _ => "",
+    };
+  }
+
+  static IconData? waveformIcon(WaveForm waveform) {
+    return switch (waveform) {
+      WaveForm.sin => CustomIcons.waveform_sine,
+      WaveForm.fSaw => CustomIcons.waveform_sawtooth,
+      WaveForm.fSquare => CustomIcons.waveform_square,
+      WaveForm.triangle => CustomIcons.waveform_triangle,
+      _ => null,
+    };
+  }
+
+  void _setWaveform(WaveForm waveform) {
+    waveformNotifier.value = waveform;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: waveformNotifier,
+      builder: (context, waveform, child) {
+        return AlertSheet(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Select shape"),
+              IconButton(
+                onPressed: waveform == WaveForm.sin
+                    ? null
+                    : () {
+                        _setWaveform(WaveForm.sin);
+                      },
+                icon: Icon(Symbols.refresh),
+                iconSize: 20,
+              ),
+            ],
+          ),
+          content: RadioGroup<WaveForm>(
+            groupValue: waveform,
+            onChanged: (value) {
+              if (value != null) _setWaveform(value);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (WaveForm waveform in availableWaveforms)
+                  Card(
+                    clipBehavior: Clip.antiAlias,
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    color: Colors.transparent,
+                    child: ListTile(
+                      contentPadding: EdgeInsetsDirectional.only(end: 24.0),
+                      leading: Radio(value: waveform),
+                      title: Text(
+                        WaveformShapeSelector.waveformDescription(waveform),
+                      ),
+                      trailing: Icon(
+                        WaveformShapeSelector.waveformIcon(waveform),
+                      ),
+                      onTap: () {
+                        _setWaveform(waveform);
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Done"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class ThemeSelector extends StatelessWidget {
   /// Widget for selecting an accidental.
   const ThemeSelector({
@@ -362,7 +471,7 @@ class ThemeSelector extends StatelessWidget {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Select accidental"),
+              Text("Select theme"),
               IconButton(
                 onPressed: themeMode == ThemeMode.system
                     ? null

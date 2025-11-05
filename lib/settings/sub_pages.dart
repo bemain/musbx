@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
+import 'package:musbx/settings/slide_from_right_transition_page.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
+
+SlideFromRightTransitionPage Function(BuildContext, GoRouterState)
+settingsPageBuilder(Widget child) => (context, state) {
+  return SlideFromRightTransitionPage(
+    key: state.pageKey,
+    child: child,
+  );
+};
 
 class SettingsSubPage extends StatelessWidget {
   const SettingsSubPage({
@@ -264,6 +274,24 @@ class DroneSettingsPage extends StatelessWidget {
                 context: context,
                 builder: (context) => TemperamentSelector(
                   temperamentNotifier: Drone.instance.temperamentNotifier,
+                ),
+              );
+            },
+          ),
+        ),
+        ValueListenableBuilder(
+          valueListenable: Drone.instance.waveformNotifier,
+          builder: (context, waveform, child) => ListTile(
+            leading: Icon(WaveformShapeSelector.waveformIcon(waveform)),
+            title: Text("Waveform shape"),
+            subtitle: Text(
+              WaveformShapeSelector.waveformDescription(waveform),
+            ),
+            onTap: () async {
+              await showAlertSheet<void>(
+                context: context,
+                builder: (context) => WaveformShapeSelector(
+                  waveformNotifier: Drone.instance.waveformNotifier,
                 ),
               );
             },
