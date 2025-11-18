@@ -31,8 +31,14 @@ class DemixingProcessIndicator extends StatefulWidget {
 class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
   DemixingProcess get process => widget.player.demixingProcess;
 
+  bool get demix => widget.player.demix ?? Songs.demixAutomatically;
+
   @override
   Widget build(BuildContext context) {
+    if (!demix) {
+      return buildDemixDisabled();
+    }
+
     return ListenableBuilder(
       listenable: process,
       builder: (context, child) {
@@ -59,7 +65,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
             const Icon(Symbols.check_circle_rounded, size: 96),
             const SizedBox(height: 8),
             const Text(
-              "The song has been separated into instruments. To complete the loading process, reload the page.",
+              "The song has been split into instruments. To complete the loading process, reload the page.",
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -72,6 +78,29 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
           ],
         );
       },
+    );
+  }
+
+  Widget buildDemixDisabled() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Symbols.disabled_by_default, size: 96),
+        const SizedBox(height: 8),
+        const Text(
+          """Automatically splitting songs into instruments is currently disabled in the settings.""",
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: () {
+            setState(() {
+              widget.player.demixNotifier.value = true;
+            });
+          },
+          child: const Text("Continue anyway"),
+        ),
+      ],
     );
   }
 
@@ -97,7 +126,7 @@ Please update to the latest version to use the Demixer.""",
         const Icon(Symbols.cloud_off_rounded, size: 96),
         const SizedBox(height: 8),
         const Text(
-          """An error occurred while demixing. Please try again later.""",
+          """An error occurred while the song was being split into instruments. Please try again.""",
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),

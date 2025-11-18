@@ -58,7 +58,7 @@ class MetronomeSettingsPage extends StatelessWidget {
             subtitle: Text(
               "Control the Metronome from the notifications drawer",
             ),
-            onTap: () async {
+            onTap: () {
               Metronome.instance.showNotification =
                   !Metronome.instance.showNotification;
             },
@@ -82,6 +82,23 @@ class SongsSettingsPage extends StatelessWidget {
     return SettingsSubPage(
       title: Text("Songs settings"),
       children: [
+        ValueListenableBuilder(
+          valueListenable: Songs.demixAutomaticallyNotifier,
+          builder: (context, demixAutomatically, child) => ListTile(
+            leading: Icon(Symbols.piano),
+            title: Text("Demix new songs"),
+            subtitle: Text(
+              "Automatically split songs into instruments",
+            ),
+            onTap: () {
+              Songs.demixAutomatically = !Songs.demixAutomatically;
+            },
+            trailing: Switch(
+              value: Songs.demixAutomatically,
+              onChanged: (value) => Songs.demixAutomatically = value,
+            ),
+          ),
+        ),
         ListenableBuilder(
           listenable: Songs.history,
           builder: (context, child) => ListTile(
