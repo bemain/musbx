@@ -13,7 +13,7 @@ class SlideFromRightTransitionPage extends CustomTransitionPage<void> {
            return SlideTransition(
              position: animation.drive(
                Tween<Offset>(
-                 begin: Offset(1, 0),
+                 begin: const Offset(1, 0),
                  end: Offset.zero,
                ).chain(CurveTween(curve: Curves.easeIn)),
              ),

@@ -260,9 +260,9 @@ class SinglePlayer extends SongPlayer<SinglePlayable> {
   /// This process is started automatically when the [SinglePlayer] is created.
   late DemixingProcess demixingProcess;
 
-  /// Whether to demix this song if it is't already.
+  /// Whether to demix this song if it isn't already.
   ///
-  /// If this is ´null´, the default behavior specified by [Songs.demixAutomatically] will be used.
+  /// If this is `null`, the default behavior specified by [Songs.demixAutomatically] will be used.
   bool? get demix => demixNotifier.value;
   set demix(bool? value) => demixNotifier.value = value;
   late final ValueNotifier<bool?> demixNotifier = ValueNotifier(null)

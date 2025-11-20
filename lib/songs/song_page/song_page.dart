@@ -171,7 +171,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                 //   onPressed: () {
                 //     showAlertSheet<void>(
                 //       context: context,
-                //       builder: (context) =>SlowdownerSheet(),
+                //       builder: (context) => EqualizerSheet(),
                 //     );
                 //   },
                 //   isSelected: !isEqualizerReset,

@@ -93,13 +93,13 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
                         widget.player.demix = false;
                       });
                     },
-                    child: Text("Cancel"),
+                    child: const Text("Cancel"),
                   )
                 : FilledButton(
                     onPressed: () {
                       context.replace(Routes.song(widget.song.id));
                     },
-                    child: Text("Reload"),
+                    child: const Text("Reload"),
                   ),
             Expanded(child: SizedBox()),
             const SizedBox(height: 24),

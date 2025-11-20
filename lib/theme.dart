@@ -54,7 +54,7 @@ class AppTheme {
         iconTheme: lightTheme.iconTheme.copyWith(weight: 600),
         switchTheme: lightTheme.switchTheme.copyWith(
           thumbIcon: WidgetStateProperty<Icon>.fromMap(
-            <WidgetStatesConstraint, Icon>{
+            const <WidgetStatesConstraint, Icon>{
               WidgetState.selected: Icon(Icons.check),
               WidgetState.any: Icon(Icons.close),
             },
@@ -73,7 +73,7 @@ class AppTheme {
         iconTheme: darkTheme.iconTheme.copyWith(weight: 600),
         switchTheme: darkTheme.switchTheme.copyWith(
           thumbIcon: WidgetStateProperty<Icon>.fromMap(
-            <WidgetStatesConstraint, Icon>{
+            const <WidgetStatesConstraint, Icon>{
               WidgetState.selected: Icon(Icons.check),
               WidgetState.any: Icon(Icons.close),
             },

@@ -295,7 +295,7 @@ class Navigation {
             icon: Icon(CustomIcons.tuning_fork),
           );
         default:
-          throw ("Unknown destination: $route");
+          throw Exception("Unknown destination: $route");
       }
     }
 

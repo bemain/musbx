@@ -53,7 +53,7 @@ class AlertSheet extends StatelessWidget {
             ),
           if (actions != null)
             Padding(
-              padding: const EdgeInsets.only(
+              padding: EdgeInsets.only(
                 left: 24.0,
                 right: 24.0,
                 bottom: 24.0,
