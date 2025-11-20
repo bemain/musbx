@@ -60,6 +60,9 @@ class AppTheme {
             },
           ),
         ),
+        progressIndicatorTheme: lightTheme.progressIndicatorTheme.copyWith(
+          year2023: false,
+        ),
         extensions: [PositionSliderStyle.fromTheme(theme: lightTheme)],
       ),
       darkTheme.copyWith(
@@ -75,6 +78,9 @@ class AppTheme {
               WidgetState.any: Icon(Icons.close),
             },
           ),
+        ),
+        progressIndicatorTheme: darkTheme.progressIndicatorTheme.copyWith(
+          year2023: false,
         ),
         extensions: [PositionSliderStyle.fromTheme(theme: darkTheme)],
       ),

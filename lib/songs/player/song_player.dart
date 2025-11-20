@@ -264,6 +264,7 @@ class SinglePlayer extends SongPlayer<SinglePlayable> {
   ///
   /// If this is ´null´, the default behavior specified by [Songs.demixAutomatically] will be used.
   bool? get demix => demixNotifier.value;
+  set demix(bool? value) => demixNotifier.value = value;
   late final ValueNotifier<bool?> demixNotifier = ValueNotifier(null)
     ..addListener(() {
       if (demix == false) {

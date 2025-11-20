@@ -95,7 +95,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
         OutlinedButton(
           onPressed: () {
             setState(() {
-              widget.player.demixNotifier.value = true;
+              widget.player.demix = true;
             });
           },
           child: const Text("Continue anyway"),
@@ -143,43 +143,42 @@ Please update to the latest version to use the Demixer.""",
   }
 
   Widget buildLoading(BuildContext context, DemixingProcess process) {
-    // TODO: Add "Cancel" button
-    return SizedBox(
-      height: 192,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          const AspectRatio(
-            aspectRatio: 1,
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
-            ),
-          ),
-          Align(
-            alignment: const Alignment(0, -0.3),
+    return Column(
+      children: [
+        Text(
+          "Instruments",
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Expanded(child: SizedBox()),
+        SizedBox(
+          height: 40,
+          child: Center(
             child: ValueListenableBuilder(
               valueListenable: process.stepNotifier,
               builder: (context, step, child) =>
-                  Text("${step.index} / ${DemixingStep.values.length - 1}"),
+                  buildLoadingText(context, process),
             ),
           ),
-          ValueListenableBuilder(
-            valueListenable: process.stepNotifier,
-            builder: (context, step, child) =>
-                buildLoadingText(context, process),
+        ),
+        const SizedBox(height: 8),
+        ValueListenableBuilder(
+          valueListenable: process.progressNotifier,
+          builder: (context, progress, child) => LinearProgressIndicator(
+            value: progress,
           ),
-          Align(
-            alignment: const Alignment(0, 0.3),
-            child: ValueListenableBuilder(
-              valueListenable: process.progressNotifier,
-              builder: (context, progress, child) => Text(
-                (progress == null) ? "" : "${(progress * 100).round()}%",
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              widget.player.demix = false;
+            });
+          },
+          child: Text("Cancel"),
+        ),
+        Expanded(child: SizedBox()),
+        const SizedBox(height: 24),
+      ],
     );
   }
 
@@ -225,35 +224,33 @@ This only needs to be done once, so loading the song next time will be much fast
     String title, [
     String? description,
   ]) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: (description == null) ? 256 : 160,
-          ),
-          child: Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-          ),
-        ),
-        if (description != null)
-          IconButton(
-            onPressed: () {
-              showDialog<void>(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text(title),
-                    content: Text(description),
+    return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+      text: TextSpan(
+        style: Theme.of(context).textTheme.bodyMedium,
+        children: [
+          TextSpan(text: title),
+          if (description != null)
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: IconButton(
+                onPressed: () {
+                  showDialog<void>(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(title),
+                        content: Text(description),
+                      );
+                    },
                   );
                 },
-              );
-            },
-            icon: const Icon(Symbols.info),
-          ),
-      ],
+                icon: const Icon(Symbols.info),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

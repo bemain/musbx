@@ -24,9 +24,9 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   late final Future<T> future = _executeAndReportErrors();
 
   /// The progress of the process.
-  /// Should be a fraction between `0.0` and `1.0`.
-  double? get progress => progressNotifier.value;
-  final ValueNotifier<double?> progressNotifier = ValueNotifier(null);
+  /// Should be a value between `0.0` and `1.0`.
+  double get progress => progressNotifier.value;
+  final ValueNotifier<double> progressNotifier = ValueNotifier(0.0);
 
   /// Whether this process is still active.
   bool get isActive => !(hasResult || hasError || isCancelled);

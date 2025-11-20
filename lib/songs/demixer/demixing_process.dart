@@ -47,11 +47,22 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
   final Duration checkStatusInterval;
 
+  /// The progress of the current step.
+  /// Should be a value between `0.0` and `1.0`.
+  double? get stepProgress => stepProgressNotifier.value;
+  late final ValueNotifier<double?> stepProgressNotifier = ValueNotifier(null)
+    ..addListener(_updateProgress);
+
   /// The current step of the demixing process.
   DemixingStep get step => stepNotifier.value;
-  final ValueNotifier<DemixingStep> stepNotifier = ValueNotifier(
+  late final ValueNotifier<DemixingStep> stepNotifier = ValueNotifier(
     DemixingStep.checkingCache,
-  );
+  )..addListener(_updateProgress);
+
+  void _updateProgress() {
+    progressNotifier.value =
+        (step.index + (stepProgress ?? 0)) / DemixingStep.values.length;
+  }
 
   /// Get stems for the song, if all stems (see [StemType]) were found with the correct [fileExtension].
   Future<Map<StemType, File>?> getStemsInCache({
@@ -124,7 +135,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
         DemixStep.demixing => DemixingStep.separating,
         DemixStep.saving => DemixingStep.compressing,
       };
-      progressNotifier.value = report.progress;
+      stepProgressNotifier.value = report.progress;
 
       await Future<void>.delayed(checkStatusInterval); // Short delay
       breakIfCancelled();
@@ -137,13 +148,13 @@ class DemixingProcess extends Process<Map<StemType, File>> {
       throw Exception("Demixing process didn't return a result.");
     }
 
-    progressNotifier.value = null;
+    stepProgressNotifier.value = null;
 
     breakIfCancelled();
 
     // Download stem files
     stepNotifier.value = DemixingStep.downloading;
-    progressNotifier.value = 0;
+    stepProgressNotifier.value = 0;
 
     /// The progress of each of the download operations.
     Map<String, double> downloadProgress = {};
@@ -158,7 +169,8 @@ class DemixingProcess extends Process<Map<StemType, File>> {
               final totalProgress = downloadProgress.values.reduce(
                 (a, b) => a + b,
               );
-              progressNotifier.value = totalProgress / report.result!.length;
+              stepProgressNotifier.value =
+                  totalProgress / report.result!.length;
             },
             options: Options(
               responseType: ResponseType.bytes,
