@@ -53,7 +53,7 @@ dependencies:
   http_parser: ^4.0.2
   connectivity_plus: ^6.1.4
   just_waveform: ^0.0.5
-  flutter_soloud: ^3.3.0
+  flutter_soloud: ^3.4.4
   dio: ^5.9.0
   pub_semver: ^2.2.0
   gauges: ^1.0.0 # TODO: Migrate away from this package
