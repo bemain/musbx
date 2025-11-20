@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +39,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   DemixingProcess(
     this.parentSource, {
     required this.cacheDirectory,
-    this.checkStatusInterval = const Duration(seconds: 1),
+    this.checkStatusInterval = const Duration(milliseconds: 300),
   });
 
   final SongSource parentSource;
@@ -55,13 +56,20 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
   /// The current step of the demixing process.
   DemixingStep get step => stepNotifier.value;
-  late final ValueNotifier<DemixingStep> stepNotifier = ValueNotifier(
-    DemixingStep.checkingCache,
-  )..addListener(_updateProgress);
+  late final ValueNotifier<DemixingStep> stepNotifier =
+      ValueNotifier(
+          DemixingStep.checkingCache,
+        )
+        ..addListener(_updateProgress)
+        ..addListener(() {
+          stepProgressNotifier.value = null;
+        });
 
   void _updateProgress() {
+    // We ignore the first two steps as they are almost instantaneous
+    final progress = step.index - 2 + (stepProgress ?? 0);
     progressNotifier.value =
-        (step.index + (stepProgress ?? 0)) / DemixingStep.values.length;
+        max(0, progress) / (DemixingStep.values.length - 2);
   }
 
   /// Get stems for the song, if all stems (see [StemType]) were found with the correct [fileExtension].

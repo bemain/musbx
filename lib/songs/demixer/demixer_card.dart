@@ -186,13 +186,13 @@ Please update to the latest version to use the Demixer.""",
         return buildLoadingTextWithInfoButton(
           context,
           "Uploading...",
-          "The song is being uploaded to the server, and will soon be queued for demixing.",
+          "The song is being uploaded to the server, and will soon be queued for splitting.",
         );
       case DemixingStep.separating:
         return buildLoadingTextWithInfoButton(
           context,
-          "Demixing...",
-          """The server is demixing the song. 
+          "Splitting...",
+          """The server is splitting the song into instruments. 
 Audio source separation is a complex process, and might take a while. 
 
 You may close the app while the demixing is in progress. 
@@ -209,7 +209,7 @@ This only needs to be done once, so loading the song next time will be much fast
         return buildLoadingTextWithInfoButton(
           context,
           "Downloading...",
-          "The song has been demixed and is being downloaded to your device.",
+          "The song has been split into instruments and is being downloaded to your device.",
         );
     }
   }
