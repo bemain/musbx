@@ -111,12 +111,17 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     final FileHandle file;
     switch (source) {
       case FileSource():
-        file = await client.uploadFile(source.cacheFile!);
+        file = await client.uploadFile(
+          source.cacheFile!,
+          onSendProgress: (count, total) {
+            stepProgressNotifier.value = count / total;
+          },
+        );
       case YtdlpSource():
         file = await client.uploadYtdlp(source.url);
       default:
         throw UnsupportedError(
-          "Chord analysis cannot be performed on the source $source.",
+          "Demixing cannot be performed on the source $source.",
         );
     }
 

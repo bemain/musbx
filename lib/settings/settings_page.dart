@@ -190,7 +190,7 @@ class SettingsPage extends StatelessWidget {
           ListTile(
             leading: Icon(Symbols.captive_portal),
             title: Text("Website"),
-            trailing: Icon(Symbols.launch),
+            trailing: Icon(Symbols.language),
             onTap: () {
               launchUrl(Uri.parse("https://bemain.github.io"));
             },
