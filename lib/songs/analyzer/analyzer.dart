@@ -55,7 +55,7 @@ class AnalyzerComponent extends SongPlayerComponent {
   /// The process extracting the waveform from the current song,
   /// or `null` if no song has been loaded.
   ///
-  /// TODO: Try reimplementing this using SoLoud.
+  /// TODO: Try reimplementing this using SoLoud or waveform_extractor.
   late final WaveformExtractionProcess waveformProcess =
       WaveformExtractionProcess(player.song)
         ..resultNotifier.addListener(() {

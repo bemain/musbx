@@ -35,7 +35,7 @@ class YoutubeSearch {
       ),
     );
 
-    if (context.mounted) context.go(Navigation.songRoute(video.id));
+    if (context.mounted) context.go(Routes.song(video.id));
   }
 
   /// The history of previous search queries.

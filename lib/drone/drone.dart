@@ -23,17 +23,45 @@ class Drone {
   /// The maximum octave of the [root].
   static int maxOctave = 5;
 
-  /// The [Pitch] at the root of the scale.
-  /// Used as a reference when selecting what pitches to present to the user.
-  Pitch get root => rootNotifier.value;
-  set root(Pitch value) => rootNotifier.value = value;
-  late final ValueNotifier<Pitch> rootNotifier =
+  /// The frequency of A4, in Hz. Used as a reference for all other notes.
+  ///
+  /// Defaults to [Pitch.a440].
+  Pitch get tuning => tuningNotifier.value;
+  set tuning(Pitch value) => tuningNotifier.value = value;
+  late final ValueNotifier<Pitch> tuningNotifier =
       TransformedPersistentValue<Pitch, String>(
-        "drone/root",
-        initialValue: const Pitch(PitchClass.a(), 3, 220),
+        "drone/tuning",
+        initialValue: const Pitch(PitchClass.a(), 4, 440),
         from: Pitch.parse,
         to: (pitch) => pitch.toString(),
       )..addListener(_onPitchesChanged);
+
+  /// The shape of the waveform played.
+  ///
+  /// Defaults to [WaveForm.sin].
+  WaveForm get waveform => waveformNotifier.value;
+  set waveform(WaveForm value) => waveformNotifier.value = value;
+  late final ValueNotifier<WaveForm> waveformNotifier =
+      TransformedPersistentValue<WaveForm, String>(
+        "drone/waveform",
+        initialValue: WaveForm.sin,
+        to: (waveform) => waveform.name,
+        from: (value) => WaveForm.values.firstWhere(
+          (waveform) => waveform.name == value,
+          orElse: () => WaveForm.sin,
+        ),
+      )..addListener(() {
+        for (final player in players) {
+          player.waveform = waveform;
+        }
+      });
+
+  Pitch get root => tuning.transposed(rootStepNotifier.value);
+  set root(Pitch value) => rootStepNotifier.value = tuning.semitonesTo(value);
+  late final ValueNotifier<int> rootStepNotifier = PersistentValue(
+    "drone/root",
+    initialValue: -12,
+  )..addListener(_onPitchesChanged);
 
   /// The temperament used for generating pitches
   Temperament get temperament => temperamentNotifier.value;
@@ -113,10 +141,10 @@ class FrequencyPlayer {
   }
 
   static Future<FrequencyPlayer> load({
-    WaveForm type = WaveForm.sin,
+    WaveForm waveform = WaveForm.sin,
     double frequency = 440,
   }) async {
-    final source = await _soloud.loadWaveform(type, false, 1.0, 0.0);
+    final source = await _soloud.loadWaveform(waveform, false, 1.0, 0.0);
     final handle = await _soloud.play(source, paused: true);
     return FrequencyPlayer._(source, handle, frequency: frequency);
   }
@@ -132,4 +160,5 @@ class FrequencyPlayer {
   }
 
   set frequency(double value) => _soloud.setWaveformFreq(source, value);
+  set waveform(WaveForm value) => _soloud.setWaveform(source, value);
 }

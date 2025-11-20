@@ -12,7 +12,7 @@ class DroneOctave extends StatelessWidget {
     final Drone drone = Drone.instance;
 
     return ListenableBuilder(
-      listenable: drone.rootNotifier,
+      listenable: drone.rootStepNotifier,
       builder: (context, child) {
         return Column(
           mainAxisSize: MainAxisSize.min,

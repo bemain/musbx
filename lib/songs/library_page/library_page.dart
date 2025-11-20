@@ -4,10 +4,10 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/speed_dial/speed_dial.dart';
@@ -29,7 +29,7 @@ class LibraryPage extends StatelessWidget {
             title: LibrarySearchBar(),
             actions: const [
               GetPremiumButton(),
-              InfoButton(),
+              SettingsButton(),
             ],
           ),
           ListenableBuilder(
@@ -99,7 +99,7 @@ class LibraryPage extends StatelessWidget {
         }
 
         onSelected?.call();
-        context.go(Navigation.songRoute(song.id));
+        await context.push(Routes.song(song.id));
       },
       onLongPress: () {
         _showOptionsSheet(context, song);
@@ -108,9 +108,8 @@ class LibraryPage extends StatelessWidget {
   }
 
   void _showOptionsSheet(BuildContext context, Song song) {
-    showModalBottomSheet<void>(
+    showAlertSheet<void>(
       context: context,
-      useRootNavigator: true,
       builder: (context) => _buildOptionsSheet(context, song),
     );
   }
@@ -193,8 +192,8 @@ class LibraryPage extends StatelessWidget {
             },
           ),
           ListTile(
-            enabled: song.cacheDirectory.existsSync(),
-            leading: const Icon(Symbols.delete_sweep),
+            enabled: song.hasCache,
+            leading: const Icon(Symbols.cloud_off),
             title: const Text("Clear cached files"),
             onTap: () {
               showDialog<void>(
@@ -202,7 +201,7 @@ class LibraryPage extends StatelessWidget {
                 useRootNavigator: true,
                 builder: (context) {
                   return AlertDialog(
-                    icon: const Icon(Symbols.delete_sweep),
+                    icon: const Icon(Symbols.cloud_off),
                     title: const Text("Clear cache?"),
                     content: const Text(
                       "This will free up some space on your device. Loading this song will take longer the next time.",
@@ -216,15 +215,7 @@ class LibraryPage extends StatelessWidget {
                       ),
                       FilledButton(
                         onPressed: () {
-                          song.cacheDirectory.delete(recursive: true);
-                          if (song.source is DemixedSource) {
-                            // Override the history entry for the song with a non-demixed variant
-                            Songs.history.add(
-                              song.withSource<SinglePlayable>(
-                                (song.source as DemixedSource).rootParent,
-                              ),
-                            );
-                          }
+                          song.clearCache();
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
                         },
@@ -237,7 +228,7 @@ class LibraryPage extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Symbols.delete_forever),
+            leading: const Icon(Symbols.delete),
             title: const Text("Remove from library"),
             onTap: () {
               showDialog<void>(
@@ -245,7 +236,7 @@ class LibraryPage extends StatelessWidget {
                 useRootNavigator: true,
                 builder: (context) {
                   return AlertDialog(
-                    icon: const Icon(Symbols.delete_forever),
+                    icon: const Icon(Symbols.delete),
                     title: const Text("Remove song?"),
                     content: const Text(
                       "This will remove the song from your library.",
@@ -392,7 +383,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                           await SoundCloudSearch.loadTrack(track);
                           if (context.mounted) {
                             context.go(
-                              Navigation.songRoute(track.id.toString()),
+                              Routes.song(track.id.toString()),
                             );
                           }
                         },
@@ -457,7 +448,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         }
 
         onSelected?.call();
-        context.go(Navigation.songRoute(song.id));
+        context.go(Routes.song(song.id));
       },
     );
   }

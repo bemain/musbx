@@ -10,6 +10,7 @@ import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
 import 'package:musbx/utils/loading.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/segmented_tab_control/segment_tab.dart';
@@ -116,7 +117,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: IconPlaceholder(),
             ),
           const GetPremiumButton(),
-          InfoButton(child: Text(SongPage.helpText)),
+          SettingsButton(),
         ],
       );
     }
@@ -141,9 +142,9 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
               actions: [
                 IconButton(
                   onPressed: () {
-                    _showModalBottomSheet<void>(
-                      context,
-                      SlowdownerSheet(),
+                    showAlertSheet<void>(
+                      context: context,
+                      builder: (context) => SlowdownerSheet(),
                     );
                   },
                   isSelected: !isPitchReset,
@@ -154,9 +155,9 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    _showModalBottomSheet<void>(
-                      context,
-                      SlowdownerSheet(),
+                    showAlertSheet<void>(
+                      context: context,
+                      builder: (context) => SlowdownerSheet(),
                     );
                   },
                   isSelected: !isSpeedReset,
@@ -168,9 +169,9 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                 // FIXME: Equalizer temporarily disabled to reduce artifacts.
                 // IconButton(
                 //   onPressed: () {
-                //     _showModalBottomSheet<void>(
-                //       context,
-                //       const EqualizerSheet(),
+                //     showAlertSheet<void>(
+                //       context: context,
+                //       builder: (context) => EqualizerSheet(),
                 //     );
                 //   },
                 //   isSelected: !isEqualizerReset,
@@ -180,29 +181,12 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
                 //   icon: const Icon(Symbols.instant_mix),
                 // ),
                 const GetPremiumButton(),
-                InfoButton(child: Text(SongPage.helpText)),
+                const SettingsButton(),
               ],
             );
           },
         ),
       ),
-    );
-  }
-
-  Future<T?> _showModalBottomSheet<T>(BuildContext context, Widget? child) {
-    return showModalBottomSheet<T>(
-      context: context,
-      useRootNavigator: true,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.viewInsetsOf(context).bottom,
-          ),
-          child: child,
-        );
-      },
     );
   }
 }

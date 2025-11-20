@@ -105,12 +105,16 @@ class MusbxApiClient {
   ///
   /// Returns a handle to the uploaded file, which can be used to perform jobs
   /// on the file.
-  Future<FileHandle> uploadFile(File file) async {
+  Future<FileHandle> uploadFile(
+    File file, {
+    void Function(int count, int total)? onSendProgress,
+  }) async {
     final response = await _dio.post<Json>(
       "/upload/file",
       data: FormData.fromMap({
         'file': await MultipartFile.fromFile(file.path),
       }),
+      onSendProgress: onSendProgress,
     );
     return FileHandle.fromJson(response.data!);
   }

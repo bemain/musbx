@@ -15,6 +15,7 @@ import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
+import 'package:musbx/widgets/loading_checkmark.dart';
 
 class DemixingProcessIndicator extends StatefulWidget {
   const DemixingProcessIndicator({super.key, required this.player});
@@ -31,8 +32,14 @@ class DemixingProcessIndicator extends StatefulWidget {
 class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
   DemixingProcess get process => widget.player.demixingProcess;
 
+  bool get demix => widget.player.demix ?? Songs.demixAutomatically;
+
   @override
   Widget build(BuildContext context) {
+    if (!demix) {
+      return buildDemixDisabled();
+    }
+
     return ListenableBuilder(
       listenable: process,
       builder: (context, child) {
@@ -42,36 +49,86 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
           return buildError();
         }
 
-        if (process.isActive) {
-          return buildLoading(context, process);
+        if (!process.isActive) {
+          /// Override the history entry for the song with a demixed variant.
+          Songs.history.add(
+            widget.song.withSource<MultiPlayable>(
+              DemixedSource(widget.song.source),
+            ),
+          );
         }
 
-        /// Override the history entry for the song with a demixed variant.
-        Songs.history.add(
-          widget.song.withSource<MultiPlayable>(
-            DemixedSource(widget.song.source),
-          ),
-        );
-
         return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Symbols.check_circle_rounded, size: 96),
+            Text(
+              "Instruments",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Expanded(child: SizedBox()),
+            ValueListenableBuilder(
+              valueListenable: process.progressNotifier,
+              builder: (context, progress, child) => CircularLoadingCheck(
+                progress: progress,
+                isComplete: !process.isActive,
+                size: 96,
+              ),
+            ),
+
             const SizedBox(height: 8),
-            const Text(
-              "The song has been separated into instruments. To complete the loading process, reload the page.",
-              textAlign: TextAlign.center,
+            SizedBox(
+              height: 40,
+              child: Center(
+                child: ValueListenableBuilder(
+                  valueListenable: process.stepNotifier,
+                  builder: (context, step, child) =>
+                      buildLoadingText(context, process),
+                ),
+              ),
             ),
             const SizedBox(height: 8),
-            FilledButton(
-              onPressed: () {
-                context.replace(Navigation.songRoute(widget.song.id));
-              },
-              child: const Text("Reload"),
-            ),
+            process.isActive
+                ? TextButton(
+                    onPressed: () {
+                      setState(() {
+                        widget.player.demix = false;
+                      });
+                    },
+                    child: const Text("Cancel"),
+                  )
+                : FilledButton(
+                    onPressed: () {
+                      context.replace(Routes.song(widget.song.id));
+                    },
+                    child: const Text("Reload"),
+                  ),
+            Expanded(child: SizedBox()),
+            const SizedBox(height: 24),
           ],
         );
       },
+    );
+  }
+
+  Widget buildDemixDisabled() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Symbols.disabled_by_default, size: 96),
+        const SizedBox(height: 8),
+        const Text(
+          """Automatically splitting songs into instruments is currently disabled in the settings.""",
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: () {
+            setState(() {
+              widget.player.demix = true;
+            });
+          },
+          child: const Text("Continue anyway"),
+        ),
+      ],
     );
   }
 
@@ -97,7 +154,7 @@ Please update to the latest version to use the Demixer.""",
         const Icon(Symbols.cloud_off_rounded, size: 96),
         const SizedBox(height: 8),
         const Text(
-          """An error occurred while demixing. Please try again later.""",
+          """An error occurred while the song was being split into instruments. Please try again.""",
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
@@ -113,48 +170,14 @@ Please update to the latest version to use the Demixer.""",
     );
   }
 
-  Widget buildLoading(BuildContext context, DemixingProcess process) {
-    // TODO: Add "Cancel" button
-    return SizedBox(
-      height: 192,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          const AspectRatio(
-            aspectRatio: 1,
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
-            ),
-          ),
-          Align(
-            alignment: const Alignment(0, -0.3),
-            child: ValueListenableBuilder(
-              valueListenable: process.stepNotifier,
-              builder: (context, step, child) =>
-                  Text("${step.index} / ${DemixingStep.values.length - 1}"),
-            ),
-          ),
-          ValueListenableBuilder(
-            valueListenable: process.stepNotifier,
-            builder: (context, step, child) =>
-                buildLoadingText(context, process),
-          ),
-          Align(
-            alignment: const Alignment(0, 0.3),
-            child: ValueListenableBuilder(
-              valueListenable: process.progressNotifier,
-              builder: (context, progress, child) => Text(
-                (progress == null) ? "" : "${(progress * 100).round()}%",
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget buildLoadingText(BuildContext context, DemixingProcess process) {
+    if (!process.isActive) {
+      return const Text(
+        "The song has been split into instruments. To complete the loading process, reload the page.",
+        textAlign: TextAlign.center,
+      );
+    }
+
     switch (process.step) {
       case DemixingStep.checkingCache:
       case DemixingStep.findingHost:
@@ -163,13 +186,13 @@ Please update to the latest version to use the Demixer.""",
         return buildLoadingTextWithInfoButton(
           context,
           "Uploading...",
-          "The song is being uploaded to the server, and will soon be queued for demixing.",
+          "The song is being uploaded to the server, and will soon be queued for splitting.",
         );
       case DemixingStep.separating:
         return buildLoadingTextWithInfoButton(
           context,
-          "Demixing...",
-          """The server is demixing the song. 
+          "Splitting...",
+          """The server is splitting the song into instruments. 
 Audio source separation is a complex process, and might take a while. 
 
 You may close the app while the demixing is in progress. 
@@ -186,7 +209,7 @@ This only needs to be done once, so loading the song next time will be much fast
         return buildLoadingTextWithInfoButton(
           context,
           "Downloading...",
-          "The song has been demixed and is being downloaded to your device.",
+          "The song has been split into instruments and is being downloaded to your device.",
         );
     }
   }
@@ -196,61 +219,31 @@ This only needs to be done once, so loading the song next time will be much fast
     String title, [
     String? description,
   ]) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: (description == null) ? 256 : 160,
-          ),
-          child: Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-          ),
-        ),
-        if (description != null)
-          IconButton(
-            onPressed: () {
-              showDialog<void>(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text(title),
-                    content: Text(description),
+    return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+      text: TextSpan(
+        style: Theme.of(context).textTheme.bodyMedium,
+        children: [
+          TextSpan(text: title),
+          if (description != null)
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: IconButton(
+                onPressed: () {
+                  showDialog<void>(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(title),
+                        content: Text(description),
+                      );
+                    },
                   );
                 },
-              );
-            },
-            icon: const Icon(Symbols.info),
-          ),
-      ],
-    );
-  }
-
-  /// TODO: Remove? Leaving it here for the moment since I might want to use it later
-  Future<void> showCellularWarningDialog(BuildContext context) async {
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Enable Demixer on cellular?"),
-        content: const Text(
-          "Your device is connected to a mobile network. Please note that the Demixer requires downloading some data (around 50 MB per song). Are you sure you want to enable the Demixer using cellular?",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              // player.demixer.enabled = true;
-              Navigator.of(context).pop();
-            },
-            child: const Text("Enable"),
-          ),
+                icon: const Icon(Symbols.info),
+              ),
+            ),
         ],
       ),
     );

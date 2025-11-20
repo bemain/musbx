@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/navigation.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Create an [AppBar] with the text "Musician's toolbox" as title
@@ -31,9 +32,9 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       leading: leading,
       title: title,
-      actions: [
-        const GetPremiumButton(),
-        InfoButton(child: (helpText == null) ? null : Text(helpText!)),
+      actions: const [
+        GetPremiumButton(),
+        SettingsButton(),
       ],
     );
   }
@@ -66,44 +67,16 @@ class GetPremiumButton extends StatelessWidget {
   }
 }
 
-class InfoButton extends StatelessWidget {
-  /// A button that opens an about dialog when pressed.
-  ///
-  /// The dialog shows info about the app and allows the user to view licenses.
-  /// It also shows [child].
-  const InfoButton({
-    super.key,
-    this.child,
-  });
-
-  /// Additional widget shown in the about dialog
-  final Widget? child;
-
-  static PackageInfo? packageInfo;
+class SettingsButton extends StatelessWidget {
+  const SettingsButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      onPressed: () async {
-        packageInfo ??= await PackageInfo.fromPlatform();
-
-        if (!context.mounted) return;
-
-        showAboutDialog(
-          context: context,
-          applicationIcon: const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: ImageIcon(
-              AssetImage("assets/splash/splash.png"),
-              size: 64.0,
-              color: Color(0xff0f58cf),
-            ),
-          ),
-          applicationVersion: "Version ${packageInfo?.version}",
-          children: (child == null) ? null : [child!],
-        );
+      onPressed: () {
+        context.push(Routes.settings);
       },
-      icon: const Icon(Symbols.info),
+      icon: const Icon(Symbols.settings),
     );
   }
 }

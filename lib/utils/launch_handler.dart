@@ -1,10 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:musbx/utils/persistent_value.dart';
-import 'package:musbx/widgets/widgets.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 
 class LaunchHandler {
   static bool initialized = false;
@@ -56,14 +52,10 @@ class LaunchHandler {
       "[LAUNCH] First launch with version $buildNumber (${info.version})",
     );
 
-    if (buildNumber == 38) {
-      // Remove all cached songs
-      final file = File(
-        "${(await getTemporaryDirectory()).path}/song_history.json",
-      );
-      if (await file.exists()) await file.delete();
-      final dir = Directories.applicationDocumentsDir("songs");
-      if (await dir.exists()) await dir.delete(recursive: true);
+    if (buildNumber >= 39 && (previousBuildNumber ?? 0) < 39) {
+      // Remove old settings
+      await PersistentValue.preferences.clear();
+      _lastVersionLaunched.value = buildNumber.toString();
     }
   }
 }

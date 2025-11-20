@@ -27,7 +27,9 @@ const List<String> allowedExtensions = [
 /// When pressed, allows the user to upload a song from their devices and loads that song to [MusicPlayer].
 class UploadSongButton extends SpeedDialChild {
   /// Whether permission to read external storage has been given or not.
-  static bool permissionGranted = false;
+  static bool permissionGranted = Platform.isAndroid || Platform.isIOS
+      ? false
+      : true;
 
   @override
   Widget assemble(BuildContext context, Animation<double> animation) {
@@ -74,7 +76,7 @@ class UploadSongButton extends SpeedDialChild {
       ),
     );
 
-    Navigation.navigatorKey.currentContext?.go(Navigation.songRoute(id));
+    Navigation.navigatorKey.currentContext?.go(Routes.song(id));
   }
 
   Future<void> pushPermissionBuilder(BuildContext context) async {

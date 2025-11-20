@@ -121,6 +121,8 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// Remove all history entries.
   Future<void> clear() async {
-    await (await _historyFile).delete();
+    for (var value in entries.values.toList()) {
+      await remove(value);
+    }
   }
 }

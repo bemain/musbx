@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 extension ClampDuration on Duration {
   /// Clamp this to between [lowerLimit] and [upperLimit].
@@ -30,3 +30,24 @@ extension IfNotNull<T extends Object?> on T {
 Type typeOf<T>() => T;
 
 typedef Json = Map<String, dynamic>;
+
+Future<T?> showAlertSheet<T>({
+  required BuildContext context,
+  required Widget Function(BuildContext) builder,
+  bool showDragHandle = false,
+}) {
+  return showModalBottomSheet<T>(
+    context: context,
+    useRootNavigator: true,
+    showDragHandle: showDragHandle,
+    isScrollControlled: true,
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: builder(context),
+      );
+    },
+  );
+}

@@ -11,6 +11,7 @@ import 'package:musbx/songs/loop/loop.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/songs/slowdowner/slowdowner.dart';
 import 'package:musbx/utils/utils.dart';
@@ -249,12 +250,29 @@ class SinglePlayer extends SongPlayer<SinglePlayable> {
   /// An implementation of [SongPlayer] that plays a single audio clip.
   SinglePlayer(super.song, super.playable, super.handle) : super._() {
     restartDemixing(); // Start demixing
+    if (!Songs.demixAutomatically) {
+      demixingProcess.cancel();
+    }
   }
 
   /// The process responsible for demixing the song.
   ///
   /// This process is started automatically when the [SinglePlayer] is created.
   late DemixingProcess demixingProcess;
+
+  /// Whether to demix this song if it isn't already.
+  ///
+  /// If this is `null`, the default behavior specified by [Songs.demixAutomatically] will be used.
+  bool? get demix => demixNotifier.value;
+  set demix(bool? value) => demixNotifier.value = value;
+  late final ValueNotifier<bool?> demixNotifier = ValueNotifier(null)
+    ..addListener(() {
+      if (demix == false) {
+        demixingProcess.cancel();
+      } else if (demix == true && demixingProcess.isCancelled) {
+        restartDemixing();
+      }
+    });
 
   /// Restart the [demixingProcess].
   void restartDemixing() {
@@ -270,6 +288,21 @@ class SinglePlayer extends SongPlayer<SinglePlayable> {
 
     demixingProcess.cancel();
     return await super.dispose();
+  }
+
+  @override
+  void loadPreferences(Json json) {
+    super.loadPreferences(json);
+
+    demixNotifier.value = tryCast<bool>(json['demix']);
+  }
+
+  @override
+  Json toPreferences() {
+    return {
+      ...super.toPreferences(),
+      if (demix != null) "demix": demix,
+    };
   }
 }
 

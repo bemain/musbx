@@ -23,8 +23,8 @@ class TransformedPersistentValue<T, S> extends ValueNotifier<T> {
 
   final PersistentValue<S> _primitiveValue;
 
-  final S Function(T) to;
-  final T Function(S) from;
+  final S Function(T value) to;
+  final T Function(S value) from;
 
   @override
   set value(T value) {
@@ -41,31 +41,31 @@ class PersistentValue<T> extends ValueNotifier<T> {
       "Unsupported type for PersistentValue: $T",
     );
 
-    if (_preferences.get(key) == null) value = initialValue;
+    if (preferences.get(key) == null) value = initialValue;
   }
 
   /// Whether this class has been initialized by calling [initialize].
   static bool isInitialized = false;
 
   /// Used internally to persist values to disk.
-  static late final SharedPreferencesWithCache _preferences;
+  static late final SharedPreferencesWithCache preferences;
 
   /// The key to where the value is persisted to disk.
   final String key;
 
   @override
   T get value => (<T>[] is List<List>)
-      ? _preferences.getStringList(key)!.cast<String>() as T
-      : _preferences.get(key) as T;
+      ? preferences.getStringList(key)!.cast<String>() as T
+      : preferences.get(key) as T;
   @override
   set value(T newValue) {
-    if (_preferences.get(key) == newValue) return; // Do nothing
+    if (preferences.get(key) == newValue) return; // Do nothing
 
-    if (newValue is bool) _preferences.setBool(key, newValue);
-    if (newValue is String) _preferences.setString(key, newValue);
-    if (newValue is int) _preferences.setInt(key, newValue);
-    if (newValue is double) _preferences.setDouble(key, newValue);
-    if (newValue is List<String>) _preferences.setStringList(key, newValue);
+    if (newValue is bool) preferences.setBool(key, newValue);
+    if (newValue is String) preferences.setString(key, newValue);
+    if (newValue is int) preferences.setInt(key, newValue);
+    if (newValue is double) preferences.setDouble(key, newValue);
+    if (newValue is List<String>) preferences.setStringList(key, newValue);
 
     notifyListeners();
   }
@@ -73,7 +73,7 @@ class PersistentValue<T> extends ValueNotifier<T> {
   static Future<void> initialize() async {
     if (isInitialized) return;
     isInitialized = true;
-    _preferences = await SharedPreferencesWithCache.create(
+    preferences = await SharedPreferencesWithCache.create(
       cacheOptions: const SharedPreferencesWithCacheOptions(),
     );
   }

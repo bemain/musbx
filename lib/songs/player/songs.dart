@@ -13,6 +13,7 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/history_handler.dart';
+import 'package:musbx/utils/persistent_value.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/ads.dart';
@@ -56,8 +57,9 @@ class Songs {
     AudioService.notificationClicked.listen((event) {
       if (event) {
         // Navigate to the music player page
-        // TODO: Don't hard code this value
-        Navigation.navigationShell.goBranch(1);
+        Navigation.navigationShell.goBranch(
+          Routes.branches.indexOf(Routes.library),
+        );
       }
     });
 
@@ -120,9 +122,16 @@ class Songs {
       !Purchases.hasPremium && songsPlayedThisWeek.length >= freeSongsPerWeek;
 
   /// The player responsible for playing the song that is currently loaded.
-  /// TODO: Remove this in favor for a more decentralized structure using provider.
+  /// TODO: Switch to a decentralized structure using provider.
   static SongPlayer? get player => playerNotifier.value;
   static final ValueNotifier<SongPlayer?> playerNotifier = ValueNotifier(null);
+
+  /// Whether to automatically demix new songs.
+  static bool get demixAutomatically => demixAutomaticallyNotifier.value;
+  static set demixAutomatically(bool value) =>
+      demixAutomaticallyNotifier.value = value;
+  static final ValueNotifier<bool> demixAutomaticallyNotifier =
+      PersistentValue("songs/autoDemix", initialValue: true);
 
   /// Load a [song].
   ///
