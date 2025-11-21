@@ -23,6 +23,7 @@ class Song<P extends Playable> {
     this.genre,
     this.artUri,
     required this.source,
+    this.preferences,
   });
 
   /// A unique id.
@@ -62,6 +63,9 @@ class Song<P extends Playable> {
     genre: genre,
     artUri: artUri ?? defaultAlbumArt,
   );
+
+  /// The user's preferences for playing this song.
+  Json? preferences;
 
   /// The directory where files relating to this song are cached.
   Directory get cacheDirectory =>
@@ -104,6 +108,7 @@ class Song<P extends Playable> {
       if (genre != null) "genre": genre,
       if (artUri != null) "artUri": artUri?.toString(),
       "source": source.toJson(),
+      "preferences": preferences,
     };
   }
 
@@ -133,6 +138,7 @@ class Song<P extends Playable> {
         genre: tryCast<String>(json['genre']),
         artUri: artUri == null ? null : Uri.tryParse(artUri),
         source: source as SongSource<T>,
+        preferences: json['preferences'] as Json,
       );
     }
 
@@ -158,6 +164,7 @@ class Song<P extends Playable> {
     String? artist,
     String? genre,
     Uri? artUri,
+    Json? preferences,
   }) {
     return Song(
       id: id ?? this.id,
@@ -167,6 +174,7 @@ class Song<P extends Playable> {
       genre: genre ?? this.genre,
       artUri: artUri ?? this.artUri,
       source: source,
+      preferences: preferences ?? this.preferences,
     );
   }
 
@@ -180,6 +188,7 @@ class Song<P extends Playable> {
       genre: genre,
       artUri: artUri,
       source: source,
+      preferences: preferences,
     );
   }
 

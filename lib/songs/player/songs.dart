@@ -8,7 +8,6 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
-import 'package:musbx/songs/player/preferences.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/source.dart';
@@ -73,9 +72,6 @@ class Songs {
       }),
     );
   }
-
-  /// Used internally to load and save preferences for songs.
-  static final SongPreferences _preferences = SongPreferences();
 
   /// The history of previously loaded songs.
   static final HistoryHandler<Song> history = HistoryHandler<Song>(
@@ -163,8 +159,6 @@ class Songs {
 
     // Load audio
     final SongPlayer<P> player = await SongPlayer.load<P>(song);
-    final prefs = await _preferences.load(song);
-    if (prefs != null) player.loadPreferences(prefs);
 
     // Add to song history.
     await history.add(song);
@@ -187,11 +181,5 @@ class Songs {
     playerNotifier.value = null;
 
     await player.dispose();
-
-    // Save preferences
-    await _preferences.save(
-      player.song,
-      player.toPreferences(),
-    );
   }
 }

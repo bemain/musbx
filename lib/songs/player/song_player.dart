@@ -83,6 +83,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// The workflow is as follows:
   ///  - Load the [song.source], to obtain a [playable].
   ///  - Play the [playable], to obtain a sound [handle].
+  ///  - Load the user's preferences for this [song].
   static Future<SongPlayer<P>> load<P extends Playable>(Song<P> song) async {
     final P playable = await song.source.load(
       cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
@@ -114,6 +115,9 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     } else {
       throw ("No player exists for the given source ${song.source}");
     }
+
+    // Load preferences
+    if (song.preferences != null) player.loadPreferences(song.preferences!);
 
     return player;
   }
@@ -158,6 +162,9 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     await SongsAudioHandler.session.setActive(false);
 
     _positionUpdater.cancel();
+
+    // Save preferences
+    song.preferences = toPreferences();
 
     for (SongPlayerComponent component in components) {
       await component.dispose();
