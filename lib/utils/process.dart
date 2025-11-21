@@ -31,6 +31,9 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   /// Whether this process is still active.
   bool get isActive => !(hasResult || hasError || isCancelled);
 
+  /// Whether this process has completed executing.
+  bool get isComplete => hasResult;
+
   /// Whether this process has completed with a result.
   bool get hasResult => result != null;
 

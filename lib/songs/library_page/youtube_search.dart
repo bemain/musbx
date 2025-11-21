@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
@@ -25,15 +26,15 @@ class YoutubeSearch {
 
     if (video == null) return;
 
-    await Songs.history.add(
-      Song<SinglePlayable>(
-        id: video.id,
-        title: HtmlUnescape().convert(video.title),
-        artist: HtmlUnescape().convert(video.channelTitle),
-        artUri: Uri.tryParse(video.thumbnails.high.url),
-        source: YtdlpSource(Uri.parse(video.url)),
-      ),
+    final Song song = Song<SinglePlayable>(
+      id: video.id,
+      title: HtmlUnescape().convert(video.title),
+      artist: HtmlUnescape().convert(video.channelTitle),
+      artUri: Uri.tryParse(video.thumbnails.high.url),
+      source: YtdlpSource(Uri.parse(video.url)),
     );
+    await Songs.history.add(song);
+    if (Songs.demixAutomatically) DemixingProcesses.start(song);
 
     if (context.mounted) context.go(Routes.song(video.id));
   }

@@ -4,12 +4,11 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/loading.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/custom_icons.dart';
@@ -30,8 +29,6 @@ class DemixingProcessIndicator extends StatefulWidget {
 }
 
 class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
-  DemixingProcess get process => widget.player.demixingProcess;
-
   bool get demix => widget.player.demix ?? Songs.demixAutomatically;
 
   @override
@@ -40,6 +37,8 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
       return buildDemixDisabled();
     }
 
+    DemixingProcess? process = DemixingProcesses.start(widget.song);
+
     return ListenableBuilder(
       listenable: process,
       builder: (context, child) {
@@ -47,15 +46,6 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
           if (process.error is OutOfDateException) return buildOutOfDate();
 
           return buildError();
-        }
-
-        if (!process.isActive) {
-          /// Override the history entry for the song with a demixed variant.
-          Songs.history.add(
-            widget.song.withSource<MultiPlayable>(
-              DemixedSource(widget.song.source),
-            ),
-          );
         }
 
         return Column(
@@ -69,7 +59,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
               valueListenable: process.progressNotifier,
               builder: (context, progress, child) => CircularLoadingCheck(
                 progress: progress,
-                isComplete: !process.isActive,
+                isComplete: process.isComplete,
                 size: 96,
               ),
             ),
@@ -161,7 +151,8 @@ Please update to the latest version to use the Demixer.""",
         OutlinedButton(
           onPressed: () {
             setState(() {
-              widget.player.restartDemixing();
+              DemixingProcesses.cancel(widget.song);
+              DemixingProcesses.start(widget.song);
             });
           },
           child: const Text("Retry"),

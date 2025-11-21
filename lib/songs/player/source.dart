@@ -4,9 +4,11 @@ import 'dart:io';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
 
@@ -16,7 +18,7 @@ import 'package:musbx/widgets/widgets.dart';
 /// the [load] method can in turn be used to start playing a sound.
 abstract class SongSource<P extends Playable> {
   /// Load the [Playable] that this source points to.
-  FutureOr<P> load({required Directory cacheDirectory});
+  FutureOr<P> load({required Song song});
 
   /// Free the resources used by this source.
   FutureOr<void> dispose() {}
@@ -69,8 +71,8 @@ class YtdlpSource extends SongSource<SinglePlayable> {
   File? cacheFile;
 
   @override
-  Future<SinglePlayable> load({required Directory cacheDirectory}) async {
-    File cacheFile = File("${cacheDirectory.path}/audio.mp3");
+  Future<SinglePlayable> load({required Song song}) async {
+    File cacheFile = File("${song.audioDirectory.path}/audio.mp3");
 
     if (!await cacheFile.exists()) {
       final MusbxApiClient client = await MusbxApi.getClient();
@@ -125,8 +127,8 @@ class FileSource extends SongSource<SinglePlayable> {
   File? cacheFile;
 
   @override
-  Future<SinglePlayable> load({required Directory cacheDirectory}) async {
-    File cacheFile = File("${cacheDirectory.path}/audio.mp3");
+  Future<SinglePlayable> load({required Song song}) async {
+    File cacheFile = File("${song.cacheDirectory.path}/audio.mp3");
 
     if (!await cacheFile.exists()) {
       if (!await file.exists()) {
@@ -181,15 +183,12 @@ class DemixedSource extends SongSource<MultiPlayable> {
   Map<StemType, AudioSource>? sources;
 
   @override
-  Future<MultiPlayable> load({required Directory cacheDirectory}) async {
-    final DemixingProcess process = DemixingProcess(
-      parent,
-      cacheDirectory: cacheDirectory,
-    );
+  Future<MultiPlayable> load({required Song song}) async {
+    final DemixingProcess process = DemixingProcesses.start(song);
 
     final Map<StemType, File> files = await process.future;
 
-    await parent.load(cacheDirectory: cacheDirectory);
+    await parent.load(song: song);
 
     sources ??= {
       for (final e in files.entries)

@@ -6,6 +6,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
@@ -219,17 +220,17 @@ class SoundCloudSearch {
 
   /// Loads a track from SoundCloud into the user's library.
   static Future<void> loadTrack(SoundCloudTrack track) async {
-    await Songs.history.add(
-      Song<SinglePlayable>(
-        id: track.id.toString(),
-        title: HtmlUnescape().convert(track.title),
-        artist: HtmlUnescape().convert(track.username),
-        artUri: track.artworkUrl != null
-            ? Uri.tryParse(track.artworkUrl!)
-            : null,
-        source: YtdlpSource(Uri.parse(track.permalinkUrl)),
-      ),
+    final Song song = Song<SinglePlayable>(
+      id: track.id.toString(),
+      title: HtmlUnescape().convert(track.title),
+      artist: HtmlUnescape().convert(track.username),
+      artUri: track.artworkUrl != null
+          ? Uri.tryParse(track.artworkUrl!)
+          : null,
+      source: YtdlpSource(Uri.parse(track.permalinkUrl)),
     );
+    await Songs.history.add(song);
+    if (Songs.demixAutomatically) DemixingProcesses.start(song);
   }
 
   /// Searches for tracks on SoundCloud using the provided [query].

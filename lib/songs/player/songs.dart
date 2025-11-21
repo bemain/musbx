@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:io' hide Process;
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
@@ -69,7 +69,17 @@ class Songs {
         if (history.entries.isEmpty) {
           history.add(demoSong);
         }
+
+        _resumeDemixing();
       }),
+    );
+  }
+
+  static void _resumeDemixing() {
+    if (!demixAutomatically) return;
+
+    DemixingProcesses.startAll(
+      history.entries.values.where((song) => song.shouldDemix),
     );
   }
 
@@ -92,8 +102,7 @@ class Songs {
       debugPrint(
         "[SONG HISTORY] Deleting cached files for song ${entry.value.id}",
       );
-      final Directory directory = entry.value.cacheDirectory;
-      if (await directory.exists()) await directory.delete(recursive: true);
+      await entry.value.clearCache();
     },
   );
 

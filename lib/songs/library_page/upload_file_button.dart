@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
@@ -68,13 +69,13 @@ class UploadSongButton extends SpeedDialChild {
 
     final String id = file.path!.hashCode.toString();
 
-    await Songs.history.add(
-      Song<SinglePlayable>(
-        id: id,
-        title: file.name.split(".").first,
-        source: FileSource(File(file.path!)),
-      ),
+    final Song song = Song<SinglePlayable>(
+      id: id,
+      title: file.name.split(".").first,
+      source: FileSource(File(file.path!)),
     );
+    await Songs.history.add(song);
+    if (Songs.demixAutomatically) DemixingProcesses.start(song);
 
     Navigation.navigatorKey.currentContext?.go(Routes.song(id));
   }

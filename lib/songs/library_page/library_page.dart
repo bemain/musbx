@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/library_page/options_sheet.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -73,7 +74,7 @@ class LibraryPage extends StatelessWidget {
               Symbols.lock,
               color: Theme.of(context).disabledColor,
             )
-          : _buildSongIcon(song),
+          : buildSongIcon(song),
       title: Text(
         song.title,
         style: textStyle,
@@ -110,161 +111,7 @@ class LibraryPage extends StatelessWidget {
   void _showOptionsSheet(BuildContext context, Song song) {
     showAlertSheet<void>(
       context: context,
-      builder: (context) => _buildOptionsSheet(context, song),
-    );
-  }
-
-  Widget _buildOptionsSheet(BuildContext context, Song song) {
-    return ListTileTheme(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-      minLeadingWidth: 32,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 4),
-          ListTile(
-            leading: _buildSongIcon(song),
-            title: Text(
-              song.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            titleTextStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            subtitle: Text(
-              song.artist ?? "Unknown artist",
-            ),
-            trailing: song.source is DemixedSource
-                ? null
-                : const Tooltip(
-                    message:
-                        "This song has not been demixed into instruments.",
-                    child: Icon(Symbols.piano_off),
-                  ),
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Symbols.edit),
-            title: const Text("Rename"),
-            onTap: () {
-              showDialog<void>(
-                context: context,
-                useRootNavigator: true,
-                builder: (context) {
-                  final TextEditingController controller =
-                      TextEditingController(text: song.title);
-
-                  return AlertDialog(
-                    title: const Text("Rename song"),
-                    content: TextField(
-                      controller: controller,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: "Enter title",
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Cancel"),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          if (controller.text.isNotEmpty) {
-                            Songs.history.add(
-                              song.copyWith(
-                                title: controller.text,
-                              ),
-                            );
-                          }
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Rename"),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-          ListTile(
-            enabled: song.hasCache,
-            leading: const Icon(Symbols.cloud_off),
-            title: const Text("Clear cached files"),
-            onTap: () {
-              showDialog<void>(
-                context: context,
-                useRootNavigator: true,
-                builder: (context) {
-                  return AlertDialog(
-                    icon: const Icon(Symbols.cloud_off),
-                    title: const Text("Clear cache?"),
-                    content: const Text(
-                      "This will free up some space on your device. Loading this song will take longer the next time.",
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Cancel"),
-                      ),
-                      FilledButton(
-                        onPressed: () {
-                          song.clearCache();
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Clear"),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Symbols.delete),
-            title: const Text("Remove from library"),
-            onTap: () {
-              showDialog<void>(
-                context: context,
-                useRootNavigator: true,
-                builder: (context) {
-                  return AlertDialog(
-                    icon: const Icon(Symbols.delete),
-                    title: const Text("Remove song?"),
-                    content: const Text(
-                      "This will remove the song from your library.",
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Cancel"),
-                      ),
-                      FilledButton(
-                        onPressed: () {
-                          Songs.history.remove(song);
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Remove"),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-          const SizedBox(height: 32),
-        ],
-      ),
+      builder: (context) => SongOptionsSheet(song: song),
     );
   }
 
@@ -289,7 +136,7 @@ class LibraryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSongIcon(Song song) {
+  static Widget buildSongIcon(Song song) {
     if (song == demoSong) {
       return const Icon(Symbols.science);
     }

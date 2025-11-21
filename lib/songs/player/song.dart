@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
@@ -65,20 +66,34 @@ class Song<P extends Playable> {
   );
 
   /// The user's preferences for playing this song.
+  /// TODO: Make a dedicated class for this?
   Json? preferences;
+
+  bool get shouldDemix =>
+      source is! DemixedSource &&
+      (preferences?['demix'] as bool? ?? Songs.demixAutomatically);
 
   /// The directory where files relating to this song are cached.
   Directory get cacheDirectory =>
       Directories.applicationDocumentsDir("songs/$id");
 
+  /// The directory where audio files for this song are cached.
+  Directory get audioDirectory => Directory("${cacheDirectory.path}/source/");
+
   /// Whether the cache for this song is not empty.
   bool get hasCache => cacheDirectory.existsSync();
 
   /// Remove all the cache files relating to this song.
+  ///
+  /// If [complete] is `false` and this is
   Future<void> clearCache() async {
-    await cacheDirectory.delete(recursive: true);
+    DemixingProcesses.cancel(this);
 
-    if (source is DemixedSource) {
+    if (await cacheDirectory.exists()) {
+      await cacheDirectory.delete(recursive: true);
+    }
+
+    if (source is DemixedSource && Songs.history.entries.containsValue(this)) {
       // Override the history entry for the song with a non-demixed variant
       await Songs.history.add(
         withSource<SinglePlayable>(
@@ -138,7 +153,7 @@ class Song<P extends Playable> {
         genre: tryCast<String>(json['genre']),
         artUri: artUri == null ? null : Uri.tryParse(artUri),
         source: source as SongSource<T>,
-        preferences: json['preferences'] as Json,
+        preferences: tryCast<Json>(json['preferences']),
       );
     }
 

@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
-import 'package:musbx/songs/demixer/demixing_process.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
 import 'package:musbx/songs/loop/loop.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
@@ -86,7 +85,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   ///  - Load the user's preferences for this [song].
   static Future<SongPlayer<P>> load<P extends Playable>(Song<P> song) async {
     final P playable = await song.source.load(
-      cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
+      song: song,
     );
     // Activate filters. This needs to be done before the sound is played.
     playable.filters().pitchShift.activate();
@@ -255,17 +254,7 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
 
 class SinglePlayer extends SongPlayer<SinglePlayable> {
   /// An implementation of [SongPlayer] that plays a single audio clip.
-  SinglePlayer(super.song, super.playable, super.handle) : super._() {
-    restartDemixing(); // Start demixing
-    if (!Songs.demixAutomatically) {
-      demixingProcess.cancel();
-    }
-  }
-
-  /// The process responsible for demixing the song.
-  ///
-  /// This process is started automatically when the [SinglePlayer] is created.
-  late DemixingProcess demixingProcess;
+  SinglePlayer(super.song, super.playable, super.handle) : super._();
 
   /// Whether to demix this song if it isn't already.
   ///
@@ -275,25 +264,16 @@ class SinglePlayer extends SongPlayer<SinglePlayable> {
   late final ValueNotifier<bool?> demixNotifier = ValueNotifier(null)
     ..addListener(() {
       if (demix == false) {
-        demixingProcess.cancel();
-      } else if (demix == true && demixingProcess.isCancelled) {
-        restartDemixing();
+        DemixingProcesses.cancel(song);
+      } else if (demix == true) {
+        DemixingProcesses.start(song);
       }
     });
-
-  /// Restart the [demixingProcess].
-  void restartDemixing() {
-    demixingProcess = DemixingProcess(
-      song.source,
-      cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
-    );
-  }
 
   @override
   Future<void> dispose() async {
     await SongPlayer.soloud.stop(handle);
 
-    demixingProcess.cancel();
     return await super.dispose();
   }
 

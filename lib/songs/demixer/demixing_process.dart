@@ -34,8 +34,6 @@ enum DemixingStep {
 
 class DemixingProcess extends Process<Map<StemType, File>> {
   /// Upload, separate and download stem files for a song.
-  ///
-  /// TODO: Improve progress tracking for upload.
   DemixingProcess(
     this.parentSource, {
     required this.cacheDirectory,
@@ -195,6 +193,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
             "${cacheDirectory.path}/$stemName.mp3",
           );
 
+          await destination.create(recursive: true);
           await destination.writeAsBytes(response.data!);
           return MapEntry(
             StemType.values.firstWhere((stem) => stem.name == stemName),
