@@ -5,7 +5,7 @@ import 'package:musbx/analytics.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/settings/settings_page.dart';
-import 'package:musbx/settings/sub_pages.dart';
+import 'package:musbx/settings/settings_sub_pages.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';

@@ -86,7 +86,7 @@ class SongsSettingsPage extends StatelessWidget {
           valueListenable: Songs.demixAutomaticallyNotifier,
           builder: (context, demixAutomatically, child) => ListTile(
             leading: Icon(Symbols.piano),
-            title: Text("Demix new songs"),
+            title: Text("Split new songs"),
             subtitle: Text(
               "Automatically split songs into instruments",
             ),
