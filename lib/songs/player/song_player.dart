@@ -227,7 +227,7 @@ class SinglePlayer extends SongPlayer {
   SinglePlayer._(super.song, this.source, super.handle) : super._();
 
   static Future<SinglePlayer> load(Song song) async {
-    final AudioSource source = await song.source.load(song: song);
+    final AudioSource source = await song.audio.resolve(song: song);
     // Activate filters. This needs to be done before the sound is played.
     source.filters.pitchShiftFilter.activate();
     // FIXME: Equalizer temporarily disabled to reduce artifacts.
@@ -239,7 +239,7 @@ class SinglePlayer extends SongPlayer {
       paused: true,
       looping: true,
     );
-    ;
+
     final SinglePlayer player = SinglePlayer._(song, source, handle);
 
     // Load preferences
@@ -358,7 +358,6 @@ class MultiPlayer extends SongPlayer {
   final Map<StemType, SoundHandle> handles;
 
   @override
-  // TODO: implement duration
   Duration get duration => SoLoud.instance.getLength(sources.values.first);
 
   @override

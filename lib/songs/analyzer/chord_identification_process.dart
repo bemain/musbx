@@ -6,8 +6,8 @@ import 'package:musbx/model/chord.dart';
 import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/jobs/analyze.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
+import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/process.dart';
 import 'package:musbx/utils/utils.dart';
 
@@ -45,7 +45,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
       // Perform chords identification
       final MusbxApiClient client = await MusbxApi.getClient();
 
-      data = await analyzeSource(song.source, client);
+      data = await analyzeSource(song.audio, client);
 
       // Save to cache
       await cacheFile.create(recursive: true);
@@ -66,14 +66,14 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
 
   /// Perform chord analysis on the [source] using the given [client].
   Future<Map<double, String>> analyzeSource(
-    SongSource source,
+    AudioProvider source,
     MusbxApiClient client,
   ) async {
     final FileHandle file;
     switch (source) {
-      case FileSource():
+      case FileAudio():
         file = await client.uploadFile(source.cacheFile!);
-      case YtdlpSource():
+      case YtdlpAudio():
         file = await client.uploadYtdlp(source.url);
 
       default:

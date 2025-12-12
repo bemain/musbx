@@ -7,9 +7,9 @@ import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
+import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/loading.dart';
 import 'package:musbx/utils/utils.dart';
@@ -226,7 +226,7 @@ class SoundCloudSearch {
       artUri: track.artworkUrl != null
           ? Uri.tryParse(track.artworkUrl!)
           : null,
-      source: YtdlpSource(Uri.parse(track.permalinkUrl)),
+      audio: YtdlpAudio(Uri.parse(track.permalinkUrl)),
     );
     await Songs.history.add(song);
     if (Songs.demixAutomatically) DemixingProcesses.start(song);

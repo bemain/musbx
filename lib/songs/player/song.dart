@@ -4,8 +4,8 @@ import 'package:audio_service/audio_service.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
+import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
 
@@ -24,7 +24,7 @@ class Song {
     this.artist,
     this.genre,
     this.artUri,
-    required this.source,
+    required this.audio,
     this.preferences,
   });
 
@@ -51,7 +51,7 @@ class Song {
   /// Where this song's audio was loaded from, e.g. a YouTube video or a local file.
   ///
   /// Can be used to create an [AudioSource] playable by [SongPlayer].
-  final SongSource source;
+  final AudioProvider audio;
 
   /// The media item for this song, provided to [SongsAudioHandler] when
   /// this song is played.
@@ -127,7 +127,7 @@ class Song {
       if (artist != null) "artist": artist,
       if (genre != null) "genre": genre,
       if (artUri != null) "artUri": artUri?.toString(),
-      "source": source.toJson(),
+      "source": audio.toJson(),
       "preferences": preferences,
     };
   }
@@ -137,7 +137,7 @@ class Song {
   /// The map should always contain the following keys:
   /// - `id` [String] A unique id.
   /// - `title` [String] The title of this song.
-  /// - `source` [Json] Json describing how to create a [SongSource]. Should contain the key `type` and other values depending on the type.
+  /// - `source` [Json] Json describing how to create a [AudioProvider]. Should contain the key `type` and other values depending on the type.
   static Song? fromJson(Json json) {
     if (!json.containsKey("id") ||
         !json.containsKey("title") ||
@@ -145,7 +145,7 @@ class Song {
       return null;
     }
 
-    SongSource? source = SongSource.fromJson(json['source'] as Json);
+    AudioProvider? source = AudioProvider.fromJson(json['source'] as Json);
     if (source == null) return null;
     final String? artUri = tryCast<String>(json['artUri']);
 
@@ -156,7 +156,7 @@ class Song {
       artist: tryCast<String>(json['artist']),
       genre: tryCast<String>(json['genre']),
       artUri: artUri == null ? null : Uri.tryParse(artUri),
-      source: source,
+      audio: source,
       preferences: tryCast<Json>(json['preferences']),
     );
   }
@@ -177,7 +177,7 @@ class Song {
     String? genre,
     Uri? artUri,
     Json? preferences,
-    SongSource? source,
+    AudioProvider? source,
   }) {
     return Song(
       id: id ?? this.id,
@@ -186,7 +186,7 @@ class Song {
       artist: artist ?? this.artist,
       genre: genre ?? this.genre,
       artUri: artUri ?? this.artUri,
-      source: source ?? this.source,
+      audio: source ?? this.audio,
       preferences: preferences ?? this.preferences,
     );
   }

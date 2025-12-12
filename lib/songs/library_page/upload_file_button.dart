@@ -7,9 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
+import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/permission_builder.dart';
 import 'package:musbx/widgets/speed_dial/action.dart';
@@ -71,7 +71,7 @@ class UploadSongButton extends SpeedDialChild {
     final Song song = Song(
       id: id,
       title: file.name.split(".").first,
-      source: FileSource(File(file.path!)),
+      audio: FileAudio(File(file.path!)),
     );
     await Songs.history.add(song);
     if (Songs.demixAutomatically) DemixingProcesses.start(song);

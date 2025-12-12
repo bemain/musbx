@@ -17,7 +17,7 @@ class DemixingProcesses {
     }
 
     process ??= DemixingProcess(
-      song.source,
+      song.audio,
       cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
     );
 

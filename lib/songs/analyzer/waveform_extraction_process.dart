@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:just_waveform/just_waveform.dart';
+import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/process.dart';
 
 class WaveformExtractionProcess extends Process<Waveform> {
@@ -32,7 +32,7 @@ class WaveformExtractionProcess extends Process<Waveform> {
       return await JustWaveform.parse(outFile);
     }
 
-    final SongSource source = song.source;
+    final AudioProvider source = song.audio;
     final File? inFile = source.cacheFile;
     if (inFile == null || !await inFile.exists()) {
       throw "File doesn't exist: $inFile";

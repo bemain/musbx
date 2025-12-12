@@ -7,9 +7,9 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
+import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/persistent_value.dart';
 import 'package:musbx/utils/purchases.dart';
@@ -23,7 +23,7 @@ final Song demoSong = Song(
   title: "In Treble, Spilled Some Jazz Jam",
   artist: "Erik Lagerstedt",
   artUri: Uri.parse("https://bemain.github.io/musbx/demo_album_art.png"),
-  source: YtdlpSource(Uri.parse("https://youtu.be/9ytqRUjYJ7s")),
+  audio: YtdlpAudio(Uri.parse("https://youtu.be/9ytqRUjYJ7s")),
 );
 
 /// A helper class for loading songs.
@@ -139,7 +139,7 @@ class Songs {
 
   /// Load a [song].
   ///
-  /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
+  /// Prepares for playing the audio provided by [Song.audio], and updates the media player notification.
   ///
   /// If premium hasn't been unlocked and [ignoreFreeLimit] is `false`, shows an ad before loading the song.
   static Future<SongPlayer> load(

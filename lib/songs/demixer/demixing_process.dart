@@ -9,7 +9,7 @@ import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/jobs/demix.dart';
 import 'package:musbx/songs/musbx_api/jobs/job.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/player/source.dart';
+import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/utils/process.dart';
 
 enum DemixingStep {
@@ -40,7 +40,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     this.checkStatusInterval = const Duration(milliseconds: 300),
   });
 
-  final SongSource parentSource;
+  final AudioProvider parentSource;
 
   final Directory cacheDirectory;
 
@@ -116,17 +116,17 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     stepNotifier.value = DemixingStep.uploading;
 
     // Upload song to server
-    final SongSource source = parentSource;
+    final AudioProvider source = parentSource;
     final FileHandle file;
     switch (source) {
-      case FileSource():
+      case FileAudio():
         file = await client.uploadFile(
           source.cacheFile!,
           onSendProgress: (count, total) {
             stepProgressNotifier.value = count / total;
           },
         );
-      case YtdlpSource():
+      case YtdlpAudio():
         file = await client.uploadYtdlp(source.url);
       default:
         throw UnsupportedError(

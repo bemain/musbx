@@ -5,9 +5,9 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/options_sheet.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
+import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
@@ -140,9 +140,9 @@ class LibraryPage extends StatelessWidget {
     if (song == demoSong) {
       return const Icon(Symbols.science);
     }
-    return Icon(switch (song.source) {
-      FileSource() => Symbols.file_present,
-      YtdlpSource() => Symbols.music_note,
+    return Icon(switch (song.audio) {
+      FileAudio() => Symbols.file_present,
+      YtdlpAudio() => Symbols.music_note,
       _ => Symbols.music_note,
     });
   }
