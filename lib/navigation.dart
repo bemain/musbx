@@ -169,8 +169,6 @@ class Navigation {
                           },
                           builder: (context, state) {
                             final String id = state.pathParameters['id']!;
-
-                            // Begin loading song
                             final Song song = Songs.history.entries.values
                                 .firstWhere((song) => song.id == id);
 

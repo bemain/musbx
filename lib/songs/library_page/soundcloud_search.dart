@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
@@ -220,7 +219,7 @@ class SoundCloudSearch {
 
   /// Loads a track from SoundCloud into the user's library.
   static Future<void> loadTrack(SoundCloudTrack track) async {
-    final Song song = Song<SinglePlayable>(
+    final Song song = Song(
       id: track.id.toString(),
       title: HtmlUnescape().convert(track.title),
       artist: HtmlUnescape().convert(track.username),

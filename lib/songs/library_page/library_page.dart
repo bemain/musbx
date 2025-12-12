@@ -140,17 +140,12 @@ class LibraryPage extends StatelessWidget {
     if (song == demoSong) {
       return const Icon(Symbols.science);
     }
-    return Icon(_getSourceIcon(song.source));
+    return Icon(switch (song.source) {
+      FileSource() => Symbols.file_present,
+      YtdlpSource() => Symbols.music_note,
+      _ => Symbols.music_note,
+    });
   }
-}
-
-IconData _getSourceIcon(SongSource source) {
-  return switch (source) {
-    FileSource() => Symbols.file_present,
-    YtdlpSource() => Symbols.music_note,
-    DemixedSource() => _getSourceIcon(source.parent),
-    _ => Symbols.music_note,
-  };
 }
 
 class LibrarySearchBar extends StatefulWidget {
@@ -273,7 +268,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                   Symbols.lock,
                   color: Theme.of(context).disabledColor,
                 )
-              : _buildSongIcon(song),
+              : LibraryPage.buildSongIcon(song),
         ),
       ),
       title: Text(
@@ -298,12 +293,5 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         context.go(Routes.song(song.id));
       },
     );
-  }
-
-  Widget _buildSongIcon(Song song) {
-    if (song == demoSong) {
-      return const Icon(Symbols.science);
-    }
-    return Icon(_getSourceIcon(song.source));
   }
 }

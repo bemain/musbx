@@ -13,14 +13,13 @@ class SlowdownerComponent extends SongPlayerComponent {
   SlowdownerComponent(super.player);
 
   /// The  pitch shift filter, provided by [SoLoud].
-  Filter<PitchShiftSingle> get filter =>
-      player.playable.filters(handle: player.handle).pitchShift;
+  Filter<PitchShiftSingle> get filter => player.filters.pitchShift;
 
   @override
   Future<void> initialize() async {
     // Note that this activation is redundant.
     // We have to activate the filter before the sound is played, and so we
-    // activate it already when the [Playable] is created.
+    // activate it already when the [SongPlayer] is created.
     filter.activate();
   }
 

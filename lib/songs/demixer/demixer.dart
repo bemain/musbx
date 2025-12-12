@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -32,11 +31,11 @@ class Stem {
   /// The type of stem.
   final StemType type;
 
-  /// The source of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [MultiPlayable].
-  AudioSource? get source => player.playable.sources[type];
+  /// The source of the stem with the same [type] as this.
+  AudioSource? get source => player.sources[type];
 
-  /// The handle of the stem of the [player]'s [Playable] with the same [type] as this, if it is a [MultiPlayable].
-  SoundHandle? get handle => player.playable.handles?[type];
+  /// The handle of the stem with the same [type] as this.
+  SoundHandle? get handle => player.handles[type];
 
   /// Whether this stem is enabled and should be played.
   ///

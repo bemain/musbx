@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
@@ -8,10 +9,9 @@ import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
 import 'package:musbx/songs/loop/loop.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
-import 'package:musbx/songs/player/playable.dart';
+import 'package:musbx/songs/player/filter.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/songs/slowdowner/slowdowner.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -56,10 +56,10 @@ abstract class SongPlayerComponent<T extends SongPlayer>
 }
 
 /// A
-abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
+abstract class SongPlayer extends ChangeNotifier {
   static final SoLoud soloud = SoLoud.instance;
 
-  SongPlayer._(this.song, this.playable, this.handle) {
+  SongPlayer._(this.song, this.handle) {
     _positionUpdater = Timer.periodic(
       const Duration(milliseconds: 100),
       (timer) {
@@ -77,55 +77,22 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   /// Create a [SongPlayer] by loading a [song].
   ///
   /// This delegates the loading process to the correct implementation of this
-  /// abstract class, depending on the type of the `Playable` [P].
+  /// abstract class, depending on if the [song] is demixed or not.
   ///
-  /// The workflow is as follows:
-  ///  - Load the [song.source], to obtain a [playable].
-  ///  - Play the [playable], to obtain a sound [handle].
+  /// The loading generally goes as follows:
+  ///  - Load the [song.source], to obtain an [AudioSource].
+  ///  - Play the [AudioSource], to obtain a sound [handle].
   ///  - Load the user's preferences for this [song].
-  static Future<SongPlayer<P>> load<P extends Playable>(Song<P> song) async {
-    final P playable = await song.source.load(
-      song: song,
-    );
-    // Activate filters. This needs to be done before the sound is played.
-    playable.filters().pitchShift.activate();
-    // FIXME: Equalizer temporarily disabled to reduce artifacts.
-    // ..equalizer.activate();
-
-    // Play sound
-    final SoundHandle handle = await playable.play();
-    final SongPlayer<P> player;
-    if (song.source is SongSource<SinglePlayable>) {
-      player =
-          SinglePlayer(
-                song as Song<SinglePlayable>,
-                playable as SinglePlayable,
-                handle,
-              )
-              as SongPlayer<P>;
-    } else if (song.source is SongSource<MultiPlayable>) {
-      player =
-          MultiPlayer(
-                song as Song<MultiPlayable>,
-                playable as MultiPlayable,
-                handle,
-              )
-              as SongPlayer<P>;
+  static Future<SongPlayer> load(Song song) async {
+    if (await song.isDemixed) {
+      return await MultiPlayer.load(song);
     } else {
-      throw ("No player exists for the given source ${song.source}");
+      return await SinglePlayer.load(song);
     }
-
-    // Load preferences
-    if (song.preferences != null) player.loadPreferences(song.preferences!);
-
-    return player;
   }
 
   /// The song that this player plays.
-  final Song<P> song;
-
-  /// The object created from [song.source], that in turn created the current song [handle].
-  final P playable;
+  final Song song;
 
   /// Handle for the sound that is playing.
   final SoundHandle handle;
@@ -151,9 +118,8 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
 
   /// Stop playback, and free the resources used by this player.
   ///
-  /// See also:
-  ///  - [Playable.dispose]
-  ///  - [SongPlayerComponent.dispose]
+  /// See also [SongPlayerComponent.dispose].
+  @mustCallSuper
   @override
   Future<void> dispose() async {
     isPlayingNotifier.value = false;
@@ -169,12 +135,11 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
       await component.dispose();
     }
 
-    await playable.dispose();
     super.dispose();
   }
 
   /// The duration of the audio that is playing.
-  Duration get duration => playable.duration;
+  Duration get duration;
 
   /// Timer responsible for periodically making sure [position] matches with the
   /// actual position of the audio.
@@ -201,6 +166,11 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
     positionNotifier.value = position;
     notifyListeners();
   }
+
+  /// Get the filters for this audio.
+  ///
+  /// A [handle] can optionally be passed to get the filter of a specific song.
+  Filters get filters;
 
   /// The components that extend the functionality of this player.
   @mustCallSuper
@@ -252,9 +222,41 @@ abstract class SongPlayer<P extends Playable> extends ChangeNotifier {
   }
 }
 
-class SinglePlayer extends SongPlayer<SinglePlayable> {
+class SinglePlayer extends SongPlayer {
   /// An implementation of [SongPlayer] that plays a single audio clip.
-  SinglePlayer(super.song, super.playable, super.handle) : super._();
+  SinglePlayer._(super.song, this.source, super.handle) : super._();
+
+  static Future<SinglePlayer> load(Song song) async {
+    final AudioSource source = await song.source.load(song: song);
+    // Activate filters. This needs to be done before the sound is played.
+    source.filters.pitchShiftFilter.activate();
+    // FIXME: Equalizer temporarily disabled to reduce artifacts.
+    // ..equalizerFilter.activate();
+
+    // Play sound
+    final SoundHandle handle = await SoLoud.instance.play(
+      source,
+      paused: true,
+      looping: true,
+    );
+    ;
+    final SinglePlayer player = SinglePlayer._(song, source, handle);
+
+    // Load preferences
+    if (song.preferences != null) player.loadPreferences(song.preferences!);
+
+    return player;
+  }
+
+  final AudioSource source;
+
+  @override
+  Duration get duration => SoLoud.instance.getLength(source);
+
+  @override
+  late final Filters filters = Filters((apply) {
+    apply(source.filters, handle: handle);
+  });
 
   /// Whether to demix this song if it isn't already.
   ///
@@ -293,22 +295,78 @@ class SinglePlayer extends SongPlayer<SinglePlayable> {
   }
 }
 
-class MultiPlayer extends SongPlayer<MultiPlayable> {
+class MultiPlayer extends SongPlayer {
   /// An implementation of [SongPlayer] that plays multiple audio clips simultaneously.
   ///
   /// The [demixer] component allows the volume of each audio clip to be controlled separately.
-  MultiPlayer(super.song, super.playable, super.handle) : super._();
+  MultiPlayer._(super.song, this.sources, this.handles, super.handle)
+    : super._();
+
+  static Future<MultiPlayer> load(Song song) async {
+    assert(await song.isDemixed);
+
+    final Map<StemType, File> files = (await song.cachedStems)!;
+
+    final sources = {
+      for (final e in files.entries)
+        e.key: await SoLoud.instance.loadFile(e.value.path),
+    };
+
+    // Activate filters. This needs to be done before the sound is played.
+    sources.forEach((stem, source) {
+      source.filters.equalizerFilter.activate();
+      // FIXME: Equalizer temporarily disabled to reduce artifacts.
+      // ..equalizerFilter.activate();
+    });
+
+    final handles = {
+      for (final e in sources.entries)
+        e.key: await SoLoud.instance.play(
+          e.value,
+          paused: true,
+          looping: true,
+        ),
+    };
+
+    final SoundHandle groupHandle = SoLoud.instance.createVoiceGroup();
+    if (groupHandle.isError) {
+      throw Exception("[DEMIXER] Failed to create voice group");
+    }
+
+    SoLoud.instance.addVoicesToGroup(
+      groupHandle,
+      handles.values.toList(),
+    );
+
+    final MultiPlayer player = MultiPlayer._(
+      song,
+      sources,
+      handles,
+      groupHandle,
+    );
+
+    // Load preferences
+    if (song.preferences != null) player.loadPreferences(song.preferences!);
+
+    return player;
+  }
+
+  /// The sources of the individual sounds that are played simultaneously.
+  final Map<StemType, AudioSource> sources;
 
   /// The handles of the individual sounds that are played simultaneously.
-  ///
-  /// Forwarded from the [playable].
-  Iterable<SoundHandle> get handles => playable.handles!.values;
+  final Map<StemType, SoundHandle> handles;
 
   @override
-  Future<void> dispose() async {
-    await super.dispose();
-    SoLoud.instance.destroyVoiceGroup(handle);
-  }
+  // TODO: implement duration
+  Duration get duration => SoLoud.instance.getLength(sources.values.first);
+
+  @override
+  late final Filters filters = Filters((apply) {
+    sources.forEach((stem, source) {
+      apply(source.filters, handle: handles[stem]);
+    });
+  });
 
   @override
   List<SongPlayerComponent> get components =>
@@ -320,9 +378,9 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
   @override
   void seek(Duration position) {
     position = loop.clamp(position);
-    for (SoundHandle handle in handles) {
+    handles.forEach((stem, handle) {
       SongPlayer.soloud.seek(handle, position);
-    }
+    });
     positionNotifier.value = position;
     notifyListeners();
   }
@@ -342,5 +400,16 @@ class MultiPlayer extends SongPlayer<MultiPlayable> {
       ...super.toPreferences(),
       "demixer": demixer.savePreferencesToJson(),
     };
+  }
+
+  @override
+  Future<void> dispose() async {
+    await super.dispose();
+
+    await Future.wait([
+      for (var handle in handles.values) SoLoud.instance.stop(handle),
+      for (var source in sources.values) SoLoud.instance.disposeSource(source),
+    ]);
+    SoLoud.instance.destroyVoiceGroup(handle);
   }
 }

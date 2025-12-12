@@ -7,7 +7,6 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/source.dart';
@@ -19,7 +18,7 @@ import 'package:musbx/widgets/ads.dart';
 
 /// The demo song loaded the first time the user launches the app.
 /// Access to this song is unrestricted.
-final Song<SinglePlayable> demoSong = Song(
+final Song demoSong = Song(
   id: "demo",
   title: "In Treble, Spilled Some Jazz Jam",
   artist: "Erik Lagerstedt",
@@ -143,8 +142,8 @@ class Songs {
   /// Prepares for playing the audio provided by [Song.source], and updates the media player notification.
   ///
   /// If premium hasn't been unlocked and [ignoreFreeLimit] is `false`, shows an ad before loading the song.
-  static Future<SongPlayer<P>> load<P extends Playable>(
-    Song<P> song, {
+  static Future<SongPlayer> load(
+    Song song, {
     bool ignoreFreeLimit = false,
   }) async {
     if (!Purchases.hasPremium && !ignoreFreeLimit) {
@@ -167,7 +166,7 @@ class Songs {
     await Songs.dispose();
 
     // Load audio
-    final SongPlayer<P> player = await SongPlayer.load<P>(song);
+    final SongPlayer player = await SongPlayer.load(song);
 
     // Add to song history.
     await history.add(song);

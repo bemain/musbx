@@ -39,14 +39,13 @@ class EqualizerComponent extends SongPlayerComponent {
   EqualizerComponent(super.player);
 
   /// The equalizer filter, provided by [SoLoud].
-  Filter<EqualizerSingle> get filter =>
-      player.playable.filters(handle: player.handle).equalizer;
+  Filter<EqualizerSingle> get filter => player.filters.equalizer;
 
   @override
   Future<void> initialize() async {
     // Note that this activation is redundant.
     // We have to activate the filter before the sound is played, and so we
-    // activate it already when the [Playable] is created.
+    // activate it already when the [SongPlayer] is created.
     filter.activate();
   }
 

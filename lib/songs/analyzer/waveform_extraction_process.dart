@@ -17,16 +17,6 @@ class WaveformExtractionProcess extends Process<Waveform> {
   static File getWaveformFile(Song song) =>
       File("${song.cacheDirectory.path}/waveform.wave");
 
-  /// Get the file where the audio for [source] is cached.
-  File? _cacheFile(SongSource source) {
-    return switch (source) {
-      FileSource() => source.cacheFile,
-      YtdlpSource() => source.cacheFile,
-      DemixedSource() => _cacheFile(source.parent),
-      _ => null,
-    };
-  }
-
   @override
   Future<Waveform> execute() async {
     assert(
@@ -43,7 +33,7 @@ class WaveformExtractionProcess extends Process<Waveform> {
     }
 
     final SongSource source = song.source;
-    final File? inFile = _cacheFile(source);
+    final File? inFile = source.cacheFile;
     if (inFile == null || !await inFile.exists()) {
       throw "File doesn't exist: $inFile";
     }

@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:musbx/songs/demixer/demixer.dart';
+import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
 import 'package:musbx/utils/utils.dart';
@@ -14,7 +15,7 @@ final Uri defaultAlbumArt = Uri.parse(
   "https://bemain.github.io/musbx/default_album_art.png",
 );
 
-class Song<P extends Playable> {
+class Song {
   /// Representation of a song, to be played by a [SongPlayer].
   Song({
     required this.id,
@@ -49,8 +50,8 @@ class Song<P extends Playable> {
 
   /// Where this song's audio was loaded from, e.g. a YouTube video or a local file.
   ///
-  /// Can be used to create a [Playable] playable by [SongPlayer].
-  final SongSource<P> source;
+  /// Can be used to create an [AudioSource] playable by [SongPlayer].
+  final SongSource source;
 
   /// The media item for this song, provided to [SongsAudioHandler] when
   /// this song is played.
@@ -69,9 +70,22 @@ class Song<P extends Playable> {
   /// TODO: Make a dedicated class for this?
   Json? preferences;
 
+  /// Whether this song should be demixed or not.
   bool get shouldDemix =>
-      source is! DemixedSource &&
       (preferences?['demix'] as bool? ?? Songs.demixAutomatically);
+  set shouldDemix(bool value) {
+    preferences ??= {};
+    preferences?['demix'] = value;
+  }
+
+  /// Whether this song has been demixed already.
+  Future<bool> get isDemixed async => await cachedStems != null;
+
+  /// The demixed audio stems for this song, if any.
+  Future<Map<StemType, File>?> get cachedStems =>
+      DemixingProcess.getStemsInCache(
+        directory: audioDirectory,
+      );
 
   /// The directory where files relating to this song are cached.
   Directory get cacheDirectory =>
@@ -91,15 +105,6 @@ class Song<P extends Playable> {
 
     if (await cacheDirectory.exists()) {
       await cacheDirectory.delete(recursive: true);
-    }
-
-    if (source is DemixedSource && Songs.history.entries.containsValue(this)) {
-      // Override the history entry for the song with a non-demixed variant
-      await Songs.history.add(
-        withSource<SinglePlayable>(
-          (source as DemixedSource).rootParent,
-        ),
-      );
     }
   }
 
@@ -144,24 +149,16 @@ class Song<P extends Playable> {
     if (source == null) return null;
     final String? artUri = tryCast<String>(json['artUri']);
 
-    Song<T> song<T extends Playable>() {
-      return Song<T>(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        album: tryCast<String>(json['album']),
-        artist: tryCast<String>(json['artist']),
-        genre: tryCast<String>(json['genre']),
-        artUri: artUri == null ? null : Uri.tryParse(artUri),
-        source: source as SongSource<T>,
-        preferences: tryCast<Json>(json['preferences']),
-      );
-    }
-
-    if (source is SongSource<MultiPlayable>) {
-      return song<MultiPlayable>();
-    } else {
-      return song<SinglePlayable>();
-    }
+    return Song(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      album: tryCast<String>(json['album']),
+      artist: tryCast<String>(json['artist']),
+      genre: tryCast<String>(json['genre']),
+      artUri: artUri == null ? null : Uri.tryParse(artUri),
+      source: source,
+      preferences: tryCast<Json>(json['preferences']),
+    );
   }
 
   /// Create a copy of this [Song] with the specified fields replaced with new values.
@@ -172,7 +169,7 @@ class Song<P extends Playable> {
   /// ```dart
   /// final Song newSong = oldSong.copyWith(title: "New title");
   /// ```
-  Song<P> copyWith({
+  Song copyWith({
     String? id,
     String? title,
     String? album,
@@ -180,6 +177,7 @@ class Song<P extends Playable> {
     String? genre,
     Uri? artUri,
     Json? preferences,
+    SongSource? source,
   }) {
     return Song(
       id: id ?? this.id,
@@ -188,22 +186,8 @@ class Song<P extends Playable> {
       artist: artist ?? this.artist,
       genre: genre ?? this.genre,
       artUri: artUri ?? this.artUri,
-      source: source,
+      source: source ?? this.source,
       preferences: preferences ?? this.preferences,
-    );
-  }
-
-  /// Create a copy of this [Song] with the source replaced with a new value.
-  Song<T> withSource<T extends Playable>(SongSource<T> source) {
-    return Song(
-      id: id,
-      title: title,
-      album: album,
-      artist: artist,
-      genre: genre,
-      artUri: artUri,
-      source: source,
-      preferences: preferences,
     );
   }
 

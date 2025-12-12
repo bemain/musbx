@@ -5,7 +5,6 @@ import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/songs/player/source.dart';
 
 class DemixingProgressIndicator extends StatefulWidget {
   const DemixingProgressIndicator({super.key, required this.song});
@@ -21,42 +20,49 @@ class _DemixingProgressIndicatorState
     extends State<DemixingProgressIndicator> {
   @override
   Widget build(BuildContext context) {
-    if (widget.song.source is DemixedSource) return const SizedBox();
-
-    DemixingProcess? process = DemixingProcesses.get(widget.song);
-
-    if (process == null) return _buildNotDemixed(context);
-
-    return ListenableBuilder(
-      listenable: process,
-      builder: (context, child) {
-        if (process.isCancelled || process.hasError) {
-          return _buildNotDemixed(context);
+    return FutureBuilder(
+      future: widget.song.isDemixed,
+      builder: (context, snapshot) {
+        if (snapshot.data != false) {
+          // Already demixed or loading
+          return const SizedBox();
         }
 
-        return Tooltip(
-          message:
-              "This song ${process.isComplete ? "has been" : "is being"} split into instruments.",
-          child: ValueListenableBuilder(
-            valueListenable: process.progressNotifier,
-            builder: (context, progress, child) {
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: progress,
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      DemixingProcesses.cancel(widget.song);
-                      setState(() {});
-                    },
-                    icon: const Icon(Symbols.piano),
-                  ),
-                ],
-              );
-            },
-          ),
+        DemixingProcess? process = DemixingProcesses.get(widget.song);
+        if (process == null) return _buildNotDemixed(context);
+
+        return ListenableBuilder(
+          listenable: process,
+          builder: (context, child) {
+            if (process.isCancelled || process.hasError) {
+              return _buildNotDemixed(context);
+            }
+
+            return Tooltip(
+              message:
+                  "This song ${process.isActive ? "is being" : "has been"} split into instruments.",
+              child: ValueListenableBuilder(
+                valueListenable: process.progressNotifier,
+                builder: (context, progress, child) {
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        value: progress,
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          DemixingProcesses.cancel(widget.song);
+                          setState(() {});
+                        },
+                        icon: const Icon(Symbols.piano),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
         );
       },
     );
@@ -195,6 +201,7 @@ class SongOptionsSheet extends StatelessWidget {
                           FilledButton(
                             onPressed: () {
                               song.clearCache();
+                              song.shouldDemix = false;
                               Navigator.of(context).pop();
                             },
                             child: const Text("Clear"),

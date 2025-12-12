@@ -188,9 +188,9 @@ class SettingsPage extends StatelessWidget {
               },
             ),
           ListTile(
-            leading: Icon(Symbols.captive_portal),
+            leading: Icon(Symbols.language),
             title: Text("Website"),
-            trailing: Icon(Symbols.language),
+            trailing: Icon(Symbols.launch),
             onTap: () {
               launchUrl(Uri.parse("https://bemain.github.io"));
             },

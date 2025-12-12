@@ -75,8 +75,6 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
         file = await client.uploadFile(source.cacheFile!);
       case YtdlpSource():
         file = await client.uploadYtdlp(source.url);
-      case DemixedSource():
-        return await analyzeSource(source.parent, client);
 
       default:
         throw UnsupportedError(

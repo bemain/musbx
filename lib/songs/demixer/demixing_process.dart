@@ -71,12 +71,13 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   }
 
   /// Get stems for the song, if all stems (see [StemType]) were found with the correct [fileExtension].
-  Future<Map<StemType, File>?> getStemsInCache({
+  static Future<Map<StemType, File>?> getStemsInCache({
+    required Directory directory,
     String fileExtension = "mp3",
   }) async {
     List<File> stemFiles = StemType.values
         .map(
-          (stem) => File("${cacheDirectory.path}/${stem.name}.$fileExtension"),
+          (stem) => File("${directory.path}/${stem.name}.$fileExtension"),
         )
         .toList();
     if ((await Future.wait(
@@ -85,7 +86,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
       // All stems were found in the cache.
       return {
         for (final stem in StemType.values)
-          stem: File("${cacheDirectory.path}/${stem.name}.$fileExtension"),
+          stem: File("${directory.path}/${stem.name}.$fileExtension"),
       };
     }
 
@@ -97,7 +98,9 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
-    Map<StemType, File>? cachedStemFiles = await getStemsInCache();
+    Map<StemType, File>? cachedStemFiles = await getStemsInCache(
+      directory: cacheDirectory,
+    );
     if (cachedStemFiles != null) {
       debugPrint("[DEMIXER] Using cached stems for song.");
 

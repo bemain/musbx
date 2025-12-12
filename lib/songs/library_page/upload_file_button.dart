@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/player/source.dart';
@@ -69,7 +68,7 @@ class UploadSongButton extends SpeedDialChild {
 
     final String id = file.path!.hashCode.toString();
 
-    final Song song = Song<SinglePlayable>(
+    final Song song = Song(
       id: id,
       title: file.name.split(".").first,
       source: FileSource(File(file.path!)),

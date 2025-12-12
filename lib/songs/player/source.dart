@@ -2,26 +2,25 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:musbx/songs/demixer/demixer.dart';
-import 'package:musbx/songs/demixer/demixing_process.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
 
-/// An object that contains information about how to [load] a [Playable].
+/// An object that contains information about how to [load] a [AudioSource].
 ///
-/// This is the first step in playing a song. The [Playable] obtained by calling
+/// This is the first step in playing a song. The [AudioSource] obtained by calling
 /// the [load] method can in turn be used to start playing a sound.
-abstract class SongSource<P extends Playable> {
-  /// Load the [Playable] that this source points to.
-  FutureOr<P> load({required Song song});
+abstract class SongSource {
+  /// Load the [AudioSource] that this source provides.
+  FutureOr<AudioSource> load({required Song song});
 
   /// Free the resources used by this source.
   FutureOr<void> dispose() {}
+
+  /// The file where audio data is cached.
+  File? cacheFile;
 
   /// Convert this to a json map.
   ///
@@ -52,14 +51,12 @@ abstract class SongSource<P extends Playable> {
         return YtdlpSource.fromJson(json);
       case "file":
         return FileSource.fromJson(json);
-      case "demixed":
-        return DemixedSource.fromJson(json);
     }
     return null;
   }
 }
 
-class YtdlpSource extends SongSource<SinglePlayable> {
+class YtdlpSource extends SongSource {
   YtdlpSource(this.url);
 
   final Uri url;
@@ -67,11 +64,8 @@ class YtdlpSource extends SongSource<SinglePlayable> {
   /// The [SoLoud] [AudioSource] that is generated from this source.
   AudioSource? source;
 
-  /// The file where audio data is cached.
-  File? cacheFile;
-
   @override
-  Future<SinglePlayable> load({required Song song}) async {
+  Future<AudioSource> load({required Song song}) async {
     File cacheFile = File("${song.audioDirectory.path}/audio.mp3");
 
     if (!await cacheFile.exists()) {
@@ -86,7 +80,7 @@ class YtdlpSource extends SongSource<SinglePlayable> {
 
     source ??= await SoLoud.instance.loadFile(cacheFile.path);
 
-    return SinglePlayable(source!);
+    return source!;
   }
 
   @override
@@ -113,7 +107,7 @@ class YtdlpSource extends SongSource<SinglePlayable> {
   };
 }
 
-class FileSource extends SongSource<SinglePlayable> {
+class FileSource extends SongSource {
   /// A source that reads audio from a file.
   FileSource(this.file);
 
@@ -123,11 +117,8 @@ class FileSource extends SongSource<SinglePlayable> {
   /// The [SoLoud] [AudioSource] that is generated from this source.
   AudioSource? source;
 
-  /// The file where audio data is cached.
-  File? cacheFile;
-
   @override
-  Future<SinglePlayable> load({required Song song}) async {
+  Future<AudioSource> load({required Song song}) async {
     File cacheFile = File("${song.cacheDirectory.path}/audio.mp3");
 
     if (!await cacheFile.exists()) {
@@ -142,7 +133,7 @@ class FileSource extends SongSource<SinglePlayable> {
 
     source ??= await SoLoud.instance.loadFile(cacheFile.path);
 
-    return SinglePlayable(source!);
+    return source!;
   }
 
   @override
@@ -166,64 +157,5 @@ class FileSource extends SongSource<SinglePlayable> {
   Json toJson() => {
     "type": "file",
     "path": file.path,
-  };
-}
-
-class DemixedSource extends SongSource<MultiPlayable> {
-  /// A source that demixes a [Song] and loads the stems as a `MultiPlayable`.
-  DemixedSource(this.parent);
-
-  final SongSource parent;
-
-  /// The first source above this that is a [SinglePlayable].
-  SongSource<SinglePlayable> get rootParent => parent is DemixedSource
-      ? (parent as DemixedSource).rootParent
-      : parent as SongSource<SinglePlayable>;
-
-  Map<StemType, AudioSource>? sources;
-
-  @override
-  Future<MultiPlayable> load({required Song song}) async {
-    final DemixingProcess process = DemixingProcesses.start(song);
-
-    final Map<StemType, File> files = await process.future;
-
-    await parent.load(song: song);
-
-    sources ??= {
-      for (final e in files.entries)
-        e.key: await SoLoud.instance.loadFile(e.value.path),
-    };
-    return MultiPlayable(sources!);
-  }
-
-  @override
-  Future<void> dispose() async {
-    if (sources == null) return;
-
-    await Future.wait([
-      for (final source in sources!.values)
-        SoLoud.instance.disposeSource(source),
-    ]);
-    sources = null;
-
-    await parent.dispose();
-  }
-
-  /// Try to create a [DemixedSource] from a [json] object.
-  static DemixedSource? fromJson(Json json) {
-    if (!json.containsKey("parent")) return null;
-    SongSource? parent = SongSource.fromJson(json['parent'] as Json);
-    if (parent == null) return null;
-
-    return DemixedSource(parent);
-  }
-
-  @override
-  Json toJson() => {
-    "type": "demixed",
-    "parent": {
-      ...parent.toJson(),
-    },
   };
 }

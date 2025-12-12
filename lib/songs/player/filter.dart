@@ -5,18 +5,17 @@ import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:flutter_soloud/src/filters/equalizer_filter.dart';
 import 'package:flutter_soloud/src/filters/filters.dart';
 import 'package:flutter_soloud/src/filters/pitchshift_filter.dart';
-import 'package:musbx/songs/player/playable.dart';
 
 class Filters {
   /// Wrapper around [SoLoud]'s filters, providing a consistent interface no
-  /// matter which type of [Playable] we are currently working with.
+  /// matter which type of [SongPlayer] we are currently working with.
   Filters(this.modify);
 
   /// The function used to manipulate the underlying [SoLoud] filter(s).
   /// [apply] should be called on each underlying [SoLoud] filter.
   ///
   /// The [apply] method can potentially be called multiple times on multiple
-  /// different [AudioSource]s, allowing implementations like the [MultiPlayable].
+  /// different [AudioSource]s, allowing implementations like the [MultiPlayer].
   final void Function(
     void Function(FiltersSingle filters, {SoundHandle? handle}) apply,
   )
@@ -38,13 +37,13 @@ class Filters {
 
 class Filter<T extends FilterBase> {
   /// Wrapper around a specific [SoLoud] filter, providing a consistent interface no
-  /// matter which type of [Playable] we are currently working with.
+  /// matter which type of [SongPlayer] we are currently working with.
   Filter(this.modify);
 
   /// The function used to manipulate the underlying [SoLoud] filter(s).
   ///
-  /// The inner method can potentially be called multiple times on multiple
-  /// different [AudioSource]s, allowing implementations like the [MultiPlayable].
+  /// The [apply] method can potentially be called multiple times on multiple
+  /// different [AudioSource]s, allowing implementations like the [MultiPlayer].
   final void Function(void Function(T filter, {SoundHandle? handle}) apply)
   modify;
 

@@ -1,10 +1,7 @@
 import 'dart:io';
 
 import 'package:musbx/songs/demixer/demixing_process.dart';
-import 'package:musbx/songs/player/playable.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/songs/player/source.dart';
 
 class DemixingProcesses {
   DemixingProcesses._();
@@ -19,20 +16,10 @@ class DemixingProcesses {
       process = null;
     }
 
-    process ??=
-        DemixingProcess(
-          song.source,
-          cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
-        )..addListener(() {
-          if (song.source is! DemixedSource && process?.hasResult == true) {
-            /// Override the history entry for the song with a demixed variant.
-            Songs.history.add(
-              song.withSource<MultiPlayable>(
-                DemixedSource(song.source),
-              ),
-            );
-          }
-        });
+    process ??= DemixingProcess(
+      song.source,
+      cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
+    );
 
     processes[song] = process;
     return process;
