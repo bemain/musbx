@@ -5,11 +5,18 @@ import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/widgets/loading_checkmark.dart';
 
 class DemixingProgressIndicator extends StatefulWidget {
-  const DemixingProgressIndicator({super.key, required this.song});
+  const DemixingProgressIndicator({
+    super.key,
+    required this.song,
+    this.onDemixingComplete,
+  });
 
   final Song song;
+
+  final void Function()? onDemixingComplete;
 
   @override
   State<DemixingProgressIndicator> createState() =>
@@ -38,6 +45,10 @@ class _DemixingProgressIndicatorState
               return _buildNotDemixed(context);
             }
 
+            if (process.isComplete) {
+              widget.onDemixingComplete?.call();
+            }
+
             return Tooltip(
               message:
                   "This song ${process.isActive ? "is being" : "has been"} split into instruments.",
@@ -47,16 +58,18 @@ class _DemixingProgressIndicatorState
                   return Stack(
                     alignment: Alignment.center,
                     children: [
-                      CircularProgressIndicator(
-                        value: progress,
+                      CircularLoadingCheck(
+                        isComplete: process.isComplete,
+                        progress: progress,
                       ),
-                      IconButton(
-                        onPressed: () {
-                          DemixingProcesses.cancel(widget.song);
-                          setState(() {});
-                        },
-                        icon: const Icon(Symbols.piano),
-                      ),
+                      if (!process.isComplete)
+                        IconButton(
+                          onPressed: () {
+                            DemixingProcesses.cancel(widget.song);
+                            setState(() {});
+                          },
+                          icon: const Icon(Symbols.piano),
+                        ),
                     ],
                   );
                 },
@@ -83,11 +96,16 @@ class _DemixingProgressIndicatorState
   }
 }
 
-class SongOptionsSheet extends StatelessWidget {
+class SongOptionsSheet extends StatefulWidget {
   const SongOptionsSheet({super.key, required this.song});
 
   final Song song;
 
+  @override
+  State<SongOptionsSheet> createState() => _SongOptionsSheetState();
+}
+
+class _SongOptionsSheetState extends State<SongOptionsSheet> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -99,7 +117,7 @@ class SongOptionsSheet extends StatelessWidget {
         // For example, if the song is renamed while the sheet is open, it will
         // automatically be rebuilt with the correct information.
         final Song? song = Songs.history.entries.values
-            .where((song) => song.id == this.song.id)
+            .where((song) => song.id == widget.song.id)
             .firstOrNull;
 
         if (song == null) {
@@ -127,7 +145,15 @@ class SongOptionsSheet extends StatelessWidget {
                 subtitle: Text(
                   song.artist ?? "Unknown artist",
                 ),
-                trailing: DemixingProgressIndicator(song: song),
+                trailing: DemixingProgressIndicator(
+                  song: song,
+                  onDemixingComplete: () {
+                    Future<void>.delayed(Duration(seconds: 3)).then<void>((_) {
+                      // Trigger rebuild
+                      if (context.mounted) setState(() {});
+                    });
+                  },
+                ),
               ),
               const Divider(),
               ListTile(
@@ -203,6 +229,7 @@ class SongOptionsSheet extends StatelessWidget {
                               song.clearCache();
                               song.shouldDemix = false;
                               Navigator.of(context).pop();
+                              setState(() {});
                             },
                             child: const Text("Clear"),
                           ),

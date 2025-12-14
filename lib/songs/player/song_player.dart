@@ -84,11 +84,9 @@ abstract class SongPlayer extends ChangeNotifier {
   ///  - Play the [AudioSource], to obtain a sound [handle].
   ///  - Load the user's preferences for this [song].
   static Future<SongPlayer> load(Song song) async {
-    if (await song.isDemixed) {
-      return await MultiPlayer.load(song);
-    } else {
-      return await SinglePlayer.load(song);
-    }
+    return (await song.isDemixed)
+        ? MultiPlayer.load(song)
+        : SinglePlayer.load(song);
   }
 
   /// The song that this player plays.
@@ -304,6 +302,9 @@ class MultiPlayer extends SongPlayer {
 
   static Future<MultiPlayer> load(Song song) async {
     assert(await song.isDemixed);
+
+    // We have to resolve the underlying audio provider for the waveform extraction to work.
+    final AudioSource _ = await song.audio.resolve(song: song);
 
     final Map<StemType, File> files = (await song.cachedStems)!;
 

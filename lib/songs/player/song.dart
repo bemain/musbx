@@ -98,8 +98,6 @@ class Song {
   bool get hasCache => cacheDirectory.existsSync();
 
   /// Remove all the cache files relating to this song.
-  ///
-  /// If [complete] is `false` and this is
   Future<void> clearCache() async {
     DemixingProcesses.cancel(this);
 
@@ -177,7 +175,7 @@ class Song {
     String? genre,
     Uri? artUri,
     Json? preferences,
-    AudioProvider? source,
+    AudioProvider? audio,
   }) {
     return Song(
       id: id ?? this.id,
@@ -186,7 +184,7 @@ class Song {
       artist: artist ?? this.artist,
       genre: genre ?? this.genre,
       artUri: artUri ?? this.artUri,
-      audio: source ?? this.audio,
+      audio: audio ?? this.audio,
       preferences: preferences ?? this.preferences,
     );
   }
