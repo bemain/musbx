@@ -113,7 +113,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
     if (Songs.player == null) {
       return AppBar(
         actions: [
-          for (var i = 0; i < 2; i++)
+          for (var i = 0; i < 3; i++)
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: IconPlaceholder(),

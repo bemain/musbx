@@ -38,10 +38,18 @@ class EqualizerBandsNotifier extends ValueNotifier<List<EqualizerBand>> {
 }
 
 class EqualizerComponent extends SongPlayerComponent {
+  /// The minimum number of frequency bands.
+  static const int minNumBands = 4;
+
   /// The default number of frequency bands.
   static const int defaultNumBands = 5;
 
-  EqualizerComponent(super.player);
+  /// The maximum number of frequency bands.
+  static const int maxNumBands = 15;
+
+  EqualizerComponent(super.player) {
+    numBands = defaultNumBands;
+  }
 
   /// The equalizer filter, provided by [SoLoud].
   Filter<ParametricEqSingle> get filter => player.filters.equalizer;
@@ -63,6 +71,7 @@ class EqualizerComponent extends SongPlayerComponent {
   /// The number of frequency bands used.
   int get numBands => bands.length;
   set numBands(int value) {
+    value = value.clamp(minNumBands, maxNumBands);
     filter.modify(
       (filter, {handle}) {
         filter.numBands(soundHandle: handle).value = numBands.toDouble();
