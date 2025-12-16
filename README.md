@@ -14,11 +14,9 @@ Musician's Toolbox offers all the essential tools in a single app, built to prov
 - Tuner
 - Music player featuring:
     - Automatic chord identification
-    - Slowdowner for changing the pitch and speed of audio
-    - Demixer for muting or isolating specific instruments from a song
+    - Changing the pitch and speed
+    - Muting or isolating specific instruments
     - Equalizer
-
-## Planned features
 - Drone
 
 ## Git naming
