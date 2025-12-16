@@ -227,9 +227,12 @@ class SinglePlayer extends SongPlayer {
   static Future<SinglePlayer> load(Song song) async {
     final AudioSource source = await song.audio.resolve(song: song);
     // Activate filters. This needs to be done before the sound is played.
-    source.filters.pitchShiftFilter.activate();
-    // FIXME: Equalizer temporarily disabled to reduce artifacts.
-    // ..equalizerFilter.activate();
+    for (var filter in [
+      source.filters.pitchShiftFilter,
+      source.filters.parametricEq,
+    ]) {
+      if (!filter.isActive) filter.activate();
+    }
 
     // Play sound
     final SoundHandle handle = await SoLoud.instance.play(
@@ -315,9 +318,12 @@ class MultiPlayer extends SongPlayer {
 
     // Activate filters. This needs to be done before the sound is played.
     sources.forEach((stem, source) {
-      source.filters.equalizerFilter.activate();
-      // FIXME: Equalizer temporarily disabled to reduce artifacts.
-      // ..equalizerFilter.activate();
+      for (var filter in [
+        source.filters.pitchShiftFilter,
+        source.filters.parametricEq,
+      ]) {
+        if (!filter.isActive) filter.activate();
+      }
     });
 
     final handles = {

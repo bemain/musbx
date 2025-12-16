@@ -1,7 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 // ignore: implementation_imports
-import 'package:flutter_soloud/src/filters/equalizer_filter.dart';
+import 'package:flutter_soloud/src/filters/parametric_eq.dart';
 import 'package:musbx/songs/player/filter.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/utils/utils.dart';
@@ -36,10 +38,13 @@ class EqualizerBandsNotifier extends ValueNotifier<List<EqualizerBand>> {
 }
 
 class EqualizerComponent extends SongPlayerComponent {
+  /// The default number of frequency bands.
+  static const int defaultNumBands = 5;
+
   EqualizerComponent(super.player);
 
   /// The equalizer filter, provided by [SoLoud].
-  Filter<EqualizerSingle> get filter => player.filters.equalizer;
+  Filter<ParametricEqSingle> get filter => player.filters.equalizer;
 
   @override
   Future<void> initialize() async {
@@ -55,34 +60,39 @@ class EqualizerComponent extends SongPlayerComponent {
     super.dispose();
   }
 
+  /// The number of frequency bands used.
+  int get numBands => bands.length;
+  set numBands(int value) {
+    filter.modify(
+      (filter, {handle}) {
+        filter.numBands(soundHandle: handle).value = numBands.toDouble();
+      },
+    );
+
+    var newBands = bands.sublist(0, min(value, bands.length));
+    while (newBands.length < value) {
+      final int index = newBands.length;
+      newBands.add(
+        EqualizerBand()..gainNotifier.addListener(() => _updateBand(index)),
+      );
+    }
+    bandsNotifier.value = List.unmodifiable(newBands);
+  }
+
   /// The frequency bands of the equalizer.
   List<EqualizerBand> get bands => bandsNotifier.value;
-  late final EqualizerBandsNotifier bandsNotifier = EqualizerBandsNotifier(
-    List.unmodifiable(
-      List.generate(
-        8,
-        (index) =>
-            EqualizerBand()
-              ..gainNotifier.addListener(() => _updateBand(index)),
-      ),
-    ),
+  late final ValueNotifier<List<EqualizerBand>> bandsNotifier = ValueNotifier(
+    List.unmodifiable([]),
   )..addListener(notifyListeners);
 
   void _updateBand(int index) {
     filter.modify(
       (filter, {handle}) {
-        [
-          filter.band1,
-          filter.band2,
-          filter.band3,
-          filter.band4,
-          filter.band5,
-          filter.band6,
-          filter.band7,
-          filter.band8,
-        ][index](soundHandle: handle).value = bands[index].gain;
+        filter.bandGain(index, soundHandle: handle).value = bands[index].gain;
       },
     );
+
+    notifyListeners();
   }
 
   /// Reset the gain on all [bands].
@@ -95,14 +105,16 @@ class EqualizerComponent extends SongPlayerComponent {
   /// Load settings from a [json] map.
   ///
   /// [json] can contain the following key-value pairs:
+  ///  - `bands` [int] The number of frequency bands.
   ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
   Future<void> loadPreferencesFromJson(Json json) async {
     super.loadPreferencesFromJson(json);
 
-    final Json? gains = tryCast<Json>(
-      json['gain'],
-    );
+    final int? numBands = tryCast<int>(json['bands']);
+    this.numBands = numBands ?? defaultNumBands;
+
+    final Json? gains = tryCast<Json>(json['gain']);
     for (var i = 0; i < bands.length; i++) {
       final double gain =
           tryCast<double>(gains?['$i']) ?? EqualizerBand.defaultGain;
@@ -120,6 +132,7 @@ class EqualizerComponent extends SongPlayerComponent {
   Json savePreferencesToJson() {
     return {
       ...super.savePreferencesToJson(),
+      "bands": numBands,
       "gain": bands.asMap().map(
         (index, band) => MapEntry("$index", band.gain),
       ),

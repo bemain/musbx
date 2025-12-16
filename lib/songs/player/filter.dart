@@ -2,8 +2,8 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:flutter_soloud/src/filters/equalizer_filter.dart';
 import 'package:flutter_soloud/src/filters/filters.dart';
+import 'package:flutter_soloud/src/filters/parametric_eq.dart';
 import 'package:flutter_soloud/src/filters/pitchshift_filter.dart';
 
 class Filters {
@@ -27,10 +27,10 @@ class Filters {
           modifySingle(filters.pitchShiftFilter, handle: handle),
     ),
   );
-  late final Filter<EqualizerSingle> equalizer = Filter(
+  late final Filter<ParametricEqSingle> equalizer = Filter(
     (modifySingle) => modify(
       (filters, {handle}) =>
-          modifySingle(filters.equalizerFilter, handle: handle),
+          modifySingle(filters.parametricEq, handle: handle),
     ),
   );
 }
