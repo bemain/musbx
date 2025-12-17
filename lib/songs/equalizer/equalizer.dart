@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 // ignore: implementation_imports
 import 'package:flutter_soloud/src/filters/parametric_eq.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/player/filter.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/utils/utils.dart';
-import 'package:musbx/widgets/widgets.dart';
 
 class EqualizerBand {
   /// The minimum value for the [gain].

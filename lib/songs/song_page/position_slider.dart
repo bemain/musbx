@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
-import 'package:musbx/utils/loading.dart';
 
 class PositionSlider extends StatelessWidget {
   /// Slider for seeking a position in the current song.

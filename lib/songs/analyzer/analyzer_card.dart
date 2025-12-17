@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/analyzer/chords_display.dart';
 import 'package:musbx/songs/analyzer/waveform_widget.dart';
 import 'package:musbx/songs/loop/loop_slider.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/utils/loading.dart';
 import 'package:musbx/widgets/flat_card.dart';
 
 class AnalyzerCard extends StatelessWidget {

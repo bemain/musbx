@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/analyzer/waveform_painter.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
-import 'package:musbx/utils/loading.dart';
 
 const int kSamplesPerPixel = 540;
 const int kSampleRate = 48000;

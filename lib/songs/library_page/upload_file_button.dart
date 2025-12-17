@@ -4,6 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
@@ -12,8 +13,6 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/permission_builder.dart';
-import 'package:musbx/widgets/speed_dial/action.dart';
-import 'package:musbx/widgets/speed_dial/speed_dial.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 const List<String> allowedExtensions = [

@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Process;
 
 import 'package:just_waveform/just_waveform.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/utils/process.dart';
 
 class WaveformExtractionProcess extends Process<Waveform> {
   /// Perform waveform extraction on a [song].

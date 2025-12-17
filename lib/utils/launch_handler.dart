@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/utils/persistent_value.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class LaunchHandler {

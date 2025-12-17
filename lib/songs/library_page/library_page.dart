@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/options_sheet.dart';
@@ -11,7 +12,6 @@ import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:musbx/widgets/speed_dial/speed_dial.dart';
 
 class LibraryPage extends StatelessWidget {
   const LibraryPage({super.key});

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/analyzer/analyzer_card.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
@@ -11,12 +12,9 @@ import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
 import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
-import 'package:musbx/utils/loading.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
-import 'package:musbx/widgets/segmented_tab_control/segment_tab.dart';
-import 'package:musbx/widgets/segmented_tab_control/segmented_tab_control.dart';
 
 class SongPage extends StatelessWidget {
   const SongPage({super.key});

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
@@ -14,7 +15,6 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/slowdowner/slowdowner.dart';
 import 'package:musbx/utils/utils.dart';
-import 'package:musbx/widgets/widgets.dart';
 
 abstract class SongPlayerComponent<T extends SongPlayer>
     extends ChangeNotifier {

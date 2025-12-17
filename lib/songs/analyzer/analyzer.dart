@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/model/chord.dart';
 import 'package:musbx/songs/analyzer/chord_identification_process.dart';
 import 'package:musbx/songs/analyzer/waveform_extraction_process.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/utils/utils.dart';
-import 'package:musbx/widgets/widgets.dart';
 
 class AnalyzerComponent extends SongPlayerComponent {
   static const Duration minDurationShown = Duration(seconds: 7);

@@ -1,8 +1,8 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/foundation.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/utils/persistent_value.dart';
 
 @pragma("vm:entry-point")
 class Notifications {

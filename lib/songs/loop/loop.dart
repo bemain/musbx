@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/utils/utils.dart';
-import 'package:musbx/widgets/widgets.dart';
 
 class LoopComponent extends SongPlayerComponent {
   LoopComponent(super.player);

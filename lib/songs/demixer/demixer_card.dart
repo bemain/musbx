@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
@@ -9,12 +10,10 @@ import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/utils/loading.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
-import 'package:musbx/widgets/loading_checkmark.dart';
 
 class DemixingProcessIndicator extends StatefulWidget {
   const DemixingProcessIndicator({super.key, required this.player});

@@ -1,14 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Process;
 
 import 'package:flutter/material.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/model/chord.dart';
 import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/jobs/analyze.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/utils/process.dart';
 import 'package:musbx/utils/utils.dart';
 
 class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {

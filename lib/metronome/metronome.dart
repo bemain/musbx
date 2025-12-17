@@ -5,8 +5,8 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/utils/notifications.dart';
-import 'package:musbx/utils/persistent_value.dart';
 
 /// A sound used by the metronome.
 class Tick {

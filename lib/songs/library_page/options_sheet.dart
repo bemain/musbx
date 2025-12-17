@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/widgets/loading_checkmark.dart';
 
 class DemixingProgressIndicator extends StatefulWidget {
   const DemixingProgressIndicator({

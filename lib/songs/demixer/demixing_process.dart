@@ -1,16 +1,16 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Process;
 import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/jobs/demix.dart';
 import 'package:musbx/songs/musbx_api/jobs/job.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
-import 'package:musbx/utils/process.dart';
 
 enum DemixingStep {
   /// The cache is being checked to see if stem files are available there.
