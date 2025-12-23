@@ -68,4 +68,4 @@ jobs:
         with:
           name: release-ipa
           # Try running the build locally with the build command to be sure of this path
-          path: build/ios/ipa/App.ipa
+          path: build/ios/ipa/musbx.ipa
