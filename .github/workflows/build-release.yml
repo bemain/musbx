@@ -60,7 +60,7 @@ jobs:
           build-cmd: flutter build ipa --release --export-options-plist=ios/GithubActionsExportOptions.plist
           certificate-base64: ${{ secrets.IOS_SIGNING_CERTIFICATE_BASE64 }}
           certificate-password: ${{ secrets.IOS_SIGNING_CERTIFICATE_PASSWORD }}
-          provisioning-profile-base64: ${{ secrets.IOS_DISTRIBUTION_PROVISIONING_PROFILE_BASE64 }}
+          provisioning-profile-base64: ${{ secrets.IOS_MOBILE_PROVISIONING_PROFILE_BASE64 }}
           keychain-password: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
 
       - name: Upload IPA
