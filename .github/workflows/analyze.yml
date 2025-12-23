@@ -14,40 +14,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Fetch material_plus dependency
-      run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
-    
-    - name: Write secret to file
-      run: |
-        cat << EOF > ./lib/keys.dart
-        ${{ secrets.KEYS_FILE }}
-        EOF
-
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-
-    - name: Verify Flutter installation
-      run: flutter doctor
-
-    - name: Check pub dependencies
-      run: flutter pub get
-
-    - name: Run Dart Analyze
-      uses: invertase/github-action-dart-analyzer@v3
-      with:
-        fatal-infos: true
-        fatal-warnings: true
-        annotate: true
-        working-directory: lib/
-
-    - name: Check Code formatting
-      run: dart format -o none --set-exit-if-changed .
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-    - name: Block merge if checks fail
-      if: ${{ failure() }}
-      run: echo "Checks failed, cannot merge." && exit 1
+      - name: Fetch material_plus dependency
+        run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
+      
+      - name: Write secret to file
+        run: |
+          cat << EOF > ./lib/keys.dart
+          ${{ secrets.KEYS_FILE }}
+          EOF
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Verify Flutter installation
+        run: flutter doctor
+
+      - name: Check pub dependencies
+        run: flutter pub get
+
+      - name: Run Dart Analyze
+        uses: invertase/github-action-dart-analyzer@v3
+        with:
+          fatal-infos: true
+          fatal-warnings: true
+          annotate: true
+          working-directory: lib/
+
+      - name: Check Code formatting
+        run: dart format -o none --set-exit-if-changed .
+        
+      - name: Block merge if checks fail
+        if: ${{ failure() }}
+        run: echo "Checks failed, cannot merge." && exit 1
