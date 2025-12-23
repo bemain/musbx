@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       
       - name: Fetch material_plus dependency
         run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
@@ -30,7 +30,7 @@ jobs:
           working-directory: ./
           
       - name: Upload Appbundle
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v6
         with:
           name: release-appbundle
           # Try running the build locally with the build command to be sure of this path
@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       
       - name: Fetch material_plus dependency
         run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
@@ -64,7 +64,7 @@ jobs:
           keychain-password: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
 
       - name: Upload IPA
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v6
         with:
           name: release-ipa
           # Try running the build locally with the build command to be sure of this path
