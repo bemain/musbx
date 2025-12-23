@@ -244,7 +244,7 @@ class SinglePlayer extends SongPlayer {
     final SinglePlayer player = SinglePlayer._(song, source, handle);
 
     // Load preferences
-    if (song.preferences != null) player.loadPreferences(song.preferences!);
+    player.loadPreferences(song.preferences);
 
     return player;
   }
@@ -353,7 +353,7 @@ class MultiPlayer extends SongPlayer {
     );
 
     // Load preferences
-    if (song.preferences != null) player.loadPreferences(song.preferences!);
+    player.loadPreferences(song.preferences);
 
     return player;
   }

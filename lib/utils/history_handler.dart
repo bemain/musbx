@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/utils/utils.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 /// Helper class for persisting history entries to disk.
 class HistoryHandler<T> extends ChangeNotifier {
@@ -31,8 +31,9 @@ class HistoryHandler<T> extends ChangeNotifier {
   final void Function(MapEntry<DateTime, T> entry)? onEntryRemoved;
 
   /// The file where song history is saved.
-  Future<File> get _historyFile async =>
-      File("${(await getTemporaryDirectory()).path}/$historyFileName.json");
+  File get _historyFile => File(
+    "${Directories.applicationDocumentsDir("").path}/$historyFileName.json",
+  );
 
   /// The history entries, with the previously loaded songs and the time they were loaded.
   final Map<DateTime, T> entries = {};
@@ -50,9 +51,16 @@ class HistoryHandler<T> extends ChangeNotifier {
   ///
   /// Notifies listeners when done.
   Future<void> fetch() async {
-    File file = await _historyFile;
-    if (!await file.exists()) return;
-    Json json = jsonDecode(await file.readAsString()) as Json;
+    if (!await _historyFile.exists()) return;
+    Json json;
+    try {
+      json = jsonDecode(await _historyFile.readAsString()) as Json;
+    } catch (e) {
+      debugPrint(
+        "[HISTORY] Unable to read history file ${_historyFile.path} as json: $e",
+      );
+      return;
+    }
 
     entries.clear();
 
@@ -62,7 +70,7 @@ class HistoryHandler<T> extends ChangeNotifier {
       try {
         value = fromJson(entry.value);
       } catch (e) {
-        debugPrint("$e");
+        debugPrint("[HISTORY] Unable to parse history entry: $e");
       }
       if (date != null && value != null) entries[date] = value;
     }
@@ -107,7 +115,7 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// Save history entries to disk.
   Future<void> save() async {
-    await (await _historyFile).writeAsString(
+    await _historyFile.writeAsString(
       jsonEncode(
         entries.map(
           (date, song) => MapEntry(

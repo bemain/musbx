@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/player/song.dart';
 
@@ -18,7 +16,7 @@ class DemixingProcesses {
 
     process ??= DemixingProcess(
       song.audio,
-      cacheDirectory: Directory("${song.cacheDirectory.path}/source/"),
+      cacheDirectory: song.audioDirectory,
     );
 
     processes[song] = process;

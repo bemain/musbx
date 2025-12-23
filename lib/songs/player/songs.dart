@@ -84,7 +84,7 @@ class Songs {
 
   /// The history of previously loaded songs.
   static final HistoryHandler<Song> history = HistoryHandler<Song>(
-    historyFileName: "song_history",
+    historyFileName: "songs/history",
     fromJson: (json) {
       if (json is! Json) {
         throw "[SONG HISTORY] Incorrectly formatted entry in history file: ($json)";

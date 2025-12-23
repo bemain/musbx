@@ -228,6 +228,7 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                             onPressed: () {
                               song.clearCache();
                               song.shouldDemix = false;
+                              Songs.history.save();
                               Navigator.of(context).pop();
                               setState(() {});
                             },

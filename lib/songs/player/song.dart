@@ -26,8 +26,8 @@ class Song {
     this.genre,
     this.artUri,
     required this.audio,
-    this.preferences,
-  });
+    Json? preferences,
+  }) : preferences = preferences ?? {};
 
   /// A unique id.
   final String id;
@@ -69,15 +69,12 @@ class Song {
 
   /// The user's preferences for playing this song.
   /// TODO: Make a dedicated class for this?
-  Json? preferences;
+  Json preferences;
 
   /// Whether this song should be demixed or not.
   bool get shouldDemix =>
-      (preferences?['demix'] as bool? ?? Songs.demixAutomatically);
-  set shouldDemix(bool value) {
-    preferences ??= {};
-    preferences?['demix'] = value;
-  }
+      (preferences['demix'] as bool? ?? Songs.demixAutomatically);
+  set shouldDemix(bool value) => preferences['demix'] = value;
 
   /// Whether this song has been demixed already.
   Future<bool> get isDemixed async => await cachedStems != null;
@@ -88,15 +85,14 @@ class Song {
         directory: audioDirectory,
       );
 
-  /// The directory where files relating to this song are cached.
-  Directory get cacheDirectory =>
-      Directories.applicationDocumentsDir("songs/$id");
+  /// The directory where files relating to this song are stored.
+  Directory get cacheDirectory => Directories.temporaryDir("songs/$id");
 
   /// The directory where audio files for this song are cached.
   Directory get audioDirectory => Directory("${cacheDirectory.path}/source/");
 
   /// Whether the cache for this song is not empty.
-  bool get hasCache => cacheDirectory.existsSync();
+  bool get hasCache => audioDirectory.existsSync();
 
   /// Remove all the cache files relating to this song.
   Future<void> clearCache() async {
