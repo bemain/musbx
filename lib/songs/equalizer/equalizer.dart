@@ -117,8 +117,8 @@ class EqualizerComponent extends SongPlayerComponent {
   ///  - `bands` [int] The number of frequency bands.
   ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
-  Future<void> loadPreferencesFromJson(Json json) async {
-    super.loadPreferencesFromJson(json);
+  Future<void> loadPreferences(Json json) async {
+    super.loadPreferences(json);
 
     final int? numBands = tryCast<int>(json['bands']);
     this.numBands = numBands ?? defaultNumBands;
@@ -138,9 +138,9 @@ class EqualizerComponent extends SongPlayerComponent {
   /// Saves the following key-value pairs:
   ///  - `gain` [Map<String, double>] The gain for the frequency bands, with the key being the index of the band (usually 0-4) and the value being the gain.
   @override
-  Json savePreferencesToJson() {
+  Json savePreferences() {
     return {
-      ...super.savePreferencesToJson(),
+      ...super.savePreferences(),
       "bands": numBands,
       "gain": bands.asMap().map(
         (index, band) => MapEntry("$index", band.gain),

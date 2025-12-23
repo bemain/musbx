@@ -61,8 +61,8 @@ class LoopComponent extends SongPlayerComponent {
   ///
   /// If start and end don't make a valid LoopSection (e.g. if start > end) no values are set.
   @override
-  void loadPreferencesFromJson(Json json) {
-    super.loadPreferencesFromJson(json);
+  void loadPreferences(Json json) {
+    super.loadPreferences(json);
 
     Duration start = Duration(milliseconds: tryCast<int>(json['start']) ?? 0);
     Duration end = Duration(
@@ -97,9 +97,9 @@ class LoopComponent extends SongPlayerComponent {
   ///  - `start` [int] The start position of the section being looped, in milliseconds.
   ///  - `end` [int] The end position of the section being looped, in milliseconds.
   @override
-  Json savePreferencesToJson() {
+  Json savePreferences() {
     return {
-      ...super.savePreferencesToJson(),
+      ...super.savePreferences(),
       "start": start.inMilliseconds,
       "end": end.inMilliseconds,
     };

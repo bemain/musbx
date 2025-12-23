@@ -63,8 +63,8 @@ class SlowdownerComponent extends SongPlayerComponent {
   ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
-  void loadPreferencesFromJson(Json json) {
-    super.loadPreferencesFromJson(json);
+  void loadPreferences(Json json) {
+    super.loadPreferences(json);
 
     pitch = tryCast<double>(json['pitch'])?.clamp(-12, 12) ?? 0.0;
     speed = tryCast<double>(json['speed'])?.clamp(0.5, 2) ?? 1.0;
@@ -78,9 +78,9 @@ class SlowdownerComponent extends SongPlayerComponent {
   ///  - `pitch` [double] How much the pitch will be shifted, in semitones.
   ///  - `speed` [double] The playback speed of the audio, as a fraction.
   @override
-  Json savePreferencesToJson() {
+  Json savePreferences() {
     return {
-      ...super.savePreferencesToJson(),
+      ...super.savePreferences(),
       "pitch": pitch,
       "speed": speed,
     };

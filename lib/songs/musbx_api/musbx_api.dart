@@ -28,7 +28,6 @@ class MusbxApi {
   static final List<String> _hostUrls = [
     "http://brunnby.homeip.net:4242",
     "http://musbx.agardh.se:4242",
-    "http://192.168.1.152:4242",
   ];
 
   /// Find a host that is available and version is compatible with the app's [version].

@@ -114,8 +114,8 @@ class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
   ///  - `enabled` [bool] Whether this stem is enabled and should be played.
   ///  - `volume` [double] The volume this stem is played back at. Must be between 0 and 1.
   @override
-  void loadPreferencesFromJson(Json json) {
-    super.loadPreferencesFromJson(json);
+  void loadPreferences(Json json) {
+    super.loadPreferences(json);
 
     for (Stem stem in stems) {
       Json? stemData = tryCast<Json>(
@@ -146,9 +146,9 @@ class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
   ///  - `enabled` [bool] Whether this stem is enabled and should be played.
   ///  - `volume` [double] The volume this stem is played back at. Must be between 0 and 1.
   @override
-  Json savePreferencesToJson() {
+  Json savePreferences() {
     return {
-      ...super.savePreferencesToJson(),
+      ...super.savePreferences(),
       for (Stem stem in stems)
         stem.type.name: {
           "enabled": stem.enabled,

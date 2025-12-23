@@ -81,8 +81,8 @@ class AnalyzerComponent extends SongPlayerComponent {
   /// [json] can contain the following key-value pairs:
   ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
-  void loadPreferencesFromJson(Json json) {
-    super.loadPreferencesFromJson(json);
+  void loadPreferences(Json json) {
+    super.loadPreferences(json);
 
     int? durationShown = tryCast<int>(json['durationShown']);
     this.durationShown = Duration(
@@ -97,9 +97,9 @@ class AnalyzerComponent extends SongPlayerComponent {
   /// Saves the following key-value pairs:
   ///  - `durationShown` [int] The duration window around the current position shown by widgets, in milliseconds.
   @override
-  Json savePreferencesToJson() {
+  Json savePreferences() {
     return {
-      ...super.savePreferencesToJson(),
+      ...super.savePreferences(),
       "durationShown": durationShown.inMilliseconds,
     };
   }

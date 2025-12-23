@@ -46,16 +46,16 @@ abstract class SongPlayerComponent<T extends SongPlayer>
   ///
   /// If any values were changed, this should call [notifyListeners].
   @mustCallSuper
-  void loadPreferencesFromJson(Json json) {}
+  void loadPreferences(Json json) {}
 
   /// Save settings for a song to a json map.
   @mustCallSuper
-  Json savePreferencesToJson() {
+  Json savePreferences() {
     return {};
   }
 }
 
-/// A
+/// An audio player for playing a specific [song].
 abstract class SongPlayer extends ChangeNotifier {
   static final SoLoud soloud = SoLoud.instance;
 
@@ -193,16 +193,16 @@ abstract class SongPlayer extends ChangeNotifier {
     int? position = tryCast<int>(json['position']);
     seek(Duration(milliseconds: position ?? 0));
 
-    slowdowner.loadPreferencesFromJson(
+    slowdowner.loadPreferences(
       tryCast<Json>(json['slowdowner']) ?? {},
     );
-    loop.loadPreferencesFromJson(
+    loop.loadPreferences(
       tryCast<Json>(json['looper']) ?? {},
     );
-    equalizer.loadPreferencesFromJson(
+    equalizer.loadPreferences(
       tryCast<Json>(json['equalizer']) ?? {},
     );
-    analyzer.loadPreferencesFromJson(
+    analyzer.loadPreferences(
       tryCast<Json>(json['analyzer']) ?? {},
     );
   }
@@ -212,10 +212,10 @@ abstract class SongPlayer extends ChangeNotifier {
   Json toPreferences() {
     return {
       "position": position.inMilliseconds,
-      "slowdowner": slowdowner.savePreferencesToJson(),
-      "looper": loop.savePreferencesToJson(),
-      "equalizer": equalizer.savePreferencesToJson(),
-      "analyzer": analyzer.savePreferencesToJson(),
+      "slowdowner": slowdowner.savePreferences(),
+      "looper": loop.savePreferences(),
+      "equalizer": equalizer.savePreferences(),
+      "analyzer": analyzer.savePreferences(),
     };
   }
 }
@@ -226,6 +226,7 @@ class SinglePlayer extends SongPlayer {
 
   static Future<SinglePlayer> load(Song song) async {
     final AudioSource source = await song.audio.resolve(song: song);
+
     // Activate filters. This needs to be done before the sound is played.
     for (var filter in [
       source.filters.pitchShiftFilter,
@@ -395,7 +396,7 @@ class MultiPlayer extends SongPlayer {
   void loadPreferences(Json json) {
     super.loadPreferences(json);
 
-    demixer.loadPreferencesFromJson(
+    demixer.loadPreferences(
       tryCast<Json>(json['demixer']) ?? {},
     );
   }
@@ -404,7 +405,7 @@ class MultiPlayer extends SongPlayer {
   Json toPreferences() {
     return {
       ...super.toPreferences(),
-      "demixer": demixer.savePreferencesToJson(),
+      "demixer": demixer.savePreferences(),
     };
   }
 

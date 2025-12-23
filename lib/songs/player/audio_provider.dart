@@ -78,6 +78,7 @@ class YtdlpAudio extends AudioProvider {
         url,
         fileType: "mp3",
       );
+
       cacheFile = await client.download(handle, cacheFile);
     }
     this.cacheFile = cacheFile;
