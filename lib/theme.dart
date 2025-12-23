@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 
 class AppTheme {
@@ -55,8 +56,8 @@ class AppTheme {
         switchTheme: lightTheme.switchTheme.copyWith(
           thumbIcon: WidgetStateProperty<Icon>.fromMap(
             const <WidgetStatesConstraint, Icon>{
-              WidgetState.selected: Icon(Icons.check),
-              WidgetState.any: Icon(Icons.close),
+              WidgetState.selected: Icon(Symbols.check),
+              WidgetState.any: Icon(Symbols.close),
             },
           ),
         ),
@@ -74,8 +75,8 @@ class AppTheme {
         switchTheme: darkTheme.switchTheme.copyWith(
           thumbIcon: WidgetStateProperty<Icon>.fromMap(
             const <WidgetStatesConstraint, Icon>{
-              WidgetState.selected: Icon(Icons.check),
-              WidgetState.any: Icon(Icons.close),
+              WidgetState.selected: Icon(Symbols.check),
+              WidgetState.any: Icon(Symbols.close),
             },
           ),
         ),
