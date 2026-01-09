@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -120,6 +121,32 @@ class ExpandedIcon extends StatelessWidget {
         size: constraint.biggest.shortestSide,
         color: color,
         fill: fill,
+      ),
+    );
+  }
+}
+
+class SliderPlaceholder extends StatelessWidget {
+  const SliderPlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ShimmerLoading(
+      child: SizedBox(
+        height: 48,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Center(
+            child: Card(
+              elevation: 0,
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              child: const SizedBox(
+                height: 4,
+                width: double.infinity,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
