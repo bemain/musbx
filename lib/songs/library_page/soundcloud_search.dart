@@ -157,10 +157,6 @@ class SoundCloudTrack {
 }
 
 /// Provides functionality for searching and selecting SoundCloud tracks.
-///
-/// **Important**: This implementation uses SoundCloud's streaming API, which
-/// may have terms of service restrictions. Ensure compliance with SoundCloud's
-/// developer terms before using in production.
 class SoundCloudSearch {
   /// Base URL for SoundCloud's API.
   static const String _baseUrl = "https://api-v2.soundcloud.com";
@@ -170,29 +166,19 @@ class SoundCloudSearch {
 
   /// Generates a SoundCloud client ID.
   static Future<String> generateClientId() async {
-    var response = await http.get(Uri.parse("https://soundcloud.com"));
-    if (response.statusCode != 200) {
-      throw Exception("Unable to reach SoundCloud: ${response.statusCode}");
-    }
-    final RegExpMatch? match = RegExp(
-      r'src\=\"(https:\/\/a-v2\.sndcdn\.com/assets/0-[^\.]+\.js)\"',
-    ).firstMatch(response.body);
-    if (match == null || match.groupCount < 1) {
-      throw Exception("No asset scripts found.");
-    }
-    final Uri url = Uri.parse(match.group(1)!);
+    final response = await http.get(Uri.parse('https://soundcloud.com'));
+    final jsUrlRegex = RegExp(r'https://a-v2\.sndcdn\.com/assets/[^"]+\.js');
+    final jsUrls = jsUrlRegex.allMatches(response.body).map((m) => m.group(0));
 
-    response = await http.get(url);
-    if (response.statusCode != 200) {
-      throw Exception("Unable to reach $url: ${response.statusCode}");
+    // Typically the client_id is in the last JS file loaded
+    for (var url in jsUrls.toList().reversed) {
+      final jsContent = await http.read(Uri.parse(url!));
+      final idRegex = RegExp(r'client_id:"([a-zA-Z0-9]{32})"');
+      if (idRegex.hasMatch(jsContent)) {
+        return idRegex.firstMatch(jsContent)!.group(1)!;
+      }
     }
-    final RegExpMatch? clientIdMatch = RegExp(
-      r'client_id:\"([^\"]+)\"',
-    ).firstMatch(response.body);
-    if (clientIdMatch == null || clientIdMatch.groupCount < 1) {
-      throw Exception("Could not find client_id in script '{url}'");
-    }
-    return clientIdMatch.group(1)!;
+    throw Exception("Could not automatically get client_id");
   }
 
   /// Opens a SoundCloud search interface and allows the user to pick a song.
