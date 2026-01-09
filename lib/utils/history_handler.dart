@@ -102,6 +102,9 @@ class HistoryHandler<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Remove [value] from the history.
+  ///
+  /// Notifies listeners when done.
   Future<void> remove(T value) async {
     if (!entries.values.contains(value)) return;
 
@@ -113,8 +116,9 @@ class HistoryHandler<T> extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Save history entries to disk.
+  /// Save the current history entries to disk.
   Future<void> save() async {
+    await _historyFile.create(recursive: true);
     await _historyFile.writeAsString(
       jsonEncode(
         entries.map(
