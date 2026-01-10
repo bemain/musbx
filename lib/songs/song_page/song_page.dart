@@ -128,12 +128,12 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
       valueListenable: player.slowdowner.pitchNotifier,
       builder: (context, pitch, child) => ValueListenableBuilder(
         valueListenable: player.slowdowner.speedNotifier,
-        builder: (context, speed, child) => ValueListenableBuilder(
-          valueListenable: player.equalizer.bandsNotifier,
-          builder: (context, bands, child) {
+        builder: (context, speed, child) => ListenableBuilder(
+          listenable: player.equalizer,
+          builder: (context, child) {
             final bool isPitchReset = pitch.toStringAsFixed(1) == "0.0";
             final bool isSpeedReset = speed.toStringAsFixed(2) == "1.00";
-            final bool isEqualizerReset = bands.every(
+            final bool isEqualizerReset = player.equalizer.bands.every(
               (band) =>
                   band.gain.toStringAsFixed(2) ==
                   EqualizerBand.defaultGain.toStringAsFixed(2),

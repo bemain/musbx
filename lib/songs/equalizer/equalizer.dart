@@ -28,15 +28,6 @@ class EqualizerBand {
   late final ValueNotifier<double> gainNotifier = ValueNotifier(1.0);
 }
 
-class EqualizerBandsNotifier extends ValueNotifier<List<EqualizerBand>> {
-  /// Notifies listeners whenever [gain] of any of the bands provided in [value] changes.
-  EqualizerBandsNotifier(super.value) {
-    for (EqualizerBand band in value) {
-      band.gainNotifier.addListener(notifyListeners);
-    }
-  }
-}
-
 class EqualizerComponent extends SongPlayerComponent {
   /// The minimum number of frequency bands.
   static const int minNumBands = 4;
