@@ -29,6 +29,7 @@ class EqualizerSliders extends StatelessWidget {
         ),
         child: SliderTheme(
           data: Theme.of(context).sliderTheme.copyWith(
+            year2023: true,
             trackShape: InactiveSliderTrackShape(),
           ),
           child: Row(

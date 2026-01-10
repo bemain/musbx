@@ -28,14 +28,12 @@ class WaveformWidget extends StatelessWidget {
             builder: (context, position, child) {
               final Color color = Theme.of(context).colorScheme.primary;
               final PositionSliderStyle dummyStyle = PositionSliderStyle(
-                activeLoopedTrackColor: color,
-                inactiveLoopedTrackColor: color,
-                disabledActiveLoopedTrackColor: color,
-                disabledInactiveLoopedTrackColor: color,
                 activeTrackColor: color,
                 inactiveTrackColor: color,
                 disabledActiveTrackColor: color,
                 disabledInactiveTrackColor: color,
+                nonLoopedTrackColor: color,
+                disabledNonLoopedTrackColor: color,
               );
 
               return ShimmerLoading(

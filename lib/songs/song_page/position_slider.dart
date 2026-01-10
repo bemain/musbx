@@ -21,7 +21,7 @@ class PositionSlider extends StatelessWidget {
     ).extension<PositionSliderStyle>()!;
 
     final SongPlayer? player = Songs.player;
-    if (player == null) return SliderPlaceholder();
+    if (player == null) return SliderPlaceholder(height: 8);
 
     return ValueListenableBuilder(
       valueListenable: player.positionNotifier,
@@ -36,6 +36,7 @@ class PositionSlider extends StatelessWidget {
             ),
             SliderTheme(
               data: Theme.of(context).sliderTheme.copyWith(
+                trackHeight: 8,
                 trackShape: enabled
                     ? _buildSliderTrackShape(context, enabled)
                     : null,
@@ -122,12 +123,8 @@ class PositionSlider extends StatelessWidget {
           player.loop.start.inMilliseconds / player.duration.inMilliseconds,
       highlightEnd:
           player.loop.end.inMilliseconds / player.duration.inMilliseconds,
-      activeHighlightColor: loopEnabled
-          ? style.activeLoopedTrackColor
-          : style.disabledActiveLoopedTrackColor,
-      inactiveHighlightColor: loopEnabled
-          ? style.inactiveLoopedTrackColor
-          : style.disabledInactiveLoopedTrackColor,
+      nonHighlightColor: style.nonLoopedTrackColor,
+      disabledNonHighlightColor: style.disabledNonLoopedTrackColor,
     );
   }
 }
