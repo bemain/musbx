@@ -24,7 +24,7 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
   }) {
     return PositionSliderStyle(
       activeTrackColor: theme.colorScheme.primary,
-      inactiveTrackColor: theme.colorScheme.primary.withAlpha(0x1f),
+      inactiveTrackColor: theme.colorScheme.secondaryContainer,
       disabledActiveTrackColor: theme.colorScheme.onSurface.withAlpha(
         0x61,
       ),

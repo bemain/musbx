@@ -85,7 +85,7 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
       end: sliderTheme.inactiveTrackColor,
     );
 
-    final ColorTween nonHighlightTrackColorTween = ColorTween(
+    final ColorTween outsideTrackColorTween = ColorTween(
       begin: nonHighlightColor,
       end: disabledNonHighlightColor,
     );
@@ -97,8 +97,8 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
     final Paint highlightLeftPaint = activePaint;
     final Paint highlightRightPaint = inactivePaint;
 
-    final Paint nonHighlightPaint = Paint()
-      ..color = nonHighlightTrackColorTween.evaluate(enableAnimation)!;
+    final Paint outsidePaint = Paint()
+      ..color = outsideTrackColorTween.evaluate(enableAnimation)!;
 
     final Radius trackCornerRadius = Radius.circular(
       trackRect.shortestSide / 2,
@@ -108,12 +108,29 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
     // Gap, starting from the middle of the thumb.
     final double trackGap = sliderTheme.trackGap!;
 
-    /// Draw highlight
-    final RRect highlightTrackRRect = RRect.fromLTRBAndCorners(
-      highlightLeft,
-      trackRect.top,
-      highlightRight,
-      trackRect.bottom,
+    final double drawThreshold = sliderTheme.trackHeight! / 2;
+    final double insideDrawThreshold = trackGap / 2;
+    final bool drawLeftHighlight =
+        thumbCenter.dx >
+        max(
+          trackRect.left + drawThreshold,
+          highlightLeft + insideDrawThreshold,
+        );
+    final bool drawRightHighlight =
+        thumbCenter.dx <
+        min(
+          trackRect.right - drawThreshold,
+          highlightRight - insideDrawThreshold,
+        );
+    final bool drawLeftOutside =
+        highlightLeft >
+        (trackRect.left + max(insideDrawThreshold, drawThreshold));
+    final bool drawRightOutside =
+        highlightRight <
+        (trackRect.right - max(insideDrawThreshold, drawThreshold));
+
+    final RRect trackRRect = RRect.fromRectAndCorners(
+      trackRect,
       topLeft: trackCornerRadius,
       bottomLeft: trackCornerRadius,
       topRight: trackCornerRadius,
@@ -125,8 +142,10 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
       trackRect.top,
       max(highlightLeft, thumbCenter.dx - trackGap),
       trackRect.bottom,
-      topLeft: trackCornerRadius,
-      bottomLeft: trackCornerRadius,
+      topLeft: drawLeftOutside ? trackInsideCornerRadius : trackCornerRadius,
+      bottomLeft: drawLeftOutside
+          ? trackInsideCornerRadius
+          : trackCornerRadius,
       topRight: trackInsideCornerRadius,
       bottomRight: trackInsideCornerRadius,
     );
@@ -136,6 +155,30 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
       trackRect.top,
       highlightRight,
       trackRect.bottom,
+      topRight: drawRightOutside ? trackInsideCornerRadius : trackCornerRadius,
+      bottomRight: drawRightOutside
+          ? trackInsideCornerRadius
+          : trackCornerRadius,
+      topLeft: trackInsideCornerRadius,
+      bottomLeft: trackInsideCornerRadius,
+    );
+
+    final RRect outsideLeftRRect = RRect.fromLTRBAndCorners(
+      trackRect.left,
+      trackRect.top,
+      max(trackRect.left, highlightLeft - highlightGap),
+      trackRect.bottom,
+      topLeft: trackCornerRadius,
+      bottomLeft: trackCornerRadius,
+      topRight: trackInsideCornerRadius,
+      bottomRight: trackInsideCornerRadius,
+    );
+
+    final RRect outsideRightRRect = RRect.fromLTRBAndCorners(
+      min(trackRect.right, highlightRight + highlightGap),
+      trackRect.top,
+      trackRect.right,
+      trackRect.bottom,
       topRight: trackCornerRadius,
       bottomRight: trackCornerRadius,
       topLeft: trackInsideCornerRadius,
@@ -144,18 +187,19 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
 
     context.canvas
       ..save()
-      ..clipRRect(highlightTrackRRect);
-    final bool drawLeftTrack =
-        thumbCenter.dx >
-        (highlightLeftRRect.left + (sliderTheme.trackHeight! / 2));
-    final bool drawRightTrack =
-        thumbCenter.dx <
-        (highlightRightRRect.right - (sliderTheme.trackHeight! / 2));
-    if (drawLeftTrack) {
+      ..clipRRect(trackRRect);
+
+    if (drawLeftHighlight) {
       context.canvas.drawRRect(highlightLeftRRect, highlightLeftPaint);
     }
-    if (drawRightTrack) {
+    if (drawRightHighlight) {
       context.canvas.drawRRect(highlightRightRRect, highlightRightPaint);
+    }
+    if (drawLeftOutside) {
+      context.canvas.drawRRect(outsideLeftRRect, outsidePaint);
+    }
+    if (drawRightOutside) {
+      context.canvas.drawRRect(outsideRightRRect, outsidePaint);
     }
     context.canvas.restore();
 
@@ -177,32 +221,6 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
         highlightLeftPaint,
       );
     }
-
-    /// Draw non-highlight
-    final RRect paddedHighlightTrackRRect = RRect.fromLTRBAndCorners(
-      max(highlightLeft - highlightGap, trackRect.left),
-      trackRect.top,
-      min(trackRect.right, highlightRight + highlightGap),
-      trackRect.bottom,
-      topLeft: trackCornerRadius,
-      bottomLeft: trackCornerRadius,
-      topRight: trackCornerRadius,
-      bottomRight: trackCornerRadius,
-    );
-
-    final RRect nonHighlightTrackRRect = RRect.fromRectAndCorners(
-      trackRect,
-      topLeft: trackCornerRadius,
-      bottomLeft: trackCornerRadius,
-      topRight: trackCornerRadius,
-      bottomRight: trackCornerRadius,
-    );
-
-    context.canvas.drawDRRect(
-      nonHighlightTrackRRect,
-      paddedHighlightTrackRRect,
-      nonHighlightPaint,
-    );
   }
 
   @override
