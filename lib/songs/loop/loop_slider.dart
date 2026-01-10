@@ -7,16 +7,16 @@ class LoopSlider extends StatelessWidget {
   /// Range slider for selecting the section to loop.
   const LoopSlider({super.key});
 
+  /// Whether the player was playing before the user began changing the position.
+  static bool wasPlayingBeforeChange = false;
+
+  /// The position that the player was at before the user began changing the loop section.
+  static Duration positionBeforeChange = Duration.zero;
+
   @override
   Widget build(BuildContext context) {
     final SongPlayer? player = Songs.player;
-    if (player == null) return SizedBox(height: 48);
-
-    /// Whether the player was playing before the user began changing the position.
-    bool wasPlayingBeforeChange = false;
-
-    /// The position that the player was at before the user began changing the loop section.
-    Duration positionBeforeChange = Duration.zero;
+    if (player == null) return SizedBox(height: 24);
 
     return ValueListenableBuilder(
       valueListenable: player.loop.sectionNotifier,
@@ -41,6 +41,7 @@ class LoopSlider extends StatelessWidget {
             valueIndicatorStrokeColor: Colors.transparent,
           ),
           child: RangeSlider(
+            padding: EdgeInsets.symmetric(horizontal: 20),
             labels: RangeLabels(
               player.loop.start.toString().substring(2, 10),
               player.loop.end.toString().substring(2, 10),

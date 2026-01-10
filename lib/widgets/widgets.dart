@@ -127,9 +127,9 @@ class ExpandedIcon extends StatelessWidget {
 }
 
 class SliderPlaceholder extends StatelessWidget {
-  const SliderPlaceholder({super.key, this.height = 4});
+  const SliderPlaceholder({super.key, this.trackHeight = 4});
 
-  final double height;
+  final double trackHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -137,13 +137,13 @@ class SliderPlaceholder extends StatelessWidget {
       child: SizedBox(
         height: 48,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: (48 - height) / 2),
+          padding: EdgeInsets.symmetric(horizontal: (48 - trackHeight) / 2),
           child: Center(
             child: Card(
               elevation: 0,
               color: Theme.of(context).colorScheme.surfaceContainer,
               child: SizedBox(
-                height: height,
+                height: trackHeight,
                 width: double.infinity,
               ),
             ),

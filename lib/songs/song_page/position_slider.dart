@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/songs/loop/loop_slider.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
@@ -16,79 +17,50 @@ class PositionSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    PositionSliderStyle style = Theme.of(
-      context,
-    ).extension<PositionSliderStyle>()!;
-
     final SongPlayer? player = Songs.player;
-    if (player == null) return SliderPlaceholder(height: 8);
+    if (player == null) {
+      return Column(
+        children: [
+          SizedBox(height: 24),
+          SliderPlaceholder(trackHeight: 8),
+        ],
+      );
+    }
 
     return ValueListenableBuilder(
       valueListenable: player.positionNotifier,
       builder: (context, position, child) {
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: Align(
+        return SizedBox(
+          height: 48 + 24,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  height: 48,
+                  child: _buildSlider(context, player),
+                ),
+              ),
+
+              Align(
                 alignment: Alignment.bottomLeft,
                 child: _buildDurationText(context, position),
               ),
-            ),
-            SliderTheme(
-              data: Theme.of(context).sliderTheme.copyWith(
-                trackHeight: 8,
-                trackShape: enabled
-                    ? _buildSliderTrackShape(context, enabled)
-                    : null,
-              ),
-              child: Slider(
-                activeColor: enabled ? style.activeTrackColor : null,
-                inactiveColor: enabled ? style.inactiveTrackColor : null,
-                thumbColor: Theme.of(context).colorScheme.primary,
-                overlayColor: WidgetStateProperty.resolveWith((states) {
-                  final colors = Theme.of(context).colorScheme;
-                  if (states.contains(WidgetState.dragged)) {
-                    return colors.primary.withAlpha(0x1a);
-                  }
-                  if (states.contains(WidgetState.hovered)) {
-                    return colors.primary.withAlpha(0x14);
-                  }
-                  if (states.contains(WidgetState.focused)) {
-                    return colors.primary.withAlpha(0x1a);
-                  }
-
-                  return Colors.transparent;
-                }),
-                min: 0,
-                max: player.duration.inMilliseconds.roundToDouble(),
-                value: position.inMilliseconds
-                    .clamp(
-                      enabled ? player.loop.start.inMilliseconds : 0,
-                      enabled
-                          ? player.loop.end.inMilliseconds
-                          : player.duration.inMilliseconds,
-                    )
-                    .roundToDouble(),
-                onChangeStart: (value) {
-                  wasPlayingBeforeChange = player.isPlaying;
-                  player.pause();
-                },
-                onChanged: (value) {
-                  player.position = Duration(milliseconds: value.round());
-                },
-                onChangeEnd: (value) {
-                  player.seek(Duration(milliseconds: value.round()));
-                  if (wasPlayingBeforeChange) player.resume();
-                },
-              ),
-            ),
-            Positioned.fill(
-              child: Align(
+              Align(
                 alignment: Alignment.bottomRight,
                 child: _buildDurationText(context, player.duration),
               ),
-            ),
-          ],
+
+              Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  height: 24,
+                  child: LoopSlider(),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -101,6 +73,59 @@ class PositionSlider extends StatelessWidget {
     return Text(
       durationString(duration),
       style: Theme.of(context).textTheme.bodySmall,
+    );
+  }
+
+  Widget _buildSlider(BuildContext context, SongPlayer player) {
+    PositionSliderStyle style = Theme.of(
+      context,
+    ).extension<PositionSliderStyle>()!;
+
+    return SliderTheme(
+      data: Theme.of(context).sliderTheme.copyWith(
+        trackHeight: 8,
+        trackShape: enabled ? _buildSliderTrackShape(context, enabled) : null,
+      ),
+      child: Slider(
+        activeColor: enabled ? style.activeTrackColor : null,
+        inactiveColor: enabled ? style.inactiveTrackColor : null,
+        thumbColor: Theme.of(context).colorScheme.primary,
+        overlayColor: WidgetStateProperty.resolveWith((states) {
+          final colors = Theme.of(context).colorScheme;
+          if (states.contains(WidgetState.dragged)) {
+            return colors.primary.withAlpha(0x1a);
+          }
+          if (states.contains(WidgetState.hovered)) {
+            return colors.primary.withAlpha(0x14);
+          }
+          if (states.contains(WidgetState.focused)) {
+            return colors.primary.withAlpha(0x1a);
+          }
+
+          return Colors.transparent;
+        }),
+        min: 0,
+        max: player.duration.inMilliseconds.roundToDouble(),
+        value: player.position.inMilliseconds
+            .clamp(
+              enabled ? player.loop.start.inMilliseconds : 0,
+              enabled
+                  ? player.loop.end.inMilliseconds
+                  : player.duration.inMilliseconds,
+            )
+            .roundToDouble(),
+        onChangeStart: (value) {
+          wasPlayingBeforeChange = player.isPlaying;
+          player.pause();
+        },
+        onChanged: (value) {
+          player.position = Duration(milliseconds: value.round());
+        },
+        onChangeEnd: (value) {
+          player.seek(Duration(milliseconds: value.round()));
+          if (wasPlayingBeforeChange) player.resume();
+        },
+      ),
     );
   }
 

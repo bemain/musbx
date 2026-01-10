@@ -7,7 +7,6 @@ import 'package:musbx/songs/analyzer/analyzer_card.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
 import 'package:musbx/songs/equalizer/equalizer.dart';
 import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
-import 'package:musbx/songs/loop/loop_slider.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sheet.dart';
@@ -88,7 +87,6 @@ class SongPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  LoopSlider(),
                   PositionSlider(),
                   ButtonPanel(),
                   const SizedBox(height: 8),
