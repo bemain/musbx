@@ -50,6 +50,7 @@ class WaveformCard extends StatelessWidget {
       },
       child: FlatCard(
         radius: radius,
+        margin: EdgeInsets.symmetric(horizontal: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

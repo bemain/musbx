@@ -45,7 +45,9 @@ class SongPage extends StatelessWidget {
                     // Loading
                     Expanded(
                       child: ShimmerLoading(
-                        child: FlatCard(child: SizedBox.expand()),
+                        child: FlatCard(
+                          child: SizedBox.expand(),
+                        ),
                       ),
                     )
                   else
@@ -56,10 +58,21 @@ class SongPage extends StatelessWidget {
                         children: [
                           Column(
                             children: [
+                              SizedBox(height: 4),
+                              Expanded(
+                                child: WaveformCard(
+                                  radius: BorderRadius.vertical(
+                                    top: Radius.circular(32),
+                                    bottom: Radius.circular(4),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 2),
                               FlatCard(
+                                margin: EdgeInsets.symmetric(horizontal: 4),
                                 radius: BorderRadius.vertical(
-                                  top: Radius.circular(32),
-                                  bottom: Radius.circular(4),
+                                  top: Radius.circular(4),
+                                  bottom: Radius.circular(32),
                                 ),
                                 child: Padding(
                                   padding: EdgeInsets.symmetric(vertical: 8),
@@ -79,28 +92,20 @@ class SongPage extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              Expanded(
-                                child: WaveformCard(
-                                  radius: BorderRadius.vertical(
-                                    top: Radius.circular(4),
-                                    bottom: Radius.circular(32),
-                                  ),
-                                ),
-                              ),
+                              SizedBox(height: 4),
                             ],
                           ),
                           DemixerCard(),
                         ],
                       ),
                     ),
-                  const SizedBox(height: 12),
                   ShimmerLoading(
                     isLoading: player == null,
                     child: SegmentedTabControl(
                       enabled: player != null,
                       tabs: [
                         SegmentTab(
-                          text: "Chords",
+                          text: "Waveform",
                           icon: Icon(CustomIcons.waveform),
                         ),
                         SegmentTab(
