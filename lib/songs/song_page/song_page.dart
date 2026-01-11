@@ -123,6 +123,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     if (Songs.player == null) {
       return AppBar(
+        titleSpacing: 0,
         title: ListTile(
           title: TextPlaceholder(),
           subtitle: Align(
@@ -149,6 +150,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
               EqualizerBand.defaultGain.toStringAsFixed(2),
         );
         return AppBar(
+          titleSpacing: 0,
           title: ListTile(
             title: Text(
               player.song.title,
@@ -157,7 +159,6 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
             subtitle: Text(player.song.artist ?? "Unknown artist"),
           ),
-          titleSpacing: 0,
           actions: [
             IconButton(
               onPressed: () {
