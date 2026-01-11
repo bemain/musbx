@@ -13,24 +13,27 @@ class ChordsDisplay extends StatefulWidget {
 }
 
 class _ChordsDisplayState extends State<ChordsDisplay> {
-  final SongPlayer player = Songs.player!;
+  Widget _buildPlaceholder(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.0),
+      child: TextPlaceholder(
+        fontSize: 20.0,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final SongPlayer? player = Songs.player;
+    if (player == null) return _buildPlaceholder(context);
+
     return SizedBox(
       height: 24.0,
       child: LayoutBuilder(
         builder: (context, constraints) => ValueListenableBuilder(
           valueListenable: player.analyzer.chordsNotifier,
           builder: (context, chords, child) {
-            if (chords == null) {
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: TextPlaceholder(
-                  fontSize: 20.0,
-                ),
-              );
-            }
+            if (chords == null) return _buildPlaceholder(context);
 
             return ValueListenableBuilder(
               valueListenable: player.analyzer.durationShownNotifier,
