@@ -41,47 +41,58 @@ class SongPage extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               child: Column(
                 children: [
-                  Expanded(
-                    child: TabBarView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        Column(
-                          children: [
-                            FlatCard(
-                              radius: BorderRadius.vertical(
-                                top: Radius.circular(32),
-                                bottom: Radius.circular(4),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    PitchSlider(),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 4),
-                                      child: PitchSpeedResetButton(),
-                                    ),
-                                    SpeedSlider(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: WaveformCard(
+                  if (player == null)
+                    // Loading
+                    Expanded(
+                      child: ShimmerLoading(
+                        child: FlatCard(child: SizedBox.expand()),
+                      ),
+                    )
+                  else
+                    // Card tabs
+                    Expanded(
+                      child: TabBarView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [
+                          Column(
+                            children: [
+                              FlatCard(
                                 radius: BorderRadius.vertical(
-                                  top: Radius.circular(4),
-                                  bottom: Radius.circular(32),
+                                  top: Radius.circular(32),
+                                  bottom: Radius.circular(4),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      PitchSlider(),
+                                      Padding(
+                                        padding: EdgeInsets.only(top: 4),
+                                        child: PitchSpeedResetButton(),
+                                      ),
+                                      SpeedSlider(),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        DemixerCard(),
-                      ],
+                              Expanded(
+                                child: WaveformCard(
+                                  radius: BorderRadius.vertical(
+                                    top: Radius.circular(4),
+                                    bottom: Radius.circular(32),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          DemixerCard(),
+                        ],
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 12),
                   ShimmerLoading(
                     isLoading: player == null,
