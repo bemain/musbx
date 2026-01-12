@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -19,11 +17,6 @@ import 'package:musbx/widgets/flat_card.dart';
 
 class SongPage extends StatelessWidget {
   const SongPage({super.key});
-
-  static final String helpText =
-      """- Play along with the chords or loop a section of the song in the Chords tab.
-- Mute or isolate specific instruments in the Instruments tab.
-- Adjust pitch and speed ${Platform.isAndroid ? "and apply equalizer effects " : ""}using the options in the toolbar.""";
 
   @override
   Widget build(BuildContext context) {
