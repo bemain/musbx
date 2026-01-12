@@ -1,13 +1,48 @@
 name: Build release
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
 
 jobs:
+  update-version:
+    name: Update version in pubspec.yaml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from release
+        id: version
+        run: |
+          VERSION=${{ github.event.release.tag_name }}
+          # Remove 'v' prefix if present
+          VERSION=${VERSION#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Update pubspec.yaml
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          # Extract current build number and increment it
+          CURRENT_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          CURRENT_BUILD=$(echo "$CURRENT_VERSION" | cut -d'+' -f2)
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+          # Update version with new build number
+          sed -i "s/^version: .*/version: $VERSION+$NEW_BUILD/" pubspec.yaml
+          echo "Updated version to: $VERSION+$NEW_BUILD"
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add pubspec.yaml
+          git commit -m "chore: build version ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+          git push
+
   build-android:
     name: Build Appbundle
+    needs: update-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -38,6 +73,7 @@ jobs:
 
   build-ios:
     name: Build IPA
+    needs: update-version
     runs-on: macos-latest
 
     steps:
