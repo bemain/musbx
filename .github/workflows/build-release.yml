@@ -41,7 +41,6 @@ jobs:
           git fetch origin main:main
           git checkout main
           git add pubspec.yaml
-          git commit -m "chore: build version ${{ steps.version.outputs.version }}" || echo "No changes to commit"
           git commit -m "chore: update version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
           # Re-tag the release to point to this new commit
           git tag -d ${{ github.event.release.tag_name }} || true
