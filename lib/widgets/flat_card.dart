@@ -19,6 +19,9 @@ class FlatCard extends StatelessWidget {
   /// The border radius for the card's corners.
   final BorderRadiusGeometry radius;
 
+  /// The empty space surrounding the card.
+  ///
+  /// See [Card.margin].
   final EdgeInsetsGeometry? margin;
 
   /// The widget below this widget in the tree.
