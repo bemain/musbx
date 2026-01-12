@@ -38,7 +38,7 @@ class SettingsList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTileTheme(
       data: ListTileThemeData(
-        minTileHeight: 56,
+        minTileHeight: 64,
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 8),
