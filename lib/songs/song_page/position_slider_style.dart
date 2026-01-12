@@ -61,9 +61,9 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
           disabledActiveTrackColor ?? this.disabledActiveTrackColor,
       disabledInactiveTrackColor:
           disabledInactiveTrackColor ?? this.disabledInactiveTrackColor,
-      nonLoopedTrackColor: activeTrackColor ?? this.nonLoopedTrackColor,
+      nonLoopedTrackColor: nonLoopedTrackColor ?? this.nonLoopedTrackColor,
       disabledNonLoopedTrackColor:
-          disabledActiveTrackColor ?? this.disabledNonLoopedTrackColor,
+          disabledNonLoopedTrackColor ?? this.disabledNonLoopedTrackColor,
     );
   }
 
