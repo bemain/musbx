@@ -15,7 +15,7 @@ jobs:
       commit_hash: ${{ steps.commit.outputs.commit_hash }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: main
@@ -26,29 +26,16 @@ jobs:
           NEW_VERSION=${{ github.event.release.tag_name }}
           NEW_VERSION=${NEW_VERSION#v} 
 
-          # 2. Read the CURRENT version line from pubspec.yaml (e.g., "version: 1.1.0+42")
-          # grep finds the line, sed removes the "version: " prefix
-          CURRENT_PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
-          
-          echo "Current pubspec version: $CURRENT_PUBSPEC_VERSION"
-
-          # 3. Extract and Increment the Build Number
-          # Check if a '+' exists in the current version
-          if [[ "$CURRENT_PUBSPEC_VERSION" == *"+"* ]]; then
-            # Extract everything after the '+'
-            OLD_BUILD_NUMBER=$(echo $CURRENT_PUBSPEC_VERSION | cut -d'+' -f2)
-            # Increment by 1
-            NEW_BUILD_NUMBER=$((OLD_BUILD_NUMBER + 1))
-          else
-            # If no build number existed, start at 1
-            NEW_BUILD_NUMBER=1
-          fi
+          # 2. Determine the new build number
+          CURRENT_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          CURRENT_BUILD=$(echo "$CURRENT_VERSION" | cut -d'+' -f2)
+          NEW_BUILD=$((CURRENT_BUILD + 1))
 
           echo "Bumping build number from $OLD_BUILD_NUMBER to $NEW_BUILD_NUMBER"
           echo "Setting full version to $NEW_VERSION+$NEW_BUILD_NUMBER"
 
-          # 4. Write changes back to pubspec.yaml
-          sed -i "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD_NUMBER/" pubspec.yaml
+          # 3. Write changes back to pubspec.yaml
+          sed -i "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
 
       - name: Generate Changelog
         uses: TriPSs/conventional-changelog-action@v5
@@ -71,7 +58,7 @@ jobs:
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Upload Changelog Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: changelog
           path: CHANGELOG.md
@@ -83,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.prepare.outputs.commit_hash }}
       
@@ -116,7 +103,7 @@ jobs:
         run: flutter build appbundle --release
 
       - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: android-appbundle
           path: build/app/outputs/bundle/release/app-release.aab
@@ -128,7 +115,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.prepare.outputs.commit_hash }}
       
@@ -175,7 +162,7 @@ jobs:
           flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
 
       - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ios-ipa
           path: build/ios/ipa/musbx.ipa
@@ -189,17 +176,17 @@ jobs:
       contents: write
     steps:
       - name: Download Android Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: android-appbundle
           
       - name: Download iOS Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ios-ipa
           
       - name: Download Changelog
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: changelog
 
