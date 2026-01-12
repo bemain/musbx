@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/analyzer/chords_display.dart';
 import 'package:musbx/songs/analyzer/waveform_widget.dart';
-import 'package:musbx/songs/loop/loop_slider.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/flat_card.dart';
 
-class AnalyzerCard extends StatelessWidget {
-  const AnalyzerCard({super.key, this.scaleSpeed = 1 / 256});
+class WaveformCard extends StatelessWidget {
+  const WaveformCard({
+    super.key,
+    this.scaleSpeed = 1 / 256,
+    this.radius = const BorderRadius.all(Radius.circular(32)),
+  });
 
   /// Whether the MusicPlayer was playing before the user began dragging.
   static bool wasPlayingBeforeChange = false;
@@ -19,39 +21,36 @@ class AnalyzerCard extends StatelessWidget {
   /// The speed at which the widget scales.
   final double scaleSpeed;
 
+  final BorderRadiusGeometry radius;
+
   @override
   Widget build(BuildContext context) {
-    if (Songs.player == null) {
-      return ShimmerLoading(
-        child: FlatCard(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          child: const SizedBox.expand(),
-        ),
-      );
-    }
-
-    final SongPlayer player = Songs.player!;
+    final SongPlayer? player = Songs.player;
 
     return GestureDetector(
       onScaleStart: (_) {
-        durationShownBeforeChange = player.analyzer.durationShown;
-        wasPlayingBeforeChange = player.isPlaying;
-        player.pause();
+        if (player != null) {
+          durationShownBeforeChange = player.analyzer.durationShown;
+          wasPlayingBeforeChange = player.isPlaying;
+        }
+        player?.pause();
       },
       onScaleUpdate: (details) {
         // Seek
         final double dx = details.focalPointDelta.dx;
-        player.position -= player.analyzer.durationShown * dx * scaleSpeed;
+        player?.position -= player.analyzer.durationShown * dx * scaleSpeed;
 
         // Zoom
-        player.analyzer.durationShown =
+        player?.analyzer.durationShown =
             durationShownBeforeChange * (1 / details.scale);
       },
       onScaleEnd: (_) {
-        player.seek(player.position);
-        if (wasPlayingBeforeChange) player.resume();
+        player?.seek(player.position);
+        if (wasPlayingBeforeChange) player?.resume();
       },
       child: FlatCard(
+        radius: radius,
+        margin: EdgeInsets.symmetric(horizontal: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -63,8 +62,6 @@ class AnalyzerCard extends StatelessWidget {
                 child: WaveformWidget(),
               ),
             ),
-            LoopSlider(),
-            const SizedBox(height: 10),
           ],
         ),
       ),

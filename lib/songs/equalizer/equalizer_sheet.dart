@@ -12,10 +12,10 @@ class EqualizerSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final SongPlayer player = Songs.player!;
 
-    return ValueListenableBuilder(
-      valueListenable: player.equalizer.bandsNotifier,
-      builder: (context, bands, child) {
-        final bool isReset = bands.every(
+    return ListenableBuilder(
+      listenable: player.equalizer,
+      builder: (context, child) {
+        final bool isReset = player.equalizer.bands.every(
           (band) =>
               band.gain.toStringAsFixed(2) ==
               EqualizerBand.defaultGain.toStringAsFixed(2),

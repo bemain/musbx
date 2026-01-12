@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 
 class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
   const PositionSliderStyle({
-    required this.activeLoopedTrackColor,
-    required this.inactiveLoopedTrackColor,
-    required this.disabledActiveLoopedTrackColor,
-    required this.disabledInactiveLoopedTrackColor,
     required this.activeTrackColor,
     required this.inactiveTrackColor,
     required this.disabledActiveTrackColor,
     required this.disabledInactiveTrackColor,
+    required this.nonLoopedTrackColor,
+    required this.disabledNonLoopedTrackColor,
   });
 
   /// Generates a SliderThemeData from three main colors.
@@ -25,26 +23,18 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
     required ThemeData theme,
   }) {
     return PositionSliderStyle(
-      activeLoopedTrackColor: theme.colorScheme.primary,
-      inactiveLoopedTrackColor: theme.colorScheme.primary.withAlpha(0x1f),
-      disabledActiveLoopedTrackColor: theme.colorScheme.onSurface.withAlpha(
+      activeTrackColor: theme.colorScheme.primary,
+      inactiveTrackColor: theme.colorScheme.secondaryContainer,
+      disabledActiveTrackColor: theme.colorScheme.onSurface.withAlpha(
         0x61,
       ),
-      disabledInactiveLoopedTrackColor: theme.colorScheme.onSurface.withAlpha(
+      disabledInactiveTrackColor: theme.colorScheme.onSurface.withAlpha(
         0x1f,
       ),
-      activeTrackColor: theme.colorScheme.surfaceContainer,
-      inactiveTrackColor: theme.colorScheme.surfaceContainer,
-      disabledActiveTrackColor: theme.colorScheme.onSurface.withAlpha(0x1f),
-      disabledInactiveTrackColor: theme.colorScheme.onSurface.withAlpha(0x1f),
+      nonLoopedTrackColor: theme.colorScheme.surfaceContainer,
+      disabledNonLoopedTrackColor: theme.colorScheme.onSurface.withAlpha(0x1f),
     );
   }
-
-  final Color activeLoopedTrackColor;
-  final Color disabledActiveLoopedTrackColor;
-
-  final Color inactiveLoopedTrackColor;
-  final Color disabledInactiveLoopedTrackColor;
 
   final Color activeTrackColor;
   final Color disabledActiveTrackColor;
@@ -52,34 +42,28 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
   final Color inactiveTrackColor;
   final Color disabledInactiveTrackColor;
 
+  final Color nonLoopedTrackColor;
+  final Color disabledNonLoopedTrackColor;
+
   @override
   ThemeExtension<PositionSliderStyle> copyWith({
-    Color? activeLoopedTrackColor,
-    Color? inactiveLoopedTrackColor,
-    Color? disabledActiveLoopedTrackColor,
-    Color? disabledInactiveLoopedTrackColor,
     Color? activeTrackColor,
     Color? inactiveTrackColor,
     Color? disabledActiveTrackColor,
     Color? disabledInactiveTrackColor,
+    Color? nonLoopedTrackColor,
+    Color? disabledNonLoopedTrackColor,
   }) {
     return PositionSliderStyle(
-      activeLoopedTrackColor:
-          activeLoopedTrackColor ?? this.activeLoopedTrackColor,
-      inactiveLoopedTrackColor:
-          inactiveLoopedTrackColor ?? this.inactiveLoopedTrackColor,
-      disabledActiveLoopedTrackColor:
-          disabledActiveLoopedTrackColor ??
-          this.disabledActiveLoopedTrackColor,
-      disabledInactiveLoopedTrackColor:
-          disabledInactiveLoopedTrackColor ??
-          this.disabledInactiveLoopedTrackColor,
       activeTrackColor: activeTrackColor ?? this.activeTrackColor,
       inactiveTrackColor: inactiveTrackColor ?? this.inactiveTrackColor,
       disabledActiveTrackColor:
           disabledActiveTrackColor ?? this.disabledActiveTrackColor,
       disabledInactiveTrackColor:
           disabledInactiveTrackColor ?? this.disabledInactiveTrackColor,
+      nonLoopedTrackColor: nonLoopedTrackColor ?? this.nonLoopedTrackColor,
+      disabledNonLoopedTrackColor:
+          disabledNonLoopedTrackColor ?? this.disabledNonLoopedTrackColor,
     );
   }
 
@@ -89,29 +73,9 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
     double t,
   ) {
     return PositionSliderStyle(
-      activeLoopedTrackColor: Color.lerp(
-        activeLoopedTrackColor,
-        other!.activeLoopedTrackColor,
-        t,
-      )!,
-      inactiveLoopedTrackColor: Color.lerp(
-        inactiveLoopedTrackColor,
-        other.inactiveLoopedTrackColor,
-        t,
-      )!,
-      disabledActiveLoopedTrackColor: Color.lerp(
-        disabledActiveLoopedTrackColor,
-        other.disabledActiveLoopedTrackColor,
-        t,
-      )!,
-      disabledInactiveLoopedTrackColor: Color.lerp(
-        disabledInactiveLoopedTrackColor,
-        other.disabledInactiveLoopedTrackColor,
-        t,
-      )!,
       activeTrackColor: Color.lerp(
         activeTrackColor,
-        other.activeTrackColor,
+        other!.activeTrackColor,
         t,
       )!,
       inactiveTrackColor: Color.lerp(
@@ -127,6 +91,16 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
       disabledInactiveTrackColor: Color.lerp(
         disabledInactiveTrackColor,
         other.disabledInactiveTrackColor,
+        t,
+      )!,
+      nonLoopedTrackColor: Color.lerp(
+        nonLoopedTrackColor,
+        other.nonLoopedTrackColor,
+        t,
+      )!,
+      disabledNonLoopedTrackColor: Color.lerp(
+        disabledNonLoopedTrackColor,
+        other.disabledNonLoopedTrackColor,
         t,
       )!,
     );

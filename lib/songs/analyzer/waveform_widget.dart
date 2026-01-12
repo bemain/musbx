@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/analyzer/waveform_painter.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
@@ -12,12 +13,45 @@ const int kSamplesPerPixel = 540;
 const int kSampleRate = 48000;
 
 class WaveformWidget extends StatelessWidget {
-  WaveformWidget({super.key});
+  const WaveformWidget({super.key});
 
-  final SongPlayer player = Songs.player!;
+  Widget _buildPlaceholder(BuildContext context) {
+    final SongPlayer? player = Songs.player;
+
+    final Color color = Theme.of(context).colorScheme.primary;
+
+    return ShimmerLoading(
+      child: CustomPaint(
+        painter: WaveformPainter(
+          waveform: _generateDummyWaveform(
+            player?.duration ?? AnalyzerComponent.defaultDurationShown,
+          ),
+          position: player?.position ?? Duration.zero,
+          duration:
+              player?.analyzer.durationShown ??
+              AnalyzerComponent.defaultDurationShown,
+          style: PositionSliderStyle(
+            activeTrackColor: color,
+            inactiveTrackColor: color,
+            disabledActiveTrackColor: color,
+            disabledInactiveTrackColor: color,
+            nonLoopedTrackColor: color,
+            disabledNonLoopedTrackColor: color,
+          ),
+          markerColor: Theme.of(
+            context,
+          ).colorScheme.onSurfaceVariant,
+        ),
+        size: const Size(double.infinity, 64.0),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final SongPlayer? player = Songs.player;
+    if (player == null) return _buildPlaceholder(context);
+
     return ValueListenableBuilder(
       valueListenable: player.analyzer.waveformNotifier,
       builder: (context, waveform, child) {
@@ -26,34 +60,19 @@ class WaveformWidget extends StatelessWidget {
           builder: (context, durationShown, child) => ValueListenableBuilder(
             valueListenable: player.positionNotifier,
             builder: (context, position, child) {
-              final Color color = Theme.of(context).colorScheme.primary;
-              final PositionSliderStyle dummyStyle = PositionSliderStyle(
-                activeLoopedTrackColor: color,
-                inactiveLoopedTrackColor: color,
-                disabledActiveLoopedTrackColor: color,
-                disabledInactiveLoopedTrackColor: color,
-                activeTrackColor: color,
-                inactiveTrackColor: color,
-                disabledActiveTrackColor: color,
-                disabledInactiveTrackColor: color,
-              );
+              if (waveform == null) return _buildPlaceholder(context);
 
-              return ShimmerLoading(
-                isLoading: waveform == null,
-                child: CustomPaint(
-                  painter: WaveformPainter(
-                    waveform: waveform ?? _generateDummyWaveform(),
-                    position: position,
-                    duration: durationShown,
-                    style: waveform != null
-                        ? Theme.of(context).extension<PositionSliderStyle>()!
-                        : dummyStyle,
-                    markerColor: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
-                  ),
-                  size: const Size(double.infinity, 64.0),
+              return CustomPaint(
+                painter: WaveformPainter(
+                  waveform: waveform,
+                  position: position,
+                  duration: durationShown,
+                  style: Theme.of(context).extension<PositionSliderStyle>()!,
+                  markerColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
                 ),
+                size: const Size(double.infinity, 64.0),
               );
             },
           ),
@@ -66,12 +85,12 @@ class WaveformWidget extends StatelessWidget {
   /// This is used when the waveform is not yet available.
   ///
   /// It's length matches that of the current song.
-  Waveform _generateDummyWaveform() {
+  Waveform _generateDummyWaveform(Duration duration) {
     final int samplesPerPixel = kSamplesPerPixel;
     final int sampleRate = kSampleRate;
 
     final int length =
-        (player.duration.inMicroseconds / (1e6 / sampleRate) / samplesPerPixel)
+        (duration.inMicroseconds / (1e6 / sampleRate) / samplesPerPixel)
             .ceil();
 
     final data = <int>[];

@@ -13,16 +13,12 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     this.title,
     this.leading,
-    this.helpText,
   }) : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   /// The primary widget displayed in the app bar.
   final Widget? title;
 
   final Widget? leading;
-
-  /// A short text explaining how to use the screen. Displayed in the about dialog.
-  final String? helpText;
 
   @override
   final Size preferredSize; // default is 56.0

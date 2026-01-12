@@ -14,10 +14,7 @@ class DronePageState extends State<DronePage> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: DefaultAppBar(
-        helpText:
-            "Press a note to play it. \nRotate the wheel to change the key.",
-      ),
+      appBar: DefaultAppBar(),
       body: Padding(
         padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
         child: Column(

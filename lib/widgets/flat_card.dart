@@ -7,6 +7,7 @@ class FlatCard extends StatelessWidget {
     super.key,
     this.color,
     this.radius = const BorderRadius.all(Radius.circular(32)),
+    this.margin,
     required this.child,
   });
 
@@ -18,6 +19,11 @@ class FlatCard extends StatelessWidget {
   /// The border radius for the card's corners.
   final BorderRadiusGeometry radius;
 
+  /// The empty space surrounding the card.
+  ///
+  /// See [Card.margin].
+  final EdgeInsetsGeometry? margin;
+
   /// The widget below this widget in the tree.
   final Widget child;
 
@@ -28,6 +34,7 @@ class FlatCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: radius,
       ),
+      margin: margin,
       color: color,
       child: ClipRRect(
         borderRadius: radius,

@@ -5,17 +5,18 @@ import 'package:musbx/songs/song_page/position_slider_style.dart';
 
 class LoopSlider extends StatelessWidget {
   /// Range slider for selecting the section to loop.
-  LoopSlider({super.key});
+  const LoopSlider({super.key});
 
-  final SongPlayer player = Songs.player!;
+  /// Whether the player was playing before the user began changing the position.
+  static bool wasPlayingBeforeChange = false;
+
+  /// The position that the player was at before the user began changing the loop section.
+  static Duration positionBeforeChange = Duration.zero;
 
   @override
   Widget build(BuildContext context) {
-    /// Whether the player was playing before the user began changing the position.
-    bool wasPlayingBeforeChange = false;
-
-    /// The position that the player was at before the user began changing the loop section.
-    Duration positionBeforeChange = Duration.zero;
+    final SongPlayer? player = Songs.player;
+    if (player == null) return SizedBox(height: 24);
 
     return ValueListenableBuilder(
       valueListenable: player.loop.sectionNotifier,
@@ -40,6 +41,7 @@ class LoopSlider extends StatelessWidget {
             valueIndicatorStrokeColor: Colors.transparent,
           ),
           child: RangeSlider(
+            padding: EdgeInsets.symmetric(horizontal: 20),
             labels: RangeLabels(
               player.loop.start.toString().substring(2, 10),
               player.loop.end.toString().substring(2, 10),
@@ -132,14 +134,9 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
       begin: disabledOutlineColor,
       end: outlineColor,
     );
-    final ColorTween trackColorTween = ColorTween(
-      begin: style.disabledInactiveLoopedTrackColor,
-      end: style.inactiveLoopedTrackColor,
-    );
+
     final Paint outlinePaint = Paint()
       ..color = outlineColorTween.evaluate(enableAnimation)!;
-    final Paint trackPaint = Paint()
-      ..color = trackColorTween.evaluate(enableAnimation)!;
 
     final (
       Offset leftThumbOffset,
@@ -161,23 +158,6 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
       sliderTheme: sliderTheme,
       isEnabled: isEnabled,
       isDiscrete: isDiscrete,
-    );
-
-    final Radius trackRadius = Radius.circular(trackRect.height / 2);
-
-    // Draw track
-    context.canvas.drawRRect(
-      RRect.fromLTRBAndCorners(
-        trackRect.left,
-        trackRect.top,
-        trackRect.right,
-        trackRect.bottom,
-        topLeft: trackRadius,
-        bottomLeft: trackRadius,
-        topRight: trackRadius,
-        bottomRight: trackRadius,
-      ),
-      trackPaint,
     );
 
     // Draw loop section overlay

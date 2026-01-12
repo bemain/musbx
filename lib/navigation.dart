@@ -116,7 +116,6 @@ class Navigation {
             ),
 
             StatefulShellRoute(
-              restorationScopeId: "shell",
               builder: _buildShell,
               navigatorContainerBuilder: (context, navigationShell, children) {
                 return ExtendedShellBranchContainer(
@@ -126,7 +125,6 @@ class Navigation {
               },
               branches: [
                 ExtendedShellBranch(
-                  restorationScopeId: "metronome",
                   routes: [
                     GoRoute(
                       path: Routes.metronome,
@@ -137,7 +135,6 @@ class Navigation {
                   ],
                 ),
                 ExtendedShellBranch(
-                  restorationScopeId: "songs",
                   routes: [
                     GoRoute(
                       path: Routes.library,
@@ -210,7 +207,6 @@ class Navigation {
                   ],
                 ),
                 ExtendedShellBranch(
-                  restorationScopeId: "tuner",
                   saveState: false,
                   routes: [
                     GoRoute(
@@ -222,7 +218,6 @@ class Navigation {
                   ],
                 ),
                 ExtendedShellBranch(
-                  restorationScopeId: "drone",
                   routes: [
                     GoRoute(
                       path: Routes.drone,
@@ -324,25 +319,15 @@ class ExtendedShellBranchContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> stackItems = [
-      for (int i = 0; i < children.length; i++)
-        _buildRouteBranchContainer(
-          context,
-          currentIndex == i,
-          children[i],
-        ),
-    ];
-
-    final child = children[currentIndex];
-    final branch = (child as dynamic).branch as ExtendedShellBranch;
-
-    return Stack(
+    return IndexedStack(
+      index: currentIndex,
       children: [
-        IndexedStack(
-          index: currentIndex,
-          children: stackItems,
-        ),
-        if (!branch.saveState) children[currentIndex],
+        for (int i = 0; i < children.length; i++)
+          _buildRouteBranchContainer(
+            context,
+            currentIndex == i,
+            children[i],
+          ),
       ],
     );
   }
@@ -353,7 +338,11 @@ class ExtendedShellBranchContainer extends StatelessWidget {
     Widget child,
   ) {
     final branch = (child as dynamic).branch as ExtendedShellBranch;
-    if (!branch.saveState) return const SizedBox.shrink();
+
+    if (!branch.saveState) {
+      // For branches that don't save state, only render when active
+      return isActive ? child : const SizedBox.shrink();
+    }
 
     return Offstage(
       offstage: !isActive,

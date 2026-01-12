@@ -77,11 +77,11 @@ class WaveformPainter extends CustomPainter {
 
     canvas.drawPath(
       Path.combine(PathOperation.intersect, waveformPath, activeArea),
-      Paint()..color = style.activeLoopedTrackColor,
+      Paint()..color = style.activeTrackColor,
     );
     canvas.drawPath(
       Path.combine(PathOperation.difference, waveformPath, activeArea),
-      Paint()..color = style.inactiveLoopedTrackColor,
+      Paint()..color = style.inactiveTrackColor,
     );
 
     canvas.drawLine(

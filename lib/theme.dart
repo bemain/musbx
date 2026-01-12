@@ -69,6 +69,7 @@ class AppTheme {
       darkTheme.copyWith(
         textTheme: GoogleFonts.interTextTheme(darkTheme.textTheme),
         sliderTheme: darkTheme.sliderTheme.copyWith(
+          year2023: false,
           showValueIndicator: ShowValueIndicator.onDrag,
         ),
         iconTheme: darkTheme.iconTheme.copyWith(weight: 600),

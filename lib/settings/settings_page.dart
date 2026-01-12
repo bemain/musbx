@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
@@ -37,35 +38,36 @@ class SettingsList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTileTheme(
       data: ListTileThemeData(
-        minTileHeight: 56,
-        contentPadding: EdgeInsetsDirectional.symmetric(horizontal: 24),
+        minTileHeight: 64,
       ),
-      child: ListView(
-        children: [
-          const SizedBox(height: 16),
-          ...children,
-          const SizedBox(height: 16),
-        ],
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        child: ListView(
+          children: [
+            const SizedBox(height: 16),
+            for (Widget child in children)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                child: child,
+              ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
 }
 
-class SectionTitle extends StatelessWidget {
-  /// Title for grouping a number of settings together.
-  const SectionTitle({super.key, required this.text});
+class SettingsGroup extends StatelessWidget {
+  const SettingsGroup({super.key, required this.children});
 
-  /// Title describing the section.
-  final String text;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: 16, top: 32, right: 16, bottom: 4),
-      child: Text(
-        text,
-        style: TextStyle(color: Theme.of(context).colorScheme.primary),
-      ),
+    return SegmentedCard(
+      clipBehavior: Clip.antiAlias,
+      children: children,
     );
   }
 }
@@ -81,122 +83,133 @@ class SettingsPage extends StatelessWidget {
       ),
       body: SettingsList(
         children: [
-          SectionTitle(text: "Tools"),
-          ListTile(
-            leading: Icon(CustomIcons.metronome),
-            title: Text("Metronome"),
-            trailing: Icon(Symbols.chevron_forward),
-            onTap: () {
-              context.push(Routes.metronomeSettings);
-            },
-          ),
-          ListTile(
-            leading: Icon(Symbols.library_music),
-            title: Text("Songs"),
-            trailing: Icon(Symbols.chevron_forward),
-            onTap: () {
-              context.push(Routes.songsSettings);
-            },
-          ),
-          ListTile(
-            leading: Icon(Symbols.speed),
-            title: Text("Tuner"),
-            trailing: Icon(Symbols.chevron_forward),
-            onTap: () {
-              context.push(Routes.tunerSettings);
-            },
-          ),
-          ListTile(
-            leading: Icon(CustomIcons.tuning_fork),
-            title: Text("Drone"),
-            trailing: Icon(Symbols.chevron_forward),
-            onTap: () {
-              context.push(Routes.droneSettings);
-            },
+          SettingsGroup(
+            children: [
+              ListTile(
+                leading: Icon(CustomIcons.metronome),
+                title: Text("Metronome"),
+                trailing: Icon(Symbols.chevron_forward),
+                onTap: () {
+                  context.push(Routes.metronomeSettings);
+                },
+              ),
+              ListTile(
+                leading: Icon(Symbols.library_music),
+                title: Text("Songs"),
+                trailing: Icon(Symbols.chevron_forward),
+                onTap: () {
+                  context.push(Routes.songsSettings);
+                },
+              ),
+              ListTile(
+                leading: Icon(Symbols.speed),
+                title: Text("Tuner"),
+                trailing: Icon(Symbols.chevron_forward),
+                onTap: () {
+                  context.push(Routes.tunerSettings);
+                },
+              ),
+              ListTile(
+                leading: Icon(CustomIcons.tuning_fork),
+                title: Text("Drone"),
+                trailing: Icon(Symbols.chevron_forward),
+                onTap: () {
+                  context.push(Routes.droneSettings);
+                },
+              ),
+            ],
           ),
 
-          SectionTitle(text: "General"),
-          ValueListenableBuilder(
-            valueListenable: AppTheme.themeModeNotifier,
-            builder: (context, themeMode, child) => ListTile(
-              leading: Icon(Symbols.routine),
-              title: Text("Theme"),
-              subtitle: Text(
-                ThemeSelector.themeDescription(themeMode),
-              ),
-              onTap: () async {
-                await showAlertSheet<void>(
-                  context: context,
-                  builder: (context) => ThemeSelector(
-                    themeNotifier: AppTheme.themeModeNotifier,
+          SettingsGroup(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: AppTheme.themeModeNotifier,
+                builder: (context, themeMode, child) => ListTile(
+                  leading: Icon(Symbols.routine),
+                  title: Text("Theme"),
+                  subtitle: Text(
+                    ThemeSelector.themeDescription(themeMode),
                   ),
-                );
-              },
-            ),
-          ),
-          ListTile(
-            leading: Icon(Symbols.policy),
-            title: Text("Privacy policy"),
-            trailing: Icon(Symbols.launch),
-            onTap: () {
-              launchUrl(Uri.parse("https://bemain.github.io/musbx/privacy"));
-            },
-          ),
-          ListTile(
-            leading: Icon(Symbols.contract),
-            title: Text("Licenses"),
-            trailing: Icon(Symbols.chevron_forward),
-            onTap: () {
-              context.push(Routes.licenses);
-            },
-          ),
-          if (!Purchases.hasPremium)
-            ListTile(
-              leading: Icon(Symbols.workspace_premium),
-              title: Text("Upgrade to Premium"),
-              onTap: () {
-                showDialog<void>(
-                  context: context,
-                  builder: (context) => const FreeAccessRestrictedDialog(),
-                );
-              },
-            ),
-
-          SectionTitle(text: "Contact"),
-          ListTile(
-            leading: Icon(Symbols.mail),
-            title: Text("Mail"),
-            trailing: Icon(Symbols.launch),
-            onTap: () {
-              launchUrl(Uri.parse("mailto:bemain.dev@gmail.com"));
-            },
-          ),
-          if (Platform.isAndroid | Platform.isIOS)
-            ListTile(
-              leading: Icon(
-                Platform.isAndroid
-                    ? SimpleIcons.googleplay
-                    : SimpleIcons.appstore,
+                  onTap: () async {
+                    await showAlertSheet<void>(
+                      context: context,
+                      builder: (context) => ThemeSelector(
+                        themeNotifier: AppTheme.themeModeNotifier,
+                      ),
+                    );
+                  },
+                ),
               ),
-
-              title: Text(
-                Platform.isAndroid ? "Google Play" : "App Store",
+              ListTile(
+                leading: Icon(Symbols.policy),
+                title: Text("Privacy policy"),
+                trailing: Icon(Symbols.launch),
+                onTap: () {
+                  launchUrl(
+                    Uri.parse("https://bemain.github.io/musbx/privacy"),
+                  );
+                },
               ),
-              trailing: Icon(Symbols.launch),
-              onTap: () {
-                if (storeUrl != null) launchUrl(storeUrl!);
-              },
-            ),
-          ListTile(
-            leading: Icon(Symbols.language),
-            title: Text("Website"),
-            trailing: Icon(Symbols.launch),
-            onTap: () {
-              launchUrl(Uri.parse("https://bemain.github.io"));
-            },
+              ListTile(
+                leading: Icon(Symbols.contract),
+                title: Text("Licenses"),
+                trailing: Icon(Symbols.chevron_forward),
+                onTap: () {
+                  context.push(Routes.licenses);
+                },
+              ),
+              if (!Purchases.hasPremium)
+                ListTile(
+                  leading: Icon(Symbols.workspace_premium),
+                  title: Text("Upgrade to Premium"),
+                  onTap: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (context) => const FreeAccessRestrictedDialog(),
+                    );
+                  },
+                ),
+            ],
           ),
 
-          const SizedBox(height: 32),
+          SettingsGroup(
+            children: [
+              ListTile(
+                leading: Icon(Symbols.mail),
+                title: Text("Mail"),
+                trailing: Icon(Symbols.launch),
+                onTap: () {
+                  launchUrl(Uri.parse("mailto:bemain.dev@gmail.com"));
+                },
+              ),
+              if (Platform.isAndroid | Platform.isIOS)
+                ListTile(
+                  leading: Icon(
+                    Platform.isAndroid
+                        ? SimpleIcons.googleplay
+                        : SimpleIcons.appstore,
+                  ),
+
+                  title: Text(
+                    Platform.isAndroid ? "Google Play" : "App Store",
+                  ),
+                  trailing: Icon(Symbols.launch),
+                  onTap: () {
+                    if (storeUrl != null) launchUrl(storeUrl!);
+                  },
+                ),
+              ListTile(
+                leading: Icon(Symbols.language),
+                title: Text("Website"),
+                trailing: Icon(Symbols.launch),
+                onTap: () {
+                  launchUrl(Uri.parse("https://bemain.github.io"));
+                },
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
           RichText(
             text: TextSpan(
               text: "Version ${LaunchHandler.info.version}\n",
