@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/tuner/fft_graph.dart';
 import 'package:musbx/tuner/pitch_graph.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
@@ -85,9 +84,6 @@ class TunerPageState extends State<TunerPage> {
                           const SizedBox(height: 4),
                         ],
                       ),
-                    ),
-                    FftGraph(
-                      data: tuner.dataBuffer,
                     ),
                   ],
                 ),
