@@ -1,143 +1,194 @@
-name: Build release
+name: Release & Publish
 
 on:
   release:
     types: [published]
 
 jobs:
-  update-version:
-    name: Update version in pubspec.yaml
+  # Update Version, Changelog & Commit
+  prepare:
+    name: Prepare Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      commit_hash: ${{ steps.commit.outputs.commit_hash }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Extract version from release
-        id: version
-        run: |
-          VERSION=${{ github.event.release.tag_name }}
-          # Remove 'v' prefix if present
-          VERSION=${VERSION#v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Extracted version: $VERSION"
+          ref: main
 
       - name: Update pubspec.yaml
         run: |
-          VERSION=${{ steps.version.outputs.version }}
-          # Extract current build number and increment it
-          CURRENT_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
-          CURRENT_BUILD=$(echo "$CURRENT_VERSION" | cut -d'+' -f2)
-          NEW_BUILD=$((CURRENT_BUILD + 1))
-          # Update version with new build number
-          sed -i "s/^version: .*/version: $VERSION+$NEW_BUILD/" pubspec.yaml
-          echo "Updated version to: $VERSION+$NEW_BUILD"
+          # 1. Get the new Version from the Release Tag (e.g., v1.2.0 -> 1.2.0)
+          NEW_VERSION=${{ github.event.release.tag_name }}
+          NEW_VERSION=${NEW_VERSION#v} 
 
-      - name: Commit and push changes
+          # 2. Read the CURRENT version line from pubspec.yaml (e.g., "version: 1.1.0+42")
+          # grep finds the line, sed removes the "version: " prefix
+          CURRENT_PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          
+          echo "Current pubspec version: $CURRENT_PUBSPEC_VERSION"
+
+          # 3. Extract and Increment the Build Number
+          # Check if a '+' exists in the current version
+          if [[ "$CURRENT_PUBSPEC_VERSION" == *"+"* ]]; then
+            # Extract everything after the '+'
+            OLD_BUILD_NUMBER=$(echo $CURRENT_PUBSPEC_VERSION | cut -d'+' -f2)
+            # Increment by 1
+            NEW_BUILD_NUMBER=$((OLD_BUILD_NUMBER + 1))
+          else
+            # If no build number existed, start at 1
+            NEW_BUILD_NUMBER=1
+          fi
+
+          echo "Bumping build number from $OLD_BUILD_NUMBER to $NEW_BUILD_NUMBER"
+          echo "Setting full version to $NEW_VERSION+$NEW_BUILD_NUMBER"
+
+          # 4. Write changes back to pubspec.yaml
+          sed -i "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD_NUMBER/" pubspec.yaml
+
+      - name: Generate Changelog
+        uses: TriPSs/conventional-changelog-action@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          output-file: "CHANGELOG.md"
+          skip-git-pull: "true"
+
+      - name: Commit & Push
+        id: commit
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git fetch origin main:main
-          git checkout main
-          git add pubspec.yaml
-          git commit -m "chore: update version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
-          # Re-tag the release to point to this new commit
-          git tag -d ${{ github.event.release.tag_name }} || true
-          git tag ${{ github.event.release.tag_name }}
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'actions@github.com'
+          git add pubspec.yaml CHANGELOG.md
+          
+          # [skip ci] prevents infinite loops
+          git commit -m "chore(release): bump version to ${{ github.event.release.tag_name }} ($NEW_BUILD_NUMBER) [skip ci]"
           git push origin main
-          git push origin ${{ github.event.release.tag_name }} --force
+          
+          echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-  build-android:
-    name: Build Appbundle
-    needs: update-version
+      - name: Upload Changelog Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog
+          path: CHANGELOG.md
+
+  # Build Android
+  android:
+    name: Build Android
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Checkout Code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      
-      - name: Fetch material_plus dependency
-        run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
-      
-      - name: Write secret to file
+          ref: ${{ needs.prepare.outputs.commit_hash }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Decode Android Keystore
         run: |
-          cat << EOF > ./lib/keys.dart
-          ${{ secrets.KEYS_FILE }}
-          EOF
+          echo "${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+          echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" > android/key.properties
 
-      - uses: cedvdb/action-flutter-build-android@v1
-        with:
-          keystore-base64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
-          keystore-password: "${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}"
-          build-cmd: flutter build appbundle --release
-          working-directory: ./
+      - name: Build App Bundle
+        run: flutter build appbundle --release
 
-      - name: Upload Appbundle artifact
-        uses: actions/upload-artifact@v6
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: release-appbundle
+          name: android-appbundle
           path: build/app/outputs/bundle/release/app-release.aab
-          retention-days: 1
 
-  build-ios:
-    name: Build IPA
-    needs: update-version
+  # Build iOS
+  ios:
+    name: Build iOS
+    needs: prepare
     runs-on: macos-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Checkout Code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      
-      - name: Fetch material_plus dependency
-        run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
-      
-      - name: Write secret to file
+          ref: ${{ needs.prepare.outputs.commit_hash }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install Apple Certificate and Profile
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_SIGNING_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_SIGNING_CERTIFICATE_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: "actions_temp_password"
         run: |
-          cat << EOF > ./lib/keys.dart
-          ${{ secrets.KEYS_FILE }}
-          EOF
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-      - name: Run flutter build
-        uses: cedvdb/action-flutter-build-ios@v1
-        with:
-          # always use --export-options-plist=ios/GithubActionsExportOptions.plist
-          build-cmd: flutter build ipa --release --export-options-plist=ios/GithubActionsExportOptions.plist
-          certificate-base64: ${{ secrets.IOS_SIGNING_CERTIFICATE_BASE64 }}
-          certificate-password: ${{ secrets.IOS_SIGNING_CERTIFICATE_PASSWORD }}
-          provisioning-profile-base64: ${{ secrets.IOS_MOBILE_PROVISIONING_PROFILE_BASE64 }}
-          keychain-password: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
 
-      - name: Upload IPA artifact
-        uses: actions/upload-artifact@v6
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Build iOS IPA
+        run: |
+          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: release-ipa
+          name: ios-ipa
           path: build/ios/ipa/musbx.ipa
-          retention-days: 1
 
-  upload-release:
-    name: Upload binaries to release
-    needs: [build-android, build-ios]
+  # Publish to GitHub Release
+  release:
+    name: Publish Binaries
+    needs: [android, ios]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Download Android build
-        uses: actions/download-artifact@v7
+      - name: Download Android Artifact
+        uses: actions/download-artifact@v4
         with:
-          name: release-appbundle
-          path: ./android-build
-
-      - name: Download iOS build
-        uses: actions/download-artifact@v7
+          name: android-appbundle
+          
+      - name: Download iOS Artifact
+        uses: actions/download-artifact@v4
         with:
-          name: release-ipa
-          path: ./ios-build
+          name: ios-ipa
+          
+      - name: Download Changelog
+        uses: actions/download-artifact@v4
+        with:
+          name: changelog
 
-      - name: Upload to release
+      - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ./android-build/app-release.aab
-            ./ios-build/musbx.ipa
+            app-release.aab
+            musbx.ipa
+          body_path: CHANGELOG.md

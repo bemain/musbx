@@ -9,7 +9,7 @@
 	<key>manageAppVersionAndBuildNumber</key>
 	<true/>
 	<key>method</key>
-	<string>app-store-connect</string>
+    <string>app-store</string>
 	<key>provisioningProfiles</key>
 	<dict>
 		<key>se.agardh.musbox</key>
