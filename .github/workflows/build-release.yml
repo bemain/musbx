@@ -36,9 +36,11 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+          git fetch origin main:main
+          git checkout main
           git add pubspec.yaml
           git commit -m "chore: build version ${{ steps.version.outputs.version }}" || echo "No changes to commit"
-          git push
+          git push origin main
 
   build-android:
     name: Build Appbundle
