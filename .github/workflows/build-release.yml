@@ -65,7 +65,7 @@ jobs:
           git add pubspec.yaml CHANGELOG.md
           
           # [skip ci] prevents infinite loops
-          git commit -m "chore(release): bump version to ${{ github.event.release.tag_name }} ($NEW_BUILD_NUMBER) [skip ci]"
+          git commit -m "chore(release): ${{ github.event.release.tag_name }} [skip ci]"
           git push origin main
           
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
@@ -86,6 +86,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.prepare.outputs.commit_hash }}
+      
+      - name: Fetch material_plus dependency
+        run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
+      
+      - name: Write secret to file
+        run: |
+          cat << EOF > ./lib/keys.dart
+          ${{ secrets.KEYS_FILE }}
+          EOF
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -122,6 +131,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.prepare.outputs.commit_hash }}
+      
+      - name: Fetch material_plus dependency
+        run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
+      
+      - name: Write secret to file
+        run: |
+          cat << EOF > ./lib/keys.dart
+          ${{ secrets.KEYS_FILE }}
+          EOF
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
