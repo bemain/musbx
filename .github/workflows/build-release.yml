@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Extract version from release
         id: version
@@ -40,7 +42,12 @@ jobs:
           git checkout main
           git add pubspec.yaml
           git commit -m "chore: build version ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+          git commit -m "chore: update version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+          # Re-tag the release to point to this new commit
+          git tag -d ${{ github.event.release.tag_name }} || true
+          git tag ${{ github.event.release.tag_name }}
           git push origin main
+          git push origin ${{ github.event.release.tag_name }} --force
 
   build-android:
     name: Build Appbundle
@@ -49,6 +56,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       
       - name: Fetch material_plus dependency
         run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
@@ -81,6 +90,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       
       - name: Fetch material_plus dependency
         run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
@@ -113,9 +124,6 @@ jobs:
     needs: [build-android, build-ios]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
       - name: Download Android build
         uses: actions/download-artifact@v7
         with:
