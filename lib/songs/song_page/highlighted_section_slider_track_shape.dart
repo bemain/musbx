@@ -16,12 +16,12 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
 
   /// Where to begin the highlight, as a fraction of the track's length.
   ///
-  /// Must be between 0 and 1, and smaller than [highlightStart]
+  /// Must be between 0 and 1, and smaller than [highlightEnd]
   final double highlightStart;
 
   /// Where to end the highlight, as a fraction of the track's length.
   ///
-  /// Must be between 0 and 1, and greater than [highlightEnd]
+  /// Must be between 0 and 1, and greater than [highlightStart]
   final double highlightEnd;
 
   /// The color used for the part of the track that is not highlighted.

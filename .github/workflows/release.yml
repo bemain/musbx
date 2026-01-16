@@ -75,7 +75,7 @@ jobs:
           ref: ${{ needs.prepare.outputs.commit_hash }}
       
       - name: Fetch material_plus dependency
-        run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
+        run: git clone --depth=1 https://gitlab.com/flutterby-group/material_plus.git ../material_plus
       
       - name: Write secret to file
         run: |
@@ -120,7 +120,7 @@ jobs:
           ref: ${{ needs.prepare.outputs.commit_hash }}
       
       - name: Fetch material_plus dependency
-        run: git clone --depth=1 https://github.com/bemain/material_plus.git ../material_plus
+        run: git clone --depth=1 https://gitlab.com/flutterby-group/material_plus.git ../material_plus
       
       - name: Write secret to file
         run: |
