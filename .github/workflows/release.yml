@@ -1,8 +1,6 @@
 name: Release & Publish
 
-on:
-  release:
-    types: [published]
+on: workflow_dispatch
 
 jobs:
   # Update Version, Changelog & Commit
@@ -11,8 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    outputs:
-      commit_hash: ${{ steps.commit.outputs.commit_hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -20,42 +16,29 @@ jobs:
           fetch-depth: 0
           ref: main
 
-      - name: Update pubspec.yaml
-        run: |
-          # 1. Get the new Version from the Release Tag (e.g., v1.2.0 -> 1.2.0)
-          NEW_VERSION=${{ github.event.release.tag_name }}
-          NEW_VERSION=${NEW_VERSION#v} 
+      # - name: Bump build number
+      #   run: |
+      #     # 1. Determine the new build number
+      #     CURRENT_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+      #     CURRENT_BUILD=$(echo "$CURRENT_VERSION" | cut -d'+' -f2)
+      #     NEW_BUILD=$((CURRENT_BUILD + 1))
 
-          # 2. Determine the new build number
-          CURRENT_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
-          CURRENT_BUILD=$(echo "$CURRENT_VERSION" | cut -d'+' -f2)
-          NEW_BUILD=$((CURRENT_BUILD + 1))
+      #     echo "Bumping build number from $OLD_BUILD_NUMBER to $NEW_BUILD_NUMBER"
+      #     echo "Setting full version to $NEW_VERSION+$NEW_BUILD_NUMBER"
 
-          echo "Bumping build number from $OLD_BUILD_NUMBER to $NEW_BUILD_NUMBER"
-          echo "Setting full version to $NEW_VERSION+$NEW_BUILD_NUMBER"
+      #     # 2. Write changes back to pubspec.yaml
+      #     sed -i "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
 
-          # 3. Write changes back to pubspec.yaml
-          sed -i "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
-
-      - name: Generate Changelog
+      - name: Generate Changelog & Update version 
         uses: TriPSs/conventional-changelog-action@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          # git-message: "chore(release): ${{ github.event.release.tag_name }} [skip ci]"
+          git-user-name: "github-actions[bot]"
+          git-user-email: "github-actions[bot]@users.noreply.github.com"
+          version-file: ./pubspec.yaml
+          version-path: version
           output-file: "CHANGELOG.md"
-          skip-git-pull: "true"
-
-      - name: Commit & Push
-        id: commit
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'actions@github.com'
-          git add pubspec.yaml CHANGELOG.md
-          
-          # [skip ci] prevents infinite loops
-          git commit -m "chore(release): ${{ github.event.release.tag_name }} [skip ci]"
-          git push origin main
-          
-          echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Upload Changelog Artifact
         uses: actions/upload-artifact@v6
@@ -72,7 +55,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
         with:
-          ref: ${{ needs.prepare.outputs.commit_hash }}
+          ref: main
       
       - name: Fetch material_plus dependency
         run: git clone --depth=1 https://gitlab.com/flutterby-group/material_plus.git ../material_plus
@@ -117,7 +100,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
         with:
-          ref: ${{ needs.prepare.outputs.commit_hash }}
+          ref: main
       
       - name: Fetch material_plus dependency
         run: git clone --depth=1 https://gitlab.com/flutterby-group/material_plus.git ../material_plus
