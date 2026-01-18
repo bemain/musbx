@@ -132,6 +132,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+      
+      - name: Verify Apple Certificate
+        run: security find-identity -p codesigning -v
 
       - name: Install Apple Certificate and Profile
         env:
