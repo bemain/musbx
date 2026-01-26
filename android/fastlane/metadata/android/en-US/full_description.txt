@@ -1,0 +1,16 @@
+Pick a song by searching or uploading from your device. Musician's Toolbox...
+★ Removes instruments or voice for karaoke
+★ Shows chords for you to play along
+★ Changes pitch and speed
+★ Also features Tuner & Metronome
+
+Musician's Toolbox is the all-in-one app designed for every stage of your musical journey. Whether you're a professional looking for advanced practice tools or a beginner just starting your first song, our app provides everything you need with a sleek, intuitive, and beautiful design.
+
+Key Features:
+ ● AI-Powered Demixer: Isolate or remove instruments and vocals from any song to create custom backing tracks.
+ ● Smart Chord Finder: Get instant, accurate chords and guitar tabs for your favorite songs, synced in real-time with the audio.
+ ● Accurate Tuner & Metronome: Precision tools to keep your instrument in tune and your rhythm flawless.
+ ● Pitch and Speed Control: Slow down difficult passages or change the key of a song to practice at your own pace.
+ ● Intuitive UI: A simple, elegant interface that gets out of your way, so you can focus on what matters most: the music.
+
+From practice to performance, Musician's Toolbox is your essential partner. Download now and unlock your musical potential!

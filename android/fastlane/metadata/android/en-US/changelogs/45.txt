@@ -1,0 +1,1 @@
+This release polishes the Songs UI by refactoring the song page layout, improving slider components, and modernizing the settings pages. The changes focus on improving visual consistency and user experience throughout the Songs tool.
