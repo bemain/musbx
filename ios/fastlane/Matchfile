@@ -1,4 +1,4 @@
-git_url("https://github.com/bemain/ios-certificates.git")
+git_url("https://github.com/bemain/fastlane-certificates.git")
 
 storage_mode("git")
 

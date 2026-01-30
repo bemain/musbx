@@ -12,7 +12,7 @@ jobs:
   # ---------------------------------------
   # Changelog for releases only
   # ---------------------------------------
-  orchestrate:
+  prepare:
     runs-on: ubuntu-latest
     outputs:
       version_name: ${{ steps.vars.outputs.version_name }}
@@ -69,8 +69,9 @@ jobs:
 
 
   build_and_deploy:
-    needs: orchestrate
+    needs: prepare
     strategy:
+      fail-fast: false
       matrix:
         include:
           - platform: android
@@ -98,8 +99,9 @@ jobs:
       - name: Decode Android Keystore
         if: matrix.platform == 'android'
         run: |
-          echo "${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+          echo "${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > ../upload-keystore.jks
           echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" > android/key.properties
+          echo "${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_BASE64 }}" | base64 --decode > ../musbx-service-account-key.json
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -119,10 +121,9 @@ jobs:
       - name: Run Fastlane
         working-directory: ${{matrix.platform}}
         env:
-          # These are read by your build.gradle for signing
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         run: bundle install && bundle exec fastlane beta
 
       - name: Upload Artifacts to Release
