@@ -27,7 +27,10 @@ jobs:
         id: vars
         run: |
           # Build number is always based on the unique run number
-          echo "build_number=${{ github.run_number }}" >> $GITHUB_OUTPUT
+          CURRENT_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          CURRENT_BUILD=$(echo "$CURRENT_VERSION" | cut -d'+' -f2)
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+          echo "build_number=$NEW_BUILD" >> $GITHUB_OUTPUT
           
           if [[ "${{ github.event_name }}" == "release" ]]; then
             # Strip 'v' from tag (e.g., v1.2.3 -> 1.2.3)
@@ -35,7 +38,6 @@ jobs:
             echo "version_name=$CLEAN_VERSION" >> $GITHUB_OUTPUT
           else
             # Get current version from pubspec
-            CURRENT_VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //g' | cut -d+ -f1 | xargs)
             echo "version_name=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           fi
 
