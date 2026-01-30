@@ -35,11 +35,11 @@ jobs:
           if [[ "${{ github.event_name }}" == "release" ]]; then
             # Strip 'v' from tag (e.g., v1.2.3 -> 1.2.3)
             CLEAN_VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
-            echo "version_name=$CLEAN_VERSION" >> $GITHUB_OUTPUT
           else
             # Get current version from pubspec
-            echo "version_name=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            CLEAN_VERSION=$(echo "$CURRENT_VERSION" | cut -d'+' -f1)
           fi
+          echo "version_name=$CLEAN_VERSION" >> $GITHUB_OUTPUT
 
       - name: Update Pubspec and Commit
         run: |
