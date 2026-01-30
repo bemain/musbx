@@ -99,7 +99,7 @@ jobs:
       - name: Decode Android files
         if: matrix.platform == 'android'
         run: |
-          echo "${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > ../upload-keystore.jks
+          echo "${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
           echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" > android/key.properties
           echo "${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_BASE64 }}" | base64 --decode > ../musbx-service-account-key.json
 
