@@ -212,7 +212,7 @@ class AccidentalSelector extends StatelessWidget {
                       ),
                       subtitle: Text(switch (accidental) {
                         Accidental.natural =>
-                          "Uses sharps or flats depending on which key has fewest accidentals.",
+                          "Uses sharps or flats depending on which key has fewer accidentals.",
                         Accidental.sharp => "Only uses sharps (♯).",
                         Accidental.flat => "Only uses flats (♭).",
                       }),
