@@ -68,7 +68,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-  build_and_deploy:
+  deploy:
     needs: prepare
     strategy:
       fail-fast: false
@@ -90,13 +90,13 @@ jobs:
       - name: Fetch material_plus dependency
         run: git clone --depth=1 https://gitlab.com/flutterby-group/material_plus.git ../material_plus
       
-      - name: Write secret to file
+      - name: Write keys.dart to file
         run: |
           cat << EOF > ./lib/keys.dart
           ${{ secrets.KEYS_FILE }}
           EOF
       
-      - name: Decode Android Keystore
+      - name: Decode Android files
         if: matrix.platform == 'android'
         run: |
           echo "${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > ../upload-keystore.jks
@@ -109,9 +109,6 @@ jobs:
           channel: "stable"
           cache: true
       
-      - name: Install dependencies
-        run: flutter pub get
-
       - name: Install Ruby & Bundler
         uses: ruby/setup-ruby@v1
         with:
@@ -121,10 +118,12 @@ jobs:
       - name: Run Fastlane
         working-directory: ${{matrix.platform}}
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }} # Password for keystore (Android only)
 
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-        run: bundle install && bundle exec fastlane beta
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }} # Password for fastlane match (iOS only)
+        run: |
+          bundle install
+          bundle exec fastlane beta
 
       - name: Upload Artifacts to Release
         if: github.event_name == 'release'
