@@ -48,7 +48,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add pubspec.yaml
-          git commit -m "chore: bump version to $VERSION+$BUILD"
+          git commit -m "chore: bump version to $VERSION+$BUILD [skip ci]"
           git push
 
       - name: Generate Changelog
@@ -122,11 +122,6 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: bundle install && bundle exec fastlane beta
-
-      - name: Build & deploy iOS
-        run: |
-          cd ios
-          bundle exec fastlane deploy
 
       - name: Upload Artifacts to Release
         if: github.event_name == 'release'

@@ -3,7 +3,7 @@ default_platform(:android)
 platform :android do
   desc "Build and upload to Google Play Beta Track"
   lane :beta do
-    gradle(task: 'assemble', build_type: 'Release')
+    sh "flutter build appbundle --release"
 
     upload_to_play_store(
       track: 'beta',
