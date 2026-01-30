@@ -1,0 +1,140 @@
+name: Flutter Build & Deploy
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  # ---------------------------------------
+  # Changelog for releases only
+  # ---------------------------------------
+  orchestrate:
+    runs-on: ubuntu-latest
+    outputs:
+      version_name: ${{ steps.vars.outputs.version_name }}
+      build_number: ${{ steps.vars.outputs.build_number }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Calculate Version and Build Number
+        id: vars
+        run: |
+          # Build number is always based on the unique run number
+          echo "build_number=${{ github.run_number }}" >> $GITHUB_OUTPUT
+          
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            # Strip 'v' from tag (e.g., v1.2.3 -> 1.2.3)
+            CLEAN_VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
+            echo "version_name=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+          else
+            # Get current version from pubspec
+            CURRENT_VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //g' | cut -d+ -f1 | xargs)
+            echo "version_name=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update Pubspec and Commit
+        run: |
+          VERSION="${{ steps.vars.outputs.version_name }}"
+          BUILD="${{ steps.vars.outputs.build_number }}"
+          sed -i "s/^version: .*/version: $VERSION+$BUILD/" pubspec.yaml
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "chore: bump version to $VERSION+$BUILD"
+          git push
+
+      - name: Generate Changelog
+        if: github.event_name == 'release'
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Release Description
+        if: github.event_name == 'release'
+        run: |
+          gh release edit ${{ github.event.release.tag_name }} --notes "${{ steps.changelog.outputs.changelog }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+  build_and_deploy:
+    needs: orchestrate
+    strategy:
+      matrix:
+        include:
+          - platform: android
+            os: ubuntu-latest
+          - platform: ios
+            os: macos-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          ref: main
+    
+      - name: Fetch material_plus dependency
+        run: git clone --depth=1 https://gitlab.com/flutterby-group/material_plus.git ../material_plus
+      
+      - name: Write secret to file
+        run: |
+          cat << EOF > ./lib/keys.dart
+          ${{ secrets.KEYS_FILE }}
+          EOF
+      
+      - name: Decode Android Keystore
+        if: matrix.platform == 'android'
+        run: |
+          echo "${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+          echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" > android/key.properties
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+      
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install Ruby & Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Run Fastlane
+        working-directory: ${{matrix.platform}}
+        env:
+          # These are read by your build.gradle for signing
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: bundle install && bundle exec fastlane beta
+
+      - name: Build & deploy iOS
+        run: |
+          cd ios
+          bundle exec fastlane deploy
+
+      - name: Upload Artifacts to Release
+        if: github.event_name == 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ matrix.platform }}" == "android" ]; then
+            gh release upload ${{ github.event.release.tag_name }} build/app/outputs/bundle/release/app-release.aab
+          else
+            gh release upload ${{ github.event.release.tag_name }} ios/build/Runner.ipa
+          fi
