@@ -20,6 +20,12 @@ platform :ios do
       scheme: "Runner",
       clean: true,
       export_method: "app-store",
+      export_options: {
+        provisioningProfiles: { 
+          "se.agardh.musbox" => "match AppStore se.agardh.musbox"
+        },
+        signingStyle: "manual",
+      }
     )
     
     upload_to_testflight
