@@ -2,6 +2,16 @@ name: Flutter Build & Deploy
 
 on:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - android
+          - ios
+          - both
   release:
     types: [published]
 
@@ -9,19 +19,24 @@ permissions:
   contents: write
 
 jobs:
-  # ---------------------------------------
-  # Changelog for releases only
-  # ---------------------------------------
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      version_name: ${{ steps.vars.outputs.version_name }}
-      build_number: ${{ steps.vars.outputs.build_number }}
+      platforms: ${{ steps.platforms.outputs.platforms }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Determine platforms
+        id: platforms
+        run: |
+          if [[ "${{ github.event_name }}" == "release" || "${{ github.event.inputs.platform }}" == "both" ]]; then
+            echo 'platforms=["android", "ios"]' >> $GITHUB_OUTPUT
+          else
+            echo 'platforms=["${{ github.event.inputs.platform }}"]' >> $GITHUB_OUTPUT
+          fi
 
       - name: Calculate Version and Build Number
         id: vars
@@ -73,13 +88,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: android
-            os: ubuntu-latest
-          - platform: ios
-            os: macos-latest
+        platform: ${{ fromJson(needs.prepare.outputs.platforms) }}
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ (matrix.platform == 'ios') && 'macos-latest' || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout repo
