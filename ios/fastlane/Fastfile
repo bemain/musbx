@@ -5,14 +5,12 @@ platform :ios do
   lane :beta do
     match(type: "appstore", readonly: true)
   
+    sh "flutter build ipa --release"
+
     build_app(
       scheme: "Runner",
       export_method: "app-store",
-      export_options: {
-        provisioningProfiles: { 
-          "se.agardh.musbox" => "Distribute to App Store" 
-        }
-      },
+      skip_build_archive: true,
       archive_path: "../build/ios/archive/Runner.xcarchive",
     )
     
