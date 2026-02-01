@@ -75,7 +75,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add pubspec.yaml
-          git commit -m "chore: build version $VERSION+$BUILD [skip ci]"
+          if git diff-index --quiet HEAD --; then
+              echo "No changes to commit."
+          else
+              git commit -m "chore: build version $VERSION+$BUILD [skip ci]"
+          fi
           git push
 
       - name: Generate Changelog
