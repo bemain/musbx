@@ -12,6 +12,12 @@ on:
           - android
           - ios
           - both
+      bump_build: 
+        description: 'Increase build number'
+        required: false
+        type: boolean
+        default: true
+
   release:
     types: [published]
 
@@ -41,20 +47,24 @@ jobs:
       - name: Calculate Version and Build Number
         id: vars
         run: |
-          # Build number is always based on the unique run number
-          CURRENT_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
-          CURRENT_BUILD=$(echo "$CURRENT_VERSION" | cut -d'+' -f2)
-          NEW_BUILD=$((CURRENT_BUILD + 1))
-          echo "build_number=$NEW_BUILD" >> $GITHUB_OUTPUT
+          VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+
+          # Determine build number
+          BUILD=$(echo "$VERSION" | cut -d'+' -f2)
+          if [[ "${{ github.event_name }}" != "release"  && "${{ github.event.inputs.bump_build }}" == "true" ]]; then
+            BUILD=$((BUILD + 1))
+          fi
+          echo "build_number=$BUILD" >> $GITHUB_OUTPUT
           
+          # Determine version name
           if [[ "${{ github.event_name }}" == "release" ]]; then
             # Strip 'v' from tag (e.g., v1.2.3 -> 1.2.3)
-            CLEAN_VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
+            VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
           else
             # Get current version from pubspec
-            CLEAN_VERSION=$(echo "$CURRENT_VERSION" | cut -d'+' -f1)
+            VERSION=$(echo "$VERSION" | cut -d'+' -f1)
           fi
-          echo "version_name=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+          echo "version_name=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Update Pubspec and Commit
         run: |
