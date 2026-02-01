@@ -50,7 +50,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add pubspec.yaml
-          git commit -m "chore: bump version to $VERSION+$BUILD [skip ci]"
+          git commit -m "chore: build version $VERSION+$BUILD [skip ci]"
           git push
 
       - name: Generate Changelog
@@ -121,6 +121,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }} # Password for keystore (Android only)
 
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }} # Password for fastlane match (iOS only)
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION_BASE64 }} # Git authorization for fastlane match (iOS only)
         run: |
           bundle install
           bundle exec fastlane beta
