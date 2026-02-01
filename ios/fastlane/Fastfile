@@ -3,15 +3,23 @@ default_platform(:ios)
 platform :ios do
   desc "Build and upload to TestFlight"
   lane :beta do
+    # Generates ios/Flutter/Generated.xcconfig, required by the Podfile
+    sh("cd .. && flutter pub get")
+
+    # Make sure CocoaPods is setup correcly
+    cocoapods(
+      clean: true,
+      podfile: "./Podfile"
+    )
+
+    # Sync code signing
     match(type: "appstore", readonly: true)
   
-    sh "flutter build ipa --release"
-
-    build_app(
+    build_ios_app(
+      workspace: "Runner.xcworkspace",
       scheme: "Runner",
+      clean: true,
       export_method: "app-store",
-      skip_build_archive: true,
-      archive_path: "../build/ios/archive/Runner.xcarchive",
     )
     
     upload_to_testflight
