@@ -145,6 +145,9 @@ jobs:
         env:
           CI: true # Tell Fastlane we are in a CI
 
+          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }} # Password for fastlane (iOS only)
+          FASTLANE_DONT_STORE_PASSWORD: 1
+
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }} # Password for keystore (Android only)
 
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }} # Password for fastlane match (iOS only)
