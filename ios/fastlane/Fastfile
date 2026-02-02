@@ -3,6 +3,11 @@ default_platform(:ios)
 platform :ios do
   desc "Build and upload to TestFlight"
   lane :beta do
+    if ENV["CI"]
+      # Setup keychain and other CI-specific stuff
+      setup_ci
+    end
+
     # Generates ios/Flutter/Generated.xcconfig, required by the Podfile
     sh("cd .. && flutter pub get")
 

@@ -143,6 +143,8 @@ jobs:
       - name: Run Fastlane
         working-directory: ${{matrix.platform}}
         env:
+          CI: true # Tell Fastlane we are in a CI
+
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }} # Password for keystore (Android only)
 
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }} # Password for fastlane match (iOS only)
