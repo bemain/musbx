@@ -3,10 +3,8 @@ default_platform(:ios)
 platform :ios do
   desc "Build and upload to TestFlight"
   lane :beta do
-    if ENV["CI"]
-      # Setup keychain and other CI-specific stuff
-      setup_ci
-    end
+    # Setup keychain and other CI-specific stuff
+    setup_ci if ENV['CI']
 
     # Generates ios/Flutter/Generated.xcconfig, required by the Podfile
     sh("cd .. && flutter pub get")
@@ -18,9 +16,9 @@ platform :ios do
     )
 
     # Sync code signing
-    match(type: "appstore", readonly: true)
+    match(type: "appstore")
   
-    build_ios_app(
+    build_app(
       workspace: "Runner.xcworkspace",
       scheme: "Runner",
       clean: true,
@@ -33,6 +31,6 @@ platform :ios do
       }
     )
     
-    upload_to_testflight
+    upload_to_testflight(skip_waiting_for_build_processing: true)
   end
 end
