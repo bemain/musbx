@@ -152,6 +152,10 @@ jobs:
 
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }} # Password for fastlane match (iOS only)
           MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION_BASE64 }} # Git authorization for fastlane match (iOS only)
+          APPSTORE_CONNECT_API_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_API_ISSUER_ID }} # Appstore Connect API issuer ID (iOS only)
+          APPSTORE_CONNECT_API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }} # Appstore Connect API key ID (iOS only)
+          APPSTORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APPSTORE_CONNECT_API_KEY_CONTENT }} # Content of the Appstore Connect API key (iOS only)
+
         run: |
           bundle install
           bundle exec fastlane beta
