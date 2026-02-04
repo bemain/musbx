@@ -51,7 +51,7 @@ jobs:
 
           # Determine build number
           BUILD=$(echo "$VERSION" | cut -d'+' -f2)
-          if [[ "${{ github.event_name }}" != "release"  && "${{ github.event.inputs.bump_build }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "release"  || "${{ github.event.inputs.bump_build }}" == "true" ]]; then
             BUILD=$((BUILD + 1))
           fi
           echo "build_number=$BUILD" >> $GITHUB_OUTPUT
