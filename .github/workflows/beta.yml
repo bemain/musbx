@@ -45,7 +45,7 @@ jobs:
           fi
 
       - name: Calculate Version and Build Number
-        id: vars
+        id: version
         run: |
           VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
 
@@ -65,29 +65,33 @@ jobs:
             VERSION=$(echo "$VERSION" | cut -d'+' -f1)
           fi
           echo "version_name=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Update Pubspec and Commit
-        run: |
-          VERSION="${{ steps.vars.outputs.version_name }}"
-          BUILD="${{ steps.vars.outputs.build_number }}"
-          sed -i "s/^version: .*/version: $VERSION+$BUILD/" pubspec.yaml
-          
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add pubspec.yaml
-          if git diff-index --quiet HEAD --; then
-              echo "No changes to commit."
-          else
-              git commit -m "chore(release): v$VERSION+$BUILD [skip ci]"
-          fi
-          git push
-
+      
       - name: Generate Changelog
         if: github.event_name == 'release'
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit changes
+        run: |
+          # Update pubspec.yaml
+          VERSION="${{ steps.version.outputs.version_name }}"
+          BUILD="${{ steps.version.outputs.build_number }}"
+          sed -i "s/^version: .*/version: $VERSION+$BUILD/" pubspec.yaml
+
+          # Update CHANGELOG.md
+          echo "${{ steps.changelog.outputs.changelog }}" > CHANGELOG.md
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml CHANGELOG.md
+          if git diff-index --quiet HEAD --; then
+              echo "No changes to commit."
+          else
+              git commit -m "chore(release): v$VERSION+$BUILD [skip ci]"
+          fi
+          git push
 
       - name: Update Release Description
         if: github.event_name == 'release'
