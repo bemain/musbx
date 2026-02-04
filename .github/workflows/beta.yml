@@ -91,7 +91,7 @@ jobs:
           else
               git commit -m "chore(release): v$VERSION+$BUILD [skip ci]"
           fi
-          git push
+          git push origin HEAD:main
 
       - name: Update Release Description
         if: github.event_name == 'release'
