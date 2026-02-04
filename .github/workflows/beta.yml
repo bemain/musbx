@@ -78,7 +78,7 @@ jobs:
           if git diff-index --quiet HEAD --; then
               echo "No changes to commit."
           else
-              git commit -m "chore: build version $VERSION+$BUILD [skip ci]"
+              git commit -m "chore(release): v$VERSION+$BUILD [skip ci]"
           fi
           git push
 
@@ -145,13 +145,11 @@ jobs:
         env:
           CI: true # Tell Fastlane we are in a CI
 
-          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }} # Password for fastlane (iOS only)
-          FASTLANE_DONT_STORE_PASSWORD: 1
-
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }} # Password for keystore (Android only)
 
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }} # Password for fastlane match (iOS only)
           MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION_BASE64 }} # Git authorization for fastlane match (iOS only)
+          
           APPSTORE_CONNECT_API_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_API_ISSUER_ID }} # Appstore Connect API issuer ID (iOS only)
           APPSTORE_CONNECT_API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }} # Appstore Connect API key ID (iOS only)
           APPSTORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APPSTORE_CONNECT_API_KEY_CONTENT_BASE64 }} # Content of the Appstore Connect API key (iOS only)
