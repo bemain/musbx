@@ -93,10 +93,14 @@ jobs:
           fi
           git push origin HEAD:main
 
-      - name: Update Release Description
+      - name: Update Release details
         if: github.event_name == 'release'
         run: |
           gh release edit ${{ github.event.release.tag_name }} --notes "${{ steps.changelog.outputs.changelog }}"
+          # Retag
+          git tag -d ${{ github.event.release.tag_name }} || true
+          git tag ${{ github.event.release.tag_name }}
+          git push origin ${{ github.event.release.tag_name }} --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
