@@ -172,7 +172,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ matrix.platform }}" == "android" ]; then
-            gh release upload ${{ github.event.release.tag_name }} build/app/outputs/bundle/release/app-release.aab
-          else
-            gh release upload ${{ github.event.release.tag_name }} ios/build/Runner.ipa
+            FILE=musbx-android-${{ github.event.release.tag_name }}.aab
+            mv build/app/outputs/bundle/release/app-release.aab ${FILE}
+          elif [ "${{ matrix.platform }}" == "ios" ]; then
+            FILE=musbx-ios-${{ github.event.release.tag_name }}.ipa
+            mv ios/Runner.ipa ${FILE}
           fi
+
+          gh release upload ${{ github.event.release.tag_name }} ${FILE}
+
