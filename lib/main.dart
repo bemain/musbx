@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:musbx/analytics.dart';
 import 'package:musbx/navigation.dart';
@@ -13,6 +11,7 @@ import 'package:musbx/theme.dart';
 import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/widgets/ads.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 Future<void> main() async {
@@ -29,9 +28,7 @@ Future<void> main() async {
   await LaunchHandler.initialize();
 
   // Google Ads
-  if (Platform.isAndroid || Platform.isIOS) {
-    unawaited(MobileAds.instance.initialize());
-  }
+  unawaited(Ads.initialize());
   await Purchases.intialize();
 
   // Lock screen orientation

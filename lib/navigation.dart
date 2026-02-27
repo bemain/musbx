@@ -14,7 +14,6 @@ import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
 import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/purchases.dart';
-import 'package:musbx/widgets/ads.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
@@ -242,25 +241,9 @@ class Navigation {
     StatefulNavigationShell shell,
   ) {
     navigationShell = shell;
-    return ValueListenableBuilder(
-      valueListenable: Purchases.hasPremiumNotifier,
-      builder: (context, hasPremium, child) {
-        return Scaffold(
-          body: shell,
-          bottomNavigationBar: hasPremium
-              ? _buildNavigationBar(shell)
-              : SafeArea(
-                  top: false,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildNavigationBar(shell),
-                      const BannerAdWidget(),
-                    ],
-                  ),
-                ),
-        );
-      },
+    return Scaffold(
+      body: shell,
+      bottomNavigationBar: _buildNavigationBar(shell),
     );
   }
 

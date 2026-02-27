@@ -99,47 +99,57 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   }
 }
 
-/// Load an interstitial ad.
-Future<InterstitialAd?> loadInterstitialAd() async {
-  /// The AdMob ad unit to show.
-  final String adUnitId = kDebugMode
-      // Test interstitial ad units, provided by Google
-      ? Platform.isAndroid
-            ? "ca-app-pub-3940256099942544/1033173712"
-            : "ca-app-pub-3940256099942544/4411468910"
-      // Real ad units
-      : Platform.isAndroid
-      ? "ca-app-pub-5107868608906815/5388751299"
-      : "ca-app-pub-5107868608906815/3177520920";
+class Ads {
+  Ads._();
 
-  Completer<InterstitialAd?> completer = Completer();
+  static Future<void> initialize() async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      await MobileAds.instance.initialize();
+    }
+  }
 
-  await InterstitialAd.load(
-    adUnitId: adUnitId,
-    request: const AdRequest(),
-    adLoadCallback: InterstitialAdLoadCallback(
-      onAdLoaded: (ad) {
-        ad.fullScreenContentCallback = FullScreenContentCallback(
-          onAdShowedFullScreenContent: (ad) {},
-          onAdImpression: (ad) {},
-          onAdFailedToShowFullScreenContent: (ad, error) {
-            debugPrint("[ADS] InterstitialAd failed to show: $error");
-            ad.dispose();
-          },
-          onAdDismissedFullScreenContent: (ad) {
-            ad.dispose();
-          },
-          onAdClicked: (ad) {},
-        );
+  /// Load an interstitial ad.
+  static Future<InterstitialAd?> loadInterstitial() async {
+    /// The AdMob ad unit to show.
+    final String adUnitId = kDebugMode
+        // Test interstitial ad units, provided by Google
+        ? Platform.isAndroid
+              ? "ca-app-pub-3940256099942544/1033173712"
+              : "ca-app-pub-3940256099942544/4411468910"
+        // Real ad units
+        : Platform.isAndroid
+        ? "ca-app-pub-5107868608906815/5388751299"
+        : "ca-app-pub-5107868608906815/3177520920";
 
-        completer.complete(ad);
-      },
-      onAdFailedToLoad: (error) {
-        debugPrint("[ADS] InterstitialAd failed to load: $error");
-        completer.completeError(error);
-      },
-    ),
-  );
+    Completer<InterstitialAd?> completer = Completer();
 
-  return await completer.future;
+    await InterstitialAd.load(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdShowedFullScreenContent: (ad) {},
+            onAdImpression: (ad) {},
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              debugPrint("[ADS] InterstitialAd failed to show: $error");
+              ad.dispose();
+            },
+            onAdDismissedFullScreenContent: (ad) {
+              ad.dispose();
+            },
+            onAdClicked: (ad) {},
+          );
+
+          completer.complete(ad);
+        },
+        onAdFailedToLoad: (error) {
+          debugPrint("[ADS] InterstitialAd failed to load: $error");
+          completer.completeError(error);
+        },
+      ),
+    );
+
+    return await completer.future;
+  }
 }

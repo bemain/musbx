@@ -112,7 +112,6 @@ flutter build apk --release        # Android release build
 2. **Persistent values**: Must call `PersistentValue.initialize()` in main() before creating any instances
 3. **Demixing cache**: Songs store stems in `song.audioDirectory`, check `song.isDemixed` before assuming stems exist
 4. **Firebase**: `firebase_options.dart` auto-generated, don't edit manually
-5. **Platform specifics**: Ads only on Android/iOS, some features desktop-only
 6. **Component lifecycle**: SongPlayerComponents are tied to player instance, dispose with player
 
 ## Testing

@@ -14,7 +14,6 @@ import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/utils/utils.dart';
-import 'package:musbx/widgets/ads.dart';
 
 /// The demo song loaded the first time the user launches the app.
 /// Access to this song is unrestricted.
@@ -152,13 +151,6 @@ class Songs {
         throw const AccessRestrictedException(
           "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.",
         );
-      }
-
-      try {
-        // Show interstitial ad
-        unawaited((await loadInterstitialAd())?.show());
-      } catch (e) {
-        debugPrint("[ADS] Failed to load interstitial ad: $e");
       }
     }
 
