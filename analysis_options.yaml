@@ -15,6 +15,8 @@ formatter:
   page_width: 79
 
 analyzer:
+  errors:
+    experimental_member_use: ignore
   language:
     strict-casts: true
     strict-inference: true
