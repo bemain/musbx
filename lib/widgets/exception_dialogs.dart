@@ -64,7 +64,6 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Text(" ★ Unlimited songs"),
                 const Text(" ★ Full access to AI-powered Demixing"),
-                const Text(" ★ An ad-free experience"),
               ],
             ),
           ),
