@@ -9,6 +9,7 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
 import 'package:musbx/utils/launch_handler.dart';
+import 'package:musbx/utils/links.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/ads.dart';
@@ -16,6 +17,8 @@ import 'package:musbx/widgets/widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Links.initialize();
 
   await PersistentValue.initialize();
   await Directories.initialize();

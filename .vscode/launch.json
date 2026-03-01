@@ -4,13 +4,19 @@
             "name": "Flutter",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "debug"
+            "flutterMode": "debug",
+            "env": {
+                "_JAVA_OPTIONS": "-Xlog:os+container=off", // Removes warning when running on WayDroid
+            },
         },
         {
             "name": "Flutter (Release)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release"
+            "flutterMode": "release",
+            "env": {
+                "_JAVA_OPTIONS": "-Xlog:os+container=off", // Removes warning when running on WayDroid
+            },
         }
     ]
 }

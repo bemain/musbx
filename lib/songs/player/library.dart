@@ -1,0 +1,69 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:html_unescape/html_unescape.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
+import 'package:musbx/songs/library_page/soundcloud_search.dart';
+import 'package:musbx/songs/player/audio_provider.dart';
+import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/utils/history_handler.dart';
+import 'package:musbx/utils/utils.dart';
+
+class SongLibrary {
+  /// The history of previously loaded songs.
+  static final HistoryHandler<Song> history = HistoryHandler<Song>(
+    historyFileName: "songs/history",
+    fromJson: (json) {
+      if (json is! Json) {
+        throw "[LIBRARY] Incorrectly formatted entry in history file: ($json)";
+      }
+      Song? song = Song.fromJson(json);
+      if (song == null) {
+        throw "[LIBRARY] History entry ($json) could not be parsed as a Song.";
+      }
+      return song;
+    },
+    toJson: (value) => value.toJson(),
+    onEntryRemoved: (entry) async {
+      // Remove cached files
+      debugPrint(
+        "[LIBRARY] Deleting cached files for song ${entry.value.id}",
+      );
+      await entry.value.clearCache();
+    },
+  );
+
+  /// Adds a [song] to the user's library.
+  static Future<Song> addSong(Song song) async {
+    await history.add(song);
+    if (Songs.demixAutomatically) DemixingProcesses.start(song);
+    return song;
+  }
+
+  /// Loads a [file] into the user's library.
+  static Future<Song> addFile(File file) async {
+    return await addSong(
+      Song(
+        id: file.path.hashCode.toString(),
+        title: file.path.split("/").last.split(".").first,
+        audio: FileAudio(file),
+      ),
+    );
+  }
+
+  /// Loads a [track] from SoundCloud into the user's library.
+  static Future<Song> addTrack(SoundCloudTrack track) async {
+    return await addSong(
+      Song(
+        id: track.id.toString(),
+        title: HtmlUnescape().convert(track.title),
+        artist: HtmlUnescape().convert(track.username),
+        artUri: track.artworkUrl != null
+            ? Uri.tryParse(track.artworkUrl!)
+            : null,
+        audio: YtdlpAudio(Uri.parse(track.permalinkUrl)),
+      ),
+    );
+  }
+}

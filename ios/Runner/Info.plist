@@ -65,6 +65,22 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<!-- Marks the app as able to open audio files -->
+		<key>CFBundleDocumentTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeName</key>
+				<string>Audio Files</string>
+				<key>LSHandlerRank</key>
+				<string>Alternate</string>
+				<key>LSItemContentTypes</key>
+				<array>
+					<string>public.mp3</string>
+					<string>com.microsoft.waveform-audio</string>
+					<string>public.ogg-audio</string>
+				</array>
+			</dict>
+		</array>
 		<!--Added by google_mobile_ads package-->
 		<key>GADApplicationIdentifier</key>
 		<string>ca-app-pub-5107868608906815~5516404495</string>
