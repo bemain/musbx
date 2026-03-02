@@ -18,21 +18,21 @@ import 'package:musbx/widgets/widgets.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Links.initialize();
-
   await PersistentValue.initialize();
   await Directories.initialize();
 
   await Analytics.initialize();
+  await Purchases.intialize();
 
   await Songs.initialize();
   await Notifications.initialize();
+
+  Links.initialize();
 
   await LaunchHandler.initialize();
 
   // Google Ads
   unawaited(Ads.initialize());
-  await Purchases.intialize();
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

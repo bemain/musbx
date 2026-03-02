@@ -33,7 +33,7 @@ class YoutubeSearch {
       artUri: Uri.tryParse(video.thumbnails.high.url),
       audio: YtdlpAudio(Uri.parse(video.url)),
     );
-    await SongLibrary.history.add(song);
+    await SongLibrary.add(song);
     if (Songs.demixAutomatically) DemixingProcesses.start(song);
 
     if (context.mounted) context.go(Routes.song(video.id));

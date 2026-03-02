@@ -24,7 +24,8 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Marks the app as able to open audio files -->
+            <!-- Added by app_links package -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
@@ -40,9 +41,6 @@
                 <!-- ogg -->
                 <data android:mimeType="audio/ogg" />
                 <data android:mimeType="application/ogg" />
-                
-                <data android:scheme="file" />
-                <data android:scheme="content" />
             </intent-filter>
         </activity>
         <!-- Added by audio_service package. -->

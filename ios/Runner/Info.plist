@@ -65,7 +65,9 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
-		<!-- Marks the app as able to open audio files -->
+		<!-- Added by app_links package -->
+		<key>FlutterDeepLinkingEnabled</key>
+		<false/>
 		<key>CFBundleDocumentTypes</key>
 		<array>
 			<dict>
