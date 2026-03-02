@@ -10,7 +10,30 @@ import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/utils.dart';
 
+/// The demo song loaded the first time the user launches the app.
+/// Access to this song is unrestricted.
+final Song demoSong = Song(
+  id: "demo",
+  title: "In Treble, Spilled Some Jazz Jam",
+  artist: "Erik Lagerstedt",
+  artUri: Uri.parse("https://bemain.github.io/musbx/demo_album_art.png"),
+  audio: YtdlpAudio(Uri.parse("https://youtu.be/9ytqRUjYJ7s")),
+);
+
 class SongLibrary {
+  SongLibrary._();
+
+  static bool initialized = false;
+
+  /// Fetch [history] from disk.
+  static Future<void> initialize() async {
+    await history.fetch();
+
+    if (history.entries.isEmpty) {
+      await history.add(demoSong);
+    }
+  }
+
   /// The history of previously loaded songs.
   static final HistoryHandler<Song> history = HistoryHandler<Song>(
     historyFileName: "songs/history",
@@ -35,7 +58,7 @@ class SongLibrary {
   );
 
   /// Adds a [song] to the user's library.
-  static Future<Song> addSong(Song song) async {
+  static Future<Song> add(Song song) async {
     await history.add(song);
     if (Songs.demixAutomatically) DemixingProcesses.start(song);
     return song;
@@ -43,7 +66,7 @@ class SongLibrary {
 
   /// Loads a [file] into the user's library.
   static Future<Song> addFile(File file) async {
-    return await addSong(
+    return await add(
       Song(
         id: file.path.hashCode.toString(),
         title: file.path.split("/").last.split(".").first,
@@ -54,7 +77,7 @@ class SongLibrary {
 
   /// Loads a [track] from SoundCloud into the user's library.
   static Future<Song> addTrack(SoundCloudTrack track) async {
-    return await addSong(
+    return await add(
       Song(
         id: track.id.toString(),
         title: HtmlUnescape().convert(track.title),

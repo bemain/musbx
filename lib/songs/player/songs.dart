@@ -8,22 +8,10 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
+import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/purchases.dart';
-import 'package:musbx/utils/utils.dart';
-
-/// The demo song loaded the first time the user launches the app.
-/// Access to this song is unrestricted.
-final Song demoSong = Song(
-  id: "demo",
-  title: "In Treble, Spilled Some Jazz Jam",
-  artist: "Erik Lagerstedt",
-  artUri: Uri.parse("https://bemain.github.io/musbx/demo_album_art.png"),
-  audio: YtdlpAudio(Uri.parse("https://youtu.be/9ytqRUjYJ7s")),
-);
 
 /// A helper class for loading songs.
 class Songs {
@@ -63,11 +51,7 @@ class Songs {
     // Begin fetching history from disk
     unawaited(SoundCloudSearch.history.fetch());
     unawaited(
-      history.fetch().then((_) {
-        if (history.entries.isEmpty) {
-          history.add(demoSong);
-        }
-
+      SongLibrary.initialize().then((_) {
         _resumeDemixing();
       }),
     );
@@ -77,38 +61,18 @@ class Songs {
     if (!demixAutomatically) return;
 
     DemixingProcesses.startAll(
-      history.entries.values.where((song) => song.shouldDemix),
+      SongLibrary.history.entries.values.where((song) => song.shouldDemix),
     );
   }
-
-  /// The history of previously loaded songs.
-  static final HistoryHandler<Song> history = HistoryHandler<Song>(
-    historyFileName: "songs/history",
-    fromJson: (json) {
-      if (json is! Json) {
-        throw "[SONG HISTORY] Incorrectly formatted entry in history file: ($json)";
-      }
-      Song? song = Song.fromJson(json);
-      if (song == null) {
-        throw "[SONG HISTORY] History entry ($json) could not be parsed as a Song.";
-      }
-      return song;
-    },
-    toJson: (value) => value.toJson(),
-    onEntryRemoved: (entry) async {
-      // Remove cached files
-      debugPrint(
-        "[SONG HISTORY] Deleting cached files for song ${entry.value.id}",
-      );
-      await entry.value.clearCache();
-    },
-  );
 
   /// The number of songs the user can play each week on the 'free' flavor of the app.
   static const int freeSongsPerWeek = 3;
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
-  static Iterable<Song> get songsPlayedThisWeek => history.entries.entries
+  static Iterable<Song> get songsPlayedThisWeek => SongLibrary
+      .history
+      .entries
+      .entries
       .where(
         (entry) =>
             entry.key.difference(DateTime.now()).abs() <
@@ -145,14 +109,17 @@ class Songs {
     Song song, {
     bool ignoreFreeLimit = false,
   }) async {
-    if (!Purchases.hasPremium && !ignoreFreeLimit) {
-      // Make sure the weekly limit has not been exceeded
-      if (isAccessRestricted && !songsPlayedThisWeek.contains(song)) {
-        throw const AccessRestrictedException(
-          "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.",
-        );
-      }
+    // Make sure the weekly limit has not been exceeded
+    if (!ignoreFreeLimit &&
+        isAccessRestricted &&
+        !songsPlayedThisWeek.contains(song)) {
+      print("[DEBUG] Access restricted");
+      throw const AccessRestrictedException(
+        "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.",
+      );
     }
+
+    print("[DEBUG] Disposing");
 
     // Dispose the previous player
     await Songs.dispose();
@@ -161,7 +128,7 @@ class Songs {
     final SongPlayer player = await SongPlayer.load(song);
 
     // Add to song history.
-    await history.add(song);
+    await SongLibrary.add(song);
 
     // Update media notification
     player.addListener(handler.updateState);

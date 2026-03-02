@@ -8,6 +8,7 @@ import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/settings_sub_pages.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
+import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
@@ -154,7 +155,7 @@ class Navigation {
                           path: ":id",
                           redirect: (context, state) {
                             final String? id = state.pathParameters['id'];
-                            if (Songs.history.entries.values
+                            if (SongLibrary.history.entries.values
                                 .where((song) => song.id == id)
                                 .isEmpty) {
                               // If the song isn't in the library, redirect to the songs page
@@ -165,7 +166,10 @@ class Navigation {
                           },
                           builder: (context, state) {
                             final String id = state.pathParameters['id']!;
-                            final Song song = Songs.history.entries.values
+                            final Song song = SongLibrary
+                                .history
+                                .entries
+                                .values
                                 .firstWhere((song) => song.id == id);
 
                             return FutureBuilder(

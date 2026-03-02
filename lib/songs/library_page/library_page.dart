@@ -35,12 +35,12 @@ class LibraryPage extends StatelessWidget {
             ],
           ),
           ListenableBuilder(
-            listenable: Songs.history,
+            listenable: SongLibrary.history,
             builder: (context, child) {
               return SliverList.list(
                 children: [
                   const SizedBox(height: 8),
-                  for (final Song song in Songs.history.sorted(
+                  for (final Song song in SongLibrary.history.sorted(
                     ascending: false,
                   ))
                     _buildSongTile(context, song),
@@ -181,7 +181,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         if (query.isEmpty) return const [];
 
         // History entries that match the search query
-        final Iterable<Song> songHistory = Songs.history
+        final Iterable<Song> songHistory = SongLibrary.history
             .sorted(ascending: false)
             .where(
               (song) =>

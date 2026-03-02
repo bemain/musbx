@@ -4,8 +4,8 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
+import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
 
 class DemixingProgressIndicator extends StatefulWidget {
   const DemixingProgressIndicator({
@@ -109,14 +109,14 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Songs.history,
+      listenable: SongLibrary.history,
       builder: (context, child) {
         // Any update to the history could be an update to *this* song.
         // Thus, we get the song from history each time we build instead of using
         // the song passed in the constructor.
         // For example, if the song is renamed while the sheet is open, it will
         // automatically be rebuilt with the correct information.
-        final Song? song = Songs.history.entries.values
+        final Song? song = SongLibrary.history.entries.values
             .where((song) => song.id == widget.song.id)
             .firstOrNull;
 
@@ -186,7 +186,7 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                           TextButton(
                             onPressed: () {
                               if (controller.text.isNotEmpty) {
-                                Songs.history.add(
+                                SongLibrary.history.add(
                                   song.copyWith(
                                     title: controller.text,
                                   ),
@@ -228,7 +228,7 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                             onPressed: () {
                               song.clearCache();
                               song.shouldDemix = false;
-                              Songs.history.save();
+                              SongLibrary.history.save();
                               Navigator.of(context).pop();
                               setState(() {});
                             },
@@ -263,7 +263,7 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                           ),
                           FilledButton(
                             onPressed: () {
-                              Songs.history.remove(song);
+                              SongLibrary.history.remove(song);
                               Navigator.of(context).pop();
                               Navigator.of(context).pop();
                             },

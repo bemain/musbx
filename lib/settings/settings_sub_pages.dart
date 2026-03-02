@@ -7,6 +7,7 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
+import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/utils.dart';
@@ -111,11 +112,11 @@ class SongsSettingsPage extends StatelessWidget {
         SettingsGroup(
           children: [
             ListenableBuilder(
-              listenable: Songs.history,
+              listenable: SongLibrary.history,
               builder: (context, child) => ListTile(
                 enabled:
-                    Songs.history.entries.isNotEmpty &&
-                    Songs.history.entries.values.every(
+                    SongLibrary.history.entries.isNotEmpty &&
+                    SongLibrary.history.entries.values.every(
                       (song) => song.hasCache,
                     ),
                 leading: Icon(Symbols.cloud_off),
@@ -155,7 +156,8 @@ class SongsSettingsPage extends StatelessWidget {
                       initialLocation: true,
                     );
 
-                    for (final song in Songs.history.entries.values.toList()) {
+                    for (final song
+                        in SongLibrary.history.entries.values.toList()) {
                       await song.clearCache();
                     }
                   }
@@ -163,9 +165,9 @@ class SongsSettingsPage extends StatelessWidget {
               ),
             ),
             ListenableBuilder(
-              listenable: Songs.history,
+              listenable: SongLibrary.history,
               builder: (context, child) => ListTile(
-                enabled: Songs.history.entries.isNotEmpty,
+                enabled: SongLibrary.history.entries.isNotEmpty,
                 leading: Icon(Symbols.delete_sweep),
                 title: Text("Remove all songs"),
                 onTap: () async {
@@ -203,7 +205,7 @@ class SongsSettingsPage extends StatelessWidget {
                       initialLocation: true,
                     );
 
-                    await Songs.history.clear();
+                    await SongLibrary.history.clear();
                   }
                 },
               ),
