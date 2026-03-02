@@ -25,10 +25,10 @@ class Links {
           File? file = await _getFile(uri);
           if (file == null) return;
 
-          print("[DEBUG] Loading file: ${file.path}");
           final Song song = await SongLibrary.addFile(file);
-          print(Routes.song(song.id));
-          Navigation.navigatorKey.currentContext?.go(Routes.song(song.id));
+          await Navigation.navigatorKey.currentContext?.push(
+            Routes.song(song.id),
+          );
       }
     });
   }

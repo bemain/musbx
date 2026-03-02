@@ -113,13 +113,10 @@ class Songs {
     if (!ignoreFreeLimit &&
         isAccessRestricted &&
         !songsPlayedThisWeek.contains(song)) {
-      print("[DEBUG] Access restricted");
       throw const AccessRestrictedException(
         "Access to the free version of the music player restricted. $freeSongsPerWeek songs have already been played this week.",
       );
     }
-
-    print("[DEBUG] Disposing");
 
     // Dispose the previous player
     await Songs.dispose();
