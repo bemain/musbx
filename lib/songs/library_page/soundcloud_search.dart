@@ -7,10 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
+import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -198,24 +196,9 @@ class SoundCloudSearch {
 
     if (track == null) return;
 
-    await loadTrack(track);
+    final Song song = await SongLibrary.addTrack(track);
 
-    if (context.mounted) context.go(Routes.song(track.id.toString()));
-  }
-
-  /// Loads a track from SoundCloud into the user's library.
-  static Future<void> loadTrack(SoundCloudTrack track) async {
-    final Song song = Song(
-      id: track.id.toString(),
-      title: HtmlUnescape().convert(track.title),
-      artist: HtmlUnescape().convert(track.username),
-      artUri: track.artworkUrl != null
-          ? Uri.tryParse(track.artworkUrl!)
-          : null,
-      audio: YtdlpAudio(Uri.parse(track.permalinkUrl)),
-    );
-    await Songs.history.add(song);
-    if (Songs.demixAutomatically) DemixingProcesses.start(song);
+    if (context.mounted) context.go(Routes.song(song.id));
   }
 
   /// Searches for tracks on SoundCloud using the provided [query].

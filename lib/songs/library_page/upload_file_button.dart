@@ -1,4 +1,4 @@
-import 'dart:io' show File, Platform;
+import 'dart:io' show Platform, File;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
@@ -7,10 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
+import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/permission_builder.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -65,17 +63,8 @@ class UploadSongButton extends SpeedDialChild {
       return;
     }
 
-    final String id = file.path!.hashCode.toString();
-
-    final Song song = Song(
-      id: id,
-      title: file.name.split(".").first,
-      audio: FileAudio(File(file.path!)),
-    );
-    await Songs.history.add(song);
-    if (Songs.demixAutomatically) DemixingProcesses.start(song);
-
-    Navigation.navigatorKey.currentContext?.go(Routes.song(id));
+    final Song song = await SongLibrary.addFile(File(file.path!));
+    Navigation.navigatorKey.currentContext?.go(Routes.song(song.id));
   }
 
   Future<void> pushPermissionBuilder(BuildContext context) async {

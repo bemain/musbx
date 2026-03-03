@@ -70,6 +70,12 @@ dependencies:
       ref: dev
   material_plus:
     path: ../material_plus
+  app_links: ^7.0.0
+  uri_to_file: # The version on pub.dev is terribly outdated
+    git:
+      url: https://github.com/sumitsharansatsangi/uri-to-file
+      ref: main
+  crypto: ^3.0.7
 
 
 

@@ -6,6 +6,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
+import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/history_handler.dart';
@@ -32,7 +33,7 @@ class YoutubeSearch {
       artUri: Uri.tryParse(video.thumbnails.high.url),
       audio: YtdlpAudio(Uri.parse(video.url)),
     );
-    await Songs.history.add(song);
+    await SongLibrary.add(song);
     if (Songs.demixAutomatically) DemixingProcesses.start(song);
 
     if (context.mounted) context.go(Routes.song(video.id));

@@ -9,6 +9,7 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
 import 'package:musbx/utils/launch_handler.dart';
+import 'package:musbx/utils/links.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/ads.dart';
@@ -21,15 +22,17 @@ Future<void> main() async {
   await Directories.initialize();
 
   await Analytics.initialize();
+  await Purchases.intialize();
 
   await Songs.initialize();
   await Notifications.initialize();
+
+  Links.initialize();
 
   await LaunchHandler.initialize();
 
   // Google Ads
   unawaited(Ads.initialize());
-  await Purchases.intialize();
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

@@ -7,6 +7,7 @@ import 'package:musbx/songs/library_page/options_sheet.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
+import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/utils.dart';
@@ -34,12 +35,12 @@ class LibraryPage extends StatelessWidget {
             ],
           ),
           ListenableBuilder(
-            listenable: Songs.history,
+            listenable: SongLibrary.history,
             builder: (context, child) {
               return SliverList.list(
                 children: [
                   const SizedBox(height: 8),
-                  for (final Song song in Songs.history.sorted(
+                  for (final Song song in SongLibrary.history.sorted(
                     ascending: false,
                   ))
                     _buildSongTile(context, song),
@@ -180,7 +181,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         if (query.isEmpty) return const [];
 
         // History entries that match the search query
-        final Iterable<Song> songHistory = Songs.history
+        final Iterable<Song> songHistory = SongLibrary.history
             .sorted(ascending: false)
             .where(
               (song) =>
@@ -222,11 +223,9 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                         track: track,
                         onTap: () async {
                           this.controller.closeView(null);
-                          await SoundCloudSearch.loadTrack(track);
+                          final Song song = await SongLibrary.addTrack(track);
                           if (context.mounted) {
-                            context.go(
-                              Routes.song(track.id.toString()),
-                            );
+                            context.go(Routes.song(song.id));
                           }
                         },
                       )
