@@ -283,38 +283,25 @@ class DemixerCard extends StatelessWidget {
   Widget buildHeader(BuildContext context) {
     final MultiPlayer player = Songs.player! as MultiPlayer;
 
-    return Stack(
-      alignment: Alignment.center,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Align(
-          alignment: Alignment.center,
-          child: Center(
-            child: Text(
-              "Instruments",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: ValueListenableBuilder(
-            valueListenable: player.demixer.stemsNotifier,
-            builder: (context, stems, child) => IconButton(
-              iconSize: 20,
-              onPressed:
-                  stems.every(
-                    (stem) =>
-                        stem.enabled && stem.volume == Stem.defaultVolume,
-                  )
-                  ? null
-                  : () {
-                      for (Stem stem in stems) {
-                        stem.volume = Stem.defaultVolume;
-                        stem.enabled = true;
-                      }
-                    },
-              icon: const Icon(Symbols.refresh),
-            ),
+        ValueListenableBuilder(
+          valueListenable: player.demixer.stemsNotifier,
+          builder: (context, stems, child) => IconButton(
+            iconSize: 20,
+            onPressed:
+                stems.every(
+                  (stem) => stem.enabled && stem.volume == Stem.defaultVolume,
+                )
+                ? null
+                : () {
+                    for (Stem stem in stems) {
+                      stem.volume = Stem.defaultVolume;
+                      stem.enabled = true;
+                    }
+                  },
+            icon: const Icon(Symbols.refresh),
           ),
         ),
       ],

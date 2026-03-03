@@ -11,7 +11,6 @@ import 'package:musbx/songs/slowdowner/slowdowner_sliders.dart';
 import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
 import 'package:musbx/utils/utils.dart';
-import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/flat_card.dart';
 
@@ -49,6 +48,8 @@ class SongPage extends StatelessWidget {
                       child: TabBarView(
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
+                          DemixerCard(),
+
                           Column(
                             children: [
                               SizedBox(height: 4),
@@ -88,26 +89,9 @@ class SongPage extends StatelessWidget {
                               SizedBox(height: 4),
                             ],
                           ),
-                          DemixerCard(),
                         ],
                       ),
                     ),
-                  ShimmerLoading(
-                    isLoading: player == null,
-                    child: SegmentedTabControl(
-                      enabled: player != null,
-                      tabs: [
-                        SegmentTab(
-                          text: "Waveform",
-                          icon: Icon(CustomIcons.waveform),
-                        ),
-                        SegmentTab(
-                          text: "Instruments",
-                          icon: Icon(Symbols.piano),
-                        ),
-                      ],
-                    ),
-                  ),
                   const SizedBox(height: 16),
                   PositionSlider(),
                   ButtonPanel(),
@@ -126,7 +110,9 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
   const SongAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(
+    kToolbarHeight + kTextTabBarHeight,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +134,14 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
           const GetPremiumButton(),
           SettingsButton(),
         ],
+        bottom: TabBar(
+          tabs: [
+            for (int i = 0; i < 2; i++)
+              Tab(
+                child: TextPlaceholder(width: 128),
+              ),
+          ],
+        ),
       );
     }
 
@@ -189,6 +183,32 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
             const GetPremiumButton(),
             const SettingsButton(),
           ],
+          bottom: TabBar(
+            tabs: [
+              Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 8,
+                  children: [
+                    Icon(Symbols.piano),
+                    Text("Instruments"),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 8,
+                  children: [
+                    Icon(Symbols.tune),
+                    Text("Playback"),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
