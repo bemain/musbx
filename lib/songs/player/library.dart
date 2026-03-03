@@ -25,10 +25,16 @@ final Song demoSong = Song(
 class SongLibrary {
   SongLibrary._();
 
-  static bool initialized = false;
+  /// Whether this has been initialized.
+  ///
+  /// See [initialize].
+  static bool isInitialized = false;
 
   /// Fetch [history] from disk.
   static Future<void> initialize() async {
+    if (isInitialized) return;
+    isInitialized = true;
+
     await history.fetch();
 
     if (history.entries.isEmpty) {
