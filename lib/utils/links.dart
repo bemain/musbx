@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:uri_to_file/uri_to_file.dart';
 
 class Links {
@@ -24,6 +26,13 @@ class Links {
         case "content" || "file":
           File? file = await _getFile(uri);
           if (file == null) return;
+
+          if (Songs.isAccessRestricted) {
+            await showExceptionDialog(
+              const MusicPlayerAccessRestrictedDialog(),
+            );
+            return;
+          }
 
           final Song song = await SongLibrary.addFile(file);
           await Navigation.navigatorKey.currentContext?.push(

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
@@ -68,7 +70,7 @@ class SongLibrary {
   static Future<Song> addFile(File file) async {
     return await add(
       Song(
-        id: file.path.hashCode.toString(),
+        id: sha1.convert(utf8.encode(file.path)).toString(),
         title: file.path.split("/").last.split(".").first,
         audio: FileAudio(file),
       ),

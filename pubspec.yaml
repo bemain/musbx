@@ -75,6 +75,7 @@ dependencies:
     git:
       url: https://github.com/sumitsharansatsangi/uri-to-file
       ref: main
+  crypto: ^3.0.7
 
 
 
