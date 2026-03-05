@@ -72,6 +72,7 @@ jobs:
         uses: mikepenz/release-changelog-builder-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          commitMode: true
 
       - name: Commit changes
         run: |
