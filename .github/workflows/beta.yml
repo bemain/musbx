@@ -136,6 +136,13 @@ jobs:
           echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" > android/key.properties
           echo "${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_BASE64 }}" | base64 --decode > ../musbx-service-account-key.json
 
+      - name: Set up JDK 21
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
