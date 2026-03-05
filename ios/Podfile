@@ -43,8 +43,9 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
-    # Start of the permission_handler configuration
     target.build_configurations.each do |config|
+
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
 
       # (BeMain) Added by permission_handler package
       # You can enable the permissions needed here. 
@@ -63,7 +64,6 @@ post_install do |installer|
       ]
 
     end 
-    # End of the permission_handler configuration
   end
 
   # (BeMain) Pod motification 1 by package awesome_notifications

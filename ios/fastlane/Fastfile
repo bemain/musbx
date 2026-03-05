@@ -6,6 +6,9 @@ platform :ios do
     # Setup keychain and other CI-specific stuff
     setup_ci if ENV["CI"]
 
+    # Setup XCode
+    xcodes
+
     # Generates ios/Flutter/Generated.xcconfig, required by the Podfile
     sh("cd .. && flutter pub get")
 
