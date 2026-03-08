@@ -192,7 +192,9 @@ class Navigation {
                                       snapshot.error
                                               is AccessRestrictedException
                                           ? const MusicPlayerAccessRestrictedDialog()
-                                          : const SongCouldNotBeLoadedDialog(),
+                                          : SongCouldNotBeLoadedDialog(
+                                              error: snapshot.error,
+                                            ),
                                     );
                                     context.go(Routes.library);
                                   });

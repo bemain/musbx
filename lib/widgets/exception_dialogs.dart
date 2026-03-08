@@ -167,7 +167,7 @@ class UnsupportedFileExtensionDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Symbols.file_present, size: 128),
+          const Icon(Symbols.unknown_document, size: 128),
           const SizedBox(height: 15),
           Text(
             "The file type '.$extension' is not supported. Try loading a different file.",
@@ -188,20 +188,47 @@ class UnsupportedFileExtensionDialog extends StatelessWidget {
 
 class SongCouldNotBeLoadedDialog extends StatelessWidget {
   /// Creates an alert dialog with the message that the selected file could not be loaded.
-  const SongCouldNotBeLoadedDialog({super.key});
+  const SongCouldNotBeLoadedDialog({super.key, this.error});
+
+  final Object? error;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text("Song could not be loaded"),
-      content: const Column(
+      content: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(Symbols.error, size: 128),
-          SizedBox(height: 15),
+          const Icon(Symbols.cloud_off, size: 128),
+          const SizedBox(height: 16),
           Text(
             "An error occurred while loading the song. Please try again later, or try selecting a different song.",
           ),
+          if (error != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                onPressed: () {
+                  showExceptionDialog(
+                    AlertDialog(
+                      title: Text("Error message"),
+                      content: Text(error.toString()),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text("Dismiss"),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: Text("View error message"),
+              ),
+            ),
         ],
       ),
       actions: [
