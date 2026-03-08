@@ -155,6 +155,10 @@ jobs:
         with:
           ruby-version: "3.2"
           bundler-cache: true
+      
+      - name: Install CMake
+        if: matrix.platform == 'ios'
+        run: brew install cmake
 
       - name: Run Fastlane
         working-directory: ${{matrix.platform}}
