@@ -84,6 +84,14 @@ class StemsNotifier extends ValueNotifier<List<Stem>> {
 }
 
 class DemixerComponent extends SongPlayerComponent<MultiPlayer> {
+  /// The stems that are available on the free version of the app.
+  static const List<StemType> freeStems = [
+    StemType.vocals,
+    StemType.bass,
+    StemType.drums,
+    StemType.other,
+  ];
+
   /// A component of the [MultiPlayer] that is used to separate a song into stems and change the volume of those individually.
   DemixerComponent(super.player);
 

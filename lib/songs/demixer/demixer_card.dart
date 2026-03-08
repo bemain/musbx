@@ -283,38 +283,25 @@ class DemixerCard extends StatelessWidget {
   Widget buildHeader(BuildContext context) {
     final MultiPlayer player = Songs.player! as MultiPlayer;
 
-    return Stack(
-      alignment: Alignment.center,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Align(
-          alignment: Alignment.center,
-          child: Center(
-            child: Text(
-              "Instruments",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: ValueListenableBuilder(
-            valueListenable: player.demixer.stemsNotifier,
-            builder: (context, stems, child) => IconButton(
-              iconSize: 20,
-              onPressed:
-                  stems.every(
-                    (stem) =>
-                        stem.enabled && stem.volume == Stem.defaultVolume,
-                  )
-                  ? null
-                  : () {
-                      for (Stem stem in stems) {
-                        stem.volume = Stem.defaultVolume;
-                        stem.enabled = true;
-                      }
-                    },
-              icon: const Icon(Symbols.refresh),
-            ),
+        ValueListenableBuilder(
+          valueListenable: player.demixer.stemsNotifier,
+          builder: (context, stems, child) => IconButton(
+            iconSize: 20,
+            onPressed:
+                stems.every(
+                  (stem) => stem.enabled && stem.volume == Stem.defaultVolume,
+                )
+                ? null
+                : () {
+                    for (Stem stem in stems) {
+                      stem.volume = Stem.defaultVolume;
+                      stem.enabled = true;
+                    }
+                  },
+            icon: const Icon(Symbols.refresh),
           ),
         ),
       ],
@@ -357,6 +344,12 @@ class StemControlsState extends State<StemControls> {
     if (this.player is! MultiPlayer) return const SizedBox();
     final MultiPlayer player = this.player as MultiPlayer;
 
+    /// Whether this stem is allowed to be accessed.
+    final bool accessAllowed =
+        Purchases.hasPremium ||
+        player.song.id == demoSong.id ||
+        DemixerComponent.freeStems.contains(stem.type);
+
     /// Whether all other stems are disabled
     final bool allOtherStemsDisabled = player.demixer.stems
         .where((stem) => stem != this.stem)
@@ -378,39 +371,58 @@ class StemControlsState extends State<StemControls> {
               }
               stem.enabled = !allOtherStemsDisabled;
             },
-            child: IconButton.filledTonal(
-              isSelected: stem.enabled && stem.volume != 0,
-              onPressed: () {
-                if (!Purchases.hasPremium &&
-                    player.song.id != demoSong.id &&
-                    stem.type != StemType.vocals) {
-                  showAccessRestrictedDialog(context);
-                  return;
-                }
+            child: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                IconButton.filledTonal(
+                  isSelected: stem.enabled && stem.volume != 0,
+                  onPressed: () {
+                    if (!accessAllowed) {
+                      showAccessRestrictedDialog(context);
+                      return;
+                    }
 
-                if (stem.volume == 0) {
-                  stem.volume = Stem.defaultVolume;
-                  stem.enabled = true;
-                } else {
-                  stem.enabled = !stem.enabled;
-                }
-              },
-              icon: Icon(getStemIcon(stem.type)),
+                    if (stem.volume == 0) {
+                      stem.volume = Stem.defaultVolume;
+                      stem.enabled = true;
+                    } else {
+                      stem.enabled = !stem.enabled;
+                    }
+                  },
+                  icon: Icon(getStemIcon(stem.type)),
+                ),
+                if (!accessAllowed)
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        iconSize: 16,
+                        onPressed: () {
+                          showAccessRestrictedDialog(context);
+                        },
+                        icon: Icon(Symbols.lock),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           Expanded(
             child: Slider(
               value: !stem.enabled ? 0 : volume,
               onChangeStart: (value) {
-                stem.enabled = true;
-              },
-              onChanged: (value) {
-                if (!Purchases.hasPremium &&
-                    player.song.id != demoSong.id &&
-                    stem.type != StemType.vocals) {
+                if (!accessAllowed) {
                   showAccessRestrictedDialog(context);
                   return;
                 }
+
+                stem.enabled = true;
+              },
+              onChanged: (value) {
+                if (!accessAllowed) return;
 
                 stem.volume = value;
               },
