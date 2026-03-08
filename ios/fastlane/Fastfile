@@ -7,7 +7,9 @@ platform :ios do
     setup_ci if ENV["CI"]
 
     # Setup XCode
-    xcodes
+    xcodes(
+      version: "26.3"
+    )
 
     # Generates ios/Flutter/Generated.xcconfig, required by the Podfile
     sh("cd .. && flutter pub get")
