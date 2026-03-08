@@ -214,7 +214,8 @@ class SongCouldNotBeLoadedDialog extends StatelessWidget {
                   showExceptionDialog(
                     AlertDialog(
                       title: Text("Error message"),
-                      content: Text(error.toString()),
+                      content: SelectableText(error.toString()),
+                      scrollable: true,
                       actions: [
                         TextButton(
                           onPressed: () {
