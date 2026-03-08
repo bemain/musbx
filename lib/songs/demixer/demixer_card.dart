@@ -414,13 +414,15 @@ class StemControlsState extends State<StemControls> {
             child: Slider(
               value: !stem.enabled ? 0 : volume,
               onChangeStart: (value) {
-                stem.enabled = true;
-              },
-              onChanged: (value) {
                 if (!accessAllowed) {
                   showAccessRestrictedDialog(context);
                   return;
                 }
+
+                stem.enabled = true;
+              },
+              onChanged: (value) {
+                if (!accessAllowed) return;
 
                 stem.volume = value;
               },

@@ -132,7 +132,7 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: IconPlaceholder(),
           ),
           const GetPremiumButton(),
-          SettingsButton(),
+          const SettingsButton(),
         ],
         bottom: TabBar(
           tabs: [
