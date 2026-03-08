@@ -141,7 +141,10 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
         actions: [
-          IconPlaceholder(),
+          Padding(
+            padding: EdgeInsets.all(12),
+            child: IconPlaceholder(),
+          ),
           const GetPremiumButton(),
           SettingsButton(),
         ],
