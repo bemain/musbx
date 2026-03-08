@@ -69,10 +69,10 @@ jobs:
       - name: Generate Changelog
         if: github.event_name == 'release'
         id: changelog
-        uses: mikepenz/release-changelog-builder-action@v4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          commitMode: true
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
 
       - name: Commit changes
         run: |
