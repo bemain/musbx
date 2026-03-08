@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart' as http;
@@ -278,10 +279,16 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Symbols.search,
-                size: 64,
-                color: Theme.of(context).colorScheme.outline,
+              M3Container.c4SidedCookie(
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                child: Padding(
+                  padding: EdgeInsets.all(48),
+                  child: Icon(
+                    Symbols.search,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               Text(
