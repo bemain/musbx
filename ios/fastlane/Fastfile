@@ -12,7 +12,7 @@ platform :ios do
     )
 
     # Generates ios/Flutter/Generated.xcconfig, required by the Podfile
-    sh("cd .. && flutter pub get")
+    sh("cd .. && flutter clean && flutter pub get")
 
     # Make sure CocoaPods is setup correcly
     cocoapods(
