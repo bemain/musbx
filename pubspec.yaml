@@ -76,6 +76,7 @@ dependencies:
       url: https://github.com/sumitsharansatsangi/uri-to-file
       ref: main
   crypto: ^3.0.7
+  flutter_m3shapes: ^1.0.0+2
 
 
 
