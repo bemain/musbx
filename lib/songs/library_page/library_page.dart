@@ -39,16 +39,6 @@ class LibraryPage extends StatelessWidget {
             builder: (context, child) {
               return SliverList.list(
                 children: [
-                  TextButton(
-                    onPressed: () {
-                      showExceptionDialog(
-                        SongCouldNotBeLoadedDialog(
-                          error: "Blah",
-                        ),
-                      );
-                    },
-                    child: Text("Test"),
-                  ),
                   const SizedBox(height: 8),
                   for (final Song song in SongLibrary.history.sorted(
                     ascending: false,
