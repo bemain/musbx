@@ -143,6 +143,10 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      
+      - name: Install CMake
+        if: matrix.platform == 'ios'
+        run: brew install cmake
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -150,15 +154,20 @@ jobs:
           channel: "stable"
           cache: true
       
+      - name: Clean iOS build artifacts
+        if: matrix.platform == 'ios'
+        working-directory: "ios"
+        run: |
+          rm -rf .symlinks
+          rm -rf Pods
+          rm -rf build
+          rm -rf cmake_build # Specific to flutter_soloud
+        
       - name: Install Ruby & Bundler
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.2"
           bundler-cache: true
-      
-      - name: Install CMake
-        if: matrix.platform == 'ios'
-        run: brew install cmake
 
       - name: Run Fastlane
         working-directory: ${{matrix.platform}}

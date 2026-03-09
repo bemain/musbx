@@ -11,14 +11,18 @@ platform :ios do
       version: "26.3"
     )
 
-    # Generates ios/Flutter/Generated.xcconfig, required by the Podfile
-    sh("cd .. && flutter clean && flutter pub get")
+    # Generate ios/Flutter/Generated.xcconfig, required by the Podfile
+    sh("flutter pub get")
 
     # Make sure CocoaPods is setup correcly
     cocoapods(
       clean: true,
       podfile: "./Podfile"
     )
+
+    # Generate native artifacts and C++ binaries required by plugins like flutter_soloud
+    # We use --no-codesign because 'match' and 'build_app' will handle signing later.
+    sh("flutter build ios --release --no-codesign")
 
     # Generate AppStore Connect API Key
     api_key = app_store_connect_api_key(
@@ -40,7 +44,7 @@ platform :ios do
     build_app(
       workspace: "Runner.xcworkspace",
       scheme: "Runner",
-      clean: true,
+      clean: false,
       export_method: "app-store",
       export_options: {
         provisioningProfiles: { 
