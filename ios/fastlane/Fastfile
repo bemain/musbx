@@ -11,15 +11,6 @@ platform :ios do
       version: "26.3"
     )
 
-    # Generate ios/Flutter/Generated.xcconfig, required by the Podfile
-    sh("flutter pub get")
-
-    # Make sure CocoaPods is setup correcly
-    cocoapods(
-      clean: true,
-      podfile: "./Podfile"
-    )
-
     # Generate native artifacts and C++ binaries required by plugins like flutter_soloud
     # We use --no-codesign because 'match' and 'build_app' will handle signing later.
     sh("flutter clean && flutter build ios --release --no-codesign")
@@ -44,7 +35,7 @@ platform :ios do
     build_app(
       workspace: "Runner.xcworkspace",
       scheme: "Runner",
-      clean: false,
+      clean: false, # We want to use artifacts built in previous steps
       export_method: "app-store",
       export_options: {
         provisioningProfiles: { 
