@@ -22,7 +22,7 @@ platform :ios do
 
     # Generate native artifacts and C++ binaries required by plugins like flutter_soloud
     # We use --no-codesign because 'match' and 'build_app' will handle signing later.
-    sh("flutter build ios --release --no-codesign")
+    sh("flutter clean && flutter build ios --release --no-codesign")
 
     # Generate AppStore Connect API Key
     api_key = app_store_connect_api_key(
