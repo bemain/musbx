@@ -155,15 +155,6 @@ jobs:
         with:
           channel: "stable"
           cache: true
-      
-      - name: Clean iOS build artifacts
-        if: matrix.platform == 'ios'
-        working-directory: "ios"
-        run: |
-          rm -rf .symlinks
-          rm -rf Pods
-          rm -rf build
-          rm -rf cmake_build # Specific to flutter_soloud
 
       - name: Run Fastlane
         working-directory: ${{matrix.platform}}
