@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/library_page/search_bar.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/utils/history_handler.dart';
@@ -279,17 +279,7 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              M3Container.c4SidedCookie(
-                color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                child: Padding(
-                  padding: EdgeInsets.all(48),
-                  child: Icon(
-                    Symbols.search,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-              ),
+              LibrarySearchBar.placeholderIcon(context),
               const SizedBox(height: 16),
               Text(
                 "Enter a search phrase to find songs online.",

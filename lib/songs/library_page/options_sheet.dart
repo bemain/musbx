@@ -132,7 +132,9 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
             children: [
               const SizedBox(height: 4),
               ListTile(
-                leading: SongTile.buildSongIcon(song),
+                contentPadding: EdgeInsets.only(left: 4, right: 24),
+                leading: SongTile.buildLeading(context, song),
+                horizontalTitleGap: 4,
                 title: Text(
                   song.title,
                   maxLines: 1,

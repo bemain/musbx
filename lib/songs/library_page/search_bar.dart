@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
@@ -12,6 +13,20 @@ class LibrarySearchBar extends StatefulWidget {
 
   @override
   State<LibrarySearchBar> createState() => _LibrarySearchBarState();
+
+  static Widget placeholderIcon(BuildContext context, {Color? color}) {
+    return M3Container.c4SidedCookie(
+      color: color ?? Theme.of(context).colorScheme.surfaceContainerHigh,
+      child: Padding(
+        padding: EdgeInsets.all(48),
+        child: Icon(
+          Symbols.search,
+          size: 64,
+          color: Theme.of(context).colorScheme.outline,
+        ),
+      ),
+    );
+  }
 }
 
 class _LibrarySearchBarState extends State<LibrarySearchBar> {
@@ -29,14 +44,30 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
               EdgeInsets.symmetric(horizontal: 16.0),
             ),
             leading: Icon(Symbols.search),
-            hintText: "Search your library",
+            hintText: "Search for songs",
           ),
         );
       },
-      viewHintText: "Search your library",
+      viewHintText: "Search for songs",
       suggestionsBuilder: (context, controller) {
         final String query = controller.text.toLowerCase();
-        if (query.isEmpty) return const [];
+        if (query.isEmpty) {
+          return [
+            const SizedBox(height: 32),
+            LibrarySearchBar.placeholderIcon(
+              context,
+              color: Theme.of(context).colorScheme.surfaceContainer,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "Enter a search phrase to find songs.",
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).textTheme.bodySmall?.color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ];
+        }
 
         // History entries that match the search query
         final Iterable<Song> songHistory = SongLibrary.history
@@ -53,6 +84,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
             SongTile(
               song: song,
               showOptions: false,
+              leadingColor: Theme.of(context).colorScheme.surfaceContainer,
               onSelected: () {
                 controller.closeView(null);
               },

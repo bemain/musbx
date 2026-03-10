@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
@@ -11,16 +12,27 @@ import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
 class SongTile extends StatelessWidget {
+  /// A list tile widget that displays information about a [song].
   const SongTile({
     super.key,
     required this.song,
     this.onSelected,
     this.showOptions = true,
+    this.leadingColor,
   });
 
+  /// The song this tile represents.
   final Song song;
+
+  /// Called when the tile is tapped.
   final void Function()? onSelected;
+
+  /// Whether to show the options button.
   final bool showOptions;
+
+  /// The color used behind the leading icon.
+  /// Defaults to [ColorScheme.surfaceContainerHigh].
+  final Color? leadingColor;
 
   @override
   Widget build(BuildContext context) {
@@ -33,20 +45,13 @@ class SongTile extends StatelessWidget {
         : TextStyle(color: Theme.of(context).disabledColor);
 
     return ListTile(
-      minLeadingWidth: 64,
-      leading: SizedBox(
-        width: 64,
-        height: 64,
-        child: Card(
-          margin: EdgeInsets.zero,
-          elevation: 0,
-          child: isLocked
-              ? Icon(
-                  Symbols.lock,
-                  color: Theme.of(context).disabledColor,
-                )
-              : buildSongIcon(song),
-        ),
+      minTileHeight: 72,
+      contentPadding: EdgeInsets.only(left: 16, right: 8),
+      leading: buildLeading(
+        context,
+        song,
+        color: leadingColor,
+        isLocked: isLocked,
       ),
       title: Text(
         song.title,
@@ -89,6 +94,30 @@ class SongTile extends StatelessWidget {
     showAlertSheet<void>(
       context: context,
       builder: (context) => SongOptionsSheet(song: song),
+    );
+  }
+
+  static Widget buildLeading(
+    BuildContext context,
+    Song song, {
+    Color? color,
+    bool isLocked = false,
+  }) {
+    return SizedBox(
+      width: 64,
+      child: M3Container.c4SidedCookie(
+        height: 64,
+        color: color ?? Theme.of(context).colorScheme.surfaceContainerHigh,
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: isLocked
+              ? Icon(
+                  Symbols.lock,
+                  color: Theme.of(context).disabledColor,
+                )
+              : buildSongIcon(song),
+        ),
+      ),
     );
   }
 
