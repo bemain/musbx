@@ -539,8 +539,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "9ebb16d7fa31c7d84e99cb0f262073ca3fed9749"
-      resolved-ref: "9ebb16d7fa31c7d84e99cb0f262073ca3fed9749"
+      ref: dev
+      resolved-ref: a4245e030374db85b55529082d0550085bfb1ada
       url: "https://github.com/alnitak/flutter_soloud.git"
     source: git
     version: "3.5.0-pre.1"
