@@ -67,7 +67,7 @@ dependencies:
   flutter_soloud:
     git:
       url: https://github.com/alnitak/flutter_soloud.git
-      ref: dev
+      ref: 827f93ffe920df25be990e7ce79885e7ddef2fe0
   material_plus:
     path: ../material_plus
   app_links: ^7.0.0
