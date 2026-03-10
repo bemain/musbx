@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/player/song_player.dart';
@@ -78,19 +79,28 @@ class ButtonPanel extends StatelessWidget {
                     aspectRatio: 1.0,
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
-                      child: IconButton.filled(
-                        onPressed: player == null
-                            ? null
-                            : () {
-                                if (isPlaying) {
-                                  player.pause();
-                                } else {
-                                  player.resume();
-                                }
-                              },
-                        icon: Icon(
-                          isPlaying ? Symbols.stop : Symbols.play_arrow,
-                          fill: 1,
+                      child: M3Container.c6SidedCookie(
+                        child: Material(
+                          color: Theme.of(context).colorScheme.primary,
+                          child: InkWell(
+                            onTap: player == null
+                                ? null
+                                : () {
+                                    if (isPlaying) {
+                                      player.pause();
+                                    } else {
+                                      player.resume();
+                                    }
+                                  },
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Icon(
+                                isPlaying ? Symbols.stop : Symbols.play_arrow,
+                                fill: 1,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
