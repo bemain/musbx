@@ -3,7 +3,7 @@ import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/library_page/library_page.dart';
+import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 
@@ -132,7 +132,7 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
             children: [
               const SizedBox(height: 4),
               ListTile(
-                leading: LibraryPage.buildSongIcon(song),
+                leading: SongTile.buildSongIcon(song),
                 title: Text(
                   song.title,
                   maxLines: 1,
