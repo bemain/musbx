@@ -466,7 +466,6 @@ class SoundCloudTrackListItem extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-      trailing: track == null ? IconPlaceholder() : Icon(Symbols.download),
     );
   }
 
