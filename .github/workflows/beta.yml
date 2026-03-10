@@ -80,9 +80,6 @@ jobs:
           VERSION="${{ steps.version.outputs.version_name }}"
           BUILD="${{ steps.version.outputs.build_number }}"
           sed -i "s/^version: .*/version: $VERSION+$BUILD/" pubspec.yaml
-
-          # Update CHANGELOG.md
-          echo "${{ steps.changelog.outputs.changelog }}" > CHANGELOG.md
           
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -97,7 +94,7 @@ jobs:
       - name: Update Release details
         if: github.event_name == 'release'
         run: |
-          gh release edit ${{ github.event.release.tag_name }} --notes "${{ steps.changelog.outputs.changelog }}"
+          gh release edit ${{ github.event.release.tag_name }} --notes "${{ steps.changelog.outputs.changes }}"
           # Retag
           git tag -d ${{ github.event.release.tag_name }} || true
           git tag ${{ github.event.release.tag_name }}
