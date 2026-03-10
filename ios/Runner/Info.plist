@@ -45,6 +45,8 @@
 	<string>ca-app-pub-5107868608906815~5516404495</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>To load audio from the device, access to music files is required</string>
 	<key>NSCameraUsageDescription</key>
