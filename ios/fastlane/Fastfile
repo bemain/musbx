@@ -17,7 +17,7 @@ platform :ios do
     # (see https://github.com/alnitak/flutter_soloud/issues/414).
     sh "flutter clean"
     sh "flutter pub get"
-    sh "sh ../build_cmake.sh"
+    sh "cd .. && pwd && ls && ./build_cmake.sh"
     sh "flutter build ios --release --no-codesign"
 
     # Generate AppStore Connect API Key
