@@ -411,11 +411,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "827f93ffe920df25be990e7ce79885e7ddef2fe0"
-      resolved-ref: "827f93ffe920df25be990e7ce79885e7ddef2fe0"
+      ref: "9ebb16d7fa31c7d84e99cb0f262073ca3fed9749"
+      resolved-ref: "9ebb16d7fa31c7d84e99cb0f262073ca3fed9749"
       url: "https://github.com/alnitak/flutter_soloud.git"
     source: git
-    version: "3.5.0-dev.1"
+    version: "3.5.0-pre.1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
