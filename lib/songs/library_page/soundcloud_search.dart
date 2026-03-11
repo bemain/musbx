@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/songs/library_page/search_bar.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/utils/history_handler.dart';
@@ -278,11 +279,7 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Symbols.search,
-                size: 64,
-                color: Theme.of(context).colorScheme.outline,
-              ),
+              LibrarySearchBar.placeholderIcon(context),
               const SizedBox(height: 16),
               Text(
                 "Enter a search phrase to find songs online.",
@@ -469,7 +466,6 @@ class SoundCloudTrackListItem extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-      trailing: track == null ? IconPlaceholder() : Icon(Symbols.download),
     );
   }
 

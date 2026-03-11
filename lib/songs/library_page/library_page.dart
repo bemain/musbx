@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/library_page/options_sheet.dart';
+import 'package:musbx/songs/library_page/search_bar.dart';
+import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
@@ -43,7 +40,10 @@ class LibraryPage extends StatelessWidget {
                   for (final Song song in SongLibrary.history.sorted(
                     ascending: false,
                   ))
-                    _buildSongTile(context, song),
+                    SongTile(
+                      song: song,
+                      showOptions: true,
+                    ),
                   const SizedBox(height: 80),
                 ],
               );
@@ -52,67 +52,6 @@ class LibraryPage extends StatelessWidget {
         ],
       ),
       floatingActionButton: _buildLoadSongFAB(context),
-    );
-  }
-
-  Widget _buildSongTile(
-    BuildContext context,
-    Song song, {
-    void Function()? onSelected,
-  }) {
-    final bool isLocked =
-        Songs.isAccessRestricted &&
-        !Songs.songsPlayedThisWeek.contains(song) &&
-        song != demoSong;
-    final TextStyle? textStyle = !isLocked
-        ? null
-        : TextStyle(color: Theme.of(context).disabledColor);
-
-    return ListTile(
-      contentPadding: const EdgeInsets.only(left: 20, right: 8),
-      leading: isLocked
-          ? Icon(
-              Symbols.lock,
-              color: Theme.of(context).disabledColor,
-            )
-          : buildSongIcon(song),
-      title: Text(
-        song.title,
-        style: textStyle,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        song.artist ?? "Unknown artist",
-        style: textStyle,
-      ),
-      trailing: IconButton(
-        onPressed: () {
-          _showOptionsSheet(context, song);
-        },
-        icon: const Icon(Symbols.more_vert),
-      ),
-      onTap: () async {
-        if (isLocked) {
-          await showExceptionDialog(
-            const MusicPlayerAccessRestrictedDialog(),
-          );
-          return;
-        }
-
-        onSelected?.call();
-        await context.push(Routes.song(song.id));
-      },
-      onLongPress: () {
-        _showOptionsSheet(context, song);
-      },
-    );
-  }
-
-  void _showOptionsSheet(BuildContext context, Song song) {
-    showAlertSheet<void>(
-      context: context,
-      builder: (context) => SongOptionsSheet(song: song),
     );
   }
 
@@ -134,163 +73,6 @@ class LibraryPage extends StatelessWidget {
       ],
       label: const Text("Add to library"),
       child: const Icon(Symbols.add),
-    );
-  }
-
-  static Widget buildSongIcon(Song song) {
-    if (song == demoSong) {
-      return const Icon(Symbols.science);
-    }
-    return Icon(switch (song.audio) {
-      FileAudio() => Symbols.file_present,
-      YtdlpAudio() => Symbols.music_note,
-      _ => Symbols.music_note,
-    });
-  }
-}
-
-class LibrarySearchBar extends StatefulWidget {
-  const LibrarySearchBar({super.key});
-
-  @override
-  State<LibrarySearchBar> createState() => _LibrarySearchBarState();
-}
-
-class _LibrarySearchBarState extends State<LibrarySearchBar> {
-  late final SearchController controller = SearchController();
-
-  @override
-  Widget build(BuildContext context) {
-    return SearchAnchor(
-      searchController: controller,
-      builder: (context, controller) {
-        return const AbsorbPointer(
-          child: SearchBar(
-            elevation: WidgetStatePropertyAll(0.0),
-            padding: WidgetStatePropertyAll(
-              EdgeInsets.symmetric(horizontal: 16.0),
-            ),
-            leading: Icon(Symbols.search),
-            hintText: "Search your library",
-          ),
-        );
-      },
-      viewHintText: "Search your library",
-      suggestionsBuilder: (context, controller) {
-        final String query = controller.text.toLowerCase();
-        if (query.isEmpty) return const [];
-
-        // History entries that match the search query
-        final Iterable<Song> songHistory = SongLibrary.history
-            .sorted(ascending: false)
-            .where(
-              (song) =>
-                  song.title.toLowerCase().contains(query) ||
-                  (song.artist?.toLowerCase().contains(query) ?? false),
-            );
-
-        return [
-          const SizedBox(height: 8),
-          for (final Song song in songHistory)
-            _buildSongTile(
-              context,
-              song,
-              onSelected: () {
-                controller.closeView(null);
-              },
-            ),
-          if (songHistory.isNotEmpty) const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Results online",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-          FutureBuilder(
-            future: SoundCloudSearch.searchTracks(
-              query,
-            ).timeout(Duration(seconds: 2), onTimeout: () => []),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) return SizedBox();
-
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (snapshot.hasData)
-                    for (final SoundCloudTrack track in snapshot.requireData)
-                      SoundCloudTrackListItem(
-                        track: track,
-                        onTap: () async {
-                          this.controller.closeView(null);
-                          final Song song = await SongLibrary.addTrack(track);
-                          if (context.mounted) {
-                            context.go(Routes.song(song.id));
-                          }
-                        },
-                      )
-                  else
-                    for (var i = 0; i < 10; i++)
-                      SoundCloudTrackListItem(track: null),
-                ],
-              );
-            },
-          ),
-        ];
-      },
-    );
-  }
-
-  Widget _buildSongTile(
-    BuildContext context,
-    Song song, {
-    void Function()? onSelected,
-  }) {
-    final bool isLocked =
-        Songs.isAccessRestricted &&
-        !Songs.songsPlayedThisWeek.contains(song) &&
-        song != demoSong;
-    final TextStyle? textStyle = !isLocked
-        ? null
-        : TextStyle(color: Theme.of(context).disabledColor);
-
-    return ListTile(
-      minLeadingWidth: 64,
-      leading: SizedBox(
-        width: 64,
-        height: 64,
-        child: Card(
-          margin: EdgeInsets.zero,
-          elevation: 0,
-          child: isLocked
-              ? Icon(
-                  Symbols.lock,
-                  color: Theme.of(context).disabledColor,
-                )
-              : LibraryPage.buildSongIcon(song),
-        ),
-      ),
-      title: Text(
-        song.title,
-        style: textStyle,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        song.artist ?? "Unknown artist",
-        style: textStyle,
-      ),
-      onTap: () async {
-        if (isLocked) {
-          await showExceptionDialog(
-            const MusicPlayerAccessRestrictedDialog(),
-          );
-          return;
-        }
-
-        onSelected?.call();
-        context.go(Routes.song(song.id));
-      },
     );
   }
 }

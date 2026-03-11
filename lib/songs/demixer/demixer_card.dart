@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -50,17 +51,15 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
 
         return Column(
           children: [
-            Text(
-              "Instruments",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
             Expanded(child: SizedBox()),
-            ValueListenableBuilder(
-              valueListenable: process.progressNotifier,
-              builder: (context, progress, child) => CircularLoadingCheck(
-                progress: progress,
-                isComplete: process.isComplete,
-                size: 96,
+            buildCookie(
+              child: ValueListenableBuilder(
+                valueListenable: process.progressNotifier,
+                builder: (context, progress, child) => CircularLoadingCheck(
+                  progress: progress,
+                  isComplete: process.isComplete,
+                  size: 96,
+                ),
               ),
             ),
 
@@ -99,17 +98,32 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
     );
   }
 
-  Widget buildDemixDisabled() {
+  Widget buildCookie({required Widget child}) {
+    return M3Container.c9SidedCookie(
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      child: Padding(padding: EdgeInsets.all(32), child: child),
+    );
+  }
+
+  Widget buildInfo(Widget icon, List<Widget> children) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 8,
       children: [
-        const Icon(Symbols.disabled_by_default, size: 96),
-        const SizedBox(height: 8),
+        buildCookie(child: icon),
+        ...children,
+      ],
+    );
+  }
+
+  Widget buildDemixDisabled() {
+    return buildInfo(
+      Icon(Symbols.disabled_by_default, size: 96),
+      [
         const Text(
           """Automatically splitting songs into instruments is currently disabled in the settings.""",
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 8),
         OutlinedButton(
           onPressed: () {
             setState(() {
@@ -123,12 +137,10 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
   }
 
   Widget buildOutOfDate() {
-    return const Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Symbols.update_rounded, size: 96),
-        SizedBox(height: 8),
-        Text(
+    return buildInfo(
+      Icon(Symbols.update_rounded, size: 96),
+      [
+        const Text(
           """A newer version of the app is available. 
 Please update to the latest version to use the Demixer.""",
           textAlign: TextAlign.center,
@@ -138,27 +150,21 @@ Please update to the latest version to use the Demixer.""",
   }
 
   Widget buildError() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Symbols.cloud_off_rounded, size: 96),
-        const SizedBox(height: 8),
-        const Text(
-          """An error occurred while the song was being split into instruments. Please try again.""",
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton(
-          onPressed: () {
-            setState(() {
-              DemixingProcesses.cancel(widget.song);
-              DemixingProcesses.start(widget.song);
-            });
-          },
-          child: const Text("Retry"),
-        ),
-      ],
-    );
+    return buildInfo(Icon(Symbols.error_rounded, size: 96), [
+      const Text(
+        """An error occurred while the song was being split into instruments. Please try again.""",
+        textAlign: TextAlign.center,
+      ),
+      OutlinedButton(
+        onPressed: () {
+          setState(() {
+            DemixingProcesses.cancel(widget.song);
+            DemixingProcesses.start(widget.song);
+          });
+        },
+        child: const Text("Retry"),
+      ),
+    ]);
   }
 
   Widget buildLoadingText(BuildContext context, DemixingProcess process) {
