@@ -33,6 +33,12 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
   late final SearchController controller = SearchController();
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SearchAnchor(
       searchController: controller,
