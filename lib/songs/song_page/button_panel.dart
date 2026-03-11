@@ -81,7 +81,9 @@ class ButtonPanel extends StatelessWidget {
                       padding: const EdgeInsets.all(4.0),
                       child: M3Container.c6SidedCookie(
                         child: Material(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: player == null
+                              ? Theme.of(context).colorScheme.surfaceContainer
+                              : Theme.of(context).colorScheme.primary,
                           child: InkWell(
                             onTap: player == null
                                 ? null
