@@ -16,7 +16,7 @@ abstract class Model {
   final String id;
 
   /// When this object was created.
-  @JsonKey(required: true)
+  @JsonKey(required: true, name: "created_at")
   final DateTime createdAt;
 
   /// Serialize this object as json.

@@ -7,12 +7,12 @@ part of 'announcement.dart';
 // **************************************************************************
 
 Announcement _$AnnouncementFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const ['id', 'createdAt']);
+  $checkKeys(json, requiredKeys: const ['id', 'created_at']);
   return Announcement(
     id: json['id'] as String?,
-    createdAt: json['createdAt'] == null
+    createdAt: json['created_at'] == null
         ? null
-        : DateTime.parse(json['createdAt'] as String),
+        : DateTime.parse(json['created_at'] as String),
     title: json['title'] as String,
     content: json['content'] as String?,
   );
@@ -21,7 +21,7 @@ Announcement _$AnnouncementFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$AnnouncementToJson(Announcement instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'createdAt': instance.createdAt.toIso8601String(),
+      'created_at': instance.createdAt.toIso8601String(),
       'title': instance.title,
       'content': instance.content,
     };

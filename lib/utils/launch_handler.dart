@@ -44,8 +44,22 @@ class LaunchHandler {
     initialValue: "0",
   );
 
+  /// When the app was last launched.
+  static final DateTime previousLaunchAt = launchAt.value;
+
+  /// When the app was launched.
+  static final TransformedPersistentValue<DateTime, String> launchAt =
+      TransformedPersistentValue(
+        "lastLaunchAt",
+        initialValue: DateTime.utc(2000), // Some time really long ago.
+        from: (value) => DateTime.parse(value),
+        to: (value) => value.toIso8601String(),
+      );
+
   /// Called whenever the app launches.
-  static Future<void> onLaunch() async {}
+  static Future<void> onLaunch() async {
+    launchAt.value = DateTime.now();
+  }
 
   /// Called when the app is launched for the first time with a new version.
   static Future<void> onFirstLaunchWithVersion() async {
