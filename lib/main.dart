@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:musbx/analytics.dart';
+import 'package:musbx/database/database.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
@@ -21,6 +22,7 @@ Future<void> main() async {
   await PersistentValue.initialize();
   await Directories.initialize();
 
+  await Database.initialize();
   await Analytics.initialize();
   await Purchases.intialize();
 

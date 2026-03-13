@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -28,7 +29,8 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       leading: leading,
       title: title,
-      actions: const [
+      actions: [
+        AnnouncementsButton(),
         GetPremiumButton(),
         SettingsButton(),
       ],

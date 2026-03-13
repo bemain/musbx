@@ -70,13 +70,17 @@ dependencies:
       ref: 9ebb16d7fa31c7d84e99cb0f262073ca3fed9749
   material_plus:
     path: ../material_plus
-  app_links: ^7.0.0
   uri_to_file: # The version on pub.dev is terribly outdated
     git:
       url: https://github.com/sumitsharansatsangi/uri-to-file
       ref: main
   crypto: ^3.0.7
   flutter_m3shapes: ^1.0.0+2
+  supabase_flutter: ^2.12.0
+  app_links: ^6.4.1
+  json_annotation: ^4.11.0
+  uuid: ^4.5.3
+  flutter_markdown_plus: ^1.0.7
 
 
 
@@ -93,6 +97,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  build_runner: ^2.12.2
+  json_serializable: ^6.13.0
 
 # To apply changes to the icon configuration, run:
 # `dart run flutter_launcher_icons`
