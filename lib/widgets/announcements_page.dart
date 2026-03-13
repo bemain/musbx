@@ -161,7 +161,9 @@ class AnnouncementTile extends StatelessWidget {
 class AnnouncementsButton extends StatelessWidget {
   /// A simple icon button that opens the "Announcements"-page when pressed
   /// and displays the number of unread announcements.
-  const AnnouncementsButton({super.key});
+  AnnouncementsButton({super.key});
+
+  final GlobalKey<TooltipState> tooltipkey = GlobalKey<TooltipState>();
 
   @override
   Widget build(BuildContext context) {
@@ -172,16 +174,29 @@ class AnnouncementsButton extends StatelessWidget {
         builder: (context, snapshot) {
           final List<Announcement> unread = snapshot.data ?? [];
 
-          return IconButton(
-            onPressed: () {
-              context.push(Routes.announcements);
-            },
-            icon: Badge(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              textColor: Theme.of(context).colorScheme.onPrimary,
-              isLabelVisible: unread.isNotEmpty,
-              label: Text(unread.length.toString()),
-              child: Icon(Symbols.notifications),
+          if (unread.isNotEmpty) {
+            // Open tooltop
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              tooltipkey.currentState?.ensureTooltipVisible();
+            });
+          }
+
+          return Tooltip(
+            key: tooltipkey,
+            triggerMode: TooltipTriggerMode.manual,
+            message: unread.firstOrNull?.title ?? "Notifications",
+            showDuration: const Duration(seconds: 3),
+            child: IconButton(
+              onPressed: () {
+                context.push(Routes.announcements);
+              },
+              icon: Badge(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                textColor: Theme.of(context).colorScheme.onPrimary,
+                isLabelVisible: unread.isNotEmpty,
+                label: Text(unread.length.toString()),
+                child: Icon(Symbols.notifications),
+              ),
             ),
           );
         },

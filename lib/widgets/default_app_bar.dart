@@ -29,7 +29,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       leading: leading,
       title: title,
-      actions: const [
+      actions: [
         AnnouncementsButton(),
         GetPremiumButton(),
         SettingsButton(),

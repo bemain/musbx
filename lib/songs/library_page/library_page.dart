@@ -27,7 +27,7 @@ class LibraryPage extends StatelessWidget {
             toolbarHeight: 68,
             expandedHeight: 128,
             title: LibrarySearchBar(),
-            actions: const [
+            actions: [
               AnnouncementsButton(),
               GetPremiumButton(),
               SettingsButton(),
