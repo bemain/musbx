@@ -25,6 +25,10 @@ Future<void> main() async {
   await Database.initialize();
   await Analytics.initialize();
   await Purchases.intialize();
+  await PersistentValue.preferences.setString(
+    "announcements/readAt",
+    DateTime.utc(200).toIso8601String(),
+  );
 
   await Songs.initialize();
   await Notifications.initialize();
