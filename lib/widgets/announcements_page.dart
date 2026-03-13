@@ -9,10 +9,14 @@ import 'package:musbx/navigation.dart';
 import 'package:musbx/utils/announcements.dart';
 
 class AnnouncementsPage extends StatelessWidget {
-  const AnnouncementsPage({super.key});
+  AnnouncementsPage({super.key});
+
+  final Future<List<Announcement>> _future = Announcements.getAll();
 
   @override
   Widget build(BuildContext context) {
+    final DateTime previousReadAt = Announcements.readAt.value;
+
     // Mark all announcements as read
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       Announcements.readAt.value = DateTime.now();
@@ -25,7 +29,7 @@ class AnnouncementsPage extends StatelessWidget {
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 8),
         child: FutureBuilder(
-          future: Announcements.getAll(),
+          future: _future,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Center(
@@ -37,7 +41,14 @@ class AnnouncementsPage extends StatelessWidget {
               children: [
                 for (Announcement? announcement
                     in snapshot.data ?? [null, null, null])
-                  AnnouncementTile(announcement: announcement),
+                  AnnouncementTile(
+                    announcement: announcement,
+                    isUnread:
+                        announcement?.createdAt.toLocal().isAfter(
+                          previousReadAt,
+                        ) ??
+                        false,
+                  ),
               ],
             );
           },
@@ -63,16 +74,21 @@ class AnnouncementTile extends StatelessWidget {
     "dec",
   ];
 
-  const AnnouncementTile({super.key, required this.announcement});
+  const AnnouncementTile({
+    super.key,
+    required this.announcement,
+    this.isUnread = false,
+  });
 
   final Announcement? announcement;
+  final bool isUnread;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
     String formatDate(DateTime d) =>
-        "${d.day} ${months[d.month - 1].toUpperCase()}${d.year != DateTime.now().year ? " ${d.year}" : ""}, ${d.hour}:${d.minute}";
+        "${d.day} ${months[d.month - 1].toUpperCase()}${d.year != DateTime.now().year ? " ${d.year}" : ""}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}";
 
     if (this.announcement == null) return _buildPlaceholder(context);
     final Announcement announcement = this.announcement!;
@@ -88,6 +104,7 @@ class AnnouncementTile extends StatelessWidget {
           spacing: 4,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   announcement.title,
@@ -95,6 +112,11 @@ class AnnouncementTile extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                if (isUnread)
+                  Badge(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    textColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
               ],
             ),
             Text(
@@ -163,38 +185,46 @@ class AnnouncementsButton extends StatelessWidget {
   /// and displays the number of unread announcements.
   AnnouncementsButton({super.key});
 
-  final GlobalKey<TooltipState> tooltipkey = GlobalKey<TooltipState>();
+  /// Whether the tooltip with the title of the latest announcement has been shown.
+  static bool hasShownTooltip = false;
+
+  final GlobalKey<TooltipState> _tooltipKey = GlobalKey<TooltipState>();
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: Announcements.readAt,
-      builder: (context, value, child) => FutureBuilder(
+      builder: (context, readAt, child) => FutureBuilder(
         future: Announcements.getUnread(),
         builder: (context, snapshot) {
           final List<Announcement> unread = snapshot.data ?? [];
 
           if (unread.isNotEmpty) {
-            // Open tooltop
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              tooltipkey.currentState?.ensureTooltipVisible();
-            });
+            if (!hasShownTooltip) {
+              hasShownTooltip = true;
+
+              // Open tooltip
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                _tooltipKey.currentState?.ensureTooltipVisible();
+              });
+            }
           }
 
           return Tooltip(
-            key: tooltipkey,
+            key: _tooltipKey,
             triggerMode: TooltipTriggerMode.manual,
-            message: unread.firstOrNull?.title ?? "Notifications",
+            message: unread.firstOrNull?.title ?? "Announcements",
             showDuration: const Duration(seconds: 3),
             child: IconButton(
               onPressed: () {
                 context.push(Routes.announcements);
               },
-              icon: Badge(
+              icon: Badge.count(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 textColor: Theme.of(context).colorScheme.onPrimary,
                 isLabelVisible: unread.isNotEmpty,
-                label: Text(unread.length.toString()),
+                count: unread.length,
+                maxCount: 9,
                 child: Icon(Symbols.notifications),
               ),
             ),

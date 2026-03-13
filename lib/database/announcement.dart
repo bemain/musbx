@@ -11,7 +11,7 @@ class Announcement extends Model {
     super.id,
     super.createdAt,
     required this.title,
-    required this.content,
+    this.content,
   });
 
   /// The title of this announcement.

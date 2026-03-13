@@ -13,12 +13,13 @@ class Database {
   /// Initialize the database connection.
   static Future<void> initialize() async {
     if (isInitialized) return;
-    isInitialized = true;
 
     await Supabase.initialize(
       url: supabaseUrl,
       anonKey: supabaseAnonKey,
     );
+
+    isInitialized = true;
   }
 
   /// The reference to the 'announcements' table.
