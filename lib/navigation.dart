@@ -15,6 +15,7 @@ import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
 import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
@@ -33,6 +34,7 @@ class Routes {
 
   static const String licenses = "/settings/licenses";
   static const String contact = "/settings/contact";
+  static const String announcements = "/announcements";
 
   /// The top-level shell branches.
   static const List<String> branches = [metronome, library, tuner, drone];
@@ -113,6 +115,10 @@ class Navigation {
                   ),
                 ),
               ],
+            ),
+            GoRoute(
+              path: Routes.announcements,
+              builder: (context, state) => AnnouncementsPage(),
             ),
 
             StatefulShellRoute(

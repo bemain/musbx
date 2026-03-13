@@ -8,6 +8,7 @@ import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
@@ -27,6 +28,7 @@ class LibraryPage extends StatelessWidget {
             expandedHeight: 128,
             title: LibrarySearchBar(),
             actions: const [
+              AnnouncementsButton(),
               GetPremiumButton(),
               SettingsButton(),
             ],
