@@ -32,8 +32,19 @@ class AnnouncementsPage extends StatelessWidget {
           future: _future,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Center(
-                child: Text("Error: ${snapshot.error}"),
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Icon(
+                    Symbols.error,
+                    size: 96,
+                  ),
+                  Text(
+                    "Failed to load announcements. Please try again later.",
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               );
             }
 
