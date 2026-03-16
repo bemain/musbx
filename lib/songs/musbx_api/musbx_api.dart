@@ -26,7 +26,7 @@ class MusbxApi {
 
   /// The servers hosting the Musbx API.
   static final List<String> _hostUrls = [
-    "http://brunnby.homeip.net:4242",
+    "http://nextcloud.agardh.se:4242",
     "http://musbx.agardh.se:4242",
   ];
 
