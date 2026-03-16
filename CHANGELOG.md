@@ -1,5 +1,10 @@
 
 
+## [v1.14.1] - 2026-03-16
+### :bug: Bug Fixes
+- [`ae90db0`](https://github.com/bemain/musbx/commit/ae90db0c20ffbdf92c2f352eab3dfac76edbdfbd) - **songs**: update host address *(commit by [@bemain](https://github.com/bemain))*
+
+
 ## [v1.14.0] - 2026-03-13
 ### :sparkles: New Features
 - [`5a4a128`](https://github.com/bemain/musbx/commit/5a4a1289db4f88c95804ab04f5b79629dedd3a5c) - **songs**: wrap demixing progress bar in a 9-sided cookie *(commit by [@bemain](https://github.com/bemain))*
@@ -25,3 +30,4 @@
 - [`571bd77`](https://github.com/bemain/musbx/commit/571bd77982bcd44da6148afef78ca99ef969abad) - **release**: v1.13.13+59 [skip ci] *(commit by [@github-actions[bot]](https://github.com/apps/github-actions))*
 
 [v1.14.0]: https://github.com/bemain/musbx/compare/v1.13.13...v1.14.0
+[v1.14.1]: https://github.com/bemain/musbx/compare/v1.14.0...v1.14.1
