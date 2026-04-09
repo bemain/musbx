@@ -145,7 +145,7 @@ class FrequencyPlayer {
     double frequency = 440,
   }) async {
     final source = await _soloud.loadWaveform(waveform, false, 1.0, 0.0);
-    final handle = await _soloud.play(source, paused: true);
+    final handle = _soloud.play(source, paused: true);
     return FrequencyPlayer._(source, handle, frequency: frequency);
   }
 

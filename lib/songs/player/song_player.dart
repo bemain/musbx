@@ -230,13 +230,13 @@ class SinglePlayer extends SongPlayer {
     // Activate filters. This needs to be done before the sound is played.
     for (var filter in [
       source.filters.pitchShiftFilter,
-      source.filters.parametricEq,
+      source.filters.parametricEqFilter,
     ]) {
       if (!filter.isActive) filter.activate();
     }
 
     // Play sound
-    final SoundHandle handle = await SoLoud.instance.play(
+    final SoundHandle handle = SoLoud.instance.play(
       source,
       paused: true,
       looping: true,
@@ -321,7 +321,7 @@ class MultiPlayer extends SongPlayer {
     sources.forEach((stem, source) {
       for (var filter in [
         source.filters.pitchShiftFilter,
-        source.filters.parametricEq,
+        source.filters.parametricEqFilter,
       ]) {
         if (!filter.isActive) filter.activate();
       }
@@ -329,7 +329,7 @@ class MultiPlayer extends SongPlayer {
 
     final handles = {
       for (final e in sources.entries)
-        e.key: await SoLoud.instance.play(
+        e.key: SoLoud.instance.play(
           e.value,
           paused: true,
           looping: true,

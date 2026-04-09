@@ -64,10 +64,7 @@ dependencies:
   firebase_analytics: ^12.0.1
   url_launcher: ^6.3.2
   simple_icons: ^14.6.1
-  flutter_soloud:
-    git:
-      url: https://github.com/alnitak/flutter_soloud.git
-      ref: dev
+  flutter_soloud: ^4.0.0
   material_plus:
     path: ../material_plus
   uri_to_file: # The version on pub.dev is terribly outdated

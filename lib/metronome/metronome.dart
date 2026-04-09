@@ -178,7 +178,7 @@ class Metronome {
           : (subcount == 0)
           ? ticks.primary
           : ticks.subdivision;
-      await SoLoud.instance.play(tick.source, volume: volume);
+      SoLoud.instance.play(tick.source, volume: volume);
     } else {
       // Vibrate
       final feedback = (count == 0 && subcount == 0)

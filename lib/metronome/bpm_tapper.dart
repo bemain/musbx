@@ -46,7 +46,7 @@ class BpmTapper extends StatelessWidget {
     return Listener(
       onPointerDown: (_) async {
         // Play sound
-        if (sound != null) await SoLoud.instance.play(sound!);
+        if (sound != null) SoLoud.instance.play(sound!);
 
         if (await VolumeController.instance.isMuted() ||
             Metronome.instance.volume == 0.0) {

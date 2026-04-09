@@ -30,7 +30,7 @@ class Filters {
   late final Filter<ParametricEqSingle> equalizer = Filter(
     (modifySingle) => modify(
       (filters, {handle}) =>
-          modifySingle(filters.parametricEq, handle: handle),
+          modifySingle(filters.parametricEqFilter, handle: handle),
     ),
   );
 }
