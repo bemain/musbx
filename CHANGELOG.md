@@ -1,5 +1,10 @@
 
 
+## [v1.14.2] - 2026-04-09
+### :sparkles: New Features
+- [`ba345aa`](https://github.com/bemain/musbx/commit/ba345aacc8e03de82dc36a4d4bb57bc4199adc89) - **songs**: upgrade to `flutter_soloud` v4 *(commit by [@bemain](https://github.com/bemain))*
+
+
 ## [v1.14.1] - 2026-03-16
 ### :bug: Bug Fixes
 - [`ae90db0`](https://github.com/bemain/musbx/commit/ae90db0c20ffbdf92c2f352eab3dfac76edbdfbd) - **songs**: update host address *(commit by [@bemain](https://github.com/bemain))*
@@ -31,3 +36,4 @@
 
 [v1.14.0]: https://github.com/bemain/musbx/compare/v1.13.13...v1.14.0
 [v1.14.1]: https://github.com/bemain/musbx/compare/v1.14.0...v1.14.1
+[v1.14.2]: https://github.com/bemain/musbx/compare/v1.14.1...v1.14.2
