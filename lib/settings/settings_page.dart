@@ -12,7 +12,6 @@ import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
-import 'package:simple_icons/simple_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final Uri? storeUrl = Platform.isAndroid
@@ -186,8 +185,8 @@ class SettingsPage extends StatelessWidget {
                 ListTile(
                   leading: Icon(
                     Platform.isAndroid
-                        ? SimpleIcons.googleplay
-                        : SimpleIcons.appstore,
+                        ? CustomIcons.googleplay
+                        : CustomIcons.appstore,
                   ),
 
                   title: Text(

@@ -55,6 +55,14 @@ Here's a complete example:
 feat/songs/issue72/configure-audio-session
 ```
 
+## Tools
+
+### Custom icons
+To generate custom icons for use in the app, add them to [`assets/icons`](assets/icons). Then make sure `npx` is installed and run
+```bash
+dart run tool/generate_icons.dart
+```
+
 ## Privacy policy
 Privacy policy can be found [here](https://bemain.github.io/musbx/privacy/)
 
