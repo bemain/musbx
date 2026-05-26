@@ -10,6 +10,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   dynamic_color
   firebase_core
   permission_handler_windows
+  uri_content
   url_launcher_windows
   volume_controller
 )

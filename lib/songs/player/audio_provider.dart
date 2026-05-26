@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:musbx/songs/musbx_api/client.dart';
@@ -104,6 +105,45 @@ class YtdlpAudio extends AudioProvider {
   };
 }
 
+class BytesAudio extends AudioProvider {
+  /// A source that constructs audio from raw bytes.
+  BytesAudio(this.bytes);
+
+  /// The bytes to construct the audio from.
+  ///
+  /// If this is `null`, the audio is expected to already be loaded into the [cacheFile]
+  final Uint8List? bytes;
+
+  @override
+  Future<AudioSource> resolve({required Song song}) async {
+    File cacheFile = File("${song.cacheDirectory.path}/audio.mp3");
+
+    if (!await cacheFile.exists()) {
+      if (bytes == null) {
+        throw Exception(
+          "[AUDIO] No bytes provided when constructing the BytesAudio, and the audio was not found in cache",
+        );
+      }
+
+      await cacheFile.create(recursive: true);
+      cacheFile = await cacheFile.writeAsBytes(bytes!);
+    }
+    this.cacheFile = cacheFile;
+
+    source ??= await SoLoud.instance.loadFile(cacheFile.path);
+
+    return source!;
+  }
+
+  /// Try to create a [FileAudio] from a [json] object.
+  static BytesAudio? fromJson(Json json) => BytesAudio(null);
+
+  @override
+  Json toJson() => {
+    "type": "bytes",
+  };
+}
+
 class FileAudio extends AudioProvider {
   /// A source that reads audio from a file.
   FileAudio(this.file);
@@ -113,7 +153,8 @@ class FileAudio extends AudioProvider {
 
   @override
   Future<AudioSource> resolve({required Song song}) async {
-    File cacheFile = File("${song.cacheDirectory.path}/audio.mp3");
+    final extension = file.path.split(".").last;
+    File cacheFile = File("${song.cacheDirectory.path}/audio.$extension");
 
     if (!await cacheFile.exists()) {
       if (!await file.exists()) {
