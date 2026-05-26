@@ -119,7 +119,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     final AudioProvider source = parentSource;
     final FileHandle file;
     switch (source) {
-      case FileAudio():
+      case FileAudio() || BytesAudio():
         file = await client.uploadFile(
           source.cacheFile!,
           onSendProgress: (count, total) {

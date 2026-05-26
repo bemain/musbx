@@ -71,7 +71,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   ) async {
     final FileHandle file;
     switch (source) {
-      case FileAudio():
+      case FileAudio() || BytesAudio():
         file = await client.uploadFile(source.cacheFile!);
       case YtdlpAudio():
         file = await client.uploadYtdlp(source.url);
