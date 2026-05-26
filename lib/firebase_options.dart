@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'musicians-toolbox.firebasestorage.app',
     measurementId: 'G-6RZWT39P4Z',
   );
+
 }
