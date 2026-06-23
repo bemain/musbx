@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/drone/drone.dart';
 
@@ -24,15 +25,19 @@ class DroneOctave extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(
+                IconButtonM3E(
                   onPressed: drone.root.octave <= Drone.minOctave
                       ? null
                       : () {
                           drone.root = drone.root.transposed(-12);
                         },
-                  color: Theme.of(context).colorScheme.primary,
-                  iconSize: 50,
-                  icon: const Icon(Symbols.arrow_left_rounded),
+
+                  size: IconButtonM3ESize.md,
+                  variant: IconButtonM3EVariant.standard,
+                  icon: const Icon(
+                    Symbols.arrow_left_rounded,
+                    size: 48,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -43,15 +48,18 @@ class DroneOctave extends StatelessWidget {
                     ).textTheme.displayLarge?.copyWith(fontSize: size),
                   ),
                 ),
-                IconButton(
+                IconButtonM3E(
                   onPressed: drone.root.octave >= Drone.maxOctave
                       ? null
                       : () {
                           drone.root = drone.root.transposed(12);
                         },
-                  color: Theme.of(context).colorScheme.primary,
-                  iconSize: 50,
-                  icon: const Icon(Symbols.arrow_right_rounded),
+                  size: IconButtonM3ESize.md,
+                  variant: IconButtonM3EVariant.standard,
+                  icon: const Icon(
+                    Symbols.arrow_right_rounded,
+                    size: 48,
+                  ),
                 ),
               ],
             ),

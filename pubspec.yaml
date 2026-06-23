@@ -36,17 +36,12 @@ dependencies:
   crypto: ^3.0.7
   device_info_plus: ^12.4.0
   dio: ^5.9.2
-  dynamic_color:
-    git: # A specific fork is required for tone-based colors. TODO: Use the official version once updated
-      url: https://github.com/hasali19/material-foundation-flutter-packages.git
-      ref: main
-      path: packages/dynamic_color/
+  dynamic_color: ^1.8.1
   file_picker: ^10.3.10
   firebase_analytics: ^12.4.3
   firebase_core: ^4.11.0
   flutter:
     sdk: flutter
-  flutter_m3shapes: ^1.0.0+2
   flutter_markdown_plus: ^1.0.7
   flutter_recorder: ^1.1.5
   flutter_soloud: ^4.0.11
@@ -60,6 +55,7 @@ dependencies:
   in_app_purchase: ^3.3.0
   json_annotation: ^4.12.0
   just_waveform: ^0.0.7
+  m3e_collection: ^0.3.7
   material_plus:
     path: ../material_plus
   material_symbols_icons: ^4.2951.0

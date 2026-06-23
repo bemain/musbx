@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_m3shapes/flutter_m3shapes.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 class ButtonPanel extends StatelessWidget {
   /// Panel including play/pause, forward and rewind buttons for controlling a [SongPlayer].
@@ -79,7 +80,8 @@ class ButtonPanel extends StatelessWidget {
                     aspectRatio: 1.0,
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
-                      child: M3Container.c6SidedCookie(
+                      child: MaterialShape(
+                        shape: MaterialShapes.cookie6Sided,
                         child: Material(
                           color: player == null
                               ? Theme.of(context).colorScheme.surfaceContainer

@@ -3,9 +3,61 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:path_provider/path_provider.dart';
+
+class MaterialShape extends StatelessWidget {
+  const MaterialShape({
+    super.key,
+    required this.shape,
+    this.width,
+    this.height,
+    this.color,
+    this.child,
+  });
+
+  final RoundedPolygon shape;
+  final double? width;
+  final double? height;
+  final Color? color;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ClipPath(
+        clipper: _ShapeClipper(shape),
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          decoration: BoxDecoration(color: color),
+          width: width,
+          height: height,
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class _ShapeClipper extends CustomClipper<Path> {
+  _ShapeClipper(this.shape);
+
+  final RoundedPolygon shape;
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+
+  @override
+  Path getClip(Size size) {
+    return shape
+        .transformed(
+          (x, y) => (x * size.width, y * size.height),
+        )
+        .toPath();
+  }
+}
 
 class InfoPage extends StatelessWidget {
   const InfoPage({super.key, required this.icon, required this.text});

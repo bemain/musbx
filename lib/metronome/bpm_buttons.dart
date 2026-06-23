@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
@@ -24,12 +25,11 @@ class BpmButtons extends StatelessWidget {
           onContinuousPressEnd: () {
             Metronome.instance.reset();
           },
-          child: IconButton(
+          child: IconButtonM3E(
             onPressed: () {
               Metronome.instance.bpm--;
             },
-            iconSize: iconSize,
-            icon: const Icon(Symbols.remove),
+            icon: Icon(Symbols.remove, size: iconSize),
           ),
         ),
         ConstrainedBox(
@@ -43,12 +43,11 @@ class BpmButtons extends StatelessWidget {
           onContinuousPressEnd: () {
             Metronome.instance.reset();
           },
-          child: IconButton(
+          child: IconButtonM3E(
             onPressed: () {
               Metronome.instance.bpm++;
             },
-            iconSize: iconSize,
-            icon: const Icon(Symbols.add),
+            icon: Icon(Symbols.add, size: iconSize),
           ),
         ),
       ],

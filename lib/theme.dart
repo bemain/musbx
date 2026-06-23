@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
@@ -7,7 +8,15 @@ import 'package:musbx/songs/song_page/position_slider_style.dart';
 class AppTheme {
   const AppTheme._();
 
+  // Defaults
   static const Color defaultSeed = Color(0xff578cff);
+  static final ColorScheme lightDefault = ColorScheme.fromSeed(
+    seedColor: defaultSeed,
+  );
+  static final ColorScheme darkDefault = ColorScheme.fromSeed(
+    seedColor: defaultSeed,
+    brightness: Brightness.dark,
+  );
 
   /// The theme mode currently used by the app.
   static ThemeMode get themeMode => themeModeNotifier.value;
@@ -27,23 +36,18 @@ class AppTheme {
     ColorScheme? lightDynamic,
     ColorScheme? darkDynamic,
   ) {
-    // Defaults
-    final ColorScheme lightDefault = ColorScheme.fromSeed(
-      seedColor: defaultSeed,
-    );
-    final ColorScheme darkDefault = ColorScheme.fromSeed(
-      seedColor: defaultSeed,
-      brightness: Brightness.dark,
-    );
-
     // Create themes
-    final ThemeData lightTheme = ThemeData.from(
-      colorScheme: lightDynamic ?? lightDefault,
-      useMaterial3: true,
+    final ThemeData lightTheme = withM3ETheme(
+      ThemeData.from(
+        colorScheme: lightDynamic ?? lightDefault,
+        useMaterial3: true,
+      ),
     );
-    final ThemeData darkTheme = ThemeData.from(
-      colorScheme: darkDynamic ?? darkDefault,
-      useMaterial3: true,
+    final ThemeData darkTheme = withM3ETheme(
+      ThemeData.from(
+        colorScheme: darkDynamic ?? darkDefault,
+        useMaterial3: true,
+      ),
     );
 
     return (

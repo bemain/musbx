@@ -66,6 +66,10 @@ dart run tool/generate_icons.dart
 ## Privacy policy
 Privacy policy can be found [here](https://bemain.github.io/musbx/privacy/)
 
+Disclaimer: This project and its contents are not affiliated with, funded, authorized, endorsed by, or in any way associated with SoundCloud, SoundCloud Global Limited & Co. KG, or any of its affiliates and subsidiaries. Any trademark, service mark, trade name, or other intellectual property rights used in this project are owned by the respective owners.
+
+Musician's Toolbox is an open-source project. Users are responsible for ensuring their usage complies with SoundCloud's Terms of Service and applicable laws in their jurisdiction.
+
 ## Contact information
 If you have any questions, feedback or issues with the app, please reach out:
 

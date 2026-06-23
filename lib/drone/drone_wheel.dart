@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart' hide Key;
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/model/key.dart';
@@ -141,7 +142,7 @@ class DroneWheelState extends State<DroneWheel> {
   }
 
   Widget buildResetButton() {
-    return IconButton(
+    return IconButtonM3E(
       onPressed: () {
         drone.intervalsNotifier.value = [];
       },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/options_sheet.dart';
@@ -10,6 +10,7 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 class SongTile extends StatelessWidget {
   /// A list tile widget that displays information about a [song].
@@ -47,6 +48,7 @@ class SongTile extends StatelessWidget {
     return ListTile(
       minTileHeight: 72,
       contentPadding: EdgeInsets.only(left: 16, right: 8),
+      minLeadingWidth: 64,
       leading: buildLeading(
         context,
         song,
@@ -105,11 +107,12 @@ class SongTile extends StatelessWidget {
   }) {
     return SizedBox(
       width: 64,
-      child: M3Container.c4SidedCookie(
+      child: MaterialShape(
+        shape: MaterialShapes.cookie4Sided,
         height: 64,
         color: color ?? Theme.of(context).colorScheme.surfaceContainerHigh,
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(12),
           child: isLocked
               ? Icon(
                   Symbols.lock,

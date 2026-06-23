@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 class LibrarySearchBar extends StatefulWidget {
   const LibrarySearchBar({super.key});
@@ -15,7 +16,8 @@ class LibrarySearchBar extends StatefulWidget {
   State<LibrarySearchBar> createState() => _LibrarySearchBarState();
 
   static Widget placeholderIcon(BuildContext context, {Color? color}) {
-    return M3Container.c4SidedCookie(
+    return MaterialShape(
+      shape: MaterialShapes.cookie4Sided,
       color: color ?? Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Padding(
         padding: EdgeInsets.all(48),

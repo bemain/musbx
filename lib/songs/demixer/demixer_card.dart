@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/navigation.dart';
@@ -16,6 +16,7 @@ import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 class DemixingProcessIndicator extends StatefulWidget {
   const DemixingProcessIndicator({super.key, required this.player});
@@ -99,9 +100,13 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
   }
 
   Widget buildCookie({required Widget child}) {
-    return M3Container.c9SidedCookie(
+    return MaterialShape(
+      shape: MaterialShapes.cookie9Sided,
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
-      child: Padding(padding: EdgeInsets.all(32), child: child),
+      child: Padding(
+        padding: EdgeInsets.all(32),
+        child: child,
+      ),
     );
   }
 
