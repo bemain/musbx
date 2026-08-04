@@ -1,0 +1,47 @@
+---
+layout: none
+permalink: /get
+title: Get Musician's Toolbox
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get Musician's Toolbox</title>
+<script>
+  (function () {
+    var ua = navigator.userAgent || navigator.vendor || window.opera;
+    var playStoreUrl = "https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx-website-get-link";
+    var appStoreUrl = "https://apps.apple.com/us/app/musicians-toolbox/id1670009655";
+
+    if (/android/i.test(ua)) {
+      window.location.replace(playStoreUrl);
+    } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+      window.location.replace(appStoreUrl);
+    }
+  })();
+</script>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 2rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <h1>Get Musician's Toolbox</h1>
+  <p>Choose your platform:</p>
+  <p>
+    <a href='https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx-website-get-link' style="border-radius: 13px; height: 83px;"><img alt='Get it on Google Play' src='https://drive.usercontent.google.com/download?id=1unoM49F6eiZ63AHKnFuY4SrCpvoG6uWq' style="height: 83px;"/></a>
+    <a href="https://apps.apple.com/us/app/musicians-toolbox/id1670009655?itsct=apps_box_badge&amp;itscg=30200" style="display: inline-block; border-radius: 13px; width: 250px; height: 83px;"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&amp;releaseDate=1679443200" alt="Download on the App Store" style="border-radius: 13px; width: 250px; height: 83px;"></a>
+  </p>
+</body>
+</html>
