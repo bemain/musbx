@@ -1,5 +1,23 @@
 
 
+## [v1.14.3] - 2026-08-04
+### :sparkles: New Features
+- [`8c7cbcf`](https://github.com/bemain/musbx/commit/8c7cbcff4fa71b3812452ccb9a29729f6fc8a5ea) - create script for generating custom icons *(commit by [@bemain](https://github.com/bemain))*
+- [`8e58a82`](https://github.com/bemain/musbx/commit/8e58a82eb64c6c1113d081c56c1b63d906a860d3) - **songs**: move hosted album art to `/assets/album_art` *(commit by [@bemain](https://github.com/bemain))*
+
+### :bug: Bug Fixes
+- [`50c8a99`](https://github.com/bemain/musbx/commit/50c8a99391288647a93a60203fd3ca27451191c5) - **songs**: switch package used to get content URIs *(commit by [@bemain](https://github.com/bemain))*
+- [`1f3b42f`](https://github.com/bemain/musbx/commit/1f3b42fd7a5487f0e8bd8d62c1323f4ce2272fc3) - fix inconsistent icon sizes *(commit by [@bemain](https://github.com/bemain))*
+- [`2f89202`](https://github.com/bemain/musbx/commit/2f892022b4b82016d788801c28714bcab5005ae4) - **songs**: enable demixing bytes audio *(commit by [@bemain](https://github.com/bemain))*
+- [`1ba5cf1`](https://github.com/bemain/musbx/commit/1ba5cf1f6c74636d2a770ec12f66f905a378506c) - replace supabase anon key with publishable key *(commit by [@bemain](https://github.com/bemain))*
+
+### :recycle: Refactors
+- [`9669007`](https://github.com/bemain/musbx/commit/9669007777b263d9a35e03a6fc320eaaaed5ef2d) - format files *(commit by [@bemain](https://github.com/bemain))*
+
+### :wrench: Chores
+- [`4468f39`](https://github.com/bemain/musbx/commit/4468f39b737e714d559613fdf7b947a6c9462d52) - sort dependencies *(commit by [@bemain](https://github.com/bemain))*
+
+
 ## [v1.14.2] - 2026-04-09
 ### :sparkles: New Features
 - [`ba345aa`](https://github.com/bemain/musbx/commit/ba345aacc8e03de82dc36a4d4bb57bc4199adc89) - **songs**: upgrade to `flutter_soloud` v4 *(commit by [@bemain](https://github.com/bemain))*
@@ -37,3 +55,4 @@
 [v1.14.0]: https://github.com/bemain/musbx/compare/v1.13.13...v1.14.0
 [v1.14.1]: https://github.com/bemain/musbx/compare/v1.14.0...v1.14.1
 [v1.14.2]: https://github.com/bemain/musbx/compare/v1.14.1...v1.14.2
+[v1.14.3]: https://github.com/bemain/musbx/compare/v1.14.2...v1.14.3
