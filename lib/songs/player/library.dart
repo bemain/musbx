@@ -18,7 +18,9 @@ final Song demoSong = Song(
   id: "demo",
   title: "In Treble, Spilled Some Jazz Jam",
   artist: "Erik Lagerstedt",
-  artUri: Uri.parse("https://bemain.github.io/musbx/demo_album_art.png"),
+  artUri: Uri.parse(
+    "https://bemain.github.io/musbx/assets/album_art/demo.png",
+  ),
   audio: YtdlpAudio(Uri.parse("https://youtu.be/9ytqRUjYJ7s")),
 );
 
