@@ -1,8 +1,8 @@
 # Musician's Toolbox
 
 <p align="left">
-    <a href='https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx-readme-badge' style="border-radius: 13px; height: 84px;"><img alt='Get it on Google Play' src='https://bemain.github.io/musbx/badges/google-play.png' style="height: 84px;"/></a>
-    <a href="https://apps.apple.com/us/app/musicians-toolbox/id1670009655?itsct=musbx-readme-badge&amp;itscg=30200" style="display: inline-block; border-radius: 13px; height: 84px;"><img src="https://bemain.github.io/musbx/badges/app-store.png" alt="Download on the App Store" style="border-radius: 13px; height: 84px;"></a>
+    <a href='https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx-readme-badge' style="border-radius: 13px; height: 84px;"><img alt='Get it on Google Play' src='https://bemain.github.io/musbx/assets/badges/google-play.png' style="height: 84px;"/></a>
+    <a href="https://apps.apple.com/us/app/musicians-toolbox/id1670009655?itsct=musbx-readme-badge&amp;itscg=30200" style="display: inline-block; border-radius: 13px; height: 84px;"><img src="https://bemain.github.io/musbx/assets/badges/app-store.png" alt="Download on the App Store" style="border-radius: 13px; height: 84px;"></a>
 </p>
 
 Transcribe — Practice — Perform
