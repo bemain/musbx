@@ -16,7 +16,7 @@ class Database {
 
     await Supabase.initialize(
       url: supabaseUrl,
-      anonKey: supabaseAnonKey,
+      publishableKey: supabasePublishableKey,
     );
 
     isInitialized = true;
