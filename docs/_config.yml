@@ -20,6 +20,7 @@ minima:
       url: "https://apps.apple.com/us/app/musicians-toolbox/id1670009655"
   hide_site_feed_link: true
   nav_pages:
+    - get.html
     - privacy_policy.md
 
 author: 
