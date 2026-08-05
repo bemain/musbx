@@ -1,3 +1,12 @@
+## [1.14.5] - 2026-08-05
+
+### ⚙️ Miscellaneous Tasks
+
+- Automate release builds for windows and linux
+- Fix desktop build errors
+- Fix windows build error
+- Avoid pushing to main when dispatched from a feature branch
+- Verify appimagetool checksum
 ## [1.14.4] - 2026-08-05
 
 ### 🐛 Bug Fixes
@@ -11,6 +20,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Use git-cliff action to generate changelog
+- *(release)* V1.14.4+64 [skip ci]
 ## [1.14.3] - 2026-08-04
 
 ### 🚀 Features
