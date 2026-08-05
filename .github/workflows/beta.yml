@@ -212,6 +212,8 @@ jobs:
           keys_file: ${{ secrets.KEYS_FILE }}
 
       - name: Build
+        env:
+          CL: /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
         run: flutter build windows --release
 
       - name: Package and upload artifact
