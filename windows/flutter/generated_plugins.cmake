@@ -5,11 +5,9 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   awesome_notifications
-  awesome_notifications_core
   connectivity_plus
   dynamic_color
   firebase_core
-  passkeys_windows
   permission_handler_windows
   uri_content
   url_launcher_windows

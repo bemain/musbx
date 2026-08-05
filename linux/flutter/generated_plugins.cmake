@@ -4,7 +4,6 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   awesome_notifications
-  awesome_notifications_core
   dynamic_color
   gtk
   uri_content
