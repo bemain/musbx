@@ -3,16 +3,23 @@ name: Flutter Build & Deploy
 on:
   workflow_dispatch:
     inputs:
-      platform:
-        description: 'Platform to build'
-        required: true
-        default: 'both'
-        type: choice
-        options:
-          - android
-          - ios
-          - both
-      bump_build: 
+      android:
+        description: 'Build Android'
+        type: boolean
+        default: true
+      ios:
+        description: 'Build iOS'
+        type: boolean
+        default: true
+      windows:
+        description: 'Build Windows'
+        type: boolean
+        default: true
+      linux:
+        description: 'Build Linux'
+        type: boolean
+        default: true
+      bump_build:
         description: 'Increase build number'
         required: false
         type: boolean
@@ -27,22 +34,11 @@ permissions:
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    outputs:
-      platforms: ${{ steps.platforms.outputs.platforms }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Determine platforms
-        id: platforms
-        run: |
-          if [[ "${{ github.event_name }}" == "release" || "${{ github.event.inputs.platform }}" == "both" ]]; then
-            echo 'platforms=["android", "ios"]' >> $GITHUB_OUTPUT
-          else
-            echo 'platforms=["${{ github.event.inputs.platform }}"]' >> $GITHUB_OUTPUT
-          fi
 
       - name: Calculate Version and Build Number
         id: version
@@ -112,86 +108,159 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-  deploy:
+  build-android:
     needs: prepare
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: ${{ fromJson(needs.prepare.outputs.platforms) }}
-
-    runs-on: ${{ (matrix.platform == 'ios') && 'macos-latest' || 'ubuntu-latest' }}
-
+    if: github.event_name == 'release' || github.event.inputs.android == 'true'
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           ref: main
-    
-      - name: Fetch material_plus dependency
-        run: git clone --depth=1 https://gitlab.com/flutterby-group/material_plus.git ../material_plus
-      
-      - name: Write keys.dart to file
-        run: |
-          cat << EOF > ./lib/keys.dart
-          ${{ secrets.KEYS_FILE }}
-          EOF
-      
+
+      - uses: ./.github/actions/setup-flutter
+        with:
+          keys_file: ${{ secrets.KEYS_FILE }}
+
       - name: Decode Android files
-        if: matrix.platform == 'android'
         run: |
           echo "${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
           echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" > android/key.properties
           echo "${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_BASE64 }}" | base64 --decode > ../musbx-service-account-key.json
 
       - name: Install JDK 21
-        if: matrix.platform == 'android'
         uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
-      
+
       - name: Install Ruby & Bundler
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.2"
           bundler-cache: true
 
-      - name: Install Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: "stable"
-          cache: true
-
       - name: Run Fastlane
-        working-directory: ${{matrix.platform}}
+        working-directory: android
         env:
           CI: true # Tell Fastlane we are in a CI
-
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }} # Password for keystore (Android only)
-
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }} # Password for fastlane match (iOS only)
-          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION_BASE64 }} # Git authorization for fastlane match (iOS only)
-          
-          APPSTORE_CONNECT_API_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_API_ISSUER_ID }} # Appstore Connect API issuer ID (iOS only)
-          APPSTORE_CONNECT_API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }} # Appstore Connect API key ID (iOS only)
-          APPSTORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APPSTORE_CONNECT_API_KEY_CONTENT_BASE64 }} # Content of the Appstore Connect API key (iOS only)
-
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
         run: |
           bundle install
           bundle exec fastlane beta
 
-      - name: Upload Artifacts to Release
+      - name: Upload artifact to release
         if: github.event_name == 'release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ "${{ matrix.platform }}" == "android" ]; then
-            FILE=musbx-android-${{ github.event.release.tag_name }}.aab
-            mv build/app/outputs/bundle/release/app-release.aab ${FILE}
-          elif [ "${{ matrix.platform }}" == "ios" ]; then
-            FILE=musbx-ios-${{ github.event.release.tag_name }}.ipa
-            mv ios/Runner.ipa ${FILE}
-          fi
-
+          FILE=musbx-android-${{ github.event.release.tag_name }}.aab
+          mv build/app/outputs/bundle/release/app-release.aab ${FILE}
           gh release upload ${{ github.event.release.tag_name }} ${FILE}
+
+  build-ios:
+    needs: prepare
+    if: github.event_name == 'release' || github.event.inputs.ios == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - uses: ./.github/actions/setup-flutter
+        with:
+          keys_file: ${{ secrets.KEYS_FILE }}
+
+      - name: Install Ruby & Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Run Fastlane
+        working-directory: ios
+        env:
+          CI: true # Tell Fastlane we are in a CI
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION_BASE64 }}
+          APPSTORE_CONNECT_API_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_API_ISSUER_ID }}
+          APPSTORE_CONNECT_API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }}
+          APPSTORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APPSTORE_CONNECT_API_KEY_CONTENT_BASE64 }}
+        run: |
+          bundle install
+          bundle exec fastlane beta
+
+      - name: Upload artifact to release
+        if: github.event_name == 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FILE=musbx-ios-${{ github.event.release.tag_name }}.ipa
+          mv ios/Runner.ipa ${FILE}
+          gh release upload ${{ github.event.release.tag_name }} ${FILE}
+
+  build-windows:
+    needs: prepare
+    if: github.event_name == 'release' || github.event.inputs.windows == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - uses: ./.github/actions/setup-flutter
+        with:
+          keys_file: ${{ secrets.KEYS_FILE }}
+
+      - name: Build
+        run: flutter build windows --release
+
+      - name: Package and upload artifact
+        if: github.event_name == 'release'
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $FILE = "musbx-windows-${{ github.event.release.tag_name }}.zip"
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $FILE
+          gh release upload ${{ github.event.release.tag_name }} $FILE
+
+  build-linux:
+    needs: prepare
+    if: github.event_name == 'release' || github.event.inputs.linux == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - uses: ./.github/actions/setup-flutter
+        with:
+          keys_file: ${{ secrets.KEYS_FILE }}
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
+
+      - name: Build
+        run: flutter build linux --release
+
+      - name: Package and upload artifact
+        if: github.event_name == 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+
+          mkdir -p AppDir/usr/bin
+          cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
+          cp linux/packaging/musbx.desktop AppDir/
+          cp assets/logo/logo.png AppDir/musbx.png
+          cp linux/packaging/AppRun AppDir/AppRun
+          chmod +x AppDir/AppRun
+
+          FILE="musbx-linux-${{ github.event.release.tag_name }}.AppImage"
+          ARCH=x86_64 ./appimagetool AppDir "$FILE"
+          gh release upload ${{ github.event.release.tag_name }} "$FILE"
 
