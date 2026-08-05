@@ -20,7 +20,7 @@ on:
         type: boolean
         default: true
       bump_build:
-        description: 'Increase build number'
+        description: 'Increase build number (only if on main)'
         required: false
         type: boolean
         default: true
@@ -37,6 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: main
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -80,6 +81,8 @@ jobs:
           OUTPUT: RELEASE_NOTES.md
 
       - name: Commit changes
+        # Only bumpt version when releasing, or when manually dispatched from main.
+        if: github.event_name == 'release' || github.ref_name == 'main'
         run: |
           # Update pubspec.yaml
           VERSION="${{ steps.version.outputs.version_name }}"
@@ -115,7 +118,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.event_name == 'release' && 'main' || github.ref_name }}
 
       - uses: ./.github/actions/setup-flutter
         with:
@@ -164,7 +167,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.event_name == 'release' && 'main' || github.ref_name }}
 
       - uses: ./.github/actions/setup-flutter
         with:
@@ -205,7 +208,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.event_name == 'release' && 'main' || github.ref_name }}
 
       - uses: ./.github/actions/setup-flutter
         with:
@@ -233,7 +236,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.event_name == 'release' && 'main' || github.ref_name }}
 
       - uses: ./.github/actions/setup-flutter
         with:
