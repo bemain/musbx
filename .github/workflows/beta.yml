@@ -81,7 +81,7 @@ jobs:
           OUTPUT: RELEASE_NOTES.md
 
       - name: Commit changes
-        # Only bumpt version when releasing, or when manually dispatched from main.
+        # Only bump version when releasing, or when manually dispatched from main.
         if: github.event_name == 'release' || github.ref_name == 'main'
         run: |
           # Update pubspec.yaml
@@ -254,8 +254,13 @@ jobs:
         if: github.event_name == 'release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pinned to an immutable release tag (not the mutable "continuous" tag) and
+          # verified against the SHA256 GitHub recorded for that exact asset.
+          APPIMAGETOOL_VERSION: "1.9.1"
+          APPIMAGETOOL_SHA256: "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"
         run: |
-          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          wget -q "https://github.com/AppImage/appimagetool/releases/download/${APPIMAGETOOL_VERSION}/appimagetool-x86_64.AppImage" -O appimagetool
+          echo "${APPIMAGETOOL_SHA256}  appimagetool" | sha256sum -c -
           chmod +x appimagetool
 
           mkdir -p AppDir/usr/bin
