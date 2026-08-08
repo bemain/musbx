@@ -25,8 +25,8 @@ const TOOLS = [
 function Nav({ page }) {
   const links = [["Tools", "tools.html"], ["Support", "support.html"]];
   return (
-    <header style={{ ...pageGutter, position: "sticky", top: 0, zIndex: 10, height: "var(--nav-height)", display: "flex", alignItems: "center", gap: "var(--space-6)", background: "var(--surface-page)", borderBottom: "var(--rule)" }}>
-      <a href="index.html" style={{ display: "flex", alignItems: "center", gap: "12px", borderBottom: "none" }}><Logo size={32} withWordmark /></a>
+    <header className="site-nav" style={{ ...pageGutter, position: "sticky", top: 0, zIndex: 10, height: "var(--nav-height)", display: "flex", alignItems: "center", gap: "var(--space-6)", background: "var(--surface-page)", borderBottom: "var(--rule)" }}>
+      <a href="index.html" className="brand" style={{ display: "flex", alignItems: "center", gap: "12px", borderBottom: "none" }}><Logo size={32} withWordmark /></a>
       <nav style={{ display: "flex", gap: "var(--space-5)", marginLeft: "auto" }}>
         {links.map(([l, href]) => (
           <a key={l} href={href} style={{ ...siteMono, borderBottom: "none", color: page === l.toLowerCase() ? "var(--text-accent)" : "var(--text-secondary)" }}>{l}</a>
@@ -62,7 +62,7 @@ function Footer() {
   ];
   return (
     <footer style={{ ...pageGutter, paddingTop: "var(--space-8)", paddingBottom: "var(--space-7)", borderTop: "var(--rule)" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(3,1fr)", gap: "var(--space-6)" }}>
+      <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(3,1fr)", gap: "var(--space-6)" }}>
         <div>
           <Logo size={40} />
           <p className="mt-body" style={{ color: "var(--text-secondary)", marginTop: "var(--space-4)", fontSize: "var(--text-body-sm)", maxWidth: "28ch" }}>
@@ -85,8 +85,7 @@ function Footer() {
   );
 }
 
-function Page({ page, children }) {
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+function Page({ page, children }) {  useEffect(() => { window.scrollTo(0, 0); }, []);
   return <div style={{ minHeight: "100vh", background: "var(--surface-page)" }}><Nav page={page} />{children}<Footer /></div>;
 }
 
@@ -102,4 +101,24 @@ function Prose({ eyebrow, title, updated, children }) {
   );
 }
 
-Object.assign(window, { Nav, Footer, Page, PosterCta, Prose, TOOLS, siteMono, microMono, pageGutter, IOS_URL, PLAY_URL, iosUrl, playUrl, REPO_URL, DEV_URL, MAIL });
+/* "ios" | "android" | null — used to accent only the badge for the visitor's device */
+const devicePlatform = (() => {
+  const ua = navigator.userAgent || "";
+  if (/android/i.test(ua)) return "android";
+  if (/iPad|iPhone|iPod/.test(ua)) return "ios";
+  return null;
+})();
+
+/* true under 640px — used to thin out dense graphics on phones */
+function useNarrow(q = "(max-width:640px)") {
+  const [narrow, setNarrow] = useState(() => window.matchMedia(q).matches);
+  useEffect(() => {
+    const m = window.matchMedia(q);
+    const on = () => setNarrow(m.matches);
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
+  }, [q]);
+  return narrow;
+}
+
+Object.assign(window, { Nav, Footer, Page, PosterCta, Prose, useNarrow, devicePlatform, TOOLS, siteMono, microMono, pageGutter, IOS_URL, PLAY_URL, iosUrl, playUrl, REPO_URL, DEV_URL, MAIL });

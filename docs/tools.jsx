@@ -9,7 +9,7 @@ const CHORDS = ["Am", "F", "C", "G", "Am", "F", "C", "G"];
 function Split({ accent, flip, children }) {
   return (
     <section className={"mt-accent-" + accent} style={{ ...pageGutter, paddingTop: "var(--space-9)", paddingBottom: "var(--space-9)", borderBottom: "var(--rule)" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "var(--space-8)", alignItems: "start", direction: flip ? "rtl" : "ltr" }}>
+      <div className={"split" + (flip ? " flip" : "")} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "var(--space-8)", alignItems: "start", direction: flip ? "rtl" : "ltr" }}>
         {React.Children.map(children, (c) => <div style={{ direction: "ltr" }}>{c}</div>)}
       </div>
     </section>
@@ -120,7 +120,7 @@ function ChordsSection() {
           "Sharps or flats, in the app's notation face."]} />
       <TCard tone="card" pad="var(--space-6)" style={{ display: "grid", gap: "var(--space-5)" }}>
         <CardHead label="Chart" tag="A minor" />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: "6px" }}>
+        <div className="chord-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: "6px" }}>
           {CHORDS.map((c, i) => (
             <div key={i} style={{ textAlign: "center", padding: "var(--space-4) 0", borderRadius: "var(--radius-sm)", background: i === active ? "var(--surface-accent)" : "var(--surface-inset)", color: i === active ? "var(--text-on-accent)" : "var(--text-secondary)", fontFamily: "var(--font-notation)", fontSize: "var(--text-heading-3)", transition: "background var(--dur-fast) var(--ease-standard)" }}>{c}</div>
           ))}
@@ -200,7 +200,7 @@ function SourcesStrip() {
   return (
     <section style={{ ...pageGutter, paddingTop: "var(--space-8)", paddingBottom: "var(--space-8)", borderBottom: "var(--rule)" }}>
       <TEyebrow marker="//">Where songs come from</TEyebrow>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "var(--space-5)", marginTop: "var(--space-6)" }}>
+      <div className="cards-3" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "var(--space-5)", marginTop: "var(--space-6)" }}>
         {cards.map(([t, g, d]) => (
           <TCard key={t} tone="outline" pad="var(--space-6)">
             <TIcon name={g} size={36} style={{ color: "var(--text-accent)" }} />
