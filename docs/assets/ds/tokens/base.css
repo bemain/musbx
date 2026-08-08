@@ -1,0 +1,10 @@
+/* Minimal element defaults so any page linking styles.css lands in-brand. */
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--surface-page);color:var(--text-primary);font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display);font-weight:var(--display-weight);font-stretch:var(--display-stretch);line-height:var(--display-leading);letter-spacing:var(--display-tracking);text-transform:uppercase;margin:0}
+h1{font-size:var(--text-display-1)}h2{font-size:var(--text-display-2)}h3{font-size:var(--text-display-3)}
+p{margin:0;text-wrap:pretty}
+a{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;transition:color var(--dur-fast) var(--ease-standard)}
+a:hover{color:var(--link-hover)}
+::selection{background:var(--surface-accent);color:var(--text-on-accent)}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}

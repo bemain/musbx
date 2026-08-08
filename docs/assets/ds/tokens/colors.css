@@ -1,0 +1,71 @@
+/* Palette lifted from "Musician's Toolbox — Posters" (A2, 01–03 EN) and the app logo.
+   Base ramp = ink; accents rotate one per poster / per surface. */
+:root{
+  /* Ink ramp — poster background + text greys */
+  --ink-900:#0C0C11;      /* poster field, page background */
+  --ink-800:#12121A;      /* derived: raised surface */
+  --ink-700:#16161D;      /* derived: card */
+  --ink-600:#22222C;      /* derived: hairline on dark, inputs */
+  --ink-500:#4A4A55;      /* poster: muted text, disabled */
+  --ink-300:#9C9CA8;      /* poster: secondary text */
+  --ink-200:#C9C9D2;      /* poster: hairline rules */
+  --paper:#F3F1E9;        /* poster: paper blocks, QR panel, light surfaces */
+  --white:#FFFFFF;
+
+  /* Accents — one per campaign / per tool */
+  --acid:#C6FF3A;         /* poster 01 — Speed & Pitch */
+  --cyan:#34E1FF;         /* poster 02 — Demixer */
+  --ember:#FF6A3D;        /* poster 03 — Chords */
+  --blue:#0F58CF;         /* logo blue; app seed is #578CFF */
+  --blue-app:#578CFF;     /* AppTheme.defaultSeed */
+
+  /* Accent tints (derived, for washes and focus rings) */
+  --acid-08:rgb(198 255 58 / .08);
+  --acid-16:rgb(198 255 58 / .16);
+  --cyan-16:rgb(52 225 255 / .16);
+  --ember-16:rgb(255 106 61 / .16);
+
+  /* Semantic — dark is the default surface */
+  --surface-page:var(--ink-900);
+  --surface-card:var(--ink-700);
+  --surface-raised:var(--ink-800);
+  --surface-inset:var(--ink-600);
+  --surface-paper:var(--paper);
+  --surface-accent:var(--acid);
+
+  --text-primary:var(--paper);
+  --text-secondary:var(--ink-300);
+  --text-muted:var(--ink-500);
+  --text-on-accent:var(--ink-900);
+  --text-on-paper:var(--ink-900);
+  --text-accent:var(--acid);
+
+  --border-hairline:rgb(201 201 210 / .18);
+  --border-strong:var(--ink-200);
+  --border-accent:var(--acid);
+
+  --focus-ring:var(--acid);
+  --link:var(--acid);
+  --link-hover:var(--white);
+}
+
+/* Paper scope — invert onto the off-white poster stock */
+.mt-paper{
+  --surface-page:var(--paper);
+  --surface-card:var(--white);
+  --surface-raised:var(--white);
+  --surface-inset:rgb(12 12 17 / .05);
+  --text-primary:var(--ink-900);
+  --text-secondary:var(--ink-500);
+  --text-muted:var(--ink-300);
+  --text-accent:var(--ink-900);
+  --border-hairline:rgb(12 12 17 / .14);
+  --border-strong:var(--ink-900);
+  --link:var(--ink-900);
+  --link-hover:var(--blue);
+}
+
+/* Accent swaps — set on any subtree */
+.mt-accent-cyan{--surface-accent:var(--cyan);--text-accent:var(--cyan);--border-accent:var(--cyan);--focus-ring:var(--cyan);--link:var(--cyan)}
+.mt-accent-ember{--surface-accent:var(--ember);--text-accent:var(--ember);--border-accent:var(--ember);--focus-ring:var(--ember);--link:var(--ember)}
+.mt-accent-acid{--surface-accent:var(--acid);--text-accent:var(--acid);--border-accent:var(--acid);--focus-ring:var(--acid);--link:var(--acid)}

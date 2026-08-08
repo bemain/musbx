@@ -1,47 +1,30 @@
----
-layout: none
-permalink: /get
-title: Get Musician's Toolbox
----
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Get Musician's Toolbox</title>
-<script>
-  (function () {
-    var ua = navigator.userAgent || navigator.vendor || window.opera;
-    var playStoreUrl = "https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx-website-get-link";
-    var appStoreUrl = "https://apps.apple.com/us/app/musicians-toolbox/id1670009655?itsct=musbx-website-get-link&amp;itscg=30200";
-
-    if (/android/i.test(ua)) {
-      window.location.replace(playStoreUrl);
-    } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-      window.location.replace(appStoreUrl);
-    }
-  })();
-</script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Get Musician's Toolbox</title>
+<link rel="icon" href="assets/logo.svg">
+<link rel="stylesheet" href="assets/ds/styles.css">
+<script>(function(){var ua=navigator.userAgent||navigator.vendor||window.opera;var play="https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=web-get-auto";var ios="https://apps.apple.com/app/apple-store/id1670009655?pt=126057612&ct=web-get-auto&mt=8";if(/android/i.test(ua)){window.location.replace(play)}else if(/iPad|iPhone|iPod/.test(ua)&&!window.MSStream){window.location.replace(ios)}})();</script>
 <style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    margin: 0;
-    padding: 2rem;
-    text-align: center;
-  }
+body{background:var(--surface-page);color:var(--text-primary);margin:0;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:var(--gutter-page);box-sizing:border-box}
+a{color:var(--link)}a:hover{color:var(--link-hover)}
+.eyebrow{font-family:var(--font-mono);font-size:var(--text-micro);letter-spacing:var(--micro-tracking);text-transform:uppercase;color:var(--text-secondary)}
+h1{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:-.015em;line-height:.89;font-size:var(--text-display-1);margin:var(--space-5) 0 var(--space-6);max-width:12ch}
+p{font-family:var(--font-body);color:var(--text-secondary);max-width:46ch;line-height:1.35;margin:0 0 var(--space-7)}
+.pills{display:flex;gap:var(--space-3);flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:12px;min-height:var(--touch-min);padding:14px 26px;border-radius:var(--radius-pill);font-family:var(--font-mono);font-size:var(--text-label-lg);letter-spacing:var(--label-tracking);text-transform:uppercase;text-decoration:none;border:1px solid transparent;transition:background var(--dur-fast) var(--ease-standard),color var(--dur-fast) var(--ease-standard)}
+.pill.ios{background:var(--surface-paper);color:var(--text-on-paper)}
+.pill.android{background:var(--surface-paper);color:var(--text-on-paper)}
+.pill:hover{background:var(--white);color:var(--ink-900)}
+.pill .glyph{width:22px;height:22px;flex:none;display:block}
+.logo{width:48px;height:48px;background:var(--surface-accent);-webkit-mask:url(assets/logo.svg) center/contain no-repeat;mask:url(assets/logo.svg) center/contain no-repeat}
+.back{font-family:var(--font-mono);font-size:var(--text-micro);letter-spacing:var(--micro-tracking);text-transform:uppercase;color:var(--text-secondary);text-decoration:none;margin-top:var(--space-8);border-top:var(--rule);padding-top:var(--space-4);display:inline-block}
 </style>
-</head>
-<body>
-  <h1>Get Musician's Toolbox</h1>
-  <p>Choose your platform:</p>
-  <p>
-    <a href='https://play.google.com/store/apps/details?id=se.agardh.musbx&pcampaignid=musbx-website-get-badge' style="border-radius: 13px; height: 84px;"><img alt='Get it on Google Play' src='https://bemain.github.io/musbx/assets/badges/google_play.png' style="height: 84px;"/></a>
-    <a href="https://apps.apple.com/us/app/musicians-toolbox/id1670009655?itsct=musbx-website-get-badge&amp;itscg=30200" style="display: inline-block; border-radius: 13px; height: 84px;"><img src="https://bemain.github.io/musbx/assets/badges/app_store.png" alt="Download on the App Store" style="border-radius: 13px; height: 84px;"></a>
-  </p>
-</body>
-</html>
+</head><body>
+<div class="logo" role="img" aria-label="Musician's Toolbox"></div>
+<div class="eyebrow">Musician's Toolbox</div>
+<h1>Get the app.</h1>
+<p>Free on iOS and Android.</p>
+<div class="pills">
+<a class="pill ios" href="https://apps.apple.com/app/apple-store/id1670009655?pt=126057612&amp;ct=web-get&amp;mt=8"><img class="glyph" src="assets/appstore.svg" alt="" width="22" height="22"><span>iOS</span></a>
+<a class="pill android" href="https://play.google.com/store/apps/details?id=se.agardh.musbx&amp;pcampaignid=web-get"><img class="glyph" src="assets/googleplay.svg" alt="" width="22" height="22"><span>Android</span></a>
+</div>
+<a class="back" href="index.html">← Back to the site</a>
+</body></html>

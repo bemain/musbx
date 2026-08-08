@@ -1,0 +1,11 @@
+/* Webfonts — the three faces embedded in the A2 posters, all served from Google Fonts.
+   Big Shoulders — display headlines. Naturally condensed, so no wdth trickery needed.
+   Outfit — body and UI. Geist Mono — labels, data, credits.
+   Andika — musical notation (chord symbols, pitch names); this is what the app itself uses. */
+@import url("https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@100..900&family=Outfit:wght@100..900&family=Geist+Mono:wght@100..900&family=Andika:wght@400;700&display=swap");
+
+/* Material Symbols Rounded — the app's icon set (material_symbols_icons, iconTheme weight 600) */
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block");
+
+/* The app's own custom icon font, generated from assets/icons/*.svg by tool/generate_icons.dart */
+@font-face{font-family:"MTCustomIcons";src:url("../assets/fonts/CustomIcons.ttf") format("truetype");font-weight:400;font-style:normal;font-display:block}

@@ -1,0 +1,22 @@
+/* Spacing. Two systems coexist:
+   PRINT — the poster grid: 1191pt page, 104pt margin (8.73%), 24pt baseline rhythm.
+   SCREEN — the app's Flutter scale: 4 / 8 / 16 / 32, which is what the product ships. */
+:root{
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:24px;
+  --space-6:32px;
+  --space-7:48px;
+  --space-8:64px;
+  --space-9:96px;
+  --space-10:128px;
+
+  --gutter-page:clamp(24px,8.73vw,120px); /* @kind spacing */ /* poster margin ratio, held on the web */
+  --measure:62ch;      /* poster body line runs ~63 characters */
+  --max-content:1240px;
+
+  --touch-min:48px;    /* Flutter IconButton hit target */
+  --nav-height:80px;
+}

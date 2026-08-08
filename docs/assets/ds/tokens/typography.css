@@ -1,0 +1,45 @@
+/* Type. Ratios measured off the A2 posters (1191 x 1684 pt page, 104pt margin).
+   Headline 164.8pt / 147pt leading = 0.89. Body 25.1pt / 34pt = 1.35. Wordmark 40.1/46 = 1.15. */
+:root{
+  --font-display:"Big Shoulders","Archivo Narrow","Helvetica Neue",sans-serif;
+  --font-body:"Outfit","Helvetica Neue",Helvetica,sans-serif;
+  --font-mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-notation:"Andika","Outfit",sans-serif; /* chord + pitch symbols, as in the app */
+  --font-icons:"MTCustomIcons";
+
+  /* Display — Big Shoulders is condensed by design, so no wdth adjustment */
+  --display-stretch:100%;
+  --display-weight:700;
+  --display-leading:0.89;
+  --display-tracking:-0.015em;
+
+  --text-poster:clamp(56px,10.5vw,164px);
+  --text-display-1:96px;
+  --text-display-2:64px;
+  --text-display-3:44px;
+  --text-heading-1:40px;   /* wordmark size */
+  --text-heading-2:28px;
+  --text-heading-3:20px;
+  --text-body-lg:20px;
+  --text-body:16px;
+  --text-body-sm:14px;
+
+  /* Mono labels — natural mono advance, uppercase, wide word gaps */
+  --text-label:13px;
+  --text-label-lg:15px;
+  --text-micro:11px;
+  --label-tracking:0.02em;
+  --micro-tracking:0.1em;
+
+  --leading-tight:1.05;
+  --leading-snug:1.15;
+  --leading-body:1.35;
+  --leading-loose:1.6;
+}
+
+/* Utility classes — the four voices of the brand */
+.mt-display{font-family:var(--font-display);font-weight:var(--display-weight);font-stretch:var(--display-stretch);line-height:var(--display-leading);letter-spacing:var(--display-tracking);text-transform:uppercase;text-wrap:balance}
+.mt-label{font-family:var(--font-mono);font-size:var(--text-label);letter-spacing:var(--label-tracking);text-transform:uppercase;font-weight:500}
+.mt-micro{font-family:var(--font-mono);font-size:var(--text-micro);letter-spacing:var(--micro-tracking);text-transform:uppercase;color:var(--text-muted)}
+.mt-body{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);text-wrap:pretty}
+.mt-notation{font-family:var(--font-notation)}

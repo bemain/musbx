@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Terms of service — Musician's Toolbox</title>
+<link rel="icon" href="assets/logo.svg">
+<link rel="stylesheet" href="assets/ds/styles.css">
+<link rel="stylesheet" href="site.css">
+</head><body><div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="assets/ds/_ds_bundle.js"></script>
+<script type="text/babel" src="shared.jsx"></script>
+<script type="text/babel" data-presets="react">
+function TermsPage() {
+  return (
+    <Page page="terms">
+      <Prose eyebrow="Legal" title="Terms of service" updated="8 August 2026">
+        <p className="lede">These terms govern your use of the Musician's Toolbox application and this website. By downloading or using the app you accept them. This is a draft — have it reviewed before you publish.</p>
+        <h2>The Service</h2>
+        <p>Musician's Toolbox is a mobile application for practising music, developed and maintained by Benjamin Agardh. It is provided to you as-is, free of charge, with an optional one-time in-app purchase that removes certain usage limits.</p>
+        <h2>Your licence</h2>
+        <p>You are granted a personal, non-exclusive, non-transferable licence to install and use the app on devices you own or control, for your own use. The application's source code is published on <a href="https://github.com/bemain/musbx">GitHub</a> and its reuse is governed by the licence stated in that repository, not by these terms.</p>
+        <h2>Purchases</h2>
+        <ul>
+          <li>The in-app purchase is a <strong>one-time payment</strong>. There is no subscription and nothing renews.</li>
+          <li>Payment is processed by Apple or Google, not by me. Their terms apply to the transaction.</li>
+          <li>Refunds are handled by the store you bought through, under that store's refund policy.</li>
+          <li>Features included in the purchase may change as the app develops; I will not remove what you have already paid for.</li>
+        </ul>
+        <h2>Your content and third-party content</h2>
+        <p>You keep all rights to audio you upload or record. Audio is processed only to provide features you request, such as demixing and chord analysis, as described in the <a href="privacy.html">privacy policy</a>.</p>
+        <p>The app can search for and load content from third-party services. <strong>You are solely responsible for the content you access and how you use it</strong>, including compliance with copyright and with the terms of the service the content comes from. I do not host that content and assume no liability for it.</p>
+        <h2>Acceptable use</h2>
+        <ul>
+          <li>Do not use the Service to infringe copyright or any other right.</li>
+          <li>Do not attempt to disrupt, overload or reverse-engineer the servers used for demixing and analysis.</li>
+          <li>Do not resell access to the Service or automate it beyond ordinary personal use.</li>
+        </ul>
+        <h2>Availability and changes</h2>
+        <p>Features that depend on servers — song separation and chord analysis — may be interrupted, limited or discontinued. I may change, suspend or discontinue any part of the Service at any time. Where a change is significant, I will note it in the app or on this site.</p>
+        <h2>No warranty</h2>
+        <p>The Service is provided "as is" and "as available", without warranties of any kind, express or implied, including fitness for a particular purpose and non-infringement. Analysis results — detected chords, separated stems, detected pitch — are approximations and may be wrong.</p>
+        <h2>Limitation of liability</h2>
+        <p>To the fullest extent permitted by law, I am not liable for any indirect, incidental or consequential damages arising from your use of the Service. Nothing here limits liability that cannot be limited under applicable law, including your statutory consumer rights.</p>
+        <h2>Governing law</h2>
+        <p>These terms are governed by the laws of Sweden, without regard to conflict-of-law rules. Mandatory consumer protections in your country of residence still apply.</p>
+        <h2>Changes to these terms</h2>
+        <p>These terms may be updated from time to time. The revised version will be posted on this page with a new "last updated" date, and takes effect when posted.</p>
+        <h2>Contact</h2>
+        <p>Questions about these terms: <a href="mailto:bemain.dev@gmail.com">bemain.dev@gmail.com</a>.</p>
+      </Prose>
+    </Page>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<TermsPage />);
+</script>
+</body></html>

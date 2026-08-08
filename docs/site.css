@@ -1,0 +1,11 @@
+body{background:var(--surface-page)}
+button{font-family:var(--font-body)}
+a{color:var(--link)}a:hover{color:var(--link-hover)}
+.prose h2{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:-.015em;line-height:1;font-size:var(--text-heading-1);color:var(--text-primary);margin:var(--space-7) 0 var(--space-4)}
+.prose h3{font-family:var(--font-body);font-weight:600;font-size:var(--text-heading-3);color:var(--text-primary);margin:var(--space-6) 0 var(--space-3)}
+.prose p{margin:0 0 var(--space-4);line-height:1.55}
+.prose ul{margin:0 0 var(--space-4);padding-left:1.1em;display:grid;gap:var(--space-3)}
+.prose li{line-height:1.5}
+.prose strong{color:var(--text-primary);font-weight:600}
+.prose hr{border:none;border-top:var(--rule);margin:var(--space-7) 0}
+.prose .lede{font-size:var(--text-body-lg);color:var(--text-primary)}

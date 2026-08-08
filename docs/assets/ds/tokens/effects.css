@@ -1,0 +1,30 @@
+/* Radii, lines, shadow, motion.
+   The app is elevation-free ("FlatCard": elevation 0, radius 32). The posters are flat too —
+   the brand has no drop shadows. Depth comes from ink-on-ink surfaces and accent fields. */
+:root{
+  --radius-xs:4px;      /* FlatCard's clipped inner corner */
+  --radius-sm:8px;
+  --radius-md:16px;
+  --radius-lg:32px;     /* FlatCard default */
+  --radius-pill:999px;
+  --radius-cookie:42% 58% 54% 46% / 46% 42% 58% 54%; /* M3 "cookie" squircle stand-in */
+
+  --hairline:1px;
+  --rule:1px solid var(--border-hairline);
+  --rule-strong:2px solid var(--border-strong);
+  --frame:1px solid var(--border-accent);   /* poster crop frame */
+
+  --shadow-none:none;
+  --shadow-lift:0 0 0 1px var(--border-hairline);   /* the only "shadow" we use */
+  --overlay-scrim:rgb(12 12 17 / .72);
+  --blur-scrim:blur(12px); /* @kind other */
+
+  --ease-standard:cubic-bezier(.2,0,0,1); /* @kind other */   /* Material 3 emphasized-decelerate */
+  --ease-out:cubic-bezier(.05,.7,.1,1); /* @kind other */
+  --dur-fast:120ms; /* @kind other */
+  --dur-base:200ms; /* @kind other */   /* app TabBar animationDuration */
+  --dur-slow:400ms; /* @kind other */
+
+  --press-scale:.97; /* @kind other */
+  --hover-lift:0; /* @kind other */
+}
