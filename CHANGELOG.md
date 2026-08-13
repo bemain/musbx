@@ -1,3 +1,20 @@
+## [1.14.6] - 2026-08-13
+
+### 🐛 Bug Fixes
+
+- *(macos)* Remove incomplete NSAppTransportSecurity entry from Info.plist
+- *(macos)* Grant microphone and file access, skip unsupported permission check
+
+### 📚 Documentation
+
+- Redesign the website
+- Instruct GitHub pages that this is not a Jekyll site
+- Improve layout on mobile
+- Add AI usage policy
+
+### ⚙️ Miscellaneous Tasks
+
+- Automate release builds for macos
 ## [1.14.5] - 2026-08-05
 
 ### ⚙️ Miscellaneous Tasks
@@ -7,6 +24,7 @@
 - Fix windows build error
 - Avoid pushing to main when dispatched from a feature branch
 - Verify appimagetool checksum
+- *(release)* V1.14.5+65 [skip ci]
 ## [1.14.4] - 2026-08-05
 
 ### 🐛 Bug Fixes
