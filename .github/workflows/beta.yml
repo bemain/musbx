@@ -11,6 +11,10 @@ on:
         description: 'Build iOS'
         type: boolean
         default: true
+      macos:
+        description: 'Build macOS'
+        type: boolean
+        default: true
       windows:
         description: 'Build Windows'
         type: boolean
@@ -200,6 +204,34 @@ jobs:
           FILE=musbx-ios-${{ github.event.release.tag_name }}.ipa
           mv ios/Runner.ipa ${FILE}
           gh release upload ${{ github.event.release.tag_name }} ${FILE}
+
+  build-macos:
+    needs: prepare
+    if: github.event_name == 'release' || github.event.inputs.macos == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'release' && 'main' || github.ref_name }}
+
+      - uses: ./.github/actions/setup-flutter
+        with:
+          keys_file: ${{ secrets.KEYS_FILE }}
+
+      - name: Build
+        run: flutter build macos --release
+
+      - name: Package and upload artifact
+        if: github.event_name == 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FILE=musbx-macos-${{ github.event.release.tag_name }}.zip
+          # `ditto` preserves the symlinks and metadata inside the app bundle,
+          # which `zip` would corrupt.
+          ditto -c -k --keepParent \
+            build/macos/Build/Products/Release/musbx.app "$FILE"
+          gh release upload ${{ github.event.release.tag_name }} "$FILE"
 
   build-windows:
     needs: prepare

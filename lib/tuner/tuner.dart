@@ -73,7 +73,12 @@ class Tuner {
   }
 
   /// Whether permission to access the microphone has been given.
-  bool hasPermission = Platform.isLinux;
+  ///
+  /// The `permission_handler` package has no implementation for Linux or
+  /// macOS, so requesting permission there would never complete. On macOS
+  /// access is instead granted by the `com.apple.security.device.audio-input`
+  /// entitlement, which the system prompts for on first use.
+  bool hasPermission = Platform.isLinux || Platform.isMacOS;
 
   /// The frequency of A4, in Hz. Used as a reference for all other notes.
   ///
