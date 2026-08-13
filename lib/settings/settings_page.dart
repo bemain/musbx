@@ -152,6 +152,14 @@ class SettingsPage extends StatelessWidget {
                 },
               ),
               ListTile(
+                leading: Icon(Symbols.campaign),
+                title: Text("Announcements & Feedback"),
+                trailing: Icon(Symbols.chevron_forward),
+                onTap: () {
+                  context.push(Routes.announcements);
+                },
+              ),
+              ListTile(
                 leading: Icon(Symbols.contract),
                 title: Text("Licenses"),
                 trailing: Icon(Symbols.chevron_forward),
