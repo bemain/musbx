@@ -61,6 +61,10 @@ Musician's Toolbox is a hand crafted application born of the joy of coding. For 
 
 AI tools are welcome for other parts of the workflow, such as documentation, design, and finding bugs. If you do use AI this way, please add the agent as [co-author](https://docs.github.com/en/pull-requests/how-tos/commit-changes/creating-a-commit-with-multiple-authors) to relevant commits.
 
+## License
+
+Musician's Toolbox is licensed under the [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) license. In short: you're free to use, study, modify, and share this code for any noncommercial purpose. Commercial use requires a separate agreement — reach out if you're interested.
+
 ## Tools
 
 ### Custom icons
