@@ -141,6 +141,25 @@ class SettingsPage extends StatelessWidget {
                   },
                 ),
               ),
+              if (!Purchases.hasPremium)
+                ListTile(
+                  leading: Icon(Symbols.workspace_premium),
+                  title: Text("Get Premium"),
+                  onTap: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (context) => const FreeAccessRestrictedDialog(),
+                    );
+                  },
+                ),
+              ListTile(
+                leading: Icon(Symbols.campaign),
+                title: Text("Announcements & Feedback"),
+                trailing: Icon(Symbols.chevron_forward),
+                onTap: () {
+                  context.push(Routes.announcements);
+                },
+              ),
               ListTile(
                 leading: Icon(Symbols.policy),
                 title: Text("Privacy policy"),
@@ -152,14 +171,6 @@ class SettingsPage extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(Symbols.campaign),
-                title: Text("Announcements & Feedback"),
-                trailing: Icon(Symbols.chevron_forward),
-                onTap: () {
-                  context.push(Routes.announcements);
-                },
-              ),
-              ListTile(
                 leading: Icon(Symbols.contract),
                 title: Text("Licenses"),
                 trailing: Icon(Symbols.chevron_forward),
@@ -167,30 +178,20 @@ class SettingsPage extends StatelessWidget {
                   context.push(Routes.licenses);
                 },
               ),
-              if (!Purchases.hasPremium)
-                ListTile(
-                  leading: Icon(Symbols.workspace_premium),
-                  title: Text("Upgrade to Premium"),
-                  onTap: () {
-                    showDialog<void>(
-                      context: context,
-                      builder: (context) => const FreeAccessRestrictedDialog(),
-                    );
-                  },
-                ),
             ],
           ),
 
           SettingsGroup(
             children: [
               ListTile(
-                leading: Icon(Symbols.mail),
-                title: Text("Mail"),
+                leading: Icon(Symbols.language),
+                title: Text("Website"),
                 trailing: Icon(Symbols.launch),
                 onTap: () {
-                  launchUrl(Uri.parse("mailto:bemain.dev@gmail.com"));
+                  launchUrl(Uri.parse("https://bemain.github.io/musbx"));
                 },
               ),
+
               if (Platform.isAndroid | Platform.isIOS)
                 ListTile(
                   leading: Icon(
@@ -208,11 +209,11 @@ class SettingsPage extends StatelessWidget {
                   },
                 ),
               ListTile(
-                leading: Icon(Symbols.language),
-                title: Text("Website"),
+                leading: Icon(Symbols.mail),
+                title: Text("Email"),
                 trailing: Icon(Symbols.launch),
                 onTap: () {
-                  launchUrl(Uri.parse("https://bemain.github.io"));
+                  launchUrl(developerEmail);
                 },
               ),
             ],
