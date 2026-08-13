@@ -22,7 +22,7 @@ Musician's Toolbox offers all the essential tools in a single app, built to prov
 ## Git naming
 
 ### Commits
-This project follows (since Sep 25 2023) the [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for naming commits. Here follows a short summary of that specification.
+This project follows the [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for naming commits. Here follows a short summary of that specification.
 
 A commit message should be structured as follows:
 
@@ -55,6 +55,12 @@ Here's a complete example:
 feat/songs/issue72/configure-audio-session
 ```
 
+## AI usage policy
+
+Musician's Toolbox is a hand crafted application born of the joy of coding. For me, agentic AIs kill the joy. Therefore, this project does not accept code contributions written by AI. Any pull request containing AI-generated code will not be merged.
+
+AI tools are welcome for other parts of the workflow, such as documentation, design, and finding bugs. If you do use AI this way, please add the agent as [co-author](https://docs.github.com/en/pull-requests/how-tos/commit-changes/creating-a-commit-with-multiple-authors) to relevant commits.
+
 ## Tools
 
 ### Custom icons
@@ -64,10 +70,10 @@ dart run tool/generate_icons.dart
 ```
 
 ## Privacy policy
-Privacy policy can be found [here](https://bemain.github.io/musbx/privacy/)
+Privacy policy can be found [here](https://bemain.github.io/musbx/privacy/).
 
 ## Contact information
-If you have any questions, feedback or issues with the app, please reach out:
+If you have any questions, feedback or issues with the app, please reach out to:
 
 Benjamin Agardh \
 bemain.dev@gmail.com
