@@ -22,6 +22,8 @@ final Uri? storeUrl = Platform.isAndroid
     ? Uri.parse("https://apps.apple.com/us/app/musicians-toolbox/id1670009655")
     : null;
 
+final Uri developerEmail = Uri.parse("mailto:bemain.dev@gmail.com");
+
 class SettingsList extends StatelessWidget {
   /// Displays a list of [children] with formatting appropriate for a page in
   /// the settings menu.

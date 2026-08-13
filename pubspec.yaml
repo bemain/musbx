@@ -48,7 +48,7 @@ dependencies:
   flutter_m3shapes: ^1.0.0+2
   flutter_markdown_plus: ^1.0.7
   flutter_recorder: ^1.2.1
-  flutter_soloud: ^4.0.11
+  flutter_soloud: ^4.1.7
   gauges: ^1.0.0 # TODO: Migrate away from this package
   go_router: ^17.3.0
   google_fonts: ^8.1.0

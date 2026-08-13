@@ -26,4 +26,9 @@ class Database {
   static final SupabaseQueryBuilder announcements = Database.client.from(
     "announcements",
   );
+
+  /// The reference to the 'feedback' table.
+  static final SupabaseQueryBuilder feedback = Database.client.from(
+    "feedback",
+  );
 }
