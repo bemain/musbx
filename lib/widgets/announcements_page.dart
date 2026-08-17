@@ -95,7 +95,7 @@ class AnnouncementsPage extends StatelessWidget {
                                 enabledBorder: InputBorder.none,
                                 errorBorder: InputBorder.none,
                                 disabledBorder: InputBorder.none,
-                                icon: Icon(Symbols.campaign),
+                                icon: Icon(Symbols.feedback),
                                 labelText: "Give feedback",
                               ),
                               keyboardType: TextInputType.multiline,
@@ -112,7 +112,9 @@ class AnnouncementsPage extends StatelessWidget {
                                       showDialog<void>(
                                         context: context,
                                         builder: (context) {
-                                          return _buildInfoDialog(context);
+                                          return _buildFeedbackInfoDialog(
+                                            context,
+                                          );
                                         },
                                       );
                                     },
@@ -169,10 +171,10 @@ class AnnouncementsPage extends StatelessWidget {
     );
   }
 
-  AlertDialog _buildInfoDialog(BuildContext context) {
+  AlertDialog _buildFeedbackInfoDialog(BuildContext context) {
     return AlertDialog(
       title: Text("Give feedback"),
-      icon: Icon(Symbols.campaign),
+      icon: Icon(Symbols.feedback),
       content: RichText(
         text: TextSpan(
           style: Theme.of(
@@ -183,7 +185,7 @@ class AnnouncementsPage extends StatelessWidget {
               text:
                   """Let us know what you think about Musician's Toolbox! What works well? What could we do better? Your feedback is invaluable to us in developing the app for the future.
 
-Do not send any personal details here. Remember that we cannot respond to your feedback directly; if you want a response, please contact the developer via """,
+Do not send any personal details here. Remember that we cannot respond to your feedback directly; if you want a response please contact the developer via """,
             ),
             TextSpan(
               text: "email",
@@ -553,7 +555,7 @@ class AnnouncementsButton extends StatelessWidget {
                 isLabelVisible: unread.isNotEmpty,
                 count: unread.length,
                 maxCount: 9,
-                child: Icon(Symbols.campaign), // or 'campaign'?
+                child: Icon(Symbols.campaign),
               ),
             ),
           );
