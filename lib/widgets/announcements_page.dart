@@ -265,6 +265,7 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
           vertical: 12,
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 4,
           children: [
@@ -433,6 +434,7 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
         });
       },
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           for (String response in announcement.responses!.responses)
             RadioListTile(
@@ -476,6 +478,7 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
     }
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         for (String response in announcement.responses!.responses)
           ListTile(
@@ -529,11 +532,32 @@ class AnnouncementsButton extends StatelessWidget {
         builder: (context, snapshot) {
           final List<Announcement> unread = snapshot.data ?? [];
 
-          if (unread.isNotEmpty) {
-            if (!hasShownTooltip) {
-              hasShownTooltip = true;
+          if (unread.isNotEmpty && !hasShownTooltip) {
+            hasShownTooltip = true;
 
-              // Open tooltip
+            if (unread.first.responses != null) {
+              // Show polls as popups to get more attention
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                showDialog<void>(
+                  context: context,
+                  builder: (context) {
+                    return Center(
+                      child: FractionallySizedBox(
+                        widthFactor: 0.7,
+                        child: SingleChildScrollView(
+                          child: AnnouncementTile(
+                            announcement: unread.first,
+                            isUnread: true,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+
+                Announcements.readAt.value = DateTime.now();
+              });
+            } else {
               SchedulerBinding.instance.addPostFrameCallback((_) {
                 _tooltipKey.currentState?.ensureTooltipVisible();
               });
