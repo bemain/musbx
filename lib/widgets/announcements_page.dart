@@ -42,6 +42,8 @@ class AnnouncementsPage extends StatelessWidget {
                 future: _future,
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
+                    debugPrint("[Announcements] ${snapshot.error}");
+
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -199,7 +201,7 @@ Do not send any personal details here. Remember that we cannot respond to your f
   }
 }
 
-class AnnouncementTile extends StatelessWidget {
+class AnnouncementTile extends StatefulWidget {
   static const List<String> months = [
     "jan",
     "feb",
@@ -225,19 +227,39 @@ class AnnouncementTile extends StatelessWidget {
   final bool isUnread;
 
   @override
+  State<AnnouncementTile> createState() => _AnnouncementTileState();
+}
+
+class _AnnouncementTileState extends State<AnnouncementTile> {
+  /// The currently selected responses.
+  /// The special value '[otherFieldName]' signifies that the 'Other' option is
+  /// selected, and the value of [otherFieldController] should be used.
+  List<String> _selectedResponses = [];
+  TextEditingController otherFieldController = TextEditingController();
+  static const otherFieldName = "__other__";
+
+  late final PersistentValue<String>? sentResponse =
+      widget.announcement == null
+      ? null
+      : PersistentValue<String>(
+          "announcements/${widget.announcement!.id}/response",
+          initialValue: "",
+        );
+
+  String formatDate(DateTime d) =>
+      "${d.day} ${AnnouncementTile.months[d.month - 1].toUpperCase()}${d.year != DateTime.now().year ? " ${d.year}" : ""}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}";
+
+  @override
   Widget build(BuildContext context) {
+    if (widget.announcement == null) return _buildPlaceholder(context);
+    final Announcement announcement = widget.announcement!;
+
     final ThemeData theme = Theme.of(context);
-
-    String formatDate(DateTime d) =>
-        "${d.day} ${months[d.month - 1].toUpperCase()}${d.year != DateTime.now().year ? " ${d.year}" : ""}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}";
-
-    if (this.announcement == null) return _buildPlaceholder(context);
-    final Announcement announcement = this.announcement!;
 
     return Card(
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: 24,
+          horizontal: 16,
           vertical: 12,
         ),
         child: Column(
@@ -253,7 +275,7 @@ class AnnouncementTile extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (isUnread)
+                if (widget.isUnread)
                   Badge(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     textColor: Theme.of(context).colorScheme.onPrimary,
@@ -264,22 +286,71 @@ class AnnouncementTile extends StatelessWidget {
               formatDate(announcement.createdAt.toLocal()),
               style: theme.textTheme.labelMedium,
             ),
-            MarkdownBody(
-              data: announcement.content ?? "",
-              softLineBreak: true,
-              styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
-                p: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                blockquoteDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: theme.colorScheme.primary,
-                ),
-                blockquote: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onPrimary,
+            _markdownText(context, announcement.content ?? ""),
+
+            // Already sent response
+            if (sentResponse?.value.isEmpty == false) ...[
+              SizedBox(height: 4),
+              Text(
+                "You responded:",
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              _markdownText(context, sentResponse?.value ?? ""),
+            ],
+
+            // Available responses
+            if (announcement.responses != null &&
+                sentResponse?.value.isEmpty == true) ...[
+              _buildResponses(context, announcement),
+              Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton(
+                  onPressed: _selectedResponses.isEmpty
+                      ? null
+                      : () {
+                          final responses = _selectedResponses.map(
+                            (response) => response == otherFieldName
+                                ? otherFieldController.text
+                                : response,
+                          );
+
+                          for (final response in responses) {
+                            UserFeedback.insert(
+                              FeedbackEntry(
+                                content: response,
+                                responseTo: announcement.id,
+                              ),
+                            );
+                          }
+
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(
+                            SnackBar(
+                              showCloseIcon: true,
+                              content: Row(
+                                children: [
+                                  Icon(
+                                    Symbols.celebration,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onInverseSurface,
+                                  ),
+                                  SizedBox(width: 12),
+                                  Text("Thank you for your response!"),
+                                ],
+                              ),
+                            ),
+                          );
+
+                          setState(() {
+                            sentResponse?.value = responses.join(", ");
+                          });
+                        },
+                  child: Text("Submit"),
                 ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -292,7 +363,7 @@ class AnnouncementTile extends StatelessWidget {
     return Card(
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: 24,
+          horizontal: 16,
           vertical: 12,
         ),
         child: Column(
@@ -317,6 +388,122 @@ class AnnouncementTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _markdownText(BuildContext context, String text) {
+    final ThemeData theme = Theme.of(context);
+    final MarkdownStyleSheet styleSheet = MarkdownStyleSheet.fromTheme(theme)
+        .copyWith(
+          p: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          blockquoteDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: theme.colorScheme.primary,
+          ),
+          blockquote: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onPrimary,
+          ),
+        );
+    return MarkdownBody(
+      data: text,
+      softLineBreak: true,
+      styleSheet: styleSheet,
+    );
+  }
+
+  Widget _buildResponses(BuildContext context, Announcement announcement) {
+    return announcement.responses?.allowMultiple == true
+        ? _buildResponsesMulti(context, announcement)
+        : _buildResponsesSingle(context, announcement);
+  }
+
+  Widget _buildResponsesSingle(
+    BuildContext context,
+    Announcement announcement,
+  ) {
+    return RadioGroup<String>(
+      groupValue: _selectedResponses.firstOrNull,
+      onChanged: (value) {
+        setState(() {
+          _selectedResponses = value == null ? [] : [value];
+        });
+      },
+      child: Column(
+        children: [
+          for (String response in announcement.responses!.responses)
+            RadioListTile(
+              value: response,
+              contentPadding: EdgeInsets.all(0),
+              title: _markdownText(context, response),
+            ),
+          if (announcement.responses?.showOther == true)
+            RadioListTile(
+              value: otherFieldName,
+              contentPadding: EdgeInsets.all(0),
+              title: TextField(
+                controller: otherFieldController,
+                decoration: InputDecoration(
+                  border: UnderlineInputBorder(),
+                ),
+                onTap: () {
+                  setState(() {
+                    _selectedResponses = [otherFieldName];
+                  });
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResponsesMulti(
+    BuildContext context,
+    Announcement announcement,
+  ) {
+    void onChanged(bool? value, String response) {
+      setState(() {
+        if (value == false) {
+          _selectedResponses.remove(response);
+        } else if (!_selectedResponses.contains(response)) {
+          _selectedResponses.add(response);
+        }
+      });
+    }
+
+    return Column(
+      children: [
+        for (String response in announcement.responses!.responses)
+          ListTile(
+            onTap: () =>
+                onChanged(!_selectedResponses.contains(response), response),
+            leading: Checkbox(
+              value: _selectedResponses.contains(response),
+              onChanged: (value) => onChanged(value, response),
+            ),
+            title: _markdownText(context, response),
+          ),
+        if (announcement.responses?.showOther == true)
+          ListTile(
+            onTap: () => onChanged(
+              !_selectedResponses.contains(otherFieldName),
+              otherFieldName,
+            ),
+            leading: Checkbox(
+              value: _selectedResponses.contains(otherFieldName),
+              onChanged: (value) => onChanged(value, otherFieldName),
+            ),
+            title: TextField(
+              controller: otherFieldController,
+              decoration: InputDecoration(
+                border: UnderlineInputBorder(),
+              ),
+              onTap: () => onChanged(true, otherFieldName),
+            ),
+          ),
+      ],
     );
   }
 }

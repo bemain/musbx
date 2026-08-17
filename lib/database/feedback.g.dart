@@ -14,6 +14,8 @@ FeedbackEntry _$FeedbackEntryFromJson(Map<String, dynamic> json) {
         ? null
         : DateTime.parse(json['created_at'] as String),
     content: json['content'] as String?,
+    sentBy: json['sent_by'] as String?,
+    responseTo: json['response_to'] as String?,
   );
 }
 
@@ -22,4 +24,6 @@ Map<String, dynamic> _$FeedbackEntryToJson(FeedbackEntry instance) =>
       'id': instance.id,
       'created_at': instance.createdAt.toIso8601String(),
       'content': instance.content,
+      'sent_by': instance.sentBy,
+      'response_to': instance.responseTo,
     };

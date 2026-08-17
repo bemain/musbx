@@ -19,6 +19,8 @@ class Database {
       publishableKey: supabasePublishableKey,
     );
 
+    await client.auth.signInAnonymously();
+
     isInitialized = true;
   }
 
