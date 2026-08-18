@@ -1,17 +1,35 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/database/announcement.dart';
+import 'package:musbx/database/feedback.dart';
 import 'package:musbx/navigation.dart';
+import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/utils/announcements.dart';
+import 'package:musbx/utils/feedback.dart';
+import 'package:musbx/widgets/announcement_tile.dart';
+import 'package:musbx/widgets/widgets.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class AnnouncementsPage extends StatelessWidget {
-  AnnouncementsPage({super.key});
+class AnnouncementsPage extends StatefulWidget {
+  const AnnouncementsPage({super.key});
 
+  @override
+  State<AnnouncementsPage> createState() => _AnnouncementsPageState();
+}
+
+class _AnnouncementsPageState extends State<AnnouncementsPage> {
   final Future<List<Announcement>> _future = Announcements.getAll();
+
+  final TextEditingController feedbackController = TextEditingController();
+
+  @override
+  void dispose() {
+    feedbackController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,128 +45,126 @@ class AnnouncementsPage extends StatelessWidget {
         title: Text("Announcements"),
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8),
-        child: FutureBuilder(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Icon(
-                    Symbols.error,
-                    size: 96,
-                  ),
-                  Text(
-                    "Failed to load announcements. Please try again later.",
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              );
-            }
-
-            return ListView(
-              children: [
-                for (Announcement? announcement
-                    in snapshot.data ?? [null, null, null])
-                  AnnouncementTile(
-                    announcement: announcement,
-                    isUnread:
-                        announcement?.createdAt.toLocal().isAfter(
-                          previousReadAt,
-                        ) ??
-                        false,
-                  ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class AnnouncementTile extends StatelessWidget {
-  static const List<String> months = [
-    "jan",
-    "feb",
-    "mar",
-    "apr",
-    "may",
-    "jun",
-    "jul",
-    "aug",
-    "sep",
-    "oct",
-    "nov",
-    "dec",
-  ];
-
-  const AnnouncementTile({
-    super.key,
-    required this.announcement,
-    this.isUnread = false,
-  });
-
-  final Announcement? announcement;
-  final bool isUnread;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
-    String formatDate(DateTime d) =>
-        "${d.day} ${months[d.month - 1].toUpperCase()}${d.year != DateTime.now().year ? " ${d.year}" : ""}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}";
-
-    if (this.announcement == null) return _buildPlaceholder(context);
-    final Announcement announcement = this.announcement!;
-
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
-        ),
+        padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 4,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  announcement.title,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (isUnread)
-                  Badge(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    textColor: Theme.of(context).colorScheme.onPrimary,
-                  ),
-              ],
-            ),
-            Text(
-              formatDate(announcement.createdAt.toLocal()),
-              style: theme.textTheme.labelMedium,
-            ),
-            MarkdownBody(
-              data: announcement.content ?? "",
-              softLineBreak: true,
-              styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
-                p: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                blockquoteDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: theme.colorScheme.primary,
-                ),
-                blockquote: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onPrimary,
-                ),
+            Expanded(
+              child: FutureBuilder(
+                future: _future,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    debugPrint("[Announcements] ${snapshot.error}");
+
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Icon(
+                          Symbols.error,
+                          size: 96,
+                        ),
+                        Text(
+                          "Failed to load announcements. Please try again later.",
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    );
+                  }
+
+                  return ListView(
+                    children: [
+                      for (Announcement? announcement
+                          in snapshot.data ?? [null, null, null])
+                        AnnouncementTile(
+                          announcement: announcement,
+                          isUnread:
+                              announcement?.createdAt.toLocal().isAfter(
+                                previousReadAt,
+                              ) ??
+                              false,
+                        ),
+                    ],
+                  );
+                },
               ),
+            ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Card(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 20, right: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: feedbackController,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                                icon: Icon(Symbols.feedback),
+                                labelText: "Give feedback",
+                              ),
+                              keyboardType: TextInputType.multiline,
+                              maxLines: null,
+                            ),
+                          ),
+                          ListenableBuilder(
+                            listenable: feedbackController,
+                            builder: (context, child) =>
+                                feedbackController.text.trim().isNotEmpty
+                                ? SizedBox()
+                                : IconButton(
+                                    onPressed: () {
+                                      showDialog<void>(
+                                        context: context,
+                                        builder: (context) {
+                                          return _buildFeedbackInfoDialog(
+                                            context,
+                                          );
+                                        },
+                                      );
+                                    },
+                                    icon: Icon(Symbols.info),
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                ListenableBuilder(
+                  listenable: feedbackController,
+                  builder: (context, child) => IconButton.filled(
+                    onPressed: feedbackController.text.trim().isEmpty
+                        ? null
+                        : () async {
+                            await UserFeedback.insert(
+                              FeedbackEntry(
+                                content: feedbackController.text.trim(),
+                              ),
+                            );
+
+                            feedbackController.clear();
+
+                            if (context.mounted) {
+                              showAlertSnackBar(
+                                context,
+                                leading: Icon(Symbols.celebration),
+                                title: Text("Thank you for your feedback!"),
+                              );
+                            }
+                          },
+                    icon: Icon(Symbols.send),
+                    padding: EdgeInsets.all(12),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -156,34 +172,31 @@ class AnnouncementTile extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 4,
+  AlertDialog _buildFeedbackInfoDialog(BuildContext context) {
+    return AlertDialog(
+      title: Text("Give feedback"),
+      icon: Icon(Symbols.feedback),
+      content: RichText(
+        text: TextSpan(
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium,
           children: [
-            // Title
-            TextPlaceholder(
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            TextSpan(
+              text:
+                  """Let us know what you think about Musician's Toolbox! What works well? What could we do better? Your feedback is invaluable to us in developing the app for the future.
+
+Do not send any personal details here. Remember that we cannot respond to your feedback directly; if you want a response please contact the developer via """,
             ),
-            // Date
-            TextPlaceholder(
-              width: 100,
-              style: theme.textTheme.labelMedium,
+            TextSpan(
+              text: "email",
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  launchUrl(developerEmail);
+                },
             ),
-            // Content
-            TextPlaceholder(style: theme.textTheme.bodyMedium),
-            TextPlaceholder(style: theme.textTheme.bodyMedium),
-            TextPlaceholder(width: 200, style: theme.textTheme.bodyMedium),
+            TextSpan(text: "."),
           ],
         ),
       ),
@@ -210,11 +223,40 @@ class AnnouncementsButton extends StatelessWidget {
         builder: (context, snapshot) {
           final List<Announcement> unread = snapshot.data ?? [];
 
-          if (unread.isNotEmpty) {
-            if (!hasShownTooltip) {
-              hasShownTooltip = true;
+          if (unread.isNotEmpty && !hasShownTooltip) {
+            hasShownTooltip = true;
 
-              // Open tooltip
+            // TODO: Maybe show all unread popups, with a button to cycle them
+            final Announcement? popup = unread
+                .where((a) => a.popup)
+                .firstOrNull;
+
+            if (popup != null) {
+              // Show polls as popups to get more attention
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                showDialog<void>(
+                  context: context,
+                  builder: (context) {
+                    return Center(
+                      child: FractionallySizedBox(
+                        widthFactor: 0.7,
+                        child: SingleChildScrollView(
+                          child: AnnouncementTile(
+                            announcement: popup,
+                            isUnread: true,
+                            onResponseSent: (response) {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+
+                Announcements.readAt.value = popup.createdAt;
+              });
+            } else {
               SchedulerBinding.instance.addPostFrameCallback((_) {
                 _tooltipKey.currentState?.ensureTooltipVisible();
               });
@@ -236,7 +278,7 @@ class AnnouncementsButton extends StatelessWidget {
                 isLabelVisible: unread.isNotEmpty,
                 count: unread.length,
                 maxCount: 9,
-                child: Icon(Symbols.notifications),
+                child: Icon(Symbols.campaign),
               ),
             ),
           );

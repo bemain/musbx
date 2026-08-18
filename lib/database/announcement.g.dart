@@ -15,6 +15,12 @@ Announcement _$AnnouncementFromJson(Map<String, dynamic> json) {
         : DateTime.parse(json['created_at'] as String),
     title: json['title'] as String,
     content: json['content'] as String?,
+    responses: json['responses'] == null
+        ? null
+        : AnnouncementResponses.fromJson(
+            json['responses'] as Map<String, dynamic>,
+          ),
+    popup: json['popup'] as bool? ?? false,
   );
 }
 
@@ -24,4 +30,24 @@ Map<String, dynamic> _$AnnouncementToJson(Announcement instance) =>
       'created_at': instance.createdAt.toIso8601String(),
       'title': instance.title,
       'content': instance.content,
+      'responses': instance.responses,
+      'popup': instance.popup,
     };
+
+AnnouncementResponses _$AnnouncementResponsesFromJson(
+  Map<String, dynamic> json,
+) => AnnouncementResponses(
+  allowMultiple: json['allow_multiple'] as bool? ?? false,
+  showOther: json['show_other'] as bool? ?? false,
+  responses: (json['responses'] as List<dynamic>)
+      .map((e) => e as String)
+      .toList(),
+);
+
+Map<String, dynamic> _$AnnouncementResponsesToJson(
+  AnnouncementResponses instance,
+) => <String, dynamic>{
+  'allow_multiple': instance.allowMultiple,
+  'show_other': instance.showOther,
+  'responses': instance.responses,
+};

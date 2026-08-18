@@ -22,6 +22,8 @@ final Uri? storeUrl = Platform.isAndroid
     ? Uri.parse("https://apps.apple.com/us/app/musicians-toolbox/id1670009655")
     : null;
 
+final Uri developerEmail = Uri.parse("mailto:bemain.dev@gmail.com");
+
 class SettingsList extends StatelessWidget {
   /// Displays a list of [children] with formatting appropriate for a page in
   /// the settings menu.
@@ -139,12 +141,31 @@ class SettingsPage extends StatelessWidget {
                   },
                 ),
               ),
+              if (!Purchases.hasPremium)
+                ListTile(
+                  leading: Icon(Symbols.workspace_premium),
+                  title: Text("Get Premium"),
+                  onTap: () async {
+                    await showDialog<void>(
+                      context: context,
+                      builder: (context) => const FreeAccessRestrictedDialog(),
+                    );
+                  },
+                ),
+              ListTile(
+                leading: Icon(Symbols.campaign),
+                title: Text("Announcements & Feedback"),
+                trailing: Icon(Symbols.chevron_forward),
+                onTap: () {
+                  context.push(Routes.announcements);
+                },
+              ),
               ListTile(
                 leading: Icon(Symbols.policy),
                 title: Text("Privacy policy"),
                 trailing: Icon(Symbols.launch),
-                onTap: () {
-                  launchUrl(
+                onTap: () async {
+                  await launchUrl(
                     Uri.parse("https://bemain.github.io/musbx/privacy"),
                   );
                 },
@@ -157,31 +178,21 @@ class SettingsPage extends StatelessWidget {
                   context.push(Routes.licenses);
                 },
               ),
-              if (!Purchases.hasPremium)
-                ListTile(
-                  leading: Icon(Symbols.workspace_premium),
-                  title: Text("Upgrade to Premium"),
-                  onTap: () {
-                    showDialog<void>(
-                      context: context,
-                      builder: (context) => const FreeAccessRestrictedDialog(),
-                    );
-                  },
-                ),
             ],
           ),
 
           SettingsGroup(
             children: [
               ListTile(
-                leading: Icon(Symbols.mail),
-                title: Text("Mail"),
+                leading: Icon(Symbols.language),
+                title: Text("Website"),
                 trailing: Icon(Symbols.launch),
-                onTap: () {
-                  launchUrl(Uri.parse("mailto:bemain.dev@gmail.com"));
+                onTap: () async {
+                  await launchUrl(Uri.parse("https://bemain.github.io/musbx"));
                 },
               ),
-              if (Platform.isAndroid | Platform.isIOS)
+
+              if (Platform.isAndroid || Platform.isIOS)
                 ListTile(
                   leading: Icon(
                     Platform.isAndroid
@@ -193,16 +204,16 @@ class SettingsPage extends StatelessWidget {
                     Platform.isAndroid ? "Google Play" : "App Store",
                   ),
                   trailing: Icon(Symbols.launch),
-                  onTap: () {
-                    if (storeUrl != null) launchUrl(storeUrl!);
+                  onTap: () async {
+                    if (storeUrl != null) await launchUrl(storeUrl!);
                   },
                 ),
               ListTile(
-                leading: Icon(Symbols.language),
-                title: Text("Website"),
+                leading: Icon(Symbols.mail),
+                title: Text("Email"),
                 trailing: Icon(Symbols.launch),
-                onTap: () {
-                  launchUrl(Uri.parse("https://bemain.github.io"));
+                onTap: () async {
+                  await launchUrl(developerEmail);
                 },
               ),
             ],
