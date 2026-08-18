@@ -187,12 +187,12 @@ class SettingsPage extends StatelessWidget {
                 leading: Icon(Symbols.language),
                 title: Text("Website"),
                 trailing: Icon(Symbols.launch),
-                onTap: () {
-                  launchUrl(Uri.parse("https://bemain.github.io/musbx"));
+                onTap: () async {
+                  await launchUrl(Uri.parse("https://bemain.github.io/musbx"));
                 },
               ),
 
-              if (Platform.isAndroid | Platform.isIOS)
+              if (Platform.isAndroid || Platform.isIOS)
                 ListTile(
                   leading: Icon(
                     Platform.isAndroid
@@ -204,16 +204,16 @@ class SettingsPage extends StatelessWidget {
                     Platform.isAndroid ? "Google Play" : "App Store",
                   ),
                   trailing: Icon(Symbols.launch),
-                  onTap: () {
-                    if (storeUrl != null) launchUrl(storeUrl!);
+                  onTap: () async {
+                    if (storeUrl != null) await launchUrl(storeUrl!);
                   },
                 ),
               ListTile(
                 leading: Icon(Symbols.mail),
                 title: Text("Email"),
                 trailing: Icon(Symbols.launch),
-                onTap: () {
-                  launchUrl(developerEmail);
+                onTap: () async {
+                  await launchUrl(developerEmail);
                 },
               ),
             ],

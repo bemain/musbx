@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/database/announcement.dart';
 import 'package:musbx/database/feedback.dart';
 import 'package:musbx/utils/feedback.dart';
+import 'package:musbx/widgets/widgets.dart';
 
 class AnnouncementTile extends StatefulWidget {
   static const List<String> months = [
@@ -57,9 +58,19 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
       "${d.day} ${AnnouncementTile.months[d.month - 1].toUpperCase()}${d.year != DateTime.now().year ? " ${d.year}" : ""}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}";
 
   @override
+  void dispose() {
+    otherFieldController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (widget.announcement == null) return _buildPlaceholder(context);
     final Announcement announcement = widget.announcement!;
+
+    PersistentValue.preferences.remove(
+      "announcements/${announcement.id}/response",
+    );
 
     final ThemeData theme = Theme.of(context);
 
@@ -110,56 +121,55 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
             if (announcement.responses != null &&
                 sentResponse?.value.isEmpty == true) ...[
               _buildResponses(context, announcement),
-              Align(
-                alignment: Alignment.centerRight,
-                child: FilledButton(
-                  onPressed: _selectedResponses.isEmpty
-                      ? null
-                      : () {
-                          final responses = _selectedResponses.map(
-                            (response) => response == otherFieldName
-                                ? otherFieldController.text
-                                : response,
-                          );
+              ListenableBuilder(
+                listenable: otherFieldController,
+                builder: (context, child) => Align(
+                  alignment: Alignment.centerRight,
+                  child: FilledButton(
+                    onPressed:
+                        _selectedResponses.isEmpty ||
+                            // Guard for 'Other' being selected but the field empty
+                            (_selectedResponses.length == 1 &&
+                                _selectedResponses.single == otherFieldName &&
+                                otherFieldController.text.trim().isEmpty)
+                        ? null
+                        : () async {
+                            final responses = _selectedResponses
+                                .map(
+                                  (response) => response == otherFieldName
+                                      ? otherFieldController.text.trim()
+                                      : response,
+                                )
+                                .toList();
 
-                          for (final response in responses) {
-                            UserFeedback.insert(
-                              FeedbackEntry(
-                                content: response,
-                                responseTo: announcement.id,
-                              ),
-                            );
-                          }
+                            for (final response in responses) {
+                              if (response.isEmpty) continue;
+                              await UserFeedback.insert(
+                                FeedbackEntry(
+                                  content: response,
+                                  responseTo: announcement.id,
+                                ),
+                              );
+                            }
 
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(
-                            SnackBar(
-                              showCloseIcon: true,
-                              content: Row(
-                                children: [
-                                  Icon(
-                                    Symbols.celebration,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onInverseSurface,
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text("Thank you for your response!"),
-                                ],
-                              ),
-                            ),
-                          );
+                            if (context.mounted) {
+                              showAlertSnackBar(
+                                context,
+                                leading: Icon(Symbols.celebration),
+                                title: Text("Thank you for your response!"),
+                              );
+                            }
 
-                          final response = responses.join(", ");
+                            final response = responses.join(", ");
 
-                          setState(() {
-                            sentResponse?.value = response;
-                          });
+                            setState(() {
+                              sentResponse?.value = response;
+                            });
 
-                          widget.onResponseSent?.call(response);
-                        },
-                  child: Text("Submit"),
+                            widget.onResponseSent?.call(response);
+                          },
+                    child: Text("Submit"),
+                  ),
                 ),
               ),
             ],
@@ -279,9 +289,11 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
     void onChanged(bool? value, String response) {
       setState(() {
         if (value == false) {
-          _selectedResponses.remove(response);
+          _selectedResponses = _selectedResponses
+              .where((e) => e != response)
+              .toList();
         } else if (!_selectedResponses.contains(response)) {
-          _selectedResponses.add(response);
+          _selectedResponses = [..._selectedResponses, response];
         }
       });
     }

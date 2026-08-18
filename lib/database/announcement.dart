@@ -4,13 +4,6 @@ import 'package:musbx/utils/utils.dart';
 
 part 'announcement.g.dart';
 
-@JsonEnum(fieldRename: FieldRename.snake)
-enum AnnouncementType {
-  message,
-  selectSingle,
-  selectMulti,
-}
-
 @JsonSerializable()
 class Announcement extends Model {
   /// An announcement shown to all users on startup.

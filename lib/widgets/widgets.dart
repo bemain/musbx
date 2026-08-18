@@ -153,3 +153,33 @@ class SliderPlaceholder extends StatelessWidget {
     );
   }
 }
+
+void showAlertSnackBar(
+  BuildContext context, {
+  Key? key,
+  Widget? leading,
+  required Widget title,
+}) {
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(
+    SnackBar(
+      key: key,
+      showCloseIcon: true,
+      content: Row(
+        children: [
+          if (leading != null) ...[
+            IconTheme(
+              data: IconThemeData(
+                color: Theme.of(context).colorScheme.onInverseSurface,
+              ),
+              child: leading,
+            ),
+            SizedBox(width: 12),
+          ],
+          title,
+        ],
+      ),
+    ),
+  );
+}

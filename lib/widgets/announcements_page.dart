@@ -10,14 +10,26 @@ import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/utils/announcements.dart';
 import 'package:musbx/utils/feedback.dart';
 import 'package:musbx/widgets/announcement_tile.dart';
+import 'package:musbx/widgets/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class AnnouncementsPage extends StatelessWidget {
-  AnnouncementsPage({super.key});
+class AnnouncementsPage extends StatefulWidget {
+  const AnnouncementsPage({super.key});
 
+  @override
+  State<AnnouncementsPage> createState() => _AnnouncementsPageState();
+}
+
+class _AnnouncementsPageState extends State<AnnouncementsPage> {
   final Future<List<Announcement>> _future = Announcements.getAll();
 
   final TextEditingController feedbackController = TextEditingController();
+
+  @override
+  void dispose() {
+    feedbackController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +116,7 @@ class AnnouncementsPage extends StatelessWidget {
                           ListenableBuilder(
                             listenable: feedbackController,
                             builder: (context, child) =>
-                                feedbackController.text.isNotEmpty
+                                feedbackController.text.trim().isNotEmpty
                                 ? SizedBox()
                                 : IconButton(
                                     onPressed: () {
@@ -129,32 +141,22 @@ class AnnouncementsPage extends StatelessWidget {
                 ListenableBuilder(
                   listenable: feedbackController,
                   builder: (context, child) => IconButton.filled(
-                    onPressed: feedbackController.text.isEmpty
+                    onPressed: feedbackController.text.trim().isEmpty
                         ? null
-                        : () {
-                            UserFeedback.insert(
-                              FeedbackEntry(content: feedbackController.text),
+                        : () async {
+                            await UserFeedback.insert(
+                              FeedbackEntry(
+                                content: feedbackController.text.trim(),
+                              ),
                             );
+
                             feedbackController.clear();
+
                             if (context.mounted) {
-                              ScaffoldMessenger.of(
+                              showAlertSnackBar(
                                 context,
-                              ).showSnackBar(
-                                SnackBar(
-                                  showCloseIcon: true,
-                                  content: Row(
-                                    children: [
-                                      Icon(
-                                        Symbols.celebration,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onInverseSurface,
-                                      ),
-                                      SizedBox(width: 12),
-                                      Text("Thank you for your feedback!"),
-                                    ],
-                                  ),
-                                ),
+                                leading: Icon(Symbols.celebration),
+                                title: Text("Thank you for your feedback!"),
                               );
                             }
                           },

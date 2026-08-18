@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:musbx/keys.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -14,14 +15,20 @@ class Database {
   static Future<void> initialize() async {
     if (isInitialized) return;
 
-    await Supabase.initialize(
-      url: supabaseUrl,
-      publishableKey: supabasePublishableKey,
-    );
+    try {
+      await Supabase.initialize(
+        url: supabaseUrl,
+        publishableKey: supabasePublishableKey,
+      );
 
-    await client.auth.signInAnonymously();
-
-    isInitialized = true;
+      if (client.auth.currentSession != null) {
+        await client.auth.signInAnonymously();
+      }
+    } catch (e) {
+      debugPrint("[DATABASE] Failed to initialize; $e");
+    } finally {
+      isInitialized = true;
+    }
   }
 
   /// The reference to the 'announcements' table.
