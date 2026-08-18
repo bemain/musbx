@@ -68,10 +68,6 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
     if (widget.announcement == null) return _buildPlaceholder(context);
     final Announcement announcement = widget.announcement!;
 
-    PersistentValue.preferences.remove(
-      "announcements/${announcement.id}/response",
-    );
-
     final ThemeData theme = Theme.of(context);
 
     return Card(
@@ -140,10 +136,10 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
                                       ? otherFieldController.text.trim()
                                       : response,
                                 )
+                                .where((response) => response.isNotEmpty)
                                 .toList();
 
                             for (final response in responses) {
-                              if (response.isEmpty) continue;
                               await UserFeedback.insert(
                                 FeedbackEntry(
                                   content: response,

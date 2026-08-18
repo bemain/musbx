@@ -21,7 +21,7 @@ class Database {
         publishableKey: supabasePublishableKey,
       );
 
-      if (client.auth.currentSession != null) {
+      if (client.auth.currentSession == null) {
         await client.auth.signInAnonymously();
       }
     } catch (e) {

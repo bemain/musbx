@@ -145,8 +145,8 @@ class SettingsPage extends StatelessWidget {
                 ListTile(
                   leading: Icon(Symbols.workspace_premium),
                   title: Text("Get Premium"),
-                  onTap: () {
-                    showDialog<void>(
+                  onTap: () async {
+                    await showDialog<void>(
                       context: context,
                       builder: (context) => const FreeAccessRestrictedDialog(),
                     );
@@ -164,8 +164,8 @@ class SettingsPage extends StatelessWidget {
                 leading: Icon(Symbols.policy),
                 title: Text("Privacy policy"),
                 trailing: Icon(Symbols.launch),
-                onTap: () {
-                  launchUrl(
+                onTap: () async {
+                  await launchUrl(
                     Uri.parse("https://bemain.github.io/musbx/privacy"),
                   );
                 },
