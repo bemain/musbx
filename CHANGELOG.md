@@ -1,3 +1,32 @@
+## [1.15.0] - 2026-08-18
+
+### 🚀 Features
+
+- Let users leave feedback on the announcements page
+- Add link to announcements page in settings
+- Reorder settings
+- Implement announcement responses
+- Show unread polls as popups on launch
+- Add database column to show `Announcement` as popup
+
+### 🐛 Bug Fixes
+
+- Increase padding around feedback text field
+- Distinguish between announcements and feedback icons
+- Close popup when a response is sent
+- Remove unused import
+- Catch errors and refactor new widgets
+- Fix signin never executing and remove debugging code
+
+### 🚜 Refactor
+
+- Move `AnnouncementTile` to its own file
+
+### 📚 Documentation
+
+- Add license
+- Render license as markdown
+- Create an announcement style guide
 ## [1.14.6] - 2026-08-13
 
 ### 🐛 Bug Fixes
@@ -15,6 +44,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Automate release builds for macos
+- *(release)* V1.14.6+66 [skip ci]
 ## [1.14.5] - 2026-08-05
 
 ### ⚙️ Miscellaneous Tasks
