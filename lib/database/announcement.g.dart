@@ -20,6 +20,7 @@ Announcement _$AnnouncementFromJson(Map<String, dynamic> json) {
         : AnnouncementResponses.fromJson(
             json['responses'] as Map<String, dynamic>,
           ),
+    popup: json['popup'] as bool? ?? false,
   );
 }
 
@@ -30,6 +31,7 @@ Map<String, dynamic> _$AnnouncementToJson(Announcement instance) =>
       'title': instance.title,
       'content': instance.content,
       'responses': instance.responses,
+      'popup': instance.popup,
     };
 
 AnnouncementResponses _$AnnouncementResponsesFromJson(

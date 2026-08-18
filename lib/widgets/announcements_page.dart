@@ -225,7 +225,12 @@ class AnnouncementsButton extends StatelessWidget {
           if (unread.isNotEmpty && !hasShownTooltip) {
             hasShownTooltip = true;
 
-            if (unread.first.responses != null) {
+            // TODO: Maybe show all unread popups, with a button to cycle them
+            final Announcement? popup = unread
+                .where((a) => a.popup)
+                .firstOrNull;
+
+            if (popup != null) {
               // Show polls as popups to get more attention
               SchedulerBinding.instance.addPostFrameCallback((_) {
                 showDialog<void>(
@@ -236,7 +241,7 @@ class AnnouncementsButton extends StatelessWidget {
                         widthFactor: 0.7,
                         child: SingleChildScrollView(
                           child: AnnouncementTile(
-                            announcement: unread.first,
+                            announcement: popup,
                             isUnread: true,
                             onResponseSent: (response) {
                               Navigator.of(context).pop();
@@ -248,7 +253,7 @@ class AnnouncementsButton extends StatelessWidget {
                   },
                 );
 
-                Announcements.readAt.value = DateTime.now();
+                Announcements.readAt.value = popup.createdAt;
               });
             } else {
               SchedulerBinding.instance.addPostFrameCallback((_) {

@@ -20,6 +20,7 @@ class Announcement extends Model {
     required this.title,
     this.content,
     this.responses,
+    this.popup = false,
   });
 
   /// The title of this announcement.
@@ -30,6 +31,9 @@ class Announcement extends Model {
 
   /// The responses the user can pick from to react to this [Announcement].
   final AnnouncementResponses? responses;
+
+  /// Whether to show this announcement as a popup on launch.
+  final bool popup;
 
   static Announcement fromJson(Json json) => _$AnnouncementFromJson(json);
 

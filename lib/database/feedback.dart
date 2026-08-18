@@ -33,5 +33,5 @@ class FeedbackEntry extends Model {
   Json toJson() => _$FeedbackEntryToJson(this);
 
   @override
-  String toString() => "Feedback($id)";
+  String toString() => "FeedbackEntry($id)";
 }
