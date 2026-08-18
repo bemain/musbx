@@ -26,10 +26,12 @@ class AnnouncementTile extends StatefulWidget {
     super.key,
     required this.announcement,
     this.isUnread = false,
+    this.onResponseSent,
   });
 
   final Announcement? announcement;
   final bool isUnread;
+  final void Function(String response)? onResponseSent;
 
   @override
   State<AnnouncementTile> createState() => _AnnouncementTileState();
@@ -149,9 +151,13 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
                             ),
                           );
 
+                          final response = responses.join(", ");
+
                           setState(() {
-                            sentResponse?.value = responses.join(", ");
+                            sentResponse?.value = response;
                           });
+
+                          widget.onResponseSent?.call(response);
                         },
                   child: Text("Submit"),
                 ),

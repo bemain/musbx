@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/database/announcement.dart';
 import 'package:musbx/database/feedback.dart';
@@ -237,6 +238,9 @@ class AnnouncementsButton extends StatelessWidget {
                           child: AnnouncementTile(
                             announcement: unread.first,
                             isUnread: true,
+                            onResponseSent: (response) {
+                              Navigator.of(context).pop();
+                            },
                           ),
                         ),
                       ),
