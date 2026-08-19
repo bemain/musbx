@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/utils/utils.dart';
-import 'package:musbx/widgets/widgets.dart';
 
 /// Helper class for persisting history entries to disk.
 class HistoryHandler<T> extends ChangeNotifier {
@@ -32,7 +32,7 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// The file where song history is saved.
   File get _historyFile => File(
-    "${Directories.applicationDocumentsDir("").path}/$historyFileName.json",
+    "${FileCacheService.instance.applicationDocumentsDir("").path}/$historyFileName.json",
   );
 
   /// The history entries, with the previously loaded songs and the time they were loaded.

@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/utils.dart';
-import 'package:musbx/widgets/widgets.dart';
 
 /// The default album art.
 final Uri defaultAlbumArt = Uri.parse(
@@ -85,7 +85,8 @@ class Song {
       );
 
   /// The directory where files relating to this song are stored.
-  Directory get cacheDirectory => Directories.temporaryDir("songs/$id");
+  Directory get cacheDirectory =>
+      FileCacheService.instance.temporaryDir("songs/$id");
 
   /// The directory where audio files for this song are cached.
   Directory get audioDirectory => Directory("${cacheDirectory.path}/source/");

@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:path_provider/path_provider.dart';
 
 class InfoPage extends StatelessWidget {
   const InfoPage({super.key, required this.icon, required this.text});
@@ -64,46 +62,6 @@ Future<bool> isOnCellular() async {
   final connectivity = await (Connectivity().checkConnectivity());
   return !connectivity.contains(ConnectivityResult.wifi) &&
       !connectivity.contains(ConnectivityResult.ethernet);
-}
-
-class Directories {
-  Directories._();
-
-  static late final Directory _tempDir;
-
-  static late final Directory _appDocsDir;
-
-  /// Get a temporary directory with the given [name].
-  ///
-  /// This does not check to make sure that the directory actually exists.
-  static Directory temporaryDir(String name) =>
-      Directory("${_tempDir.path}/$name/");
-
-  /// Get a application documents directory with the given [name].
-  ///
-  /// This does not check to make sure that the directory actually exists.
-  static Directory applicationDocumentsDir(String name) =>
-      Directory("${_appDocsDir.path}/$name/");
-
-  /// Resolve the paths to commonly used locations on the filesystem, which are
-  /// used by the methods provided by this class.
-  ///
-  /// Should be called during app launch.
-  static Future<void> initialize() async {
-    _tempDir = await getTemporaryDirectory();
-    try {
-      _appDocsDir = await getApplicationDocumentsDirectory();
-    } catch (e) {
-      debugPrint(
-        "[DIRECTORIES] Unable to get application documents; falling back to temporary directory. $e",
-      );
-      _appDocsDir = _tempDir;
-    }
-
-    debugPrint(
-      "[DIRECTORIES] Initialized with temporary directory at ${_tempDir.path}, application documents at ${_appDocsDir.path}",
-    );
-  }
 }
 
 class ExpandedIcon extends StatelessWidget {
