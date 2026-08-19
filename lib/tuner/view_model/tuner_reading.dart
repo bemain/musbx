@@ -1,5 +1,5 @@
 import 'package:musbx/data/models/audio_frame.dart';
-import 'package:musbx/model/pitch.dart';
+import 'package:musbx/domain/models/music/pitch.dart';
 
 class TunerReading {
   /// Data recorded from the microphone at a given [time].

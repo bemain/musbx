@@ -1,6 +1,6 @@
-import 'package:musbx/model/accidental.dart';
-import 'package:musbx/model/chroma.dart';
-import 'package:musbx/model/key.dart';
+import 'package:musbx/domain/models/music/accidental.dart';
+import 'package:musbx/domain/models/music/chroma.dart';
+import 'package:musbx/domain/models/music/key.dart';
 
 /// The seven "natural" pitch classes are the ones represented by just a letter;
 /// A, B, C, D, E, F and G.

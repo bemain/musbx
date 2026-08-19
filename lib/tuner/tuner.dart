@@ -4,11 +4,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/audio_capture_service.dart';
+import 'package:musbx/domain/models/music/accidental.dart';
+import 'package:musbx/domain/models/music/pitch.dart';
+import 'package:musbx/domain/models/music/pitch_class.dart';
+import 'package:musbx/domain/models/music/temperament.dart';
 import 'package:musbx/domain/use_case/pitch_detector.dart';
-import 'package:musbx/model/accidental.dart';
-import 'package:musbx/model/pitch.dart';
-import 'package:musbx/model/pitch_class.dart';
-import 'package:musbx/model/temperament.dart';
 import 'package:musbx/tuner/view_model/tuner_reading.dart';
 
 /// Singleton for detecting what pitch is being played.
