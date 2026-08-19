@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_plus/material_plus.dart';
-import 'package:musbx/songs/musbx_api/client.dart';
-import 'package:musbx/songs/musbx_api/musbx_api.dart';
+import 'package:musbx/data/services/musbx_api/client.dart';
+import 'package:musbx/data/services/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/utils/utils.dart';
 
