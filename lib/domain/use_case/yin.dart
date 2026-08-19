@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:musbx/tuner/pitch_algorithm.dart';
+import 'package:musbx/domain/use_case/pitch_algorithm.dart';
 
 /// An implementation of the AUBIO_YIN pitch tracking algorithm.
 /// This is a port of the TarsosDSP library developed by Joren Six and Paul Brossier at IPEM, University Ghent
