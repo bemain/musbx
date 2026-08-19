@@ -1,4 +1,4 @@
-import 'package:musbx/model/pitch_class.dart';
+import 'package:musbx/domain/models/music/pitch_class.dart';
 
 enum ChordQuality {
   major(""),

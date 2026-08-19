@@ -3,7 +3,7 @@ import 'dart:io' hide Process;
 
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
-import 'package:musbx/model/chord.dart';
+import 'package:musbx/domain/models/music/chord.dart';
 import 'package:musbx/songs/musbx_api/client.dart';
 import 'package:musbx/songs/musbx_api/jobs/analyze.dart';
 import 'package:musbx/songs/musbx_api/musbx_api.dart';

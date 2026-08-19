@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:musbx/model/pitch.dart';
+import 'package:musbx/domain/models/music/pitch.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/view_model/tuner_reading.dart';
 import 'package:musbx/tuner/waveform_graph.dart';

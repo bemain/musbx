@@ -5,10 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/model/accidental.dart';
-import 'package:musbx/model/pitch.dart';
-import 'package:musbx/model/pitch_class.dart';
-import 'package:musbx/model/temperament.dart';
+import 'package:musbx/domain/models/music/accidental.dart';
+import 'package:musbx/domain/models/music/pitch.dart';
+import 'package:musbx/domain/models/music/pitch_class.dart';
+import 'package:musbx/domain/models/music/temperament.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 
 class TuningSelector extends StatelessWidget {

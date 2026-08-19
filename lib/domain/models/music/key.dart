@@ -1,6 +1,6 @@
-import 'package:musbx/model/accidental.dart';
-import 'package:musbx/model/chroma.dart';
-import 'package:musbx/model/pitch_class.dart';
+import 'package:musbx/domain/models/music/accidental.dart';
+import 'package:musbx/domain/models/music/chroma.dart';
+import 'package:musbx/domain/models/music/pitch_class.dart';
 
 enum KeyType {
   major("", [0, 2, 4, 5, 7, 9, 11]),

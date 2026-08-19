@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart' hide Key;
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/domain/models/music/key.dart';
+import 'package:musbx/domain/models/music/pitch_class.dart';
 import 'package:musbx/drone/drone.dart';
-import 'package:musbx/model/key.dart';
-import 'package:musbx/model/pitch_class.dart';
 
 enum DroneButtonType {
   /// This pitch is the current root.
