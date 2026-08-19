@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
-import 'package:musbx/widgets/widgets.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class LaunchHandler {
@@ -59,9 +59,11 @@ class LaunchHandler {
       _lastVersionLaunched.value = buildNumber.toString();
 
       // Remove old songs since song_history file location has changed
-      await Directories.applicationDocumentsDir(
-        "songs",
-      ).delete(recursive: true);
+      await FileCacheService.instance
+          .applicationDocumentsDir(
+            "songs",
+          )
+          .delete(recursive: true);
     }
   }
 }
