@@ -89,82 +89,84 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
               ),
             ),
             SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Card(
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 20, right: 4),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: feedbackController,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                errorBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                icon: Icon(Symbols.feedback),
-                                labelText: "Give feedback",
+            SafeArea(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Card(
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 20, right: 4),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: feedbackController,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  errorBorder: InputBorder.none,
+                                  disabledBorder: InputBorder.none,
+                                  icon: Icon(Symbols.feedback),
+                                  labelText: "Give feedback",
+                                ),
+                                keyboardType: TextInputType.multiline,
+                                maxLines: null,
                               ),
-                              keyboardType: TextInputType.multiline,
-                              maxLines: null,
                             ),
-                          ),
-                          ListenableBuilder(
-                            listenable: feedbackController,
-                            builder: (context, child) =>
-                                feedbackController.text.trim().isNotEmpty
-                                ? SizedBox()
-                                : IconButton(
-                                    onPressed: () {
-                                      showDialog<void>(
-                                        context: context,
-                                        builder: (context) {
-                                          return _buildFeedbackInfoDialog(
-                                            context,
-                                          );
-                                        },
-                                      );
-                                    },
-                                    icon: Icon(Symbols.info),
-                                  ),
-                          ),
-                        ],
+                            ListenableBuilder(
+                              listenable: feedbackController,
+                              builder: (context, child) =>
+                                  feedbackController.text.trim().isNotEmpty
+                                  ? SizedBox()
+                                  : IconButton(
+                                      onPressed: () {
+                                        showDialog<void>(
+                                          context: context,
+                                          builder: (context) {
+                                            return _buildFeedbackInfoDialog(
+                                              context,
+                                            );
+                                          },
+                                        );
+                                      },
+                                      icon: Icon(Symbols.info),
+                                    ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(width: 8),
-                ListenableBuilder(
-                  listenable: feedbackController,
-                  builder: (context, child) => IconButton.filled(
-                    onPressed: feedbackController.text.trim().isEmpty
-                        ? null
-                        : () async {
-                            await UserFeedback.insert(
-                              FeedbackEntry(
-                                content: feedbackController.text.trim(),
-                              ),
-                            );
-
-                            feedbackController.clear();
-
-                            if (context.mounted) {
-                              showAlertSnackBar(
-                                context,
-                                leading: Icon(Symbols.celebration),
-                                title: Text("Thank you for your feedback!"),
+                  SizedBox(width: 8),
+                  ListenableBuilder(
+                    listenable: feedbackController,
+                    builder: (context, child) => IconButton.filled(
+                      onPressed: feedbackController.text.trim().isEmpty
+                          ? null
+                          : () async {
+                              await UserFeedback.insert(
+                                FeedbackEntry(
+                                  content: feedbackController.text.trim(),
+                                ),
                               );
-                            }
-                          },
-                    icon: Icon(Symbols.send),
-                    padding: EdgeInsets.all(12),
+
+                              feedbackController.clear();
+
+                              if (context.mounted) {
+                                showAlertSnackBar(
+                                  context,
+                                  leading: Icon(Symbols.celebration),
+                                  title: Text("Thank you for your feedback!"),
+                                );
+                              }
+                            },
+                      icon: Icon(Symbols.send),
+                      padding: EdgeInsets.all(12),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
