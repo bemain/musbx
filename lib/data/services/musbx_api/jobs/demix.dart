@@ -1,4 +1,4 @@
-import 'package:musbx/songs/musbx_api/jobs/job.dart';
+import 'package:musbx/data/services/musbx_api/jobs/job.dart';
 import 'package:musbx/utils/utils.dart';
 
 /// Available models for demucs processing.

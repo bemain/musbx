@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/songs/musbx_api/client.dart';
+import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 class NoHostAvailableException implements Exception {

@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:musbx/songs/musbx_api/auth.dart';
-import 'package:musbx/songs/musbx_api/jobs/analyze.dart';
-import 'package:musbx/songs/musbx_api/jobs/demix.dart';
+import 'package:musbx/data/services/musbx_api/auth.dart';
+import 'package:musbx/data/services/musbx_api/jobs/analyze.dart';
+import 'package:musbx/data/services/musbx_api/jobs/demix.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:pub_semver/pub_semver.dart';
 
