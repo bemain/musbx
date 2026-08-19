@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/model/pitch.dart';
 import 'package:musbx/tuner/tuner.dart';
+import 'package:musbx/tuner/view_model/tuner_reading.dart';
 import 'package:musbx/tuner/waveform_graph.dart';
 
 class PitchGraphStyle {
@@ -49,11 +50,11 @@ class PitchGraphStyle {
 }
 
 class PitchGraph extends StatelessWidget {
-  /// Graph showing how the tuning of [frequencyHistory] has changed over time.
+  /// Graph showing how the tuning of [data] has changed over time.
   const PitchGraph({super.key, required this.data});
 
   /// The frequencies to display.
-  final List<RecordingData> data;
+  final List<TunerReading> data;
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +122,7 @@ class PitchGraphPainter extends CustomPainter {
   });
 
   /// The data to render.
-  final List<RecordingData> data;
+  final List<TunerReading> data;
 
   final PitchGraphStyle style;
 
@@ -156,31 +157,31 @@ class PitchGraphPainter extends CustomPainter {
       inTunePaint,
     );
 
-    final List<double?> frequencies = data
+    final List<Pitch?> pitches = data
         .sublist(max(0, data.length - size.width ~/ dataWidth - 3))
-        .map((e) => e.frequency)
+        .map((e) => e.pitch)
         .toList()
         .reversed
         .toList();
 
     int i = 0;
-    for (final pitches in splitFrequenciesByNote(frequencies)) {
-      if (pitches == null) {
+    for (final byNote in splitFrequenciesByNote(pitches)) {
+      if (byNote == null) {
         i++;
         continue;
       }
 
-      _drawChunk(pitches, canvas: canvas, size: size, startIndex: i);
-      i += pitches.length;
+      _drawChunk(byNote, canvas: canvas, size: size, startIndex: i);
+      i += byNote.length;
     }
   }
 
-  /// Split the [frequencies] into smaller chunks, where all frequencies in one chunk are closest to the same [Pitch].
-  List<List<Pitch>?> splitFrequenciesByNote(List<double?> frequencies) {
+  /// Split the [pitches] into smaller chunks, where all frequencies in one chunk are closest to the same [Pitch].
+  List<List<Pitch>?> splitFrequenciesByNote(List<Pitch?> pitches) {
     final List<List<Pitch>?> frequenciesByNote = [];
     List<Pitch> chunk = [];
-    for (double? frequency in frequencies) {
-      if (frequency == null) {
+    for (Pitch? pitch in pitches) {
+      if (pitch == null) {
         if (chunk.isNotEmpty) {
           frequenciesByNote.add(chunk);
           chunk = [];
@@ -189,7 +190,6 @@ class PitchGraphPainter extends CustomPainter {
         continue;
       }
 
-      final Pitch pitch = Tuner.instance.getClosestPitch(frequency);
       if (chunk.isEmpty || pitch.abbreviation == chunk.first.abbreviation) {
         chunk.add(pitch);
       } else {
