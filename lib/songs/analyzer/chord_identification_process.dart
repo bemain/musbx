@@ -3,6 +3,7 @@ import 'dart:io' hide Process;
 
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/analyze.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
@@ -19,15 +20,16 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   final Song song;
 
   /// The file where the chords for this [song] are cached.
-  File get cacheFile => File("${song.cacheDirectory.path}/chords.json");
+  CacheFile get cacheFile => song.cacheDirectory.file("chords.json");
 
   @override
   Future<Map<Duration, Chord?>> execute() async {
     Map<double, String>? data;
     // Check cache
-    if (await cacheFile.exists()) {
+    final String? s = await cacheFile.readString();
+    if (s != null) {
       try {
-        final Json json = jsonDecode(await cacheFile.readAsString()) as Json;
+        final Json json = jsonDecode(s) as Json;
         data = json.map(
           (key, value) => MapEntry(
             double.parse(key),
@@ -48,8 +50,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
       data = await analyzeSource(song.audio, client);
 
       // Save to cache
-      await cacheFile.create(recursive: true);
-      await cacheFile.writeAsString(
+      await cacheFile.writeString(
         jsonEncode(data.map((key, value) => MapEntry("$key", value))),
       );
     }
@@ -72,7 +73,7 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
     final FileHandle file;
     switch (source) {
       case FileAudio() || BytesAudio():
-        file = await client.uploadFile(source.cacheFile!);
+        file = await client.uploadFile(File(source.cacheFile!.path));
       case YtdlpAudio():
         file = await client.uploadYtdlp(source.url);
 

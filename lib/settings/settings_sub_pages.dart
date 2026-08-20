@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
+import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/tuner/tuner.dart';
@@ -79,8 +81,20 @@ class MetronomeSettingsPage extends StatelessWidget {
   }
 }
 
-class SongsSettingsPage extends StatelessWidget {
+class SongsSettingsPage extends StatefulWidget {
   const SongsSettingsPage({super.key});
+
+  @override
+  State<SongsSettingsPage> createState() => _SongsSettingsPageState();
+}
+
+class _SongsSettingsPageState extends State<SongsSettingsPage> {
+  late Future<int> _cacheSize = _measureCache();
+  Future<int> _measureCache() =>
+      FileCacheService.instance.scratch.directory("songs").size();
+  void _refresh() => setState(() {
+    _cacheSize = _measureCache();
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -113,54 +127,66 @@ class SongsSettingsPage extends StatelessWidget {
           children: [
             ListenableBuilder(
               listenable: SongLibrary.history,
-              builder: (context, child) => ListTile(
-                enabled:
-                    SongLibrary.history.entries.isNotEmpty &&
-                    SongLibrary.history.entries.values.every(
-                      (song) => song.hasCache,
-                    ),
-                leading: Icon(Symbols.cloud_off),
-                title: Text("Free up storage"),
-                onTap: () async {
-                  final bool? shouldContinue = await showDialog<bool>(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        icon: Icon(Symbols.cloud_off),
-                        title: Text("Clear cache?"),
-                        content: Text(
-                          "Offloading songs will free up some space on your device. Loading a song will take longer the next time.",
-                        ),
-                        actions: [
-                          FilledButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(false);
-                            },
-                            child: Text("Cancel"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(true);
-                            },
-                            child: Text("Proceed"),
-                          ),
-                        ],
+              builder: (context, child) => FutureBuilder<int>(
+                future: _cacheSize,
+                builder: (context, snapshot) {
+                  final cacheSize = snapshot.data ?? 0;
+
+                  return ListTile(
+                    enabled:
+                        SongLibrary.history.entries.isNotEmpty &&
+                        cacheSize > 0,
+                    leading: Icon(Symbols.cloud_off),
+                    title: Text("Free up storage"),
+                    onTap: () async {
+                      final bool? shouldContinue = await showDialog<bool>(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            icon: Icon(Symbols.cloud_off),
+                            title: Text("Clear cache?"),
+                            content: Text(
+                              "Offloading songs will free up some space on your device. Loading a song will take longer the next time.",
+                            ),
+                            actions: [
+                              FilledButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(false);
+                                },
+                                child: Text("Cancel"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(true);
+                                },
+                                child: Text("Proceed"),
+                              ),
+                            ],
+                          );
+                        },
                       );
+
+                      if (shouldContinue == true) {
+                        // Make sure a song is not open
+                        Navigation.navigationShell.goBranch(
+                          Navigation.currentBranch.value,
+                          initialLocation: true,
+                        );
+
+                        // Remove cache
+                        for (final song
+                            in SongLibrary.history.entries.values) {
+                          DemixingProcesses.cancel(song);
+                        }
+                        await FileCacheService.instance.scratch
+                            .directory("songs")
+                            .delete();
+
+                        if (!mounted) return;
+                        _refresh();
+                      }
                     },
                   );
-
-                  if (shouldContinue == true) {
-                    // Make sure a song is not open
-                    Navigation.navigationShell.goBranch(
-                      Navigation.currentBranch.value,
-                      initialLocation: true,
-                    );
-
-                    for (final song
-                        in SongLibrary.history.entries.values.toList()) {
-                      await song.clearCache();
-                    }
-                  }
                 },
               ),
             ),
@@ -206,6 +232,8 @@ class SongsSettingsPage extends StatelessWidget {
                     );
 
                     await SongLibrary.history.clear();
+                    if (!mounted) return;
+                    _refresh();
                   }
                 },
               ),

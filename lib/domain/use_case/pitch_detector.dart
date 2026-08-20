@@ -38,6 +38,6 @@ class PitchDetector {
 
     if (frequencies.length < averageCount) return null;
 
-    return frequencies.mean();
+    return frequencies.mean;
   }
 }
