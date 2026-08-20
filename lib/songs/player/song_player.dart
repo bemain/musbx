@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
@@ -310,7 +310,7 @@ class MultiPlayer extends SongPlayer {
     // We have to resolve the underlying audio provider for the waveform extraction to work.
     final AudioSource _ = await song.audio.resolve(song: song);
 
-    final Map<StemType, File> files = (await song.cachedStems)!;
+    final Map<StemType, CacheFile> files = (await song.cachedStems)!;
 
     final sources = {
       for (final e in files.entries)

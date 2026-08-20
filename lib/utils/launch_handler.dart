@@ -59,10 +59,8 @@ class LaunchHandler {
       _lastVersionLaunched.value = buildNumber.toString();
 
       // Remove old songs since song_history file location has changed
-      await FileCacheService.instance
-          .applicationDocumentsDir(
-            "songs",
-          )
+      await FileCacheService.instance.persistent
+          .directory("songs")
           .delete(recursive: true);
     }
   }

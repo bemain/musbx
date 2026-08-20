@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/song.dart';
@@ -24,7 +25,7 @@ abstract class AudioProvider {
   }
 
   /// The file where audio data is cached.
-  File? cacheFile;
+  CacheFile? cacheFile;
 
   /// The [SoLoud] [AudioSource] that this provides.
   /// Will be `null` until this has been [resolve]d.
@@ -71,17 +72,19 @@ class YtdlpAudio extends AudioProvider {
 
   @override
   Future<AudioSource> resolve({required Song song}) async {
-    File cacheFile = File("${song.audioDirectory.path}/audio.mp3");
+    CacheFile cacheFile = song.audioDirectory.file("audio.mp3");
 
-    if (!await cacheFile.exists()) {
-      final MusbxApiClient client = await MusbxApi.getClient();
-      final FileHandle handle = await client.uploadYtdlp(
-        url,
-        fileType: "mp3",
-      );
+    await cacheFile.ensure(
+      (scratch) async {
+        final MusbxApiClient client = await MusbxApi.getClient();
+        final FileHandle handle = await client.uploadYtdlp(
+          url,
+          fileType: "mp3",
+        );
 
-      cacheFile = await client.download(handle, cacheFile);
-    }
+        await client.download(handle, scratch);
+      },
+    );
     this.cacheFile = cacheFile;
 
     source ??= await SoLoud.instance.loadFile(cacheFile.path);
@@ -116,18 +119,16 @@ class BytesAudio extends AudioProvider {
 
   @override
   Future<AudioSource> resolve({required Song song}) async {
-    File cacheFile = File("${song.cacheDirectory.path}/audio.mp3");
+    CacheFile cacheFile = song.audioDirectory.file("audio.mp3");
 
-    if (!await cacheFile.exists()) {
+    await cacheFile.ensure((scratch) async {
       if (bytes == null) {
         throw Exception(
           "[AUDIO] No bytes provided when constructing the BytesAudio, and the audio was not found in cache",
         );
       }
-
-      await cacheFile.create(recursive: true);
-      cacheFile = await cacheFile.writeAsBytes(bytes!);
-    }
+      await scratch.writeAsBytes(bytes!);
+    });
     this.cacheFile = cacheFile;
 
     source ??= await SoLoud.instance.loadFile(cacheFile.path);
@@ -154,16 +155,14 @@ class FileAudio extends AudioProvider {
   @override
   Future<AudioSource> resolve({required Song song}) async {
     final extension = file.path.split(".").last;
-    File cacheFile = File("${song.cacheDirectory.path}/audio.$extension");
+    CacheFile cacheFile = song.audioDirectory.file("audio.$extension");
 
-    if (!await cacheFile.exists()) {
+    await cacheFile.ensure((scratch) async {
       if (!await file.exists()) {
         throw FileSystemException("File doesn't exist", file.path);
       }
-
-      await cacheFile.create(recursive: true);
-      cacheFile = await file.copy(cacheFile.path);
-    }
+      await file.copy(scratch.path);
+    });
     this.cacheFile = cacheFile;
 
     source ??= await SoLoud.instance.loadFile(cacheFile.path);

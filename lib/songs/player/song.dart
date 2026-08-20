@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:audio_service/audio_service.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
@@ -79,28 +77,23 @@ class Song {
   Future<bool> get isDemixed async => await cachedStems != null;
 
   /// The demixed audio stems for this song, if any.
-  Future<Map<StemType, File>?> get cachedStems =>
+  Future<Map<StemType, CacheFile>?> get cachedStems =>
       DemixingProcess.getStemsInCache(
         directory: audioDirectory,
       );
 
   /// The directory where files relating to this song are stored.
-  Directory get cacheDirectory =>
-      FileCacheService.instance.temporaryDir("songs/$id");
+  CacheDirectory get cacheDirectory =>
+      FileCacheService.instance.scratch.directory("songs/$id");
 
   /// The directory where audio files for this song are cached.
-  Directory get audioDirectory => Directory("${cacheDirectory.path}/source/");
-
-  /// Whether the cache for this song is not empty.
-  bool get hasCache => audioDirectory.existsSync();
+  CacheDirectory get audioDirectory => cacheDirectory.directory("source");
 
   /// Remove all the cache files relating to this song.
   Future<void> clearCache() async {
     DemixingProcesses.cancel(this);
 
-    if (await cacheDirectory.exists()) {
-      await cacheDirectory.delete(recursive: true);
-    }
+    await cacheDirectory.delete();
   }
 
   @override
