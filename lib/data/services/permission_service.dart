@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:musbx/data/services/service.dart';
 import 'package:musbx/domain/models/permission.dart';
 import 'package:permission_handler/permission_handler.dart' as plugin;
 
@@ -13,18 +14,38 @@ import 'package:permission_handler/permission_handler.dart' as plugin;
 ///
 /// This is stateless. Whether a permission has ever been requested is app
 /// history rather than platform state, and belongs to the layer above.
-class PermissionService {
-  PermissionService._(this._androidDeviceInfo);
+class PermissionService extends OptionalService {
+  PermissionService._(this._androidDeviceInfo, {required this.isEnabled});
+
+  /// Whether the current platform gates access behind permissions at all.
+  ///
+  /// When `false`, nothing is gated and every permission reports as
+  /// [PermissionStatus.unavailable].
+  @override
+  final bool isEnabled;
+
+  /// Information about the device, or `null` off Android and when this service
+  /// is [disabled].
+  final AndroidDeviceInfo? _androidDeviceInfo;
 
   /// Create the service.
   ///
+  /// Returns a [disabled] service on platforms that have no permission model.
   /// Reads the Android version once, since it decides which platform permission
   /// [Permission.audioFiles] maps to.
   static Future<PermissionService> create() async {
+    if (Platform.isLinux || Platform.isMacOS) return disabled();
+
     return PermissionService._(
       Platform.isAndroid ? await DeviceInfoPlugin().androidInfo : null,
+      isEnabled: true,
     );
   }
+
+  /// A service for platforms that gate nothing, where every permission reports
+  /// as [PermissionStatus.unavailable].
+  static PermissionService disabled() =>
+      PermissionService._(null, isEnabled: false);
 
   // TODO: Remove once we introduce `provider`.
   static late final PermissionService instance;
@@ -32,19 +53,15 @@ class PermissionService {
     instance = await create();
   }
 
-  final AndroidDeviceInfo? _androidDeviceInfo;
-
-  /// Whether the current platform has no permissions for the app to query.
-  /// Access is ungated there, so every permission is [PermissionStatus.unavailable].
-  bool get _isUnavailable => Platform.isLinux || Platform.isMacOS;
-
   /// The current status of [permission], without prompting the user.
   ///
   /// On Android this never returns [PermissionStatus.permanentlyDenied]; the
   /// platform only reveals that in the result of a [request]. Callers that need
   /// to tell the two apart have to remember whether they have requested before.
+  ///
+  /// Always [PermissionStatus.unavailable] when this service is [disabled].
   Future<PermissionStatus> status(Permission permission) async {
-    if (_isUnavailable) return PermissionStatus.unavailable;
+    if (!isEnabled) return PermissionStatus.unavailable;
     return _fromPluginStatus(await _fromAppPermission(permission).status);
   }
 
@@ -53,16 +70,20 @@ class PermissionService {
   ///
   /// No prompt is shown if the permission is already granted or permanently
   /// denied, in which case the current status is returned unchanged.
+  ///
+  /// Always [PermissionStatus.unavailable] when this service is [disabled].
   Future<PermissionStatus> request(Permission permission) async {
-    if (_isUnavailable) return PermissionStatus.unavailable;
+    if (!isEnabled) return PermissionStatus.unavailable;
     return _fromPluginStatus(await _fromAppPermission(permission).request());
   }
 
-  /// Opens the app settings page.
+  /// Opens the app settings page, where the user can grant a permission the
+  /// system will no longer prompt for.
   ///
-  /// Returns whether the app settings page could be opened.
+  /// Returns whether the page could be opened, which is always `false` when
+  /// this service is [disabled].
   Future<bool> openSettings() async {
-    if (_isUnavailable) return false;
+    if (!isEnabled) return false;
     return plugin.openAppSettings();
   }
 

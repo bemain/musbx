@@ -4,6 +4,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/ads_service.dart';
 import 'package:musbx/data/services/analytics_service.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
@@ -15,7 +16,6 @@ import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/links.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/purchases.dart';
-import 'package:musbx/widgets/ads.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +25,7 @@ Future<void> main() async {
   await Database.initialize();
   await PermissionService.initialize();
   await AnalyticsService.initialize();
+  await AdsService.initialize();
   await Purchases.intialize();
 
   await Songs.initialize();
@@ -33,9 +34,6 @@ Future<void> main() async {
   Links.initialize();
 
   await LaunchHandler.initialize();
-
-  // Google Ads
-  unawaited(Ads.initialize());
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
