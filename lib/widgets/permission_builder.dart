@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/data/services/permission_service.dart';
+import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/widgets/widgets.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class PermissionBuilder extends StatefulWidget {
   /// Allow the user to grant or deny a [permission].
@@ -81,7 +82,8 @@ class PermissionBuilderState extends State<PermissionBuilder>
   Widget build(BuildContext context) {
     if (status == null) return const LoadingPage(text: "");
 
-    if (status == PermissionStatus.granted) {
+    if (status == PermissionStatus.granted ||
+        status == PermissionStatus.unavailable) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => widget.onPermissionGranted(),
       );
@@ -92,12 +94,19 @@ class PermissionBuilderState extends State<PermissionBuilder>
       );
     }
 
+    if (status == PermissionStatus.restricted) {
+      return buildPermissionDeniedPage(
+        additionalInfoText:
+            "Permission cannot be granted, for example due to parental controls.",
+      );
+    }
+
     if (status == PermissionStatus.permanentlyDenied) {
       return buildPermissionDeniedPage(
         additionalInfoText:
             "You need to give this permission from the System Settings.",
         buttonText: "Open Settings",
-        onButtonPressed: openAppSettings,
+        onButtonPressed: PermissionService.instance.openSettings,
       );
     }
 
@@ -111,7 +120,7 @@ class PermissionBuilderState extends State<PermissionBuilder>
     // [Permission.status] is unable to return [PermissionStatus.permanentlyDenied]
     // (see https://github.com/Baseflow/flutter-permission-handler/issues/568)
     // Therefore, this won't return status correctly, but it still works fine.
-    var status = await widget.permission.status;
+    var status = await PermissionService.instance.status(widget.permission);
     if (mounted) {
       setState(() {
         this.status = status;
@@ -120,7 +129,7 @@ class PermissionBuilderState extends State<PermissionBuilder>
   }
 
   Future<void> requestPermission() async {
-    var status = await widget.permission.request();
+    var status = await PermissionService.instance.request(widget.permission);
     if (mounted) {
       setState(() {
         this.status = status;
@@ -130,8 +139,8 @@ class PermissionBuilderState extends State<PermissionBuilder>
 
   Widget buildPermissionDeniedPage({
     String? additionalInfoText,
-    required String buttonText,
-    required void Function() onButtonPressed,
+    String? buttonText,
+    void Function()? onButtonPressed,
   }) {
     additionalInfoText = (additionalInfoText != null)
         ? "\n\n$additionalInfoText"
@@ -154,10 +163,11 @@ class PermissionBuilderState extends State<PermissionBuilder>
                 textAlign: TextAlign.center,
               ),
             ),
-            OutlinedButton(
-              onPressed: onButtonPressed,
-              child: Text(buttonText),
-            ),
+            if (buttonText != null)
+              OutlinedButton(
+                onPressed: onButtonPressed,
+                child: Text(buttonText),
+              ),
           ],
         ),
       ),

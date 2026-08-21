@@ -1,17 +1,16 @@
 import 'dart:io' show Platform, File;
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/permission_builder.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 const List<String> allowedExtensions = [
   "mp3",
@@ -68,25 +67,14 @@ class UploadSongButton extends SpeedDialChild {
   }
 
   Future<void> pushPermissionBuilder(BuildContext context) async {
-    // On Android sdk 33 or greater, use of granular permissions is required
-    final bool useGranularPermissions = !Platform.isAndroid
-        ? false
-        : (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 33;
-
-    if (!context.mounted) return;
-
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => Scaffold(
           body: PermissionBuilder(
-            permission: (useGranularPermissions)
-                ? Permission.audio
-                : Permission.storage,
-            permissionName: (useGranularPermissions || Platform.isIOS)
-                ? "audio files"
-                : "external storage",
+            permission: Permission.audioFiles,
+            permissionName: "audio files",
             permissionText:
-                "To load audio from the device, give the app permission to access ${(useGranularPermissions || Platform.isIOS) ? "external storage" : "audio files"}.",
+                "To load audio from the device, give the app permission to access audio files.",
             permissionDeniedIcon: const Icon(
               Symbols.storage_rounded,
               size: 128,

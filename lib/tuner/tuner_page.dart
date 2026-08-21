@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/tuner/pitch_graph.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/tuner_gauge.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/flat_card.dart';
 import 'package:musbx/widgets/permission_builder.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class TunerPage extends StatefulWidget {
   /// Page that detects the pitch from the microphone and displays it.
