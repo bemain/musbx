@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:musbx/data/services/purchase_service.dart';
+import 'package:musbx/domain/models/entitlement.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
 class AccessRestrictedException implements Exception {
@@ -19,112 +20,64 @@ class AccessRestrictedException implements Exception {
 }
 
 class Purchases {
-  static final InAppPurchase _inAppPurchase = InAppPurchase.instance;
-
   /// Whether the payment platform is ready and available.
   static bool isAvailable = false;
-
-  /// ID of the 'premium' product.
-  static const String _premiumID = "premium";
 
   /// Whether the user has bought the 'premium' product that unlocks access to premium features of the app.
   static bool get hasPremium => hasPremiumNotifier.value;
   static final ValueNotifier<bool> hasPremiumNotifier = ValueNotifier(false);
 
   static Future<void> intialize() async {
-    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isMacOS) {
+    if (!PurchaseService.instance.isEnabled) {
       debugPrint("[PURCHASES] The current platform is not supported");
       isAvailable = false;
       hasPremiumNotifier.value = true;
       return;
     }
 
-    try {
-      isAvailable = await _inAppPurchase.isAvailable();
-    } catch (e) {
-      debugPrint("[PURCHASES] An error occured during intialization: $e");
-      isAvailable = false;
-    }
+    PurchaseService.instance.statusStream.listen(
+      (record) => _processStatus(record.$1, record.$2),
+    );
 
-    if (!isAvailable) {
-      // Payments are only supported on mobile. On other platforms, simply enable premium.
-      hasPremiumNotifier.value = true;
-      return;
-    }
-
-    _inAppPurchase.purchaseStream.listen((newPurchases) async {
-      for (PurchaseDetails purchase in newPurchases) {
-        await _processPurchase(purchase);
-      }
-    });
-
-    await _inAppPurchase.restorePurchases();
+    await restore();
   }
 
   /// Restore all previous purchases.
-  static Future<void> restore() async {
-    if (!isAvailable) return;
-    await _inAppPurchase.restorePurchases();
-  }
+  static Future<void> restore() => PurchaseService.instance.restore();
 
-  static Future<void> _processPurchase(PurchaseDetails purchase) async {
-    switch (purchase.status) {
-      case PurchaseStatus.purchased:
-      case PurchaseStatus.restored:
-        if (!await _verifyPurchase(purchase)) break;
-
-        switch (purchase.productID) {
-          case _premiumID:
+  static Future<void> _processStatus(
+    Entitlement entitlement,
+    EntitlementStatus status,
+  ) async {
+    switch (entitlement) {
+      case Entitlement.premium:
+        switch (status) {
+          case EntitlementStatus.purchased:
             debugPrint("[PURCHASES] Premium features unlocked");
             hasPremiumNotifier.value = true;
-        }
-
-      case PurchaseStatus.pending:
-        // On iOS, the pending status is emitted immediately when the native payment dialog opens.
-        // On Android, it is emitted once the user has paid but the payment hasn't been verified yet.s
-        switch (purchase.productID) {
-          case _premiumID:
-            if (Platform.isAndroid) {
+            if (Platform.isIOS) {
               unawaited(
                 showExceptionDialog(const PremiumPurchasedDialog()),
               );
             }
-        }
 
-      case PurchaseStatus.canceled:
-        break;
-      case PurchaseStatus.error:
-        switch (purchase.productID) {
-          case _premiumID:
-            debugPrint(
-              "[PURCHASES] Buying Premium failed: ${purchase.error?.message ?? "Cancelled"}",
-            );
-            unawaited(
-              showExceptionDialog(const PremiumPurchaseFailedDialog()),
-            );
-        }
-    }
+          case EntitlementStatus.pending:
+            // On iOS, the pending status is emitted immediately when the native payment dialog opens.
+            // On Android, it is emitted once the user has paid but the payment hasn't been verified yet.
+            switch (entitlement) {
+              case Entitlement.premium:
+                if (Platform.isAndroid) {
+                  unawaited(
+                    showExceptionDialog(const PremiumPurchasedDialog()),
+                  );
+                }
+            }
 
-    if (purchase.pendingCompletePurchase) {
-      await _inAppPurchase.completePurchase(purchase);
+          default:
+        }
     }
   }
 
-  static Future<bool> buyPremium() async {
-    if (!isAvailable) return false;
-
-    final response = await _inAppPurchase.queryProductDetails({_premiumID});
-    final ProductDetails? details = response.productDetails.firstOrNull;
-    if (details == null) return false;
-
-    return await _inAppPurchase.buyNonConsumable(
-      purchaseParam: PurchaseParam(productDetails: details),
-    );
-  }
-
-  static Future<bool> _verifyPurchase(PurchaseDetails purchase) async {
-    // TODO: Validate purchase
-    // See https://stackoverflow.com/questions/73322404/how-to-perform-the-verification-off-the-in-app-purchase
-    return true;
-  }
+  static Future<bool> buyPremium() =>
+      PurchaseService.instance.buy(Entitlement.premium);
 }
