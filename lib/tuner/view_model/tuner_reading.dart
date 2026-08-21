@@ -1,4 +1,4 @@
-import 'package:musbx/data/models/audio_frame.dart';
+import 'package:musbx/domain/models/audio_frame.dart';
 import 'package:musbx/domain/models/music/pitch.dart';
 
 class TunerReading {
