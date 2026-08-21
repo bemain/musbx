@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:musbx/analytics.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/permission_service.dart';
 import 'package:musbx/database/database.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
@@ -21,8 +22,8 @@ Future<void> main() async {
 
   await PersistentValue.initialize();
   await FileCacheService.initialize();
-
   await Database.initialize();
+  await PermissionService.initialize();
   await Analytics.initialize();
   await Purchases.intialize();
 
