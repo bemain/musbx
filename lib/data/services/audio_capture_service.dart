@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_recorder/flutter_recorder.dart';
-import 'package:musbx/data/models/audio_frame.dart';
+import 'package:musbx/domain/models/audio_frame.dart';
 
 /// Service for capturing audio from the microphone.
 class AudioCaptureService {
