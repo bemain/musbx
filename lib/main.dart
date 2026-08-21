@@ -4,7 +4,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_plus/material_plus.dart';
-import 'package:musbx/analytics.dart';
+import 'package:musbx/data/services/analytics_service.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
 import 'package:musbx/database/database.dart';
@@ -24,7 +24,7 @@ Future<void> main() async {
   await FileCacheService.initialize();
   await Database.initialize();
   await PermissionService.initialize();
-  await Analytics.initialize();
+  await AnalyticsService.initialize();
   await Purchases.intialize();
 
   await Songs.initialize();
