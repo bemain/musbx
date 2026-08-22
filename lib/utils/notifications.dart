@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/domain/notification.dart';
 import 'package:musbx/metronome/metronome.dart';
@@ -22,10 +22,11 @@ class Notifications {
   ///
   /// We don't want to be too intrusive, so notification permission is only
   /// requested when the user presses the play button for the first time ever.
-  static PersistentValue<bool> hasRequestedPermission = PersistentValue(
-    "metronome/hasRequestedPermission",
-    initialValue: false,
-  );
+  static PersistentValue<bool> hasRequestedPermission =
+      SharedPreferencesService.instance.value(
+        "metronome/hasRequestedPermission",
+        initialValue: false,
+      );
 
   /// Initialize the notifications service.
   static Future<void> initialize() async {

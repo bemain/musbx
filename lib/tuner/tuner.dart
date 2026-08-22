@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/audio_capture_service.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/music/accidental.dart';
 import 'package:musbx/domain/models/music/pitch.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
@@ -56,8 +56,8 @@ class Tuner {
   /// Defaults to [Pitch.a440].
   Pitch get tuning => tuningNotifier.value;
   set tuning(Pitch value) => tuningNotifier.value = value;
-  final ValueNotifier<Pitch> tuningNotifier =
-      TransformedPersistentValue<Pitch, String>(
+  final ValueNotifier<Pitch> tuningNotifier = SharedPreferencesService.instance
+      .transformed<Pitch, String>(
         "tuner/tuning",
         initialValue: const Pitch(PitchClass.a(), 4, 440),
         from: Pitch.parse,
@@ -78,7 +78,7 @@ class Tuner {
   set preferredAccidental(Accidental value) =>
       preferredAccidentalNotifier.value = value;
   final ValueNotifier<Accidental> preferredAccidentalNotifier =
-      TransformedPersistentValue<Accidental, String>(
+      SharedPreferencesService.instance.transformed<Accidental, String>(
         "tuner/accidental",
         initialValue: Accidental.natural,
         to: (accidental) => accidental.name,

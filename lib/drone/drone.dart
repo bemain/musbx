@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/music/pitch.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
 import 'package:musbx/domain/models/music/temperament.dart';
@@ -29,7 +29,7 @@ class Drone {
   Pitch get tuning => tuningNotifier.value;
   set tuning(Pitch value) => tuningNotifier.value = value;
   late final ValueNotifier<Pitch> tuningNotifier =
-      TransformedPersistentValue<Pitch, String>(
+      SharedPreferencesService.instance.transformed<Pitch, String>(
         "drone/tuning",
         initialValue: const Pitch(PitchClass.a(), 4, 440),
         from: Pitch.parse,
@@ -42,7 +42,7 @@ class Drone {
   WaveForm get waveform => waveformNotifier.value;
   set waveform(WaveForm value) => waveformNotifier.value = value;
   late final ValueNotifier<WaveForm> waveformNotifier =
-      TransformedPersistentValue<WaveForm, String>(
+      SharedPreferencesService.instance.transformed<WaveForm, String>(
         "drone/waveform",
         initialValue: WaveForm.sin,
         to: (waveform) => waveform.name,
@@ -58,10 +58,11 @@ class Drone {
 
   Pitch get root => tuning.transposed(rootStepNotifier.value);
   set root(Pitch value) => rootStepNotifier.value = tuning.semitonesTo(value);
-  late final ValueNotifier<int> rootStepNotifier = PersistentValue(
-    "drone/root",
-    initialValue: -12,
-  )..addListener(_onPitchesChanged);
+  late final ValueNotifier<int> rootStepNotifier =
+      SharedPreferencesService.instance.value(
+        "drone/root",
+        initialValue: -12,
+      )..addListener(_onPitchesChanged);
 
   /// The temperament used for generating pitches
   Temperament get temperament => temperamentNotifier.value;
@@ -78,7 +79,7 @@ class Drone {
   List<int> get intervals => List.unmodifiable(intervalsNotifier.value);
   set intervals(List<int> value) => intervalsNotifier.value = value;
   late final ValueNotifier<List<int>> intervalsNotifier =
-      TransformedPersistentValue<List<int>, List<String>>(
+      SharedPreferencesService.instance.transformed<List<int>, List<String>>(
         "drone/intervals",
         initialValue: [],
         from: (strings) => [for (final s in strings) int.parse(s)],

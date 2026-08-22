@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/services/analytics_service.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/settings/settings_page.dart';
@@ -42,10 +42,12 @@ class Routes {
 
 class Navigation {
   // The current shell branch. This is persisted across app restarts.
-  static final PersistentValue<int> currentBranch = PersistentValue(
-    "currentBranch",
-    initialValue: 1,
-  );
+  static final PersistentValue<int> currentBranch = SharedPreferencesService
+      .instance
+      .value(
+        "currentBranch",
+        initialValue: 1,
+      );
 
   /// The key for the navigator used by the app.
   ///

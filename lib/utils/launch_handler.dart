@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class LaunchHandler {
@@ -39,10 +39,11 @@ class LaunchHandler {
   static late int? previousBuildNumber;
 
   /// The version of the app the last time it was launched.
-  static final PersistentValue<String> _lastVersionLaunched = PersistentValue(
-    "lastVersionLaunched",
-    initialValue: "0",
-  );
+  static final PersistentValue<String> _lastVersionLaunched =
+      SharedPreferencesService.instance.value(
+        "lastVersionLaunched",
+        initialValue: "0",
+      );
 
   /// Called whenever the app launches.
   static Future<void> onLaunch() async {}
@@ -55,7 +56,7 @@ class LaunchHandler {
 
     if (buildNumber >= 39 && (previousBuildNumber ?? 0) < 39) {
       // Remove old settings
-      await PersistentValue.preferences.clear();
+      await SharedPreferencesService.instance.clear();
       _lastVersionLaunched.value = buildNumber.toString();
 
       // Remove old songs since song_history file location has changed
