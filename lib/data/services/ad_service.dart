@@ -46,8 +46,8 @@ class _AdUnits {
 ///
 /// Ads are optional. [disabled] returns a service that loads nothing, so a
 /// platform without an ad SDK behaves like a user who has paid to remove ads.
-class AdsService extends OptionalService {
-  AdsService._(this._adUnits);
+class AdService extends OptionalService {
+  AdService._(this._adUnits);
 
   @override
   bool get isEnabled => _adUnits != null;
@@ -60,19 +60,19 @@ class AdsService extends OptionalService {
   /// Returns a [disabled] service on platforms that have no ad SDK. Throws if
   /// the SDK is available but fails to initialize; since ads are optional,
   /// callers should fall back to [disabled] rather than propagate that.
-  static Future<AdsService> create() async {
+  static Future<AdService> create() async {
     if (!Platform.isAndroid && !Platform.isIOS) return disabled();
 
     await MobileAds.instance.initialize();
 
-    return AdsService._(_AdUnits.forPlatform(Platform.operatingSystem));
+    return AdService._(_AdUnits.forPlatform(Platform.operatingSystem));
   }
 
   /// A service that loads no ads, for when ads are unavailable or switched off.
-  static AdsService disabled() => AdsService._(null);
+  static AdService disabled() => AdService._(null);
 
   // TODO: Remove once we introduce `provider`.
-  static late final AdsService instance;
+  static late final AdService instance;
   static Future<void> initialize() async {
     try {
       instance = await create();

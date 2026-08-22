@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:musbx/data/services/ads_service.dart';
+import 'package:musbx/data/services/ad_service.dart';
 
 class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({super.key});
@@ -44,7 +44,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   /// Load a banner ad.
   Future<void> _loadAd(int width) async {
-    final ad = await AdsService.instance.loadBanner(width: width);
+    final ad = await AdService.instance.loadBanner(width: width);
     if (ad == null) return;
     if (!mounted) {
       await ad.dispose();
