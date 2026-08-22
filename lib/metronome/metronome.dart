@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/domain/notification.dart';
 import 'package:musbx/utils/notifications.dart';
 
 /// A sound used by the metronome.
@@ -193,39 +192,25 @@ class Metronome {
   Future<void> updateNotification() async {
     if (!showNotification) return;
 
-    await Notifications.create(
-      content: NotificationContent(
-        id: 0,
-        channelKey: "metronome-controls",
-        title: 'Metronome',
+    await Notifications.post(
+      AppNotification(
+        channel: NotificationChannel.metronomeControls,
+        title: "Metronome",
         summary: isPlaying ? "Playing" : "Paused",
         body: "$higher ${higher == 1 ? "beat" : "beats"} • $bpm bpm",
-        color: Colors.transparent,
-        category: NotificationCategory.Transport,
-        actionType: ActionType.Default,
-        notificationLayout: NotificationLayout.Default,
-        showWhen: false,
-        autoDismissible: false,
-        displayOnForeground: Platform.isIOS ? false : true,
+        actions: [
+          if (!isPlaying)
+            NotificationAction(
+              key: "play",
+              label: "Play",
+            ),
+          if (isPlaying)
+            NotificationAction(
+              key: "pause",
+              label: "Pause",
+            ),
+        ],
       ),
-      actionButtons: [
-        if (!isPlaying)
-          NotificationActionButton(
-            key: "play",
-            label: "Play",
-            actionType: ActionType.KeepOnTop,
-            autoDismissible: false,
-            showInCompactView: true,
-          ),
-        if (isPlaying)
-          NotificationActionButton(
-            key: "pause",
-            label: "Pause",
-            actionType: ActionType.KeepOnTop,
-            autoDismissible: false,
-            showInCompactView: true,
-          ),
-      ],
     );
   }
 }

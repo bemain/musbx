@@ -32,20 +32,16 @@ class MetronomeNotificationIndicator extends StatelessWidget {
   Future<void> _requestPermission(BuildContext context) async {
     if (Notifications.hasPermission) return;
 
-    if (await Notifications.shouldShowRationale()) {
-      if (!context.mounted) return;
-      final bool mayRequestPermission =
-          await showDialog(
-            context: context,
-            builder: (context) => const NotificationPermissionRationale(),
-          ) ??
-          false;
-      if (!mayRequestPermission) return;
-    }
+    if (!context.mounted) return;
+    final bool mayRequestPermission =
+        await showDialog(
+          context: context,
+          builder: (context) => const NotificationPermissionRationale(),
+        ) ??
+        false;
+    if (!mayRequestPermission) return;
 
-    await Notifications.requestPermission();
-
-    if (Notifications.hasPermission) {
+    if (await Notifications.requestPermission()) {
       // When permission is given, we assume the user wants us to show a notification.
       Metronome.instance.showNotification = true;
     }

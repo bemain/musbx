@@ -36,7 +36,7 @@ class Purchases {
     }
 
     PurchaseService.instance.statusStream.listen(
-      (record) => _processStatus(record.$1, record.$2),
+      (record) => _processStatus(record.entitlement, record.status),
     );
 
     await restore();
