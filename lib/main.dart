@@ -7,6 +7,7 @@ import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/ad_service.dart';
 import 'package:musbx/data/services/analytics_service.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
 import 'package:musbx/data/services/purchase_service.dart';
 import 'package:musbx/database/database.dart';
@@ -31,6 +32,7 @@ Future<void> main() async {
   await Purchases.intialize();
 
   await Songs.initialize();
+  await NotificationService.initialize();
   await Notifications.initialize();
 
   Links.initialize();

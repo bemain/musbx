@@ -67,9 +67,10 @@ class PurchaseService extends OptionalService {
 
   final _statusController =
       StreamController<
-        (Entitlement entitlement, EntitlementStatus status)
+        ({Entitlement entitlement, EntitlementStatus status})
       >.broadcast();
-  StreamSubscription<(Entitlement, EntitlementStatus)>? _subscription;
+  StreamSubscription<({Entitlement entitlement, EntitlementStatus status})>?
+  _subscription;
 
   /// Entitlement statuses reported by the store, as they happen.
   ///
@@ -83,7 +84,7 @@ class PurchaseService extends OptionalService {
   ///
   /// A late listener does not receive earlier statuses, so callers that need to
   /// know the current status have to keep track of it themselves.
-  Stream<(Entitlement entitlement, EntitlementStatus status)>
+  Stream<({Entitlement entitlement, EntitlementStatus status})>
   get statusStream => _statusController.stream;
 
   /// Restore purchases the user has already made, for example after
@@ -128,26 +129,18 @@ class PurchaseService extends OptionalService {
     );
   }
 
-  /// The store product that sells each entitlement.
-  ///
-  /// Product ids identify the entitlement to the store and never leave this
-  /// service; the rest of the app deals in [Entitlement].
-  final Map<Entitlement, String> _productIds = {
-    Entitlement.premium: "premium",
+  String _productIdOf(Entitlement entitlement) => switch (entitlement) {
+    Entitlement.premium => "premium",
   };
-
-  String? _entitlementToProduct(Entitlement entitlement) =>
-      _productIds[entitlement];
-
-  Entitlement? _productToEntitlement(String productId) =>
-      _productIds.keys.where((k) => _productIds[k] == productId).firstOrNull;
+  Entitlement? _entitlementOf(String productId) => Entitlement.values
+      .where((entitlement) => _productIdOf(entitlement) == productId)
+      .firstOrNull;
 
   /// Ask the store to describe the product that sells [entitlement].
   Future<ProductDetails?> _details(Entitlement entitlement) async {
     if (_inAppPurchase == null) return null;
 
-    final id = _entitlementToProduct(entitlement);
-    if (id == null) return null;
+    final id = _productIdOf(entitlement);
     final response = await _inAppPurchase.queryProductDetails({id});
     return response.productDetails.firstOrNull;
   }
@@ -158,35 +151,48 @@ class PurchaseService extends OptionalService {
   /// recognize. A transaction that is never completed stays in the store's
   /// queue: it is redelivered on every launch, and blocks any later attempt to
   /// buy the same product.
-  Stream<(Entitlement, EntitlementStatus)> _processPurchases(
+  Stream<({Entitlement entitlement, EntitlementStatus status})>
+  _processPurchases(
     Stream<List<PurchaseDetails>> purchaseStream,
   ) async* {
     await for (final purchases in purchaseStream) {
       for (final purchase in purchases) {
-        final entitlement = _productToEntitlement(purchase.productID);
+        final entitlement = _entitlementOf(purchase.productID);
         if (entitlement != null) {
           switch (purchase.status) {
             case PurchaseStatus.purchased || PurchaseStatus.restored:
               if (!await _verifyPurchase(purchase)) break;
 
-              yield (entitlement, EntitlementStatus.purchased);
+              yield (
+                entitlement: entitlement,
+                status: EntitlementStatus.purchased,
+              );
 
             case PurchaseStatus.pending:
               // On iOS, the pending status is emitted immediately when the native payment dialog opens.
               // On Android, it is emitted once the user has paid but the payment hasn't been verified yet.
               if (Platform.isAndroid) {
-                yield (entitlement, EntitlementStatus.pending);
+                yield (
+                  entitlement: entitlement,
+                  status: EntitlementStatus.pending,
+                );
               }
 
             case PurchaseStatus.canceled:
-              yield (entitlement, EntitlementStatus.notPurchased);
+              yield (
+                entitlement: entitlement,
+                status: EntitlementStatus.notPurchased,
+              );
 
             case PurchaseStatus.error:
               debugPrint(
                 "[PURCHASES] Purchasing $entitlement failed: "
                 "${purchase.error?.message ?? "no message given"}",
               );
-              yield (entitlement, EntitlementStatus.notPurchased);
+              yield (
+                entitlement: entitlement,
+                status: EntitlementStatus.notPurchased,
+              );
           }
         }
         if (purchase.pendingCompletePurchase) {
