@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/database/announcement.dart';
 import 'package:musbx/database/feedback.dart';
 import 'package:musbx/utils/feedback.dart';
@@ -49,7 +50,7 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
   late final PersistentValue<String>? sentResponse =
       widget.announcement == null
       ? null
-      : PersistentValue<String>(
+      : SharedPreferencesService.instance.value<String>(
           "announcements/${widget.announcement!.id}/response",
           initialValue: "",
         );

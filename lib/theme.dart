@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 
 class AppTheme {
@@ -12,7 +12,7 @@ class AppTheme {
   /// The theme mode currently used by the app.
   static ThemeMode get themeMode => themeModeNotifier.value;
   static final TransformedPersistentValue<ThemeMode, String>
-  themeModeNotifier = TransformedPersistentValue(
+  themeModeNotifier = SharedPreferencesService.instance.transformed(
     "theme/mode",
     initialValue: ThemeMode.system,
     to: (value) => value.name,

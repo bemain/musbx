@@ -10,6 +10,7 @@ import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
 import 'package:musbx/data/services/purchase_service.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/database/database.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
@@ -22,7 +23,7 @@ import 'package:musbx/utils/purchases.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await PersistentValue.initialize();
+  await SharedPreferencesService.initialize();
   await FileCacheService.initialize();
   await Database.initialize();
   await PermissionService.initialize();

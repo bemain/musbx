@@ -1,4 +1,4 @@
-import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/database/announcement.dart';
 import 'package:musbx/database/database.dart';
 
@@ -7,7 +7,7 @@ class Announcements {
 
   /// The last time the announcements were read.
   static final TransformedPersistentValue<DateTime, String> readAt =
-      TransformedPersistentValue(
+      SharedPreferencesService.instance.transformed(
         "announcements/readAt",
         initialValue: DateTime.now(),
         from: (value) => DateTime.parse(value),
