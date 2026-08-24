@@ -1,185 +1,19 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html_unescape/html_unescape.dart';
-import 'package:http/http.dart' as http;
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/models/soundcloud_track.dart';
+import 'package:musbx/data/services/soundcloud_api_client.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/search_bar.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/utils/history_handler.dart';
-import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/widgets.dart';
 
-/// Represents a transcoding format for a SoundCloud track.
-class SoundCloudTrackTranscoding {
-  /// The URL to access this transcoding format.
-  final String url;
-
-  /// The MIME type of the audio format (e.g., "audio/mpeg").
-  final String mimeType;
-
-  /// The protocol used for streaming (e.g., "progressive" for direct download).
-  final String protocol;
-
-  /// The quality level of this transcoding (e.g., "sq", "hq").
-  final String quality;
-
-  /// Creates a new [SoundCloudTrackTranscoding] instance.
-  SoundCloudTrackTranscoding({
-    required this.url,
-    required this.mimeType,
-    required this.protocol,
-    required this.quality,
-  });
-
-  /// Creates a [SoundCloudTrackTranscoding] from a JSON object.
-  factory SoundCloudTrackTranscoding.fromJson(Json json) {
-    return SoundCloudTrackTranscoding(
-      url: json['url'] as String,
-      mimeType: json['format']['mime_type'] as String,
-      protocol: json['format']['protocol'] as String,
-      quality: json['quality'] as String,
-    );
-  }
-}
-
-/// Represents a SoundCloud track with all its metadata and streaming information.
-class SoundCloudTrack {
-  /// The unique identifier for this track on SoundCloud.
-  final int id;
-
-  /// The title of the track.
-  final String title;
-
-  /// The username of the track's creator/artist.
-  final String username;
-
-  /// URL to the track's artwork image, if available.
-  final String? artworkUrl;
-
-  /// URL to the track's waveform.
-  final String? waveformUrl;
-
-  /// The permalink URL to view this track on SoundCloud.
-  final String permalinkUrl;
-
-  /// The duration of the track.
-  final Duration duration;
-
-  /// Whether the track can be streamed.
-  final bool streamable;
-
-  /// Whether the track is available for download.
-  final bool downloadable;
-
-  /// The policy of the track (e.g. SNIP for tracks that only provide a preview).
-  final String policy;
-
-  /// List of available transcoding formats for this track.
-  final List<SoundCloudTrackTranscoding> transcodings;
-
-  SoundCloudTrack({
-    required this.id,
-    required this.title,
-    required this.username,
-    this.artworkUrl,
-    this.waveformUrl,
-    required this.permalinkUrl,
-    required this.duration,
-    this.streamable = false,
-    this.downloadable = false,
-    required this.policy,
-    required this.transcodings,
-  });
-
-  /// Creates a [SoundCloudTrack] from a JSON object.
-  factory SoundCloudTrack.fromJson(Json json) {
-    return SoundCloudTrack(
-      id: json['id'] as int? ?? 0,
-      title: json['title'] as String? ?? "Unknown Title",
-      username: json['user']?['username'] as String? ?? "Unknown Artist",
-      artworkUrl: json['artwork_url'] as String?,
-      waveformUrl: json['waveform_url'] as String?,
-      permalinkUrl: json['permalink_url'] as String? ?? "",
-      duration: Duration(milliseconds: json['duration'] as int? ?? 0),
-      streamable: json['streamable'] as bool? ?? false,
-      downloadable: json['downloadable'] as bool? ?? false,
-      policy: json['policy'] as String? ?? "UNKNOWN",
-      transcodings:
-          (json['media']['transcodings'] as List<dynamic>?)
-              ?.map((e) => SoundCloudTrackTranscoding.fromJson(e as Json))
-              .toList() ??
-          [],
-    );
-  }
-
-  /// Returns the duration formatted as "MM:SS".
-  String get durationFormatted {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds.remainder(60);
-    return "$minutes:${seconds.toString().padLeft(2, "0")}";
-  }
-
-  /// Gets the actual download URL for this track.
-  ///
-  /// This method performs an additional API call to resolve the streaming URL
-  /// from SoundCloud's transcoding system. It prefers MP3 format with
-  /// progressive protocol for direct downloading.
-  Future<Uri> getDownloadUrl() async {
-    final Uri uri =
-        Uri.parse(
-          transcodings
-              .firstWhere(
-                (t) =>
-                    t.mimeType == "audio/mpeg" && t.protocol == "progressive",
-              )
-              .url,
-        ).replace(
-          queryParameters: {
-            "client_id": await SoundCloudSearch.clientId,
-          },
-        );
-
-    final res = await http.get(uri);
-    if (res.statusCode != 200) {
-      throw Exception(
-        "Failed to get SoundCloud download URL: ${res.statusCode}",
-      );
-    }
-
-    return Uri.parse(json.decode(res.body)['url'] as String);
-  }
-}
-
-/// Provides functionality for searching and selecting SoundCloud tracks.
+/// Provides functionality for searching and downloading SoundCloud tracks.
 class SoundCloudSearch {
-  /// Base URL for SoundCloud's API.
-  static const String _baseUrl = "https://api-v2.soundcloud.com";
-
-  /// The SoundCloud client ID used for requests.
-  static Future<String> clientId = generateClientId();
-
-  /// Generates a SoundCloud client ID.
-  static Future<String> generateClientId() async {
-    final response = await http.get(Uri.parse('https://soundcloud.com'));
-    final jsUrlRegex = RegExp(r'https://a-v2\.sndcdn\.com/assets/[^"]+\.js');
-    final jsUrls = jsUrlRegex.allMatches(response.body).map((m) => m.group(0));
-
-    // Typically the client_id is in the last JS file loaded
-    for (var url in jsUrls.toList().reversed) {
-      final jsContent = await http.read(Uri.parse(url!));
-      final idRegex = RegExp(r'client_id:"([a-zA-Z0-9]{32})"');
-      if (idRegex.hasMatch(jsContent)) {
-        return idRegex.firstMatch(jsContent)!.group(1)!;
-      }
-    }
-    throw Exception("Could not automatically get client_id");
-  }
-
   /// Opens a SoundCloud search interface and allows the user to pick a song.
   ///
   /// This method displays a search dialog where users can search for tracks
@@ -202,34 +36,15 @@ class SoundCloudSearch {
     if (context.mounted) context.go(Routes.song(song.id));
   }
 
-  /// Searches for tracks on SoundCloud using the provided [query].
-  static Future<List<SoundCloudTrack>> searchTracks(String query) async {
-    final uri = Uri.parse("$_baseUrl/search/tracks").replace(
-      queryParameters: {
-        "q": query,
-        "client_id": await SoundCloudSearch.clientId,
-        "limit": "50",
-      },
-    );
-
-    final response = await http.get(uri);
-    if (response.statusCode != 200) {
-      throw Exception("Failed to search SoundCloud: ${response.statusCode}");
-    }
-
-    final List<dynamic> data =
-        json.decode(response.body)['collection'] as List<dynamic>;
-    return data
-        .map((track) => SoundCloudTrack.fromJson(track as Json))
-        .toList();
-  }
-
   /// The history of previous search SoundCloud queries.
   static final HistoryHandler<String> history = HistoryHandler<String>(
     fromJson: (json) => json as String,
     toJson: (value) => value,
     historyFileName: "soundcloud_search_history",
   );
+
+  static Future<List<SoundCloudTrack>> searchTracks(String query) =>
+      SoundCloudApiClient.instance.searchTracks(query);
 }
 
 /// A search delegate that provides the SoundCloud search interface.
@@ -443,9 +258,10 @@ class SoundCloudTrackListItem extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 children: [
-                  TextSpan(
-                    text: htmlUnescape.convert(track!.username),
-                  ),
+                  if (track!.username != null)
+                    TextSpan(
+                      text: htmlUnescape.convert(track!.username!),
+                    ),
                   TextSpan(
                     text: " • ${track!.durationFormatted}  ",
                     style: TextStyle(
