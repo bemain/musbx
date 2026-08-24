@@ -63,8 +63,9 @@ class AudioCaptureService {
   /// Note that this won't receive any data until streaming is started.
   /// For a [Stream] that automatically starts streaming when listened to,
   /// use [dataStream].
-  late final Stream<AudioFrame> _dataStream = Recorder.instance.uint8ListStream
-      .map(_processData);
+  late final Stream<AudioFrame> _dataStream = _recorder.uint8ListStream.map(
+    _processData,
+  );
 
   /// Process audio data. Performs pitch detection.
   AudioFrame _processData(AudioDataContainer data) {
