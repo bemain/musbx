@@ -11,7 +11,8 @@ import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
 import 'package:musbx/data/services/purchase_service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
-import 'package:musbx/database/database.dart';
+import 'package:musbx/data/services/soundcloud_api_client.dart';
+import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
@@ -25,7 +26,7 @@ Future<void> main() async {
 
   await SharedPreferencesService.initialize();
   await FileCacheService.initialize();
-  await Database.initialize();
+  await SupabaseService.initialize();
   await PermissionService.initialize();
   await AnalyticsService.initialize();
   await AdService.initialize();
@@ -35,6 +36,8 @@ Future<void> main() async {
   await Songs.initialize();
   await NotificationService.initialize();
   await Notifications.initialize();
+
+  await SoundCloudApiClient.initialize();
 
   Links.initialize();
 

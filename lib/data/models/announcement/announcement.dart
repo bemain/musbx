@@ -1,11 +1,11 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:musbx/database/model.dart';
+import 'package:musbx/data/models/supabase_model.dart';
 import 'package:musbx/utils/utils.dart';
 
 part 'announcement.g.dart';
 
 @JsonSerializable()
-class Announcement extends Model {
+class Announcement extends SupabaseModel {
   /// An announcement shown to all users on startup.
   Announcement({
     super.id,

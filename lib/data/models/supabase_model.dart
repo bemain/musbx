@@ -4,8 +4,8 @@ import 'package:uuid/uuid.dart';
 
 /// A model with an [id] property that can be serialized to json and stored
 /// on the database.
-abstract class Model {
-  Model({
+abstract class SupabaseModel {
+  SupabaseModel({
     String? id,
     DateTime? createdAt,
   }) : id = id ?? Uuid().v4(),
@@ -23,5 +23,5 @@ abstract class Model {
   Json toJson();
 
   @override
-  String toString() => "Model($id)";
+  String toString() => "SupabaseModel($id)";
 }

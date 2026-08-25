@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/models/announcement/announcement.dart';
+import 'package:musbx/data/models/feedback/feedback_entry.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
-import 'package:musbx/database/announcement.dart';
-import 'package:musbx/database/feedback.dart';
-import 'package:musbx/utils/feedback.dart';
+import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 class AnnouncementTile extends StatefulWidget {
@@ -141,10 +141,12 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
                                 .toList();
 
                             for (final response in responses) {
-                              await UserFeedback.insert(
+                              await SupabaseService.instance.feedback.insert(
                                 FeedbackEntry(
                                   content: response,
                                   responseTo: announcement.id,
+                                  sentBy:
+                                      SupabaseService.instance.currentUser?.id,
                                 ),
                               );
                             }

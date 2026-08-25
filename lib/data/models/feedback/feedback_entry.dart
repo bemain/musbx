@@ -1,20 +1,19 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:musbx/database/database.dart';
-import 'package:musbx/database/model.dart';
+import 'package:musbx/data/models/supabase_model.dart';
 import 'package:musbx/utils/utils.dart';
 
-part 'feedback.g.dart';
+part 'feedback_entry.g.dart';
 
 @JsonSerializable()
-class FeedbackEntry extends Model {
+class FeedbackEntry extends SupabaseModel {
   /// A feedback entry from a user.
   FeedbackEntry({
     super.id,
     super.createdAt,
     required this.content,
-    String? sentBy,
+    required this.sentBy,
     this.responseTo,
-  }) : sentBy = sentBy ?? Database.client.auth.currentUser?.id;
+  });
 
   /// The content of this feedback entry.
   final String? content;
