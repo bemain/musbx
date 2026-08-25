@@ -1,3 +1,12 @@
+## [1.15.1] - 2026-08-19
+
+### 🐛 Bug Fixes
+
+- Wrap feedback field in `SafeArea`
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* Use variables for tag name and notes to escape backticks
 ## [1.15.0] - 2026-08-18
 
 ### 🚀 Features
@@ -27,6 +36,10 @@
 - Add license
 - Render license as markdown
 - Create an announcement style guide
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V1.15.0+67 [skip ci]
 ## [1.14.6] - 2026-08-13
 
 ### 🐛 Bug Fixes
