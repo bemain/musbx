@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
-import 'package:musbx/domain/notification.dart';
+import 'package:musbx/domain/models/notification.dart';
 import 'package:musbx/utils/notifications.dart';
 
 /// A sound used by the metronome.

@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
+import 'package:musbx/domain/models/notification.dart';
 import 'package:musbx/domain/models/permission.dart';
-import 'package:musbx/domain/notification.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
 

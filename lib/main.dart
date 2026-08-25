@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/ad_service.dart';
 import 'package:musbx/data/services/analytics_service.dart';
+import 'package:musbx/data/services/deep_links_service.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
@@ -16,8 +17,8 @@ import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
+import 'package:musbx/utils/deep_links.dart';
 import 'package:musbx/utils/launch_handler.dart';
-import 'package:musbx/utils/links.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/purchases.dart';
 
@@ -39,7 +40,8 @@ Future<void> main() async {
 
   await SoundCloudApiClient.initialize();
 
-  Links.initialize();
+  await DeepLinksService.initialize();
+  await DeepLinks.initialize();
 
   await LaunchHandler.initialize();
 

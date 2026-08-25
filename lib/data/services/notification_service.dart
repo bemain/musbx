@@ -5,7 +5,7 @@ import 'package:awesome_notifications/awesome_notifications.dart' as plugin;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/data/services/service.dart';
-import 'package:musbx/domain/notification.dart';
+import 'package:musbx/domain/models/notification.dart';
 
 /// Shows notifications, and reports what the user does with them.
 ///
