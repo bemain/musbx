@@ -60,7 +60,9 @@ dependencies:
   json_annotation: ^4.12.0
   just_waveform: ^0.0.7
   material_plus:
-    path: ../material_plus
+    git:
+      url: https://github.com/bemain/material_plus.git
+      ref: v0.1.0
   material_symbols_icons: ^4.2951.0
   package_info_plus: ^9.0.1
   path_provider: ^2.1.6

@@ -1,5 +1,5 @@
 name: Setup Flutter build environment
-description: Fetch the private material_plus dependency, write keys.dart, and install Flutter
+description: Write keys.dart and install Flutter
 
 inputs:
   keys_file:
@@ -9,10 +9,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Fetch material_plus dependency
-      shell: bash
-      run: git clone --depth=1 https://gitlab.com/flutterby-group/material_plus.git ../material_plus
-
     - name: Write keys.dart to file
       shell: bash
       run: |

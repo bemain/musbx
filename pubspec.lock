@@ -828,9 +828,11 @@ packages:
   material_plus:
     dependency: "direct main"
     description:
-      path: "../material_plus"
-      relative: true
-    source: path
+      path: "."
+      ref: "v0.1.0"
+      resolved-ref: "6d4f87f6a8fc5d948a0f4e8f2755601ef5bf7020"
+      url: "https://github.com/bemain/material_plus.git"
+    source: git
     version: "0.1.0"
   material_symbols_icons:
     dependency: "direct main"
