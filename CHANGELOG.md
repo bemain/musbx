@@ -1,12 +1,18 @@
-## [1.15.1] - 2026-08-19
+## [1.15.1] - 2026-08-27
 
 ### 🐛 Bug Fixes
 
 - Wrap feedback field in `SafeArea`
 
+### 💼 Other
+
+- Fix the version of `package:material_plus` used
+- Fix invalid commit being locked
+
 ### ⚙️ Miscellaneous Tasks
 
 - *(release)* Use variables for tag name and notes to escape backticks
+- *(release)* V1.15.1+68 [skip ci]
 ## [1.15.0] - 2026-08-18
 
 ### 🚀 Features
