@@ -829,8 +829,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v0.1.0"
-      resolved-ref: "04f58d63dc44678b833b2fd1981dd3febeba4d50"
+      ref: main
+      resolved-ref: e74f62342f86498d05f1e3d6d296d90ecb91008a
       url: "https://github.com/bemain/material_plus.git"
     source: git
     version: "0.1.0"
