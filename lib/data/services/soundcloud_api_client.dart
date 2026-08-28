@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:musbx/data/models/soundcloud_track.dart';
+import 'package:musbx/data/services/service.dart';
 import 'package:musbx/utils/utils.dart';
 
 /// Thrown when a track has no format that can be downloaded.
@@ -31,22 +32,41 @@ class TrackNotDownloadableException implements Exception {
 /// The tracks handed back are [SoundCloudTrack], SoundCloud's own vocabulary
 /// rather than the app's. Mapping them to domain models is the repository's
 /// job; nothing above it should see this type.
-class SoundCloudApiClient {
+///
+/// Obtaining the credentials this needs can fail, so [disabled] returns a
+/// service with none. Unlike the other optional services, a disabled client has
+/// nothing sensible to answer with: SoundCloud rejects every unauthenticated
+/// request, so [searchTracks] and [getDownloadUrl] throw an [HttpException]
+/// rather than degrade. Callers are expected to check [isEnabled] and hide the
+/// feature instead of calling into it.
+class SoundCloudApiClient extends OptionalService {
   SoundCloudApiClient._(this._baseUrl, this._clientId);
+
+  /// Whether a [_clientId] was obtained, and requests can therefore be made.
+  @override
+  bool get isEnabled => _clientId != null;
 
   /// Identifies the app to SoundCloud, and is required on every request.
   ///
   /// Scraped rather than issued, so it belongs to SoundCloud's own web player
   /// and can be revoked at any time, at which point every request starts
   /// failing until the service is created again.
-  final String _clientId;
+  ///
+  /// `null` on a [disabled] service, and only there.
+  final String? _clientId;
 
   /// Base URL for SoundCloud's API.
   final String _baseUrl;
 
   /// Create the client, obtaining a [_clientId] unless one is supplied.
   ///
-  /// Performs network requests, and throws if no client id could be found.
+  /// Performs network requests by way of [generateClientId], and throws if no
+  /// client id could be found — which on a device that is offline at launch is
+  /// the ordinary case, so callers are expected to fall back to [disabled]
+  /// rather than propagate it.
+  ///
+  /// Supplying a [clientId] skips the scraping entirely, so a test needs no
+  /// network.
   static Future<SoundCloudApiClient> create({
     String baseUrl = "https://api-v2.soundcloud.com",
     String? clientId,
@@ -56,10 +76,27 @@ class SoundCloudApiClient {
     return SoundCloudApiClient._(baseUrl, c);
   }
 
+  /// A service with no credentials behind it, for when none could be scraped.
+  static SoundCloudApiClient disabled() => SoundCloudApiClient._("", null);
+
   // TODO: Remove once we introduce `provider`.
   static late final SoundCloudApiClient instance;
+
+  /// Create [instance], falling back to [disabled] if that fails.
+  ///
+  /// Searching SoundCloud is not essential to the app starting, so a failure
+  /// here is logged and swallowed rather than allowed to escape into `main`.
+  ///
+  /// The fallback is permanent for the lifetime of the process: a device that
+  /// is offline at launch keeps a disabled client even once the network comes
+  /// back, and only a restart recovers it.
   static Future<void> initialize() async {
-    instance = await create();
+    try {
+      instance = await create();
+    } catch (error) {
+      debugPrint("[SOUND CLOUD] Disabled, initialization failed: $error");
+      instance = disabled();
+    }
   }
 
   /// Finds a client id by reading the one SoundCloud's own web player uses.
@@ -67,7 +104,12 @@ class SoundCloudApiClient {
   /// SoundCloud issues no keys to third parties, so the id is recovered from
   /// the JavaScript bundles the site loads.
   ///
-  /// Throws if no id could be found in any of the bundles.
+  /// Costs at least two sequential round trips — one for the site itself, then
+  /// one per bundle until an id turns up — so this is worth doing once and
+  /// holding on to, not per request.
+  ///
+  /// Throws if no id could be found in any of the bundles, which is what
+  /// happens when the device is offline as well as when the scraping breaks.
   static Future<String> generateClientId() async {
     final response = await http.get(Uri.parse('https://soundcloud.com'));
     final jsUrlRegex = RegExp(r'https://a-v2\.sndcdn\.com/assets/[^"]+\.js');
@@ -92,7 +134,9 @@ class SoundCloudApiClient {
   /// longer has the shape we expect, which should not be shown to the user as
   /// an empty result.
   ///
-  /// Throws an [HttpException] if SoundCloud rejects the request.
+  /// Throws an [HttpException] if SoundCloud rejects the request, which is
+  /// also what a [disabled] service does: the request goes out without a
+  /// client id and comes back refused.
   Future<List<SoundCloudTrack>> searchTracks(
     String query, {
     int limit = 50,
@@ -146,7 +190,8 @@ class SoundCloudApiClient {
   /// such format and never will.
   ///
   /// Throws an [HttpException] if SoundCloud refuses to resolve the URL, which
-  /// unlike the above is worth retrying.
+  /// unlike the above is worth retrying. A [disabled] service always ends up
+  /// here, having sent no client id.
   Future<Uri> getDownloadUrl(SoundCloudTrack track) async {
     final Uri uri =
         Uri.parse(
