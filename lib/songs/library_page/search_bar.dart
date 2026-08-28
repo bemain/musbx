@@ -3,6 +3,7 @@ import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
+import 'package:musbx/data/services/soundcloud_api_client.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
@@ -97,42 +98,46 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
               },
             ),
           if (songHistory.isNotEmpty) const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Results online",
-              style: Theme.of(context).textTheme.titleMedium,
+          if (SoundCloudApiClient.instance.isEnabled)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                "Results online",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
-          ),
-          FutureBuilder(
-            future: SoundCloudSearch.searchTracks(
-              query,
-            ).timeout(Duration(seconds: 2), onTimeout: () => []),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) return SizedBox();
+          if (SoundCloudApiClient.instance.isEnabled)
+            FutureBuilder(
+              future: SoundCloudSearch.searchTracks(
+                query,
+              ).timeout(Duration(seconds: 2), onTimeout: () => []),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) return SizedBox();
 
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (snapshot.hasData)
-                    for (final SoundCloudTrack track in snapshot.requireData)
-                      SoundCloudTrackListItem(
-                        track: track,
-                        onTap: () async {
-                          this.controller.closeView(null);
-                          final Song song = await SongLibrary.addTrack(track);
-                          if (context.mounted) {
-                            context.go(Routes.song(song.id));
-                          }
-                        },
-                      )
-                  else
-                    for (var i = 0; i < 10; i++)
-                      SoundCloudTrackListItem(track: null),
-                ],
-              );
-            },
-          ),
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (snapshot.hasData)
+                      for (final SoundCloudTrack track in snapshot.requireData)
+                        SoundCloudTrackListItem(
+                          track: track,
+                          onTap: () async {
+                            this.controller.closeView(null);
+                            final Song song = await SongLibrary.addTrack(
+                              track,
+                            );
+                            if (context.mounted) {
+                              context.go(Routes.song(song.id));
+                            }
+                          },
+                        )
+                    else
+                      for (var i = 0; i < 10; i++)
+                        SoundCloudTrackListItem(track: null),
+                  ],
+                );
+              },
+            ),
         ];
       },
     );

@@ -145,6 +145,13 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
 
   @override
   Widget buildResults(BuildContext context) {
+    if (!SoundCloudApiClient.instance.isEnabled) {
+      return InfoPage(
+        icon: Icon(Symbols.search_off),
+        text: "Search is currently unavailable. Try again later.",
+      );
+    }
+
     return FutureBuilder<List<SoundCloudTrack>>(
       future: SoundCloudSearch.searchTracks(query),
       builder: (context, snapshot) {
