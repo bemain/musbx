@@ -73,8 +73,8 @@ To generate custom icons for use in the app, add them to [`assets/icons`](assets
 dart run tool/generate_icons.dart
 ```
 
-## Privacy policy
-Privacy policy can be found [here](https://bemain.github.io/musbx/privacy/).
+## Privacy & Terms
+Privacy policy can be found [here](https://bemain.github.io/musbx/privacy) and Terms of Service [here](https://bemain.github.io/musbx/terms).
 
 ## Contact information
 If you have any questions, feedback or issues with the app, please reach out to:
