@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
@@ -98,7 +98,10 @@ class Songs {
   static set demixAutomatically(bool value) =>
       demixAutomaticallyNotifier.value = value;
   static final ValueNotifier<bool> demixAutomaticallyNotifier =
-      PersistentValue("songs/autoDemix", initialValue: true);
+      SharedPreferencesService.instance.value(
+        "songs/autoDemix",
+        initialValue: true,
+      );
 
   /// Load a [song].
   ///

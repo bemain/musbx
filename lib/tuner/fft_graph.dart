@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/tuner/tuner.dart';
+import 'package:musbx/tuner/view_model/tuner_reading.dart';
 
 class FftGraphStyle {
   /// The radius used for the [RRect] bars.
@@ -23,7 +23,7 @@ class FftGraph extends StatelessWidget {
     required this.data,
   });
 
-  final List<RecordingData> data;
+  final List<TunerReading> data;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +50,7 @@ class FftPainter extends CustomPainter {
     this.maxBinIndex = 255,
   });
 
-  final List<RecordingData> data;
+  final List<TunerReading> data;
 
   /// Averaged FFT data.
   late final List<double> dataChunks = _getDataChunks();
@@ -92,7 +92,7 @@ class FftPainter extends CustomPainter {
       final effectiveEndIdx = endIdx.clamp(0, maxBinIndex + 1);
 
       for (var j = startIdx; j < effectiveEndIdx; j++) {
-        sum += data.last.fft[j];
+        sum += data.last.frame.fft[j];
         count++;
       }
 

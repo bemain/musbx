@@ -106,6 +106,12 @@ class SongOptionsSheet extends StatefulWidget {
 }
 
 class _SongOptionsSheetState extends State<SongOptionsSheet> {
+  late Future<int> _cacheSize = _measureCache();
+  Future<int> _measureCache() => widget.song.cacheDirectory.size();
+  void _refresh() => setState(() {
+    _cacheSize = _measureCache();
+  });
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -204,39 +210,48 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                   );
                 },
               ),
-              ListTile(
-                enabled: song.hasCache,
-                leading: const Icon(Symbols.cloud_off),
-                title: const Text("Clear cached files"),
-                onTap: () {
-                  showDialog<void>(
-                    context: context,
-                    useRootNavigator: true,
-                    builder: (context) {
-                      return AlertDialog(
-                        icon: const Icon(Symbols.cloud_off),
-                        title: const Text("Clear cache?"),
-                        content: const Text(
-                          "This will free up some space on your device. Loading this song will take longer the next time.",
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text("Cancel"),
-                          ),
-                          FilledButton(
-                            onPressed: () {
-                              song.clearCache();
-                              song.shouldDemix = false;
-                              SongLibrary.history.save();
-                              Navigator.of(context).pop();
-                              setState(() {});
-                            },
-                            child: const Text("Clear"),
-                          ),
-                        ],
+              FutureBuilder<int>(
+                future: _cacheSize,
+                builder: (context, snapshot) {
+                  final cacheSize = snapshot.data ?? 0;
+
+                  return ListTile(
+                    enabled: cacheSize > 0,
+                    leading: const Icon(Symbols.cloud_off),
+                    title: const Text("Clear cached files"),
+                    onTap: () {
+                      showDialog<void>(
+                        context: context,
+                        useRootNavigator: true,
+                        builder: (context) {
+                          return AlertDialog(
+                            icon: const Icon(Symbols.cloud_off),
+                            title: const Text("Clear cache?"),
+                            content: const Text(
+                              "This will free up some space on your device. Loading this song will take longer the next time.",
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text("Cancel"),
+                              ),
+                              FilledButton(
+                                onPressed: () async {
+                                  await song.clearCache();
+                                  song.shouldDemix = false;
+                                  await SongLibrary.history.save();
+                                  if (context.mounted) {
+                                    Navigator.of(context).pop();
+                                  }
+                                  _refresh();
+                                },
+                                child: const Text("Clear"),
+                              ),
+                            ],
+                          );
+                        },
                       );
                     },
                   );

@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/models/youtube_video.dart';
+import 'package:musbx/data/services/youtube_api_client.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
@@ -11,8 +13,6 @@ import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/widgets/widgets.dart';
-import 'package:musbx/widgets/youtube_api/video.dart';
-import 'package:musbx/widgets/youtube_api/youtube_api.dart';
 
 class YoutubeSearch {
   /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
@@ -182,12 +182,16 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
     }
 
     // Try using the [query] as a video id
-    final YoutubeVideo? videoById = await YoutubeDataApi.getVideoById(
-      query.replaceAll(' ', ''),
-    );
+    final YoutubeVideo? videoById = await YoutubeApiClient.instance
+        .getVideoById(
+          query.replaceAll(' ', ''),
+        );
     if (videoById != null) return [videoById];
 
-    return await YoutubeDataApi.search(query, type: "video", maxResults: 50);
+    return await YoutubeApiClient.instance.search(
+      query,
+      maxResults: 50,
+    );
   }
 }
 

@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:musbx/data/models/soundcloud_track.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
@@ -91,7 +91,9 @@ class SongLibrary {
       Song(
         id: track.id.toString(),
         title: HtmlUnescape().convert(track.title),
-        artist: HtmlUnescape().convert(track.username),
+        artist: track.username == null
+            ? null
+            : HtmlUnescape().convert(track.username!),
         artUri: track.artworkUrl != null
             ? Uri.tryParse(track.artworkUrl!)
             : null,

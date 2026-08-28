@@ -1,15 +1,16 @@
 import 'dart:async';
-import 'dart:io' hide Process;
+import 'dart:io';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/musbx_api/client.dart';
+import 'package:musbx/data/services/musbx_api/jobs/demix.dart';
+import 'package:musbx/data/services/musbx_api/jobs/job.dart';
+import 'package:musbx/data/services/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
-import 'package:musbx/songs/musbx_api/client.dart';
-import 'package:musbx/songs/musbx_api/jobs/demix.dart';
-import 'package:musbx/songs/musbx_api/jobs/job.dart';
-import 'package:musbx/songs/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
 
 enum DemixingStep {
@@ -32,7 +33,7 @@ enum DemixingStep {
   downloading,
 }
 
-class DemixingProcess extends Process<Map<StemType, File>> {
+class DemixingProcess extends Process<Map<StemType, CacheFile>> {
   /// Upload, separate and download stem files for a song.
   DemixingProcess(
     this.parentSource, {
@@ -42,7 +43,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
 
   final AudioProvider parentSource;
 
-  final Directory cacheDirectory;
+  final CacheDirectory cacheDirectory;
 
   final Duration checkStatusInterval;
 
@@ -71,34 +72,31 @@ class DemixingProcess extends Process<Map<StemType, File>> {
   }
 
   /// Get stems for the song, if all stems (see [StemType]) were found with the correct [fileExtension].
-  static Future<Map<StemType, File>?> getStemsInCache({
-    required Directory directory,
+  static Future<Map<StemType, CacheFile>?> getStemsInCache({
+    required CacheDirectory directory,
     String fileExtension = "mp3",
   }) async {
-    List<File> stemFiles = StemType.values
-        .map(
-          (stem) => File("${directory.path}/${stem.name}.$fileExtension"),
-        )
-        .toList();
+    final stems = {
+      for (final stem in StemType.values)
+        stem: directory.file("${stem.name}.$fileExtension"),
+    };
+
     if ((await Future.wait(
-      stemFiles.map((stem) => stem.exists()),
+      stems.values.map((file) => file.exists()),
     )).every((value) => value)) {
       // All stems were found in the cache.
-      return {
-        for (final stem in StemType.values)
-          stem: File("${directory.path}/${stem.name}.$fileExtension"),
-      };
+      return stems;
     }
 
     return null;
   }
 
   @override
-  Future<Map<StemType, File>> execute() async {
+  Future<Map<StemType, CacheFile>> execute() async {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
-    Map<StemType, File>? cachedStemFiles = await getStemsInCache(
+    Map<StemType, CacheFile>? cachedStemFiles = await getStemsInCache(
       directory: cacheDirectory,
     );
     if (cachedStemFiles != null) {
@@ -121,7 +119,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     switch (source) {
       case FileAudio() || BytesAudio():
         file = await client.uploadFile(
-          source.cacheFile!,
+          File(source.cacheFile!.path),
           onSendProgress: (count, total) {
             stepProgressNotifier.value = count / total;
           },
@@ -173,7 +171,7 @@ class DemixingProcess extends Process<Map<StemType, File>> {
     /// The progress of each of the download operations.
     Map<String, double> downloadProgress = {};
 
-    final Map<StemType, File> files = Map.fromEntries(
+    final Map<StemType, CacheFile> files = Map.fromEntries(
       await Future.wait(
         report.result!.keys.map((stemName) async {
           final response = await job.dio.get<List<int>>(
@@ -192,12 +190,10 @@ class DemixingProcess extends Process<Map<StemType, File>> {
             ),
           );
 
-          final File destination = File(
-            "${cacheDirectory.path}/$stemName.mp3",
-          );
+          final CacheFile destination = cacheDirectory.file("$stemName.mp3");
 
-          await destination.create(recursive: true);
-          await destination.writeAsBytes(response.data!);
+          await destination.writeBytes(response.data!);
+
           return MapEntry(
             StemType.values.firstWhere((stem) => stem.name == stemName),
             destination,

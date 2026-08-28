@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:musbx/model/chord.dart';
+import 'package:musbx/domain/models/music/chord.dart';
 
 class ChordSymbol extends StatefulWidget {
   /// Widget displaying a musical [chord].

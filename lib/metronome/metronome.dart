@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
+import 'package:musbx/domain/models/notification.dart';
 import 'package:musbx/utils/notifications.dart';
 
 /// A sound used by the metronome.
@@ -84,10 +83,11 @@ class Metronome {
   /// Whether to show a notification while the Metronome is playing.
   bool get showNotification => showNotificationNotifier.value;
   set showNotification(bool value) => showNotificationNotifier.value = value;
-  late final PersistentValue<bool> showNotificationNotifier = PersistentValue(
-    "metronome/notification",
-    initialValue: true,
-  )..addListener(reset);
+  late final PersistentValue<bool> showNotificationNotifier =
+      SharedPreferencesService.instance.value(
+        "metronome/notification",
+        initialValue: true,
+      )..addListener(reset);
 
   /// Beats per minutes.
   ///
@@ -96,10 +96,12 @@ class Metronome {
   /// Does not actually update the playback. This needs to be done manually by calling [reset].
   int get bpm => bpmNotifier.value;
   set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
-  late final PersistentValue<int> bpmNotifier = PersistentValue(
-    "metronome/bpm",
-    initialValue: 60,
-  );
+  late final PersistentValue<int> bpmNotifier = SharedPreferencesService
+      .instance
+      .value(
+        "metronome/bpm",
+        initialValue: 60,
+      );
 
   /// The duration of a beat.
   Duration get beatDuration =>
@@ -108,18 +110,20 @@ class Metronome {
   /// The number of beats per bar.
   int get higher => higherNotifier.value;
   set higher(int value) => higherNotifier.value = value;
-  late final PersistentValue<int> higherNotifier = PersistentValue(
-    "metronome/higher",
-    initialValue: 4,
-  )..addListener(reset);
+  late final PersistentValue<int> higherNotifier =
+      SharedPreferencesService.instance.value(
+        "metronome/higher",
+        initialValue: 4,
+      )..addListener(reset);
 
   /// The number of notes each beat is divided into.
   int get subdivisions => subdivisionsNotifier.value;
   set subdivisions(int value) => subdivisionsNotifier.value = value;
-  late final PersistentValue<int> subdivisionsNotifier = PersistentValue(
-    "metronome/subdivisions",
-    initialValue: 1,
-  )..addListener(reset);
+  late final PersistentValue<int> subdivisionsNotifier =
+      SharedPreferencesService.instance.value(
+        "metronome/subdivisions",
+        initialValue: 1,
+      )..addListener(reset);
 
   /// The count of the current beat. Ranges from 0 to [higher] - 1.
   int get count => countNotifier.value;
@@ -193,39 +197,25 @@ class Metronome {
   Future<void> updateNotification() async {
     if (!showNotification) return;
 
-    await Notifications.create(
-      content: NotificationContent(
-        id: 0,
-        channelKey: "metronome-controls",
-        title: 'Metronome',
+    await Notifications.post(
+      AppNotification(
+        channel: NotificationChannel.metronomeControls,
+        title: "Metronome",
         summary: isPlaying ? "Playing" : "Paused",
         body: "$higher ${higher == 1 ? "beat" : "beats"} • $bpm bpm",
-        color: Colors.transparent,
-        category: NotificationCategory.Transport,
-        actionType: ActionType.Default,
-        notificationLayout: NotificationLayout.Default,
-        showWhen: false,
-        autoDismissible: false,
-        displayOnForeground: Platform.isIOS ? false : true,
+        actions: [
+          if (!isPlaying)
+            NotificationAction(
+              key: "play",
+              label: "Play",
+            ),
+          if (isPlaying)
+            NotificationAction(
+              key: "pause",
+              label: "Pause",
+            ),
+        ],
       ),
-      actionButtons: [
-        if (!isPlaying)
-          NotificationActionButton(
-            key: "play",
-            label: "Play",
-            actionType: ActionType.KeepOnTop,
-            autoDismissible: false,
-            showInCompactView: true,
-          ),
-        if (isPlaying)
-          NotificationActionButton(
-            key: "pause",
-            label: "Pause",
-            actionType: ActionType.KeepOnTop,
-            autoDismissible: false,
-            showInCompactView: true,
-          ),
-      ],
     );
   }
 }

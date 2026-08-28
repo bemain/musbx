@@ -4,37 +4,46 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_plus/material_plus.dart';
-import 'package:musbx/analytics.dart';
-import 'package:musbx/database/database.dart';
+import 'package:musbx/data/services/ad_service.dart';
+import 'package:musbx/data/services/analytics_service.dart';
+import 'package:musbx/data/services/deep_links_service.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/notification_service.dart';
+import 'package:musbx/data/services/permission_service.dart';
+import 'package:musbx/data/services/purchase_service.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
+import 'package:musbx/data/services/soundcloud_api_client.dart';
+import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
+import 'package:musbx/utils/deep_links.dart';
 import 'package:musbx/utils/launch_handler.dart';
-import 'package:musbx/utils/links.dart';
 import 'package:musbx/utils/notifications.dart';
 import 'package:musbx/utils/purchases.dart';
-import 'package:musbx/widgets/ads.dart';
-import 'package:musbx/widgets/widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await PersistentValue.initialize();
-  await Directories.initialize();
-
-  await Database.initialize();
-  await Analytics.initialize();
-  await Purchases.intialize();
+  await SharedPreferencesService.initialize();
+  await FileCacheService.initialize();
+  await SupabaseService.initialize();
+  await PermissionService.initialize();
+  await AnalyticsService.initialize();
+  await AdService.initialize();
+  await PurchaseService.initialize();
+  await Purchases.initialize();
 
   await Songs.initialize();
+  await NotificationService.initialize();
   await Notifications.initialize();
 
-  Links.initialize();
+  await SoundCloudApiClient.initialize();
+
+  await DeepLinksService.initialize();
+  await DeepLinks.initialize();
 
   await LaunchHandler.initialize();
-
-  // Google Ads
-  unawaited(Ads.initialize());
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

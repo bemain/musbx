@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/tuner/tuner.dart';
+import 'package:musbx/tuner/view_model/tuner_reading.dart';
 
 class WaveformGraphStyle {
   /// The number of empty pixels between each bar.
@@ -45,7 +45,7 @@ class WaveformGraphStyle {
 class WaveformGraph extends StatelessWidget {
   const WaveformGraph({super.key, required this.data});
 
-  final List<RecordingData> data;
+  final List<TunerReading> data;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,7 @@ class WavePainter extends CustomPainter {
   });
 
   /// The wave data to draw.
-  final List<RecordingData> data;
+  final List<TunerReading> data;
 
   /// Averaged wave data.
   late final List<double> dataChunks = _getDataChunks();
@@ -94,7 +94,7 @@ class WavePainter extends CustomPainter {
     List<double> averages = [];
     List<double> chunk = [];
     for (var dataEntry in data) {
-      chunk.addAll(dataEntry.wave);
+      chunk.addAll(dataEntry.frame.wave);
       while (chunk.length >= chunkSize) {
         final double sum = chunk
             .sublist(0, chunkSize)

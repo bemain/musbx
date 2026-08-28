@@ -1,37 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/data/services/permission_service.dart';
+import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/widgets/widgets.dart';
-import 'package:permission_handler/permission_handler.dart';
 
+/// Gates a feature behind a [Permission], showing the user what is missing and
+/// how to grant it.
+///
+/// Calls [onPermissionGranted] once the permission is available — either
+/// because the user granted it, or because the platform does not gate it at all.
+/// Rechecks whenever the app is resumed, so granting from the system settings
+/// takes effect without a restart.
 class PermissionBuilder extends StatefulWidget {
-  /// Allow the user to grant or deny a [permission].
-  /// If [permission] is granted, [onPermissionGranted] is called.
   const PermissionBuilder({
     super.key,
     required this.permission,
     required this.onPermissionGranted,
-    String? permissionName,
+    this.permissionName,
     this.permissionText,
     this.permissionDeniedIcon,
     this.permissionGrantedIcon,
     this.initialRequest = true,
-  }) : permissionName = permissionName ?? "$permission";
+  });
 
   /// The permission that needs to be granted before [onPermissionGranted] is called.
   final Permission permission;
 
-  /// Called when [permission] has been granted.
+  /// Called once [permission] becomes available, whether because the user
+  /// granted it or because the current platform does not gate it.
+  ///
+  /// Called at most once per granting; rebuilds do not call it again.
   final void Function() onPermissionGranted;
 
-  /// The name of this permission.
-  final String permissionName;
+  /// What to call this permission when addressing the user, interpolated into
+  /// sentences such as "Access to the microphone denied."
+  ///
+  /// Defaults to the name of the [permission] itself, so pass something
+  /// readable for any permission whose name is not already a noun phrase.
+  final String? permissionName;
 
   /// Short text describing why this permission is required.
   final String? permissionText;
 
-  /// The widget displayed together with text and a request button when permission has been denied.
+  /// The widget displayed above the text when the permission is unavailable.
   final Widget? permissionDeniedIcon;
 
-  /// The widget displayed when permission has been granted.
+  /// The widget displayed once the permission is available.
   final Widget? permissionGrantedIcon;
 
   /// Whether to request permission when this is initialized.
@@ -44,9 +57,14 @@ class PermissionBuilder extends StatefulWidget {
 
 class PermissionBuilderState extends State<PermissionBuilder>
     with WidgetsBindingObserver {
-  PermissionStatus? status;
+  /// The user-facing name of the permission being requested.
+  String get permissionName => widget.permissionName ?? widget.permission.name;
 
-  AppLifecycleState prevState = AppLifecycleState.resumed;
+  /// The most recently observed status, or `null` before the first check.
+  PermissionStatus? _status;
+
+  /// The previous lifecycle state, used to detect that the app was resumed.
+  AppLifecycleState _prevState = AppLifecycleState.resumed;
 
   @override
   void initState() {
@@ -71,33 +89,46 @@ class PermissionBuilderState extends State<PermissionBuilder>
     super.didChangeAppLifecycleState(state);
 
     if (state == AppLifecycleState.resumed &&
-        prevState == AppLifecycleState.paused) {
+        _prevState != AppLifecycleState.resumed) {
       checkPermissionStatus();
     }
-    prevState = state;
+    _prevState = state;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (status == null) return const LoadingPage(text: "");
+    if (_status == null) return const LoadingPage(text: "");
 
-    if (status == PermissionStatus.granted) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => widget.onPermissionGranted(),
-      );
+    if (_status == PermissionStatus.granted) {
       return InfoPage(
         icon:
             widget.permissionGrantedIcon ?? const CircularProgressIndicator(),
-        text: "Access to the ${widget.permissionName} granted.",
+        text: "Access to the $permissionName granted.",
       );
     }
 
-    if (status == PermissionStatus.permanentlyDenied) {
+    if (_status == PermissionStatus.unavailable) {
+      return InfoPage(
+        icon:
+            widget.permissionGrantedIcon ?? const CircularProgressIndicator(),
+        text:
+            "Access to the $permissionName is always granted on this platform.",
+      );
+    }
+
+    if (_status == PermissionStatus.restricted) {
+      return buildPermissionDeniedPage(
+        additionalInfoText:
+            "Permission cannot be granted, for example due to parental controls.",
+      );
+    }
+
+    if (_status == PermissionStatus.permanentlyDenied) {
       return buildPermissionDeniedPage(
         additionalInfoText:
             "You need to give this permission from the System Settings.",
         buttonText: "Open Settings",
-        onButtonPressed: openAppSettings,
+        onButtonPressed: PermissionService.instance.openSettings,
       );
     }
 
@@ -107,31 +138,60 @@ class PermissionBuilderState extends State<PermissionBuilder>
     );
   }
 
+  /// Record [status] and notify the widget if the permission just became
+  /// available.
+  ///
+  /// The notification is tied to the transition rather than to [build], so a
+  /// rebuild while the permission is available does not call
+  /// [PermissionBuilder.onPermissionGranted] a second time.
+  void _setStatus(PermissionStatus status) {
+    if (!mounted) return;
+    final wasSatisfied = _isSatisfied(_status);
+    setState(() => _status = status);
+    if (!wasSatisfied && _isSatisfied(status)) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => widget.onPermissionGranted(),
+      );
+    }
+  }
+
+  /// Whether [status] means the app may use the feature: either the user
+  /// granted the permission, or the platform never gated it.
+  static bool _isSatisfied(PermissionStatus? status) =>
+      status == PermissionStatus.granted ||
+      status == PermissionStatus.unavailable;
+
+  /// Re-read the current status without prompting the user.
   Future<void> checkPermissionStatus() async {
-    // [Permission.status] is unable to return [PermissionStatus.permanentlyDenied]
-    // (see https://github.com/Baseflow/flutter-permission-handler/issues/568)
-    // Therefore, this won't return status correctly, but it still works fine.
-    var status = await widget.permission.status;
-    if (mounted) {
-      setState(() {
-        this.status = status;
-      });
+    var status = await PermissionService.instance.status(widget.permission);
+
+    // On Android, `PermissionService.status` cannot report permanentlyDenied;
+    // only a request can (https://github.com/Baseflow/flutter-permission-handler/issues/568).
+    // Without this guard, returning from the system settings would downgrade
+    // the status to denied and replace the "Open Settings" button with a
+    // "Request permission" button that the OS silently ignores.
+    if (_status == PermissionStatus.permanentlyDenied &&
+        status == PermissionStatus.denied) {
+      return;
     }
+
+    _setStatus(status);
   }
 
+  /// Ask the user to grant the permission, showing the system prompt.
   Future<void> requestPermission() async {
-    var status = await widget.permission.request();
-    if (mounted) {
-      setState(() {
-        this.status = status;
-      });
-    }
+    var status = await PermissionService.instance.request(widget.permission);
+    _setStatus(status);
   }
 
+  /// Build the page shown while the permission is unavailable.
+  ///
+  /// The button is omitted when [buttonText] is `null`, for the cases where the
+  /// user has no way to grant the permission.
   Widget buildPermissionDeniedPage({
     String? additionalInfoText,
-    required String buttonText,
-    required void Function() onButtonPressed,
+    String? buttonText,
+    void Function()? onButtonPressed,
   }) {
     additionalInfoText = (additionalInfoText != null)
         ? "\n\n$additionalInfoText"
@@ -150,14 +210,15 @@ class PermissionBuilderState extends State<PermissionBuilder>
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: Text(
-                "Access to the ${widget.permissionName} denied. $permissionText $additionalInfoText",
+                "Access to the $permissionName denied. $permissionText $additionalInfoText",
                 textAlign: TextAlign.center,
               ),
             ),
-            OutlinedButton(
-              onPressed: onButtonPressed,
-              child: Text(buttonText),
-            ),
+            if (buttonText != null)
+              OutlinedButton(
+                onPressed: onButtonPressed,
+                child: Text(buttonText),
+              ),
           ],
         ),
       ),

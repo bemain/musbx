@@ -1,6 +1,9 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/foundation.dart';
-import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/services/notification_service.dart';
+import 'package:musbx/data/services/permission_service.dart';
+import 'package:musbx/data/services/shared_preferences_service.dart';
+import 'package:musbx/domain/models/notification.dart';
+import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
 
@@ -8,9 +11,6 @@ import 'package:musbx/navigation.dart';
 class Notifications {
   /// Whether the notification plugin has been initialized by running [initialize].
   static bool isInitialized = false;
-
-  /// Used internally to show notifications.
-  static final AwesomeNotifications _notifications = AwesomeNotifications();
 
   /// Whether the user has given the app permission to show notifications
   static bool get hasPermission => hasPermissionNotifier.value;
@@ -22,68 +22,19 @@ class Notifications {
   ///
   /// We don't want to be too intrusive, so notification permission is only
   /// requested when the user presses the play button for the first time ever.
-  static PersistentValue<bool> hasRequestedPermission = PersistentValue(
-    "metronome/hasRequestedPermission",
-    initialValue: false,
-  );
-
-  /// Callback for when the user taps an action on the notification while the app is the background.
-  @pragma("vm:entry-point")
-  static Future<void> _onActionReceived(ReceivedAction action) async {
-    if (action.channelKey == "metronome-controls") {
-      // Navigate to the metronome page
-      Navigation.navigationShell.goBranch(
-        Routes.branches.indexOf(Routes.metronome),
+  static PersistentValue<bool> hasRequestedPermission =
+      SharedPreferencesService.instance.value(
+        "metronome/hasRequestedPermission",
+        initialValue: false,
       );
-
-      switch (action.buttonKeyPressed) {
-        case "play":
-          Metronome.instance.resume();
-        case "pause":
-          Metronome.instance.pause();
-      }
-    }
-  }
 
   /// Initialize the notifications service.
   static Future<void> initialize() async {
     if (isInitialized) return;
 
-    // Check permission
-    final allowedPermissions = await _notifications.checkPermissionList();
-    hasPermissionNotifier.value = allowedPermissions.isNotEmpty;
+    NotificationService.instance.actionStream.listen(_onActionReceived);
 
-    // Initialize AwesomeNotifications
-    await _notifications.initialize(
-      'resource://drawable/ic_notification',
-      [
-        NotificationChannel(
-          channelGroupKey: "metronome-group",
-          channelKey: "metronome-controls",
-          channelName: "Quick Access",
-          channelDescription:
-              "Control the Metronome directly from your notifications drawer",
-          channelShowBadge: false,
-          importance: NotificationImportance.Default,
-          locked: true,
-          enableLights: false,
-          enableVibration: false,
-          playSound: false,
-          onlyAlertOnce: true,
-        ),
-      ],
-      channelGroups: [
-        NotificationChannelGroup(
-          channelGroupKey: "metronome-group",
-          channelGroupName: "Metronome",
-        ),
-      ],
-      debug: kDebugMode,
-    );
-
-    await _notifications.setListeners(
-      onActionReceivedMethod: _onActionReceived,
-    );
+    await _checkPermissionStatus();
 
     isInitialized = true;
   }
@@ -96,23 +47,33 @@ class Notifications {
 
     hasRequestedPermission.value = true;
 
-    hasPermissionNotifier.value = await _notifications.isNotificationAllowed();
     if (!hasPermission) {
-      await _notifications.requestPermissionToSendNotifications();
-      final allowedPermissions = await _notifications.checkPermissionList();
-      hasPermissionNotifier.value = allowedPermissions.isNotEmpty;
+      final status = await PermissionService.instance.request(
+        Permission.notifications,
+      );
+      hasPermissionNotifier.value =
+          status == PermissionStatus.granted ||
+          status == PermissionStatus.unavailable;
     }
     return hasPermission;
   }
 
-  static Future<bool> shouldShowRationale() async {
+  static Future<void> _checkPermissionStatus() async {
+    final status = await PermissionService.instance.status(
+      Permission.notifications,
+    );
+    hasPermissionNotifier.value =
+        status == PermissionStatus.granted ||
+        status == PermissionStatus.unavailable;
+  }
+
+  static Future<void> post(AppNotification notification) async {
     if (!isInitialized) {
       throw "The `Notifications` service hasn't been initialized. Call `initialize()` first.";
     }
+    if (!hasPermission) return;
 
-    final lockedPermissions = await _notifications
-        .shouldShowRationaleToRequest();
-    return lockedPermissions.isNotEmpty;
+    await NotificationService.instance.post(notification);
   }
 
   /// Cancel all notifications
@@ -120,21 +81,25 @@ class Notifications {
     if (!isInitialized) {
       throw "The `Notifications` service hasn't been initialized. Call `initialize()` first.";
     }
-    await _notifications.cancelAll();
+    await NotificationService.instance.cancelAll();
   }
 
-  static Future<void> create({
-    required NotificationContent content,
-    List<NotificationActionButton>? actionButtons,
-  }) async {
-    if (!isInitialized) {
-      throw "The `Notifications` service hasn't been initialized. Call `initialize()` first.";
-    }
-    if (!hasPermission) return;
+  /// Callback for when the user taps an action on the notification while the app is the background.
+  static Future<void> _onActionReceived(
+    NotificationActionTapped action,
+  ) async {
+    if (action.channel == NotificationChannel.metronomeControls) {
+      // Navigate to the metronome page
+      Navigation.navigationShell.goBranch(
+        Routes.branches.indexOf(Routes.metronome),
+      );
 
-    await _notifications.createNotification(
-      content: content,
-      actionButtons: actionButtons,
-    );
+      switch (action.key) {
+        case "play":
+          Metronome.instance.resume();
+        case "pause":
+          Metronome.instance.pause();
+      }
+    }
   }
 }
