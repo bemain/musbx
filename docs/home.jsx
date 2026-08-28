@@ -11,7 +11,7 @@ function Hero() {
       <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1.1fr)", gap: "var(--space-8)", alignItems: "end", marginTop: "var(--space-7)" }}>
         <div style={{ display: "grid", gap: "var(--space-5)", maxWidth: "var(--measure)" }}>
           <p className="mt-body" style={{ fontSize: "var(--text-body-lg)", color: "var(--text-secondary)" }}>
-            Load a track from SoundCloud or your own files. Slow it down, split it into stems, read its chords, tune up, keep time. Five tools, one app, free to start.
+            Load a track from SoundCloud or your own files. Slow it down, split it into stems, read its chords, tune up, keep time. Five tools, one app, free to get.
           </p>
           <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>
             <HBadge store="ios" href={iosUrl("web-home-hero")} variant={devicePlatform === "ios" ? "solid" : "paper"} />
