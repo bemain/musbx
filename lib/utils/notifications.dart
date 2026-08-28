@@ -48,7 +48,12 @@ class Notifications {
     hasRequestedPermission.value = true;
 
     if (!hasPermission) {
-      await _checkPermissionStatus();
+      final status = await PermissionService.instance.request(
+        Permission.notifications,
+      );
+      hasPermissionNotifier.value =
+          status == PermissionStatus.granted ||
+          status == PermissionStatus.unavailable;
     }
     return hasPermission;
   }

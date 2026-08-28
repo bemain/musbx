@@ -36,7 +36,7 @@ class PitchDetector {
         // Only frequencies close to the current
         .where((frequency) => (frequency - detected).abs() < 10);
 
-    if (frequencies.length < averageCount) return null;
+    if (frequencies.isEmpty) return null;
 
     return frequencies.mean;
   }

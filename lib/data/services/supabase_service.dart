@@ -59,6 +59,14 @@ class SupabaseService extends OptionalService {
   static SupabaseService disabled() => SupabaseService._(null);
 
   // TODO: Remove once we introduce `provider`.
+  // If signInAnonymously() throws — no connectivity at launch, Supabase briefly
+  // unreachable — this installs disabled() permanently. Feedback submission
+  // then throws StateError for the rest of the process lifetime, even once the
+  // network comes back, and the only recovery is a full app restart.
+  //
+  // Since launch-time connectivity is genuinely unreliable on mobile, the
+  // sign-in is better attempted lazily on first use, or retried, rather than
+  // latched off after one failure.
   static late final SupabaseService instance;
   static Future<void> initialize() async {
     try {

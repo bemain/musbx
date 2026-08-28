@@ -23,11 +23,13 @@ class Purchases {
   /// Whether the payment platform is ready and available.
   static bool isAvailable = false;
 
+  static bool _isBuyingPremium = false;
+
   /// Whether the user has bought the 'premium' product that unlocks access to premium features of the app.
   static bool get hasPremium => hasPremiumNotifier.value;
   static final ValueNotifier<bool> hasPremiumNotifier = ValueNotifier(false);
 
-  static Future<void> intialize() async {
+  static Future<void> initialize() async {
     if (!PurchaseService.instance.isEnabled) {
       debugPrint("[PURCHASES] The current platform is not supported");
       isAvailable = false;
@@ -55,11 +57,12 @@ class Purchases {
           case EntitlementStatus.purchased:
             debugPrint("[PURCHASES] Premium features unlocked");
             hasPremiumNotifier.value = true;
-            if (Platform.isIOS) {
+            if (Platform.isIOS && _isBuyingPremium) {
               unawaited(
                 showExceptionDialog(const PremiumPurchasedDialog()),
               );
             }
+            _isBuyingPremium = false;
 
           case EntitlementStatus.pending:
             // On iOS, the pending status is emitted immediately when the native payment dialog opens.
@@ -73,11 +76,19 @@ class Purchases {
                 }
             }
 
-          default:
+          case EntitlementStatus.notPurchased:
+            switch (entitlement) {
+              case Entitlement.premium:
+                unawaited(
+                  showExceptionDialog(const PremiumPurchaseFailedDialog()),
+                );
+            }
         }
     }
   }
 
-  static Future<bool> buyPremium() =>
-      PurchaseService.instance.buy(Entitlement.premium);
+  static Future<bool> buyPremium() {
+    _isBuyingPremium = true;
+    return PurchaseService.instance.buy(Entitlement.premium);
+  }
 }

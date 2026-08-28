@@ -131,6 +131,13 @@ class CacheFile {
   /// The path of the file.
   String get path => _file.path;
 
+  /// Whether this file is on disk.
+  ///
+  /// Because writes are staged in [_part] and renamed into place, this is never
+  /// true of a half-written file: it answers "is this cached and complete",
+  /// which is what makes it a safe cache-hit test.
+  Future<bool> exists() async => _file.exists();
+
   /// The size of this file in bytes, or 0 if it doesn't exist.
   Future<int> size() async {
     final stat = await _file.stat();
@@ -160,7 +167,11 @@ class CacheFile {
     await _part.create(recursive: true);
     try {
       await produce(_part);
-      await _part.rename(path);
+      final stat = await _part.stat();
+      // Reject an empty part file
+      if (stat.type != FileSystemEntityType.notFound && stat.size > 0) {
+        await _part.rename(path);
+      }
     } catch (_) {
       if (await _part.exists()) await _part.delete();
       rethrow;

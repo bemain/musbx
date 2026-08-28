@@ -50,14 +50,6 @@ class SoundCloudTrack {
   /// List of available transcoding formats for this track.
   final List<SoundCloudTrackTranscoding> transcodings;
 
-  /// Returns the duration formatted as "MM:SS".
-  String? get durationFormatted {
-    if (duration == null) return null;
-    final minutes = duration!.inMinutes;
-    final seconds = duration!.inSeconds.remainder(60);
-    return "$minutes:${seconds.toString().padLeft(2, "0")}";
-  }
-
   /// Creates a [SoundCloudTrack] from a JSON object.
   factory SoundCloudTrack.fromJson(Json json) {
     return SoundCloudTrack(

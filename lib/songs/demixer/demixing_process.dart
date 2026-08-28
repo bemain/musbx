@@ -82,8 +82,8 @@ class DemixingProcess extends Process<Map<StemType, CacheFile>> {
     };
 
     if ((await Future.wait(
-      stems.values.map((file) => file.readBytes()),
-    )).every((value) => value != null)) {
+      stems.values.map((file) => file.exists()),
+    )).every((value) => value)) {
       // All stems were found in the cache.
       return stems;
     }

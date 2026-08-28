@@ -209,7 +209,7 @@ class PersistentValue<T> extends ValueNotifier<T> {
     if (_preferences.get(_key) == newValue ||
         ((T == List<String>) &&
             listEquals(
-              _preferences.get(_key) as List<String>,
+              _preferences.getStringList(_key)?.cast<String>(),
               newValue as List<String>,
             ))) {
       return; // Do nothing
@@ -244,9 +244,7 @@ class TransformedPersistentValue<T, S> extends ValueNotifier<T> {
          key,
          initialValue: to(initialValue),
        ),
-       super(initialValue) {
-    value = from(_primitiveValue.value);
-  }
+       super(initialValue);
 
   /// The converted value, which is what actually reaches the disk.
   final PersistentValue<S> _primitiveValue;

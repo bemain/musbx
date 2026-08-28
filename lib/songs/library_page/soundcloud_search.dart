@@ -216,6 +216,8 @@ class SoundCloudTrackListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String? duration = formatDuration(track);
+
     return ListTile(
       onTap: onTap,
       minLeadingWidth: 64,
@@ -262,13 +264,14 @@ class SoundCloudTrackListItem extends StatelessWidget {
                     TextSpan(
                       text: htmlUnescape.convert(track!.username!),
                     ),
-                  TextSpan(
-                    text: " • ${track!.durationFormatted}  ",
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.outline,
-                      fontSize: 12,
+                  if (duration != null)
+                    TextSpan(
+                      text: " • $duration  ",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
                   if (track!.policy == "SNIP")
                     WidgetSpan(
                       alignment: PlaceholderAlignment.middle,
@@ -295,5 +298,13 @@ class SoundCloudTrackListItem extends StatelessWidget {
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
+  }
+
+  /// Returns the duration formatted as "MM:SS".
+  String? formatDuration(SoundCloudTrack? track) {
+    if (track?.duration == null) return null;
+    final minutes = track!.duration!.inMinutes;
+    final seconds = track.duration!.inSeconds.remainder(60);
+    return "$minutes:${seconds.toString().padLeft(2, "0")}";
   }
 }

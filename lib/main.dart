@@ -32,7 +32,7 @@ Future<void> main() async {
   await AnalyticsService.initialize();
   await AdService.initialize();
   await PurchaseService.initialize();
-  await Purchases.intialize();
+  await Purchases.initialize();
 
   await Songs.initialize();
   await NotificationService.initialize();

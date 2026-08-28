@@ -28,14 +28,14 @@ class WaveformExtractionProcess extends Process<Waveform> {
     );
 
     final CacheFile outFile = getWaveformFile(song);
-    if (await outFile.size() > 0) {
+    if (await outFile.exists()) {
       // Use cached waveform
       return await JustWaveform.parse(File(outFile.path));
     }
 
     final AudioProvider source = song.audio;
     final CacheFile? inFile = source.cacheFile;
-    if (inFile == null || await inFile.size() <= 0) {
+    if (inFile == null || !await inFile.exists()) {
       throw "File doesn't exist: $inFile";
     }
 
