@@ -35,30 +35,11 @@ class DeepLinksService extends OptionalService {
     );
   }
 
-  @override
-  bool get isEnabled => _appLinks != null;
-
   /// The plugin handle, or `null` when this service is [disabled].
   final AppLinks? _appLinks;
 
-  /// Carries the URIs the operating system sends, for as long as the app runs.
-  StreamSubscription<Uri>? _subscription;
-
-  final _songController = StreamController<Song>();
-
-  /// The songs the operating system has asked the app to open.
-  ///
-  /// Songs are held until something listens, so the file the app was launched
-  /// to open still reaches a listener that only attaches once the rest of
-  /// startup has finished.
-  ///
-  /// There can be only one listener, and a second one throws. Two would each
-  /// store the song and each navigate to it, so opening one shared file would
-  /// add it to the library twice.
-  ///
-  /// The songs are resolved but not stored — they are not in the library, and
-  /// for a shared file the bytes exist only in memory.
-  Stream<Song> get songStream => _songController.stream;
+  @override
+  bool get isEnabled => _appLinks != null;
 
   /// Create the service and begin listening for URIs.
   ///
@@ -84,6 +65,25 @@ class DeepLinksService extends OptionalService {
       instance = disabled();
     }
   }
+
+  /// Carries the URIs the operating system sends, for as long as the app runs.
+  StreamSubscription<Uri>? _subscription;
+
+  final _songController = StreamController<Song>();
+
+  /// The songs the operating system has asked the app to open.
+  ///
+  /// Songs are held until something listens, so the file the app was launched
+  /// to open still reaches a listener that only attaches once the rest of
+  /// startup has finished.
+  ///
+  /// There can be only one listener, and a second one throws. Two would each
+  /// store the song and each navigate to it, so opening one shared file would
+  /// add it to the library twice.
+  ///
+  /// The songs are resolved but not stored — they are not in the library, and
+  /// for a shared file the bytes exist only in memory.
+  Stream<Song> get songStream => _songController.stream;
 
   /// Resolve one URI into a song, if it names something the app can play.
   ///

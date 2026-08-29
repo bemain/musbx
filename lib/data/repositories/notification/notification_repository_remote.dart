@@ -57,20 +57,19 @@ class NotificationRepositoryRemote extends NotificationRepository {
 
     if (hasPermission) return Result.ok(true);
 
-    try {
-      final status = await _permissionService.request(
-        Permission.notifications,
-      );
+    return OptionalService.guard(
+      () async {
+        final status = await _permissionService.request(
+          Permission.notifications,
+        );
 
-      hasPermissionNotifier.value =
-          status == PermissionStatus.granted ||
-          status == PermissionStatus.unavailable;
-      return Result.ok(hasPermission);
-    } on ServiceDisabled catch (_) {
-      return Result.unavailable("Notification service disabled");
-    } catch (e, s) {
-      return Result.failed(e, s);
-    }
+        hasPermissionNotifier.value =
+            status == PermissionStatus.granted ||
+            status == PermissionStatus.unavailable;
+        return hasPermission;
+      },
+      "Notification service disabled",
+    );
   }
 
   Future<void> _checkPermissionStatus() async {
@@ -86,26 +85,18 @@ class NotificationRepositoryRemote extends NotificationRepository {
   Future<Result<void>> post(AppNotification notification) async {
     if (!hasPermission) return Result.failed(PermissionException());
 
-    try {
-      await _notificationService.post(notification);
-      return Result.ok(null);
-    } on ServiceDisabled catch (_) {
-      return Result.unavailable("Notification service disabled");
-    } catch (e, s) {
-      return Result.failed(e, s);
-    }
+    return OptionalService.guard(
+      () => _notificationService.post(notification),
+      "Notification service disabled",
+    );
   }
 
   @override
   Future<Result<void>> cancelAll() async {
-    try {
-      await _notificationService.cancelAll();
-      return Result.ok(null);
-    } on ServiceDisabled catch (_) {
-      return Result.unavailable("Notification service disabled");
-    } catch (e, s) {
-      return Result.failed(e, s);
-    }
+    return OptionalService.guard(
+      _notificationService.cancelAll,
+      "Notification service disabled",
+    );
   }
 
   /// Callback for when the user taps an action on the notification while the app is the background.

@@ -8,8 +8,9 @@ import 'package:musbx/domain/models/entitlement.dart';
 
 /// Sells the app's [Entitlement]s through the store the app was installed from.
 ///
-/// Purchases are optional. [disabled] returns a service that sells nothing, for
-/// platforms with no store and for devices where the store cannot be reached.
+/// Purchases are optional. [disabled] returns a service with no store behind
+/// it, for platforms that have none and for devices where the store cannot be
+/// reached.
 ///
 /// This reports what the store says but does not remember it. Which
 /// entitlements the user currently holds is app state, and belongs to the layer
@@ -29,9 +30,6 @@ class PurchaseService extends OptionalService {
     );
   }
 
-  @override
-  bool get isEnabled => __inAppPurchase != null;
-
   final InAppPurchase? __inAppPurchase;
 
   /// The store connection, or `null` when this service is [disabled].
@@ -39,6 +37,9 @@ class PurchaseService extends OptionalService {
     throwIfDisabled();
     return __inAppPurchase!;
   }
+
+  @override
+  bool get isEnabled => __inAppPurchase != null;
 
   /// Create the service, connecting to the store.
   ///
@@ -61,7 +62,7 @@ class PurchaseService extends OptionalService {
     return PurchaseService._(p);
   }
 
-  /// A service that sells nothing, for when no store is available.
+  /// A service with no store behind it, for when none is available.
   static PurchaseService disabled() => PurchaseService._(null);
 
   // TODO: Remove once we introduce `provider`.
@@ -96,15 +97,17 @@ class PurchaseService extends OptionalService {
   /// reinstalling the app.
   ///
   /// Anything restored arrives on [statusStream] rather than being returned.
-  /// Does nothing when this service is [disabled].
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled].
   Future<void> restore() async {
     await _inAppPurchase.restorePurchases();
   }
 
   /// Look up how [entitlement] is presented to the user.
   ///
-  /// Returns `null` when this service is disabled, when the entitlement is not
-  /// for sale, and when the store cannot be reached.
+  /// Throws [ServiceDisabled] when this service is [disabled], and a
+  /// [StateError] when the store has nothing to say about the entitlement —
+  /// because it is not for sale, or because the store could not be reached.
   Future<EntitlementDetails> details(Entitlement entitlement) async {
     final details = await _details(entitlement);
 
@@ -120,6 +123,9 @@ class PurchaseService extends OptionalService {
   ///
   /// Returns whether the flow could be started, which says nothing about
   /// whether the user went on to buy anything — that arrives on [statusStream].
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled], and a
+  /// [StateError] when [entitlement] is not for sale.
   Future<bool> buy(Entitlement entitlement) async {
     final d = await _details(entitlement);
 

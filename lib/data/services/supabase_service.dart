@@ -16,14 +16,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// [announcements] and [feedback], rather than the client being handed out.
 ///
 /// Nothing here is essential, so reaching the backend is allowed to fail:
-/// [disabled] returns a service that behaves as though the backend held no
-/// announcements and refuses to send feedback. Callers do not have to check
-/// [isEnabled] first — see each method for what it does when disabled.
+/// [disabled] returns a service with no client behind it.
 class SupabaseService extends OptionalService {
   SupabaseService._(this.__client);
-
-  @override
-  bool get isEnabled => __client != null;
 
   final SupabaseClient? __client;
 
@@ -32,6 +27,9 @@ class SupabaseService extends OptionalService {
     throwIfDisabled();
     return __client!;
   }
+
+  @override
+  bool get isEnabled => __client != null;
 
   /// Create the service, signing in anonymously if this device has no session.
   ///
@@ -64,9 +62,9 @@ class SupabaseService extends OptionalService {
 
   // TODO: Remove once we introduce `provider`.
   // If signInAnonymously() throws — no connectivity at launch, Supabase briefly
-  // unreachable — this installs disabled() permanently. Feedback submission
-  // then throws StateError for the rest of the process lifetime, even once the
-  // network comes back, and the only recovery is a full app restart.
+  // unreachable — this installs disabled() permanently. Every call then throws
+  // ServiceDisabled for the rest of the process lifetime, even once the network
+  // comes back, and the only recovery is a full app restart.
   //
   // Since launch-time connectivity is genuinely unreliable on mobile, the
   // sign-in is better attempted lazily on first use, or retried, rather than
@@ -82,10 +80,12 @@ class SupabaseService extends OptionalService {
   }
 
   /// Who the backend takes this device to be, or `null` if there is no session
-  /// to speak of, including when this service is [disabled].
+  /// to speak of.
   ///
   /// Identifies a device rather than a person, so it is only meaningful for
   /// telling one sender of feedback from another.
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled].
   User? get currentUser => _client.auth.currentUser;
 
   late final SupabaseQueryBuilder _announcements = _client.from(
@@ -126,8 +126,8 @@ class SupabaseService extends OptionalService {
 
   /// Insert a feedback entry in the database.
   ///
-  /// Throws if the backend cannot be reached, and a [StateError] if there is no
-  /// backend to reach at all. Unlike a read, this cannot quietly do nothing:
+  /// Throws if the backend cannot be reached, and [ServiceDisabled] if there is
+  /// no backend to reach at all. Unlike a read, this cannot quietly do nothing:
   /// the user has just chosen to send something and is about to be told it
   /// arrived, so the caller has to hear that it did not.
   Future<void> insertFeedback(FeedbackEntry value) async {

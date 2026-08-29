@@ -34,17 +34,10 @@ class TrackNotDownloadableException implements Exception {
 /// job; nothing above it should see this type.
 ///
 /// Obtaining the credentials this needs can fail, so [disabled] returns a
-/// service with none. Unlike the other optional services, a disabled client has
-/// nothing sensible to answer with: SoundCloud rejects every unauthenticated
-/// request, so [searchTracks] and [getDownloadUrl] throw an [HttpException]
-/// rather than degrade. Callers are expected to check [isEnabled] and hide the
-/// feature instead of calling into it.
+/// service with none. Callers are expected to check [isEnabled] and hide the
+/// feature if [disabled].
 class SoundCloudApiClient extends OptionalService {
-  SoundCloudApiClient._(this._baseUrl, this._clientId);
-
-  /// Whether a [_clientId] was obtained, and requests can therefore be made.
-  @override
-  bool get isEnabled => _clientId != null;
+  SoundCloudApiClient._(this._baseUrl, this.__clientId);
 
   /// Identifies the app to SoundCloud, and is required on every request.
   ///
@@ -53,10 +46,18 @@ class SoundCloudApiClient extends OptionalService {
   /// failing until the service is created again.
   ///
   /// `null` on a [disabled] service, and only there.
-  final String? _clientId;
+  final String? __clientId;
+  String get _clientId {
+    throwIfDisabled();
+    return __clientId!;
+  }
 
   /// Base URL for SoundCloud's API.
   final String _baseUrl;
+
+  /// Whether a [_clientId] was obtained, and requests can therefore be made.
+  @override
+  bool get isEnabled => __clientId != null;
 
   /// Create the client, obtaining a [_clientId] unless one is supplied.
   ///
@@ -134,9 +135,9 @@ class SoundCloudApiClient extends OptionalService {
   /// longer has the shape we expect, which should not be shown to the user as
   /// an empty result.
   ///
-  /// Throws an [HttpException] if SoundCloud rejects the request, which is
-  /// also what a [disabled] service does: the request goes out without a
-  /// client id and comes back refused.
+  /// Throws an [HttpException] if SoundCloud rejects the request, and
+  /// [ServiceDisabled] if this service is [disabled], in which case no request
+  /// is made at all.
   Future<List<SoundCloudTrack>> searchTracks(
     String query, {
     int limit = 50,
@@ -190,8 +191,8 @@ class SoundCloudApiClient extends OptionalService {
   /// such format and never will.
   ///
   /// Throws an [HttpException] if SoundCloud refuses to resolve the URL, which
-  /// unlike the above is worth retrying. A [disabled] service always ends up
-  /// here, having sent no client id.
+  /// unlike the above is worth retrying, and [ServiceDisabled] if this service
+  /// is [disabled].
   Future<Uri> getDownloadUrl(SoundCloudTrack track) async {
     final Uri uri =
         Uri.parse(

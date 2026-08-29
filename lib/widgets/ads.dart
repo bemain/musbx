@@ -45,7 +45,6 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   /// Load a banner ad.
   Future<void> _loadAd(int width) async {
     final ad = await AdService.instance.loadBanner(width: width);
-    if (ad == null) return;
     if (!mounted) {
       await ad.dispose();
       return;

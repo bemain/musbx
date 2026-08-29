@@ -49,13 +49,10 @@ class EntitlementRepositoryRemote extends EntitlementRepository {
 
   @override
   Future<Result<void>> restore() async {
-    try {
-      return Result.ok(await _purchaseService.restore());
-    } on ServiceDisabled catch (_) {
-      return Result.unavailable("In app purchase service disabled");
-    } catch (e, s) {
-      return Result.failed(e, s);
-    }
+    return OptionalService.guard(
+      _purchaseService.restore,
+      "In app purchase service disabled",
+    );
   }
 
   Future<void> _processStatus(

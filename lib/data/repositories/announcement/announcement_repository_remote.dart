@@ -41,24 +41,18 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
 
   @override
   Future<Result<Announcement>> getLatest() async {
-    try {
-      return Result.ok(await _supabaseService.getLatestAnnouncement());
-    } on ServiceDisabled catch (_) {
-      return Result.unavailable("Supabase service disabled");
-    } catch (e, s) {
-      return Result.failed(e, s);
-    }
+    return OptionalService.guard(
+      _supabaseService.getLatestAnnouncement,
+      "Supabase service disabled",
+    );
   }
 
   @override
   Future<Result<List<Announcement>>> getAll() async {
-    try {
-      return Result.ok(await _supabaseService.getAnnouncements());
-    } on ServiceDisabled catch (_) {
-      return Result.unavailable("Supabase service disabled");
-    } catch (e, s) {
-      return Result.failed(e, s);
-    }
+    return OptionalService.guard(
+      _supabaseService.getAnnouncements,
+      "Supabase service disabled",
+    );
   }
 
   /// Get all announcements from the database that have not been seen before.
@@ -67,14 +61,10 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   /// pick up a change rather than being awaited once.
   @override
   Future<Result<List<Announcement>>> getUnread() async {
-    try {
-      return Result.ok(
-        await _supabaseService.getAnnouncementsAfter(_readAtNotifier.value),
-      );
-    } on ServiceDisabled catch (_) {
-      return Result.unavailable("Supabase service disabled");
-    } catch (e, s) {
-      return Result.failed(e, s);
-    }
+    return OptionalService.guard(
+      () async =>
+          await _supabaseService.getAnnouncementsAfter(_readAtNotifier.value),
+      "Supabase service disabled",
+    );
   }
 }

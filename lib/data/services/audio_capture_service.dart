@@ -15,20 +15,26 @@ import 'package:musbx/domain/models/audio_frame.dart';
 /// The microphone is only running while [dataStream] is listened to, so nothing
 /// here holds it open.
 ///
-/// Optional: [disabled] returns a service with no microphone behind it, whose
-/// [dataStream] simply never emits.
+/// Optional: [disabled] returns a service with no microphone behind it. Callers
+/// are expected to check [isEnabled] and show something else instead of
+/// listening to nothing.
 class AudioCaptureService extends OptionalService {
   AudioCaptureService._(
-    this._recorder, {
+    this.__recorder, {
     required this.sampleRate,
     required this.format,
   });
 
-  @override
-  bool get isEnabled => _recorder != null;
-
   /// The plugin handle, or `null` when this service is [disabled].
-  final Recorder? _recorder;
+  final Recorder? __recorder;
+
+  Recorder get _recorder {
+    throwIfDisabled();
+    return __recorder!;
+  }
+
+  @override
+  bool get isEnabled => __recorder != null;
 
   /// The sample rate of the recording.
   ///
@@ -82,7 +88,12 @@ class AudioCaptureService extends OptionalService {
   /// Frames are dropped rather than queued while nobody is listening. This
   /// describes what the microphone is hearing now, and a backlog of stale audio
   /// would be worse than a gap.
-  late final Stream<AudioFrame> dataStream = _controller.stream;
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled].
+  Stream<AudioFrame> get dataStream {
+    throwIfDisabled();
+    return _controller.stream;
+  }
 
   /// What ties [_controller] to the recorder, held only while someone is
   /// listening.
@@ -97,13 +108,13 @@ class AudioCaptureService extends OptionalService {
   late final StreamController<AudioFrame> _controller =
       StreamController<AudioFrame>.broadcast(
         onListen: () {
-          _recorder?.start();
-          _recorder?.startStreamingData();
+          _recorder.start();
+          _recorder.startStreamingData();
           _subscription = _dataStream.listen(_controller.add);
         },
         onCancel: () async {
-          _recorder?.stopStreamingData();
-          _recorder?.stop();
+          _recorder.stopStreamingData();
+          _recorder.stop();
           await _subscription?.cancel();
           _subscription = null;
         },
@@ -117,11 +128,9 @@ class AudioCaptureService extends OptionalService {
   /// Note that this won't receive any data until streaming is started.
   /// For a [Stream] that automatically starts streaming when listened to,
   /// use [dataStream].
-  late final Stream<AudioFrame> _dataStream =
-      _recorder?.uint8ListStream.map(
-        _processData,
-      ) ??
-      Stream.empty();
+  late final Stream<AudioFrame> _dataStream = _recorder.uint8ListStream.map(
+    _processData,
+  );
 
   /// Assemble one frame from the samples the recorder just delivered.
   ///
@@ -133,10 +142,6 @@ class AudioCaptureService extends OptionalService {
   /// owns and overwrites on the next capture, so a frame that kept the view
   /// would change under whoever was reading it.
   AudioFrame _processData(AudioDataContainer data) {
-    if (_recorder == null) {
-      throw StateError("Cannot process data: the recorder is unavailable.");
-    }
-
     final AudioFrame out = AudioFrame(
       data: data.toF32List(from: format),
       wave: Float32List.fromList(_recorder.getWave()),
@@ -152,9 +157,12 @@ class AudioCaptureService extends OptionalService {
   /// stopped, so it belongs to the app shutting down and not to a screen going
   /// away — [dataStream] already releases the microphone when its listener
   /// leaves.
+  ///
+  /// Unlike the rest of this service, does nothing rather than throwing when
+  /// [disabled].
   Future<void> dispose() async {
     await _subscription?.cancel();
     await _controller.close();
-    _recorder?.deinit();
+    __recorder?.deinit();
   }
 }

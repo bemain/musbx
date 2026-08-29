@@ -9,8 +9,8 @@ import 'package:musbx/domain/models/notification.dart';
 
 /// Shows notifications, and reports what the user does with them.
 ///
-/// Notifications are optional. [disabled] returns a service that shows nothing,
-/// for platforms where the system has no notifications to show.
+/// Notifications are optional. [disabled] returns a service with nothing behind
+/// it, for platforms where the system has no notifications to show.
 ///
 /// Every [NotificationChannel] is registered with the operating system when the
 /// service starts, since the system owns them from then on and lets the user
@@ -19,9 +19,6 @@ import 'package:musbx/domain/models/notification.dart';
 class NotificationService extends OptionalService {
   NotificationService._(this.__notifications);
 
-  @override
-  bool get isEnabled => __notifications != null;
-
   /// The plugin handle, or `null` when this service is [disabled].
   final plugin.AwesomeNotifications? __notifications;
 
@@ -29,6 +26,9 @@ class NotificationService extends OptionalService {
     throwIfDisabled();
     return __notifications!;
   }
+
+  @override
+  bool get isEnabled => __notifications != null;
 
   /// Create the service, registering every [NotificationChannel] with the
   /// operating system.
@@ -77,7 +77,7 @@ class NotificationService extends OptionalService {
     return NotificationService._(n);
   }
 
-  /// A service that shows nothing, for platforms without notifications.
+  /// A service with nothing behind it, for platforms without notifications.
   static NotificationService disabled() => NotificationService._(null);
 
   // TODO: Remove once we introduce `provider`.
@@ -97,7 +97,7 @@ class NotificationService extends OptionalService {
   /// updated content is how a long-lived notification is kept in step with the
   /// app: the system replaces it in place instead of alerting the user again.
   ///
-  /// Does nothing when this service is [disabled].
+  /// Throws [ServiceDisabled] when this service is [disabled].
   Future<void> post(AppNotification notification) async {
     await _notifications.createNotification(
       content: plugin.NotificationContent(
@@ -129,13 +129,16 @@ class NotificationService extends OptionalService {
 
   /// Remove the notification showing on [channel], leaving other channels alone.
   ///
-  /// Does nothing when this service is [disabled], or when the channel has no
-  /// notification showing.
+  /// Does nothing when the channel has no notification showing.
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled].
   Future<void> cancel(NotificationChannel channel) async {
     await _notifications.cancel(idOf(channel));
   }
 
   /// Remove every notification this app is showing.
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled].
   Future<void> cancelAll() async {
     await _notifications.cancelAll();
   }

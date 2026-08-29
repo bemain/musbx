@@ -12,12 +12,9 @@ class FeedbackRepositoryRemote extends FeedbackRepository {
 
   @override
   Future<Result<void>> insert(FeedbackEntry value) async {
-    try {
-      return Result.ok(await _supabaseService.insertFeedback(value));
-    } on ServiceDisabled catch (_) {
-      return Result.unavailable("Supabase service disabled");
-    } catch (e, s) {
-      return Result.failed(e, s);
-    }
+    return OptionalService.guard(
+      () => _supabaseService.insertFeedback(value),
+      "Supabase service disabled",
+    );
   }
 }

@@ -17,9 +17,6 @@ class FileCacheService {
 
   final Directory _applicationDocuments;
 
-  /// The write operations currently being performed.
-  final Map<String, Future<File>> _operations = {};
-
   /// Create the service and resolve the directories it caches files in.
   static Future<FileCacheService> create() async {
     final temp = await getTemporaryDirectory();
@@ -49,6 +46,9 @@ class FileCacheService {
   /// regenerable files here.
   CacheDirectory get persistent =>
       CacheDirectory._(this, _applicationDocuments);
+
+  /// The write operations currently being performed.
+  final Map<String, Future<File>> _operations = {};
 }
 
 /// A directory in the cache. Does not have to exist on disk.
