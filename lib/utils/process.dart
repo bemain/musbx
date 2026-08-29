@@ -24,7 +24,7 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   /// Completes with the [result] of this process.
   ///
   /// Never completes with an error; anything [execute] throws is captured as an
-  /// [Error] result instead.
+  /// [Failure] result instead.
   late final Future<Result<T>> future = _execute();
 
   /// The progress of the process, as reported by [execute].
@@ -96,7 +96,7 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   /// The task that this process performs.
   ///
   /// Throw to fail the process; whatever is thrown is caught and exposed as an
-  /// [Error] result. Report progress through [progressNotifier], and call
+  /// [Failure] result. Report progress through [progressNotifier], and call
   /// [breakIfCancelled] periodically so that the process can be cancelled.
   Future<T> execute();
 

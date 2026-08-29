@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
@@ -9,7 +10,6 @@ import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/utils.dart';
@@ -126,7 +126,7 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
         SettingsGroup(
           children: [
             ListenableBuilder(
-              listenable: SongLibrary.history,
+              listenable: SongRepository.instance,
               builder: (context, child) => FutureBuilder<int>(
                 future: _cacheSize,
                 builder: (context, snapshot) {
@@ -134,8 +134,7 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
 
                   return ListTile(
                     enabled:
-                        SongLibrary.history.entries.isNotEmpty &&
-                        cacheSize > 0,
+                        SongRepository.instance.isNotEmpty && cacheSize > 0,
                     leading: Icon(Symbols.cloud_off),
                     title: Text("Free up storage"),
                     onTap: () async {
@@ -174,8 +173,7 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                         );
 
                         // Remove cache
-                        for (final song
-                            in SongLibrary.history.entries.values) {
+                        for (final song in SongRepository.instance.getAll()) {
                           DemixingProcesses.cancel(song);
                         }
                         await FileCacheService.instance.scratch
@@ -191,9 +189,9 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
               ),
             ),
             ListenableBuilder(
-              listenable: SongLibrary.history,
+              listenable: SongRepository.instance,
               builder: (context, child) => ListTile(
-                enabled: SongLibrary.history.entries.isNotEmpty,
+                enabled: SongRepository.instance.isNotEmpty,
                 leading: Icon(Symbols.delete_sweep),
                 title: Text("Remove all songs"),
                 onTap: () async {
@@ -231,7 +229,7 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                       initialLocation: true,
                     );
 
-                    await SongLibrary.history.clear();
+                    await SongRepository.instance.removeAll();
                     if (!mounted) return;
                     _refresh();
                   }

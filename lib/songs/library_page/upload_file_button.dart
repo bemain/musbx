@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/permission_builder.dart';
 
@@ -62,8 +62,13 @@ class UploadSongButton extends SpeedDialChild {
       return;
     }
 
-    final Song song = await SongLibrary.addFile(File(file.path!));
-    Navigation.navigatorKey.currentContext?.go(Routes.song(song.id));
+    switch (await SongRepository.instance.addFile(File(file.path!))) {
+      case Ok(value: final song):
+        Navigation.navigatorKey.currentContext?.go(Routes.song(song.id));
+      case Failure(:final error):
+        debugPrint("[Library] Uploading file failed; $error");
+      // TODO: Show error snackbar
+    }
   }
 
   Future<void> pushPermissionBuilder(BuildContext context) async {

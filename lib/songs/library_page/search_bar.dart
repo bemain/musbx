@@ -3,12 +3,13 @@ import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/soundcloud_api_client.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
-import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/utils/result.dart';
 
 class LibrarySearchBar extends StatefulWidget {
   const LibrarySearchBar({super.key});
@@ -78,8 +79,8 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         }
 
         // History entries that match the search query
-        final Iterable<Song> songHistory = SongLibrary.history
-            .sorted(ascending: false)
+        final Iterable<Song> songHistory = SongRepository.instance
+            .getAll(order: GetOrder.descending)
             .where(
               (song) =>
                   song.title.toLowerCase().contains(query) ||
@@ -123,11 +124,20 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                           track: track,
                           onTap: () async {
                             this.controller.closeView(null);
-                            final Song song = await SongLibrary.addTrack(
-                              track,
-                            );
-                            if (context.mounted) {
-                              context.go(Routes.song(song.id));
+                            final result = await SongRepository.instance
+                                .addTrack(
+                                  track,
+                                );
+                            switch (result) {
+                              case Ok(value: final song):
+                                if (context.mounted) {
+                                  context.go(Routes.song(song.id));
+                                }
+                              case Failure(:final error):
+                                debugPrint(
+                                  "[Library] Failed to add SoundCloud track; $error",
+                                );
+                              // TODO: Show error snackbar
                             }
                           },
                         )

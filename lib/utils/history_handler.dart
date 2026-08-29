@@ -6,6 +6,7 @@ import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/utils/utils.dart';
 
 /// Helper class for persisting history entries to disk.
+/// TODO: Rethink
 class HistoryHandler<T> extends ChangeNotifier {
   HistoryHandler({
     required this.fromJson,
@@ -98,6 +99,19 @@ class HistoryHandler<T> extends ChangeNotifier {
       await onEntryRemoved?.call(oldestEntry);
     }
 
+    await save();
+    notifyListeners();
+  }
+
+  /// Replace the stored value equal to [value], keeping its position in history.
+  Future<void> update(T value) async {
+    final key = entries.entries
+        .where((e) => e.value == value)
+        .firstOrNull
+        ?.key;
+    if (key == null) return;
+
+    entries[key] = value;
     await save();
     notifyListeners();
   }

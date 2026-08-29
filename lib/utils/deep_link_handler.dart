@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/deep_links_service.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
 /// Opens the songs the operating system hands the app.
@@ -29,9 +30,7 @@ class DeepLinkHandler {
   DeepLinkHandler({required DeepLinksService deepLinksService})
     : _deepLinksService = deepLinksService {
     _subscription = _deepLinksService.songStream.listen((song) async {
-      try {
-        song = await SongLibrary.add(song);
-      } catch (error) {
+      if (await SongRepository.instance.add(song) case Failure(:final error)) {
         debugPrint(
           "[Launch handler] Error occured while adding song '$song': $error",
         );

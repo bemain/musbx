@@ -1,11 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
-import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/utils/result.dart';
 
 class DemixingProgressIndicator extends StatefulWidget {
   const DemixingProgressIndicator({
@@ -115,15 +118,15 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: SongLibrary.history,
+      listenable: SongRepository.instance,
       builder: (context, child) {
         // Any update to the history could be an update to *this* song.
         // Thus, we get the song from history each time we build instead of using
         // the song passed in the constructor.
         // For example, if the song is renamed while the sheet is open, it will
         // automatically be rebuilt with the correct information.
-        final Song? song = SongLibrary.history.entries.values
-            .where((song) => song.id == widget.song.id)
+        final Song? song = SongRepository.instance
+            .getWhere((song, _) => song.id == widget.song.id)
             .firstOrNull;
 
         if (song == null) {
@@ -194,9 +197,11 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                           TextButton(
                             onPressed: () {
                               if (controller.text.isNotEmpty) {
-                                SongLibrary.history.add(
-                                  song.copyWith(
-                                    title: controller.text,
+                                unawaited(
+                                  SongRepository.instance.add(
+                                    song.copyWith(
+                                      title: controller.text,
+                                    ),
                                   ),
                                 );
                               }
@@ -241,10 +246,20 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                                 onPressed: () async {
                                   await song.clearCache();
                                   song.shouldDemix = false;
-                                  await SongLibrary.history.save();
-                                  if (context.mounted) {
-                                    Navigator.of(context).pop();
+                                  switch (await SongRepository.instance.update(
+                                    song,
+                                  )) {
+                                    case Ok():
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop();
+                                      }
+                                    case Failure(:final error):
+                                      debugPrint(
+                                        "[Songs] Couldn't clear cache: $error",
+                                      );
+                                    // TODO: Show error snackbar
                                   }
+
                                   _refresh();
                                 },
                                 child: const Text("Clear"),
@@ -280,7 +295,7 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                           ),
                           FilledButton(
                             onPressed: () {
-                              SongLibrary.history.remove(song);
+                              SongRepository.instance.remove(song);
                               Navigator.of(context).pop();
                               Navigator.of(context).pop();
                             },

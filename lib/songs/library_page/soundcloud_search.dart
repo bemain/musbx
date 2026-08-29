@@ -4,12 +4,12 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/soundcloud_api_client.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/search_bar.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/utils/history_handler.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 /// Provides functionality for searching and downloading SoundCloud tracks.
@@ -31,9 +31,16 @@ class SoundCloudSearch {
 
     if (track == null) return;
 
-    final Song song = await SongLibrary.addTrack(track);
+    switch (await SongRepository.instance.addTrack(track)) {
+      case Ok(value: final song):
+        if (context.mounted) context.go(Routes.song(song.id));
 
-    if (context.mounted) context.go(Routes.song(song.id));
+      case Failure(:final error):
+        debugPrint(
+          "[SoundCloud] Unable to add track to library; $error",
+        );
+      // TODO: Show error snackbar
+    }
   }
 
   /// The history of previous search SoundCloud queries.

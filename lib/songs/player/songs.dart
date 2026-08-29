@@ -5,14 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/player/audio_handler.dart';
-import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
+import 'package:musbx/utils/result.dart';
 
 /// A helper class for loading songs.
 class Songs {
@@ -52,7 +53,7 @@ class Songs {
     // Begin fetching history from disk
     unawaited(SoundCloudSearch.history.fetch());
     unawaited(
-      SongLibrary.initialize().then((_) {
+      SongRepository.initialize().then((_) {
         _resumeDemixing();
       }),
     );
@@ -62,7 +63,7 @@ class Songs {
     if (!demixAutomatically) return;
 
     DemixingProcesses.startAll(
-      SongLibrary.history.entries.values.where((song) => song.shouldDemix),
+      SongRepository.instance.getAll().where((song) => song.shouldDemix),
     );
   }
 
@@ -70,17 +71,13 @@ class Songs {
   static const int freeSongsPerWeek = 3;
 
   /// The songs played this week. Used by the 'free' flavor of the app to restrict usage.
-  static Iterable<Song> get songsPlayedThisWeek => SongLibrary
-      .history
-      .entries
-      .entries
-      .where(
-        (entry) =>
-            entry.key.difference(DateTime.now()).abs() <
+  static Iterable<Song> get songsPlayedThisWeek => SongRepository.instance
+      .getWhere(
+        (song, accessedAt) =>
+            accessedAt.difference(DateTime.now()).abs() <
             const Duration(days: 7),
       )
-      .where((entry) => entry.value.id != demoSong.id) // Exclude demo song
-      .map((e) => e.value);
+      .where((song) => song.id != demoSong.id); // Exclude demo song
 
   /// Whether the user's access to playing [Songs] has been restricted
   /// because the number of [freeSongsPerWeek] has been reached.
@@ -130,7 +127,9 @@ class Songs {
     final SongPlayer player = await SongPlayer.load(song);
 
     // Add to song history.
-    await SongLibrary.add(song);
+    if (await SongRepository.instance.add(song) case Failure(:final error)) {
+      throw error;
+    }
 
     // Update media notification
     player.addListener(handler.updateState);

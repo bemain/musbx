@@ -4,14 +4,15 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/youtube_video.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/youtube_api_client.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
-import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/history_handler.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/widgets.dart';
 
 class YoutubeSearch {
@@ -33,10 +34,11 @@ class YoutubeSearch {
       artUri: Uri.tryParse(video.thumbnails.high.url),
       audio: YtdlpAudio(Uri.parse(video.url)),
     );
-    await SongLibrary.add(song);
-    if (Songs.demixAutomatically) DemixingProcesses.start(song);
+    if (await SongRepository.instance.add(song) case Ok()) {
+      if (Songs.demixAutomatically) DemixingProcesses.start(song);
 
-    if (context.mounted) context.go(Routes.song(video.id));
+      if (context.mounted) context.go(Routes.song(video.id));
+    }
   }
 
   /// The history of previous search queries.
