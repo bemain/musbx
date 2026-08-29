@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
-import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/utils/result.dart';
 
 /// Show an exception dialog.
 ///
@@ -71,8 +71,14 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: () async {
-              await EntitlementRepository.instance.restore();
-              if (context.mounted) Navigator.of(context).pop();
+              final result = await EntitlementRepository.instance.restore();
+              switch (result) {
+                case Ok():
+                  if (context.mounted) Navigator.of(context).pop();
+
+                default:
+                // TODO: Show error snackbar
+              }
             },
             style: TextButton.styleFrom(
               padding: EdgeInsets.symmetric(horizontal: 8),
