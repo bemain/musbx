@@ -6,7 +6,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
 import 'package:musbx/data/models/feedback/feedback_entry.dart';
 import 'package:musbx/data/repositories/announcement/announcement_repository.dart';
-import 'package:musbx/data/repositories/feedback/feedback_respository.dart';
+import 'package:musbx/data/repositories/feedback/feedback_repository.dart';
 import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/settings_page.dart';
@@ -156,7 +156,7 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
                       onPressed: feedbackController.text.trim().isEmpty
                           ? null
                           : () async {
-                              final result = await FeedbackRespository.instance
+                              final result = await FeedbackRepository.instance
                                   .insert(
                                     FeedbackEntry(
                                       content: feedbackController.text.trim(),
