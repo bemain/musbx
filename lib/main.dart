@@ -17,7 +17,6 @@ import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
-import 'package:musbx/utils/deep_links.dart';
 import 'package:musbx/utils/launch_handler.dart';
 
 Future<void> main() async {
@@ -37,7 +36,6 @@ Future<void> main() async {
   await SoundCloudApiClient.initialize();
 
   await DeepLinksService.initialize();
-  await DeepLinks.initialize();
 
   await LaunchHandler.initialize();
 
