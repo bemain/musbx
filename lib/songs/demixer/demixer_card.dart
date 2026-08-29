@@ -3,6 +3,7 @@ import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
@@ -12,7 +13,6 @@ import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
@@ -352,7 +352,7 @@ class StemControlsState extends State<StemControls> {
 
     /// Whether this stem is allowed to be accessed.
     final bool accessAllowed =
-        Purchases.hasPremium ||
+        EntitlementRepository.instance.hasPremium ||
         player.song.id == demoSong.id ||
         DemixerComponent.freeStems.contains(stem.type);
 
@@ -368,7 +368,8 @@ class StemControlsState extends State<StemControls> {
           SizedBox(width: 12),
           GestureDetector(
             onLongPress: () {
-              if (!Purchases.hasPremium && player.song.id != demoSong.id) {
+              if (!EntitlementRepository.instance.hasPremium &&
+                  player.song.id != demoSong.id) {
                 return;
               }
 

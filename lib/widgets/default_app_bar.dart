@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
@@ -40,15 +41,15 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 class GetPremiumButton extends StatelessWidget {
   /// A simple icon button that opens the "Get Premium"-dialog when pressed.
-  /// If [Purchases.hasPremium] is true, returns a zero-sized box.
+  /// If [EntitlementRepositoryRemote.hasPremium] is true, returns a zero-sized box.
   const GetPremiumButton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: Purchases.hasPremiumNotifier,
-      builder: (context, hasPremium, child) {
-        if (hasPremium) return const SizedBox();
+    return ListenableBuilder(
+      listenable: EntitlementRepository.instance,
+      builder: (context, child) {
+        if (EntitlementRepository.instance.hasPremium) return const SizedBox();
 
         return IconButton(
           onPressed: () {

@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/services/purchase_service.dart';
+import 'package:musbx/data/services/service.dart';
 import 'package:musbx/domain/models/entitlement.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
 class AccessRestrictedException implements Exception {
@@ -19,21 +22,26 @@ class AccessRestrictedException implements Exception {
   }
 }
 
-class Purchases {
+class EntitlementRepositoryRemote extends EntitlementRepository {
+  EntitlementRepositoryRemote({required PurchaseService purchaseService})
+    : _purchaseService = purchaseService;
+
+  final PurchaseService _purchaseService;
+
   /// Whether the payment platform is ready and available.
-  static bool isAvailable = false;
+  bool get isAvailable => _purchaseService.isEnabled;
 
-  static bool _isBuyingPremium = false;
+  bool _isBuyingPremium = false;
 
-  /// Whether the user has bought the 'premium' product that unlocks access to premium features of the app.
-  static bool get hasPremium => hasPremiumNotifier.value;
-  static final ValueNotifier<bool> hasPremiumNotifier = ValueNotifier(false);
+  bool _hasPremium = false;
+  @override
+  bool get hasPremium => _hasPremium;
 
-  static Future<void> initialize() async {
-    if (!PurchaseService.instance.isEnabled) {
+  Future<void> initialize() async {
+    if (!_purchaseService.isEnabled) {
       debugPrint("[PURCHASES] The current platform is not supported");
-      isAvailable = false;
-      hasPremiumNotifier.value = true;
+      _hasPremium = true;
+      notifyListeners();
       return;
     }
 
@@ -44,10 +52,18 @@ class Purchases {
     await restore();
   }
 
-  /// Restore all previous purchases.
-  static Future<void> restore() => PurchaseService.instance.restore();
+  @override
+  Future<Result<void>> restore() async {
+    try {
+      return Result.ok(await _purchaseService.restore());
+    } on ServiceDisabled catch (_) {
+      return Result.unavailable("In app purchase service disabled");
+    } catch (e, s) {
+      return Result.failed(e, s);
+    }
+  }
 
-  static Future<void> _processStatus(
+  Future<void> _processStatus(
     Entitlement entitlement,
     EntitlementStatus status,
   ) async {
@@ -55,8 +71,11 @@ class Purchases {
       case Entitlement.premium:
         switch (status) {
           case EntitlementStatus.purchased:
+            if (hasPremium) return;
+
             debugPrint("[PURCHASES] Premium features unlocked");
-            hasPremiumNotifier.value = true;
+            _hasPremium = true;
+            notifyListeners();
             if (Platform.isIOS && _isBuyingPremium) {
               unawaited(
                 showExceptionDialog(const PremiumPurchasedDialog()),
@@ -87,8 +106,21 @@ class Purchases {
     }
   }
 
-  static Future<bool> buyPremium() {
+  @override
+  Future<Result<bool>> buyPremium() async {
+    if (hasPremium) return Result.ok(true);
     _isBuyingPremium = true;
-    return PurchaseService.instance.buy(Entitlement.premium);
+
+    try {
+      return Result.ok(
+        await _purchaseService.buy(Entitlement.premium),
+      );
+    } on ServiceDisabled catch (_) {
+      _isBuyingPremium = false;
+      return Result.unavailable("In app purchase service disabled");
+    } catch (e, s) {
+      _isBuyingPremium = false;
+      return Result.failed(e, s);
+    }
   }
 }

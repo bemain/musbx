@@ -10,11 +10,11 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
     required SharedPreferencesService sharedPreferences,
     required SupabaseService supabaseService,
   }) : _sharedPreferences = sharedPreferences,
-       _supabase = supabaseService;
+       _supabaseService = supabaseService;
 
   final SharedPreferencesService _sharedPreferences;
 
-  final SupabaseService _supabase;
+  final SupabaseService _supabaseService;
 
   /// The last time the announcements were read.
   ///
@@ -42,7 +42,7 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   @override
   Future<Result<Announcement>> getLatest() async {
     try {
-      return Result.ok(await _supabase.getLatestAnnouncement());
+      return Result.ok(await _supabaseService.getLatestAnnouncement());
     } on ServiceDisabled catch (_) {
       return Result.unavailable("Supabase service disabled");
     } catch (e, s) {
@@ -53,7 +53,7 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   @override
   Future<Result<List<Announcement>>> getAll() async {
     try {
-      return Result.ok(await _supabase.getAnnouncements());
+      return Result.ok(await _supabaseService.getAnnouncements());
     } on ServiceDisabled catch (_) {
       return Result.unavailable("Supabase service disabled");
     } catch (e, s) {
@@ -69,7 +69,7 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   Future<Result<List<Announcement>>> getUnread() async {
     try {
       return Result.ok(
-        await _supabase.getAnnouncementsAfter(_readAtNotifier.value),
+        await _supabaseService.getAnnouncementsAfter(_readAtNotifier.value),
       );
     } on ServiceDisabled catch (_) {
       return Result.unavailable("Supabase service disabled");

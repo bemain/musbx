@@ -20,7 +20,6 @@ import 'package:musbx/theme.dart';
 import 'package:musbx/utils/deep_links.dart';
 import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/notifications.dart';
-import 'package:musbx/utils/purchases.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +31,6 @@ Future<void> main() async {
   await AnalyticsService.initialize();
   await AdService.initialize();
   await PurchaseService.initialize();
-  await Purchases.initialize();
 
   await Songs.initialize();
   await NotificationService.initialize();

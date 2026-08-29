@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/theme.dart';
 import 'package:musbx/utils/launch_handler.dart';
-import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
@@ -141,7 +141,7 @@ class SettingsPage extends StatelessWidget {
                   },
                 ),
               ),
-              if (!Purchases.hasPremium)
+              if (!EntitlementRepository.instance.hasPremium)
                 ListTile(
                   leading: Icon(Symbols.workspace_premium),
                   title: Text("Get Premium"),

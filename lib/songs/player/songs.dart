@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
@@ -11,7 +13,6 @@ import 'package:musbx/songs/player/audio_handler.dart';
 import 'package:musbx/songs/player/library.dart';
 import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/utils/purchases.dart';
 
 /// A helper class for loading songs.
 class Songs {
@@ -86,7 +87,8 @@ class Songs {
   ///
   /// This is only ever `true` on the 'free' flavor of the app.
   static bool get isAccessRestricted =>
-      !Purchases.hasPremium && songsPlayedThisWeek.length >= freeSongsPerWeek;
+      !EntitlementRepository.instance.hasPremium &&
+      songsPlayedThisWeek.length >= freeSongsPerWeek;
 
   /// The player responsible for playing the song that is currently loaded.
   /// TODO: Switch to a decentralized structure using provider.

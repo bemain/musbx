@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
 import 'package:musbx/data/services/analytics_service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/drone/drone_page.dart';
@@ -14,7 +15,6 @@ import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
 import 'package:musbx/utils/launch_handler.dart';
-import 'package:musbx/utils/purchases.dart';
 import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';

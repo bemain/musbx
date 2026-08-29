@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/utils/purchases.dart';
 
 /// Show an exception dialog.
 ///
@@ -70,7 +71,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: () async {
-              await Purchases.restore();
+              await EntitlementRepository.instance.restore();
               if (context.mounted) Navigator.of(context).pop();
             },
             style: TextButton.styleFrom(
@@ -89,7 +90,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            unawaited(Purchases.buyPremium());
+            unawaited(EntitlementRepository.instance.buyPremium());
             Navigator.of(context).pop();
           },
           child: const Text("Upgrade"),
@@ -144,7 +145,7 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            unawaited(Purchases.buyPremium());
+            unawaited(EntitlementRepository.instance.buyPremium());
             if (context.mounted) Navigator.of(context).pop();
           },
           child: const Text("Try again"),
