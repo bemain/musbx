@@ -1,12 +1,12 @@
 import 'package:musbx/data/models/announcement/announcement.dart';
-import 'package:musbx/data/repositories/announcements/announcements_repository.dart';
+import 'package:musbx/data/repositories/announcement/announcement_repository.dart';
 import 'package:musbx/data/services/service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/utils/result.dart';
 
-class AnnouncementsRepositoryRemote extends AnnouncementsRepository {
-  AnnouncementsRepositoryRemote({
+class AnnouncementRepositoryRemote extends AnnouncementRepository {
+  AnnouncementRepositoryRemote({
     required SharedPreferencesService sharedPreferences,
     required SupabaseService supabaseService,
   }) : _sharedPreferences = sharedPreferences,

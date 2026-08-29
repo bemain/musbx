@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
 import 'package:musbx/data/models/feedback/feedback_entry.dart';
-import 'package:musbx/data/repositories/announcements/announcements_repository.dart';
+import 'package:musbx/data/repositories/announcement/announcement_repository.dart';
 import 'package:musbx/data/repositories/feedback/feedback_respository.dart';
 import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/navigation.dart';
@@ -24,7 +24,7 @@ class AnnouncementsPage extends StatefulWidget {
 }
 
 class _AnnouncementsPageState extends State<AnnouncementsPage> {
-  final Future<Result<List<Announcement>>> _future = AnnouncementsRepository
+  final Future<Result<List<Announcement>>> _future = AnnouncementRepository
       .instance
       .getAll();
 
@@ -38,10 +38,10 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final DateTime previousReadAt = AnnouncementsRepository.instance.readAt;
+    final DateTime previousReadAt = AnnouncementRepository.instance.readAt;
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      AnnouncementsRepository.instance.markRead();
+      AnnouncementRepository.instance.markRead();
     });
 
     return Scaffold(
@@ -250,9 +250,9 @@ class AnnouncementsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: AnnouncementsRepository.instance,
+      listenable: AnnouncementRepository.instance,
       builder: (context, child) => ResultBuilder(
-        future: AnnouncementsRepository.instance.getUnread(),
+        future: AnnouncementRepository.instance.getUnread(),
         loading: (context) {
           return _buildButton(context, []);
         },
@@ -294,7 +294,7 @@ class AnnouncementsButton extends StatelessWidget {
                   },
                 );
 
-                AnnouncementsRepository.instance.markRead(popup.createdAt);
+                AnnouncementRepository.instance.markRead(popup.createdAt);
               });
             } else {
               SchedulerBinding.instance.addPostFrameCallback((_) {
