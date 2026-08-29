@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io' hide Process;
 
 import 'package:flutter/material.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/analyze.dart';
@@ -10,8 +9,10 @@ import 'package:musbx/data/services/musbx_api/musbx_api.dart';
 import 'package:musbx/domain/models/music/chord.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/utils/process.dart';
 import 'package:musbx/utils/utils.dart';
 
+// TODO: Make this just a Future<Result<...>>
 class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
   /// Perform chord identification on a [song].
   ChordIdentificationProcess(this.song);
@@ -46,7 +47,6 @@ class ChordIdentificationProcess extends Process<Map<Duration, Chord?>> {
     if (data == null) {
       // Perform chords identification
       final MusbxApiClient client = await MusbxApi.getClient();
-
       data = await analyzeSource(song.audio, client);
 
       // Save to cache

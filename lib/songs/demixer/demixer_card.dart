@@ -44,7 +44,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
       listenable: process,
       builder: (context, child) {
         if (process.hasError) {
-          if (process.error is OutOfDateException) return buildOutOfDate();
+          if (process.error is OutOfDate) return buildOutOfDate();
 
           return buildError();
         }
@@ -57,7 +57,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
                 valueListenable: process.progressNotifier,
                 builder: (context, progress, child) => CircularLoadingCheck(
                   progress: progress,
-                  isComplete: process.isComplete,
+                  isComplete: !process.isRunning,
                   size: 96,
                 ),
               ),
@@ -75,7 +75,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
               ),
             ),
             const SizedBox(height: 8),
-            process.isActive
+            process.isRunning
                 ? TextButton(
                     onPressed: () {
                       setState(() {
@@ -168,7 +168,7 @@ Please update to the latest version to use the Demixer.""",
   }
 
   Widget buildLoadingText(BuildContext context, DemixingProcess process) {
-    if (!process.isActive) {
+    if (!process.isRunning) {
       return const Text(
         "The song has been split into instruments. To complete the loading process, reload the page.",
         textAlign: TextAlign.center,

@@ -45,13 +45,13 @@ class _DemixingProgressIndicatorState
               return _buildNotDemixed(context);
             }
 
-            if (process.isComplete) {
+            if (!process.isRunning) {
               widget.onDemixingComplete?.call();
             }
 
             return Tooltip(
               message:
-                  "This song ${process.isActive ? "is being" : "has been"} split into instruments.",
+                  "This song ${process.isRunning ? "is being" : "has been"} split into instruments.",
               child: ValueListenableBuilder(
                 valueListenable: process.progressNotifier,
                 builder: (context, progress, child) {
@@ -59,10 +59,10 @@ class _DemixingProgressIndicatorState
                     alignment: Alignment.center,
                     children: [
                       CircularLoadingCheck(
-                        isComplete: process.isComplete,
+                        isComplete: !process.isRunning,
                         progress: progress,
                       ),
-                      if (!process.isComplete)
+                      if (process.isRunning)
                         IconButton(
                           onPressed: () {
                             DemixingProcesses.cancel(widget.song);

@@ -2,22 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:pub_semver/pub_semver.dart';
 
-class NoHostAvailableException implements Exception {
-  final String? msg;
+sealed class MusbxApiError implements Exception {}
 
-  const NoHostAvailableException([this.msg]);
-
+final class NoHostAvailable extends MusbxApiError {
   @override
-  String toString() => msg ?? "No host is available";
+  String toString() => "No Musbx API host is available";
 }
 
-class OutOfDateException implements Exception {
-  final String? msg;
-
-  const OutOfDateException([this.msg]);
-
+final class OutOfDate extends MusbxApiError {
   @override
-  String toString() => msg ?? "The app is out of date with the server";
+  String toString() => "The app is out of date with the Musbx API server";
 }
 
 class MusbxApi {
@@ -54,8 +48,6 @@ class MusbxApi {
       }
     }
 
-    throw hostAvailable
-        ? const OutOfDateException()
-        : const NoHostAvailableException();
+    return throw hostAvailable ? OutOfDate() : NoHostAvailable();
   }
 }

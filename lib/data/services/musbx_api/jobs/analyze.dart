@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/job.dart';
 import 'package:musbx/utils/utils.dart';
 
@@ -43,7 +45,16 @@ class AnalyzeJob extends Job<AnalyzeJobResult> {
 
   @override
   Future<AnalyzeJobReport> get() async {
-    final response = await dio.get<Json>("/job/$id");
-    return AnalyzeJobReport.fromJson(response.data!);
+    try {
+      final response = await dio.get<Json>("/job/$id");
+      return AnalyzeJobReport.fromJson(response.data!);
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    } on TypeError catch (_) {
+      throw MalformedResponse();
+    }
   }
 }

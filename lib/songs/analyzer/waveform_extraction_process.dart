@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:io' hide Process;
 
 import 'package:just_waveform/just_waveform.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
 import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/utils/process.dart';
 
+// TODO: Make this just a Future<Result<...>>
 class WaveformExtractionProcess extends Process<Waveform> {
   /// Perform waveform extraction on a [song].
   WaveformExtractionProcess(this.song);
@@ -36,7 +37,7 @@ class WaveformExtractionProcess extends Process<Waveform> {
     final AudioProvider source = song.audio;
     final CacheFile? inFile = source.cacheFile;
     if (inFile == null || !await inFile.exists()) {
-      throw "File doesn't exist: $inFile";
+      throw FileSystemException("File doesn't exist", inFile?.path);
     }
 
     breakIfCancelled();
@@ -54,6 +55,6 @@ class WaveformExtractionProcess extends Process<Waveform> {
       progressNotifier.value = event.progress;
       if (event.waveform != null) return event.waveform!;
     }
-    throw "Waveform extraction never completed";
+    throw Exception("Waveform extraction never completed");
   }
 }

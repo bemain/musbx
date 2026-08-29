@@ -42,8 +42,7 @@ class AnalyzerComponent extends SongPlayerComponent {
 
   /// The process analyzing the chords of the current song.
   late final ChordIdentificationProcess chordsProcess =
-      ChordIdentificationProcess(player.song)
-        ..resultNotifier.addListener(_updateChords);
+      ChordIdentificationProcess(player.song)..addListener(_updateChords);
 
   /// The transposed chords of the current song,
   /// or `null` if no song has been loaded.
@@ -57,10 +56,9 @@ class AnalyzerComponent extends SongPlayerComponent {
   ///
   /// TODO: Try reimplementing this using SoLoud or audio_waveforms.
   late final WaveformExtractionProcess waveformProcess =
-      WaveformExtractionProcess(player.song)
-        ..resultNotifier.addListener(() {
-          waveformNotifier.value = waveformProcess.result;
-        });
+      WaveformExtractionProcess(player.song)..addListener(() {
+        waveformNotifier.value = waveformProcess.value;
+      });
 
   /// The waveform extracted from the current song,
   /// or `null` if no song has been loaded.
@@ -68,7 +66,7 @@ class AnalyzerComponent extends SongPlayerComponent {
   final ValueNotifier<Waveform?> waveformNotifier = ValueNotifier(null);
 
   void _updateChords() {
-    chordsNotifier.value = chordsProcess.result?.map(
+    chordsNotifier.value = chordsProcess.value?.map(
       (key, value) => MapEntry(
         key,
         value?.transposed(player.slowdowner.pitch.round()),

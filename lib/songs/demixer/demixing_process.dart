@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:material_plus/material_plus.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/demix.dart';
@@ -12,6 +11,7 @@ import 'package:musbx/data/services/musbx_api/jobs/job.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
 import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/player/audio_provider.dart';
+import 'package:musbx/utils/process.dart';
 
 enum DemixingStep {
   /// The cache is being checked to see if stem files are available there.
@@ -31,6 +31,19 @@ enum DemixingStep {
 
   /// The stem files are being downloaded.
   downloading,
+}
+
+sealed class DemixingError implements Exception {}
+
+final class NoServerFound extends DemixingError {
+  @override
+  String toString() =>
+      "No Musbx API server capable of demixing could be found";
+}
+
+final class ServerError extends DemixingError {
+  @override
+  String toString() => "The Musbx API server was unable to demix the song";
 }
 
 class DemixingProcess extends Process<Map<StemType, CacheFile>> {
@@ -155,7 +168,7 @@ class DemixingProcess extends Process<Map<StemType, CacheFile>> {
       report = await job.get();
     }
 
-    if (report.hasError) throw report.error!;
+    if (report.hasError) throw Exception("Demixing failed: ${report.error!}");
     if (!report.hasResult) {
       throw Exception("Demixing process didn't return a result.");
     }
