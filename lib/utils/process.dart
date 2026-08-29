@@ -1,82 +1,7 @@
 import 'dart:async';
-import 'dart:core';
-import 'dart:core' as core;
 
 import 'package:flutter/material.dart';
-
-/// The outcome of a [Process]: the value it produced, the error it failed with,
-/// or cancellation.
-///
-/// Evaluate the outcome using a switch statement, which the compiler checks for
-/// exhaustiveness:
-/// ```dart
-/// switch (process.result) {
-///   case Ok(:final value):
-///     print("Produced $value");
-///   case Error(:final error):
-///     print("Failed with $error");
-///   case Cancelled():
-///     print("Cancelled before it finished");
-///   case null:
-///     print("Still running");
-/// }
-/// ```
-sealed class ProcessResult<T> {
-  const ProcessResult();
-
-  /// Creates a successful [ProcessResult], completed with the specified [value].
-  const factory ProcessResult.ok(T value) = Ok._;
-
-  /// Creates an error [ProcessResult], completed with the specified [error].
-  ///
-  /// If no [stackTrace] is given, the trace of this call is used.
-  factory ProcessResult.error(Object error, StackTrace? stackTrace) =>
-      Error._(error, stackTrace ?? StackTrace.current);
-
-  /// Creates a [ProcessResult] for a process that was cancelled.
-  const factory ProcessResult.cancelled() = Cancelled._;
-}
-
-/// The [ProcessResult] of a process that completed successfully.
-final class Ok<T> extends ProcessResult<T> {
-  const Ok._(this.value);
-
-  /// The value that the process produced.
-  final T value;
-
-  @override
-  String toString() => 'Result<$T>.ok($value)';
-}
-
-/// The [ProcessResult] of a process that failed.
-final class Error<T> extends ProcessResult<T> {
-  const Error._(this.error, this.stackTrace);
-
-  /// The error that the process threw.
-  final Object error;
-
-  /// The stack trace of where [error] occurred.
-  final StackTrace stackTrace;
-
-  @override
-  String toString() => 'Result<$T>.error($error)';
-}
-
-/// The [ProcessResult] of a process that was cancelled before it produced a
-/// value or an error. See [Process.cancel].
-final class Cancelled<T> extends ProcessResult<T> {
-  const Cancelled._();
-
-  @override
-  String toString() => "Result<$T>.cancelled()";
-}
-
-/// Thrown by [Process.breakIfCancelled] to unwind [Process.execute] once the
-/// process has been cancelled. Never escapes [Process.future].
-final class _CancelledException implements Exception {
-  @override
-  String toString() => "This process was cancelled before it returned a value";
-}
+import 'package:musbx/utils/result.dart';
 
 /// A lengthy task, with progress tracking, cancellation and error handling.
 ///
@@ -100,17 +25,17 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   ///
   /// Never completes with an error; anything [execute] throws is captured as an
   /// [Error] result instead.
-  late final Future<ProcessResult<T>> future = _execute();
+  late final Future<Result<T>> future = _execute();
 
   /// The progress of the process, as reported by [execute].
   /// Should be a value between `0.0` and `1.0`.
   double get progress => progressNotifier.value;
   final ValueNotifier<double> progressNotifier = ValueNotifier(0.0);
 
-  ProcessResult<T>? _result;
+  Result<T>? _result;
 
   /// The outcome of this process, or `null` if it hasn't finished yet.
-  ProcessResult<T>? get result => _result;
+  Result<T>? get result => _result;
 
   /// Whether this process is still running, that is, it has neither finished
   /// nor been cancelled.
@@ -130,7 +55,7 @@ abstract class Process<T extends Object> extends ChangeNotifier {
 
   /// The error encountered by this process, if any.
   Object? get error => switch (_result) {
-    Error<T>(:final error) => error,
+    Failure<T>(:final error) => error,
     _ => null,
   };
 
@@ -145,23 +70,23 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   /// [result] becomes [Cancelled] immediately, but [execute] keeps running
   /// until it reaches its next [breakIfCancelled].
   void cancel() {
-    _result = ProcessResult.cancelled();
+    _result = Result.cancelled();
     notifyListeners();
   }
 
   /// Run [execute] and capture its outcome in [result].
-  Future<ProcessResult<T>> _execute() async {
+  Future<Result<T>> _execute() async {
     try {
       final value = await execute();
       if (_result != null) return _result!;
-      _result = ProcessResult.ok(value);
-    } on _CancelledException catch (_) {
+      _result = Result.ok(value);
+    } on CancelledException catch (_) {
       if (_result != null) return _result!;
-      _result = ProcessResult.cancelled();
+      _result = Result.cancelled();
     } catch (e, s) {
       assert(e is Exception);
       if (_result != null) return _result!;
-      _result = ProcessResult.error(e, s);
+      _result = Result.failed(e, s);
     }
 
     notifyListeners();
@@ -180,6 +105,6 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   /// Should be called periodically between asynchronous operations to introduce
   /// "breakpoints" where the process can be cancelled.
   void breakIfCancelled() {
-    if (result case Cancelled()) throw _CancelledException();
+    if (result case Cancelled()) throw CancelledException();
   }
 }
