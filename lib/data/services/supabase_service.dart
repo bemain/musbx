@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
 import 'package:musbx/data/models/feedback/feedback_entry.dart';
 import 'package:musbx/data/services/service.dart';
-import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/keys.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -21,13 +20,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// announcements and refuses to send feedback. Callers do not have to check
 /// [isEnabled] first — see each method for what it does when disabled.
 class SupabaseService extends OptionalService {
-  SupabaseService._(this._client);
+  SupabaseService._(this.__client);
 
   @override
-  bool get isEnabled => _client != null;
+  bool get isEnabled => __client != null;
+
+  final SupabaseClient? __client;
 
   /// The supabase client used internally.
-  final SupabaseClient? _client;
+  SupabaseClient get _client {
+    throwIfDisabled();
+    return __client!;
+  }
 
   /// Create the service, signing in anonymously if this device has no session.
   ///
@@ -82,69 +86,25 @@ class SupabaseService extends OptionalService {
   ///
   /// Identifies a device rather than a person, so it is only meaningful for
   /// telling one sender of feedback from another.
-  User? get currentUser => _client?.auth.currentUser;
+  User? get currentUser => _client.auth.currentUser;
 
-  /// The announcements shown to the user, and what they have read.
-  ///
-  /// Reads nothing when this service is [disabled], but still remembers what
-  /// has been read, since that is stored on the device.
-  late final AnnouncementApiService announcements = AnnouncementApiService._(
-    _client?.from("announcements"),
+  late final SupabaseQueryBuilder _announcements = _client.from(
+    "announcements",
   );
 
-  /// What the user has told us, whether unprompted or in answer to a poll.
-  ///
-  /// Refuses to send anything when this service is [disabled].
-  late final FeedbackApiService feedback = FeedbackApiService._(
-    _client?.from("feedback"),
-  );
-}
-
-/// Reads the announcements the app shows, and remembers which the user has
-/// already seen.
-///
-/// Announcements are ordered by when they were written, and "unread" means
-/// written since [readAt] — there is no per-announcement record, so marking one
-/// read marks everything older read with it.
-///
-/// With no backend behind it every read comes back empty, which the app cannot
-/// tell apart from there being nothing to announce, and does not need to.
-class AnnouncementApiService {
-  AnnouncementApiService._(this._table);
-
-  final SupabaseQueryBuilder? _table;
-
-  /// The last time the announcements were read.
-  ///
-  /// Everything written after this is unread, so moving it forward is how
-  /// announcements are dismissed. It defaults to the moment it is first read,
-  /// which means a fresh install starts with nothing unread rather than with
-  /// the entire history.
-  ///
-  /// TODO: Move this to repository
-  late final TransformedPersistentValue<DateTime, String> readAt =
-      SharedPreferencesService.instance.transformed(
-        "announcements/readAt",
-        initialValue: DateTime.now(),
-        from: (value) => DateTime.parse(value),
-        to: (value) => value.toIso8601String(),
-      );
-
-  /// Get the latest announcement from the database, or null if there are none.
-  Future<Announcement?> getLatest() async {
-    return await _table
-        ?.select()
+  /// Get the latest announcement from the database.
+  Future<Announcement> getLatestAnnouncement() async {
+    return await _announcements
+        .select()
         .order('created_at')
         .limit(1)
-        .maybeSingle()
-        .withConverter((d) => d == null ? null : Announcement.fromJson(d));
+        .single()
+        .withConverter(Announcement.fromJson);
   }
 
   /// Get all announcements from the database.
-  Future<List<Announcement>> getAll() async {
-    if (_table == null) return [];
-
-    return await _table
+  Future<List<Announcement>> getAnnouncements() async {
+    return await _announcements
         .select()
         .order('created_at')
         .withConverter(
@@ -152,34 +112,17 @@ class AnnouncementApiService {
         );
   }
 
-  /// Get all announcements from the database that have not been seen before.
-  ///
-  /// Reads [readAt] as it stands when called, so this has to be run again to
-  /// pick up a change rather than being awaited once.
-  Future<List<Announcement>> getUnread() async {
-    if (_table == null) return [];
-
-    return await _table
+  Future<List<Announcement>> getAnnouncementsAfter(DateTime date) async {
+    return await _announcements
         .select()
-        .gt("created_at", readAt.value.toIso8601String())
+        .gt("created_at", date.toIso8601String())
         .order('created_at')
         .withConverter(
           (data) => data.map(Announcement.fromJson).toList(),
         );
   }
-}
 
-/// Sends what the user has told us to the backend.
-///
-/// Write-only: nothing in the app reads feedback back, and a user cannot see or
-/// withdraw what they have sent.
-///
-/// With no backend behind it [insert] throws rather than discarding what it was
-/// given, so nobody is thanked for feedback that went nowhere.
-class FeedbackApiService {
-  FeedbackApiService._(this._table);
-
-  final SupabaseQueryBuilder? _table;
+  late final SupabaseQueryBuilder _feedback = _client.from("feedback");
 
   /// Insert a feedback entry in the database.
   ///
@@ -187,10 +130,7 @@ class FeedbackApiService {
   /// backend to reach at all. Unlike a read, this cannot quietly do nothing:
   /// the user has just chosen to send something and is about to be told it
   /// arrived, so the caller has to hear that it did not.
-  Future<void> insert(FeedbackEntry value) async {
-    if (_table == null) {
-      throw StateError("Cannot send feedback: the backend is unavailable.");
-    }
-    await _table.insert(value.toJson());
+  Future<void> insertFeedback(FeedbackEntry value) async {
+    await _feedback.insert(value.toJson());
   }
 }

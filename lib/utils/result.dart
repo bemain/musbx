@@ -58,7 +58,6 @@ final class Unavailable<T> extends Failure<T> {
   final String reason;
 
   @override
-  // TODO: implement message
   String get message => "This feature is currently unavailable; $reason";
 
   @override

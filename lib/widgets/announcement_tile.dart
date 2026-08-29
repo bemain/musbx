@@ -141,7 +141,7 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
                                 .toList();
 
                             for (final response in responses) {
-                              await SupabaseService.instance.feedback.insert(
+                              await SupabaseService.instance.insertFeedback(
                                 FeedbackEntry(
                                   content: response,
                                   responseTo: announcement.id,

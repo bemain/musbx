@@ -5,10 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
 import 'package:musbx/data/models/feedback/feedback_entry.dart';
+import 'package:musbx/data/repositories/announcements/announcements_repository.dart';
+import 'package:musbx/data/repositories/feedback/feedback_respository.dart';
 import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/settings_page.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/announcement_tile.dart';
+import 'package:musbx/widgets/result_builder.dart';
 import 'package:musbx/widgets/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -20,9 +24,8 @@ class AnnouncementsPage extends StatefulWidget {
 }
 
 class _AnnouncementsPageState extends State<AnnouncementsPage> {
-  final Future<List<Announcement>> _future = SupabaseService
+  final Future<Result<List<Announcement>>> _future = AnnouncementsRepository
       .instance
-      .announcements
       .getAll();
 
   final TextEditingController feedbackController = TextEditingController();
@@ -35,12 +38,10 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final DateTime previousReadAt =
-        SupabaseService.instance.announcements.readAt.value;
+    final DateTime previousReadAt = AnnouncementsRepository.instance.readAt;
 
-    // Mark all announcements as read
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      SupabaseService.instance.announcements.readAt.value = DateTime.now();
+      AnnouncementsRepository.instance.markRead();
     });
 
     return Scaffold(
@@ -52,39 +53,46 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
         child: Column(
           children: [
             Expanded(
-              child: FutureBuilder(
+              child: ResultBuilder(
                 future: _future,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    debugPrint("[Announcements] ${snapshot.error}");
-
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Icon(
-                          Symbols.error,
-                          size: 96,
-                        ),
-                        Text(
-                          "Failed to load announcements. Please try again later.",
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    );
-                  }
-
+                loading: (context) {
                   return ListView(
                     children: [
-                      for (Announcement? announcement
-                          in snapshot.data ?? [null, null, null])
+                      for (int i = 0; i < 3; i++)
+                        AnnouncementTile(
+                          announcement: null,
+                          isUnread: false,
+                        ),
+                    ],
+                  );
+                },
+                failure: (context, error) {
+                  debugPrint("[Announcements] $error");
+
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Icon(
+                        Symbols.error,
+                        size: 96,
+                      ),
+                      Text(
+                        "Failed to load announcements. Please try again later.",
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  );
+                },
+                ok: (context, announcements) {
+                  return ListView(
+                    children: [
+                      for (Announcement announcement in announcements)
                         AnnouncementTile(
                           announcement: announcement,
-                          isUnread:
-                              announcement?.createdAt.toLocal().isAfter(
-                                previousReadAt,
-                              ) ??
-                              false,
+                          isUnread: announcement.createdAt.toLocal().isAfter(
+                            previousReadAt,
+                          ),
                         ),
                     ],
                   );
@@ -148,22 +156,40 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
                       onPressed: feedbackController.text.trim().isEmpty
                           ? null
                           : () async {
-                              await SupabaseService.instance.feedback.insert(
-                                FeedbackEntry(
-                                  content: feedbackController.text.trim(),
-                                  sentBy:
-                                      SupabaseService.instance.currentUser?.id,
-                                ),
-                              );
+                              final result = await FeedbackRespository.instance
+                                  .insert(
+                                    FeedbackEntry(
+                                      content: feedbackController.text.trim(),
+                                      sentBy: SupabaseService
+                                          .instance
+                                          .currentUser
+                                          ?.id,
+                                    ),
+                                  );
 
-                              feedbackController.clear();
+                              switch (result) {
+                                case Failure():
+                                  if (context.mounted) {
+                                    showAlertSnackBar(
+                                      context,
+                                      leading: Icon(Symbols.error),
+                                      title: Text(
+                                        "Something went wrong! Please try again later.",
+                                      ),
+                                    );
+                                  }
+                                case Ok():
+                                  feedbackController.clear();
 
-                              if (context.mounted) {
-                                showAlertSnackBar(
-                                  context,
-                                  leading: Icon(Symbols.celebration),
-                                  title: Text("Thank you for your feedback!"),
-                                );
+                                  if (context.mounted) {
+                                    showAlertSnackBar(
+                                      context,
+                                      leading: Icon(Symbols.celebration),
+                                      title: Text(
+                                        "Thank you for your feedback!",
+                                      ),
+                                    );
+                                  }
                               }
                             },
                       icon: Icon(Symbols.send),
@@ -223,13 +249,20 @@ class AnnouncementsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: SupabaseService.instance.announcements.readAt,
-      builder: (context, readAt, child) => FutureBuilder(
-        future: SupabaseService.instance.announcements.getUnread(),
-        builder: (context, snapshot) {
-          final List<Announcement> unread = snapshot.data ?? [];
-
+    return ListenableBuilder(
+      listenable: AnnouncementsRepository.instance,
+      builder: (context, child) => ResultBuilder(
+        future: AnnouncementsRepository.instance.getUnread(),
+        loading: (context) {
+          return _buildButton(context, []);
+        },
+        failure: (context, error) {
+          debugPrint(
+            "[Announcements] Failed to get unread announcements: $error",
+          );
+          return _buildButton(context, []);
+        },
+        ok: (context, unread) {
           if (unread.isNotEmpty && !hasShownTooltip) {
             hasShownTooltip = true;
 
@@ -261,8 +294,7 @@ class AnnouncementsButton extends StatelessWidget {
                   },
                 );
 
-                SupabaseService.instance.announcements.readAt.value =
-                    popup.createdAt;
+                AnnouncementsRepository.instance.markRead(popup.createdAt);
               });
             } else {
               SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -271,26 +303,30 @@ class AnnouncementsButton extends StatelessWidget {
             }
           }
 
-          return Tooltip(
-            key: _tooltipKey,
-            triggerMode: TooltipTriggerMode.manual,
-            message: unread.firstOrNull?.title ?? "Announcements",
-            showDuration: const Duration(seconds: 3),
-            child: IconButton(
-              onPressed: () {
-                context.push(Routes.announcements);
-              },
-              icon: Badge.count(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                textColor: Theme.of(context).colorScheme.onPrimary,
-                isLabelVisible: unread.isNotEmpty,
-                count: unread.length,
-                maxCount: 9,
-                child: Icon(Symbols.campaign),
-              ),
-            ),
-          );
+          return _buildButton(context, unread);
         },
+      ),
+    );
+  }
+
+  Widget _buildButton(BuildContext context, List<Announcement> unread) {
+    return Tooltip(
+      key: _tooltipKey,
+      triggerMode: TooltipTriggerMode.manual,
+      message: unread.firstOrNull?.title ?? "Announcements",
+      showDuration: const Duration(seconds: 3),
+      child: IconButton(
+        onPressed: () {
+          context.push(Routes.announcements);
+        },
+        icon: Badge.count(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          textColor: Theme.of(context).colorScheme.onPrimary,
+          isLabelVisible: unread.isNotEmpty,
+          count: unread.length,
+          maxCount: 9,
+          child: Icon(Symbols.campaign),
+        ),
       ),
     );
   }
