@@ -17,13 +17,18 @@ import 'package:musbx/domain/models/notification.dart';
 /// configure each one separately.
 @pragma("vm:entry-point")
 class NotificationService extends OptionalService {
-  NotificationService._(this._notifications);
+  NotificationService._(this.__notifications);
 
   @override
-  bool get isEnabled => _notifications != null;
+  bool get isEnabled => __notifications != null;
 
   /// The plugin handle, or `null` when this service is [disabled].
-  final plugin.AwesomeNotifications? _notifications;
+  final plugin.AwesomeNotifications? __notifications;
+
+  plugin.AwesomeNotifications get _notifications {
+    throwIfDisabled();
+    return __notifications!;
+  }
 
   /// Create the service, registering every [NotificationChannel] with the
   /// operating system.
@@ -94,7 +99,7 @@ class NotificationService extends OptionalService {
   ///
   /// Does nothing when this service is [disabled].
   Future<void> post(AppNotification notification) async {
-    await _notifications?.createNotification(
+    await _notifications.createNotification(
       content: plugin.NotificationContent(
         id: idOf(notification.channel),
         channelKey: _keyOf(notification.channel),
@@ -127,12 +132,12 @@ class NotificationService extends OptionalService {
   /// Does nothing when this service is [disabled], or when the channel has no
   /// notification showing.
   Future<void> cancel(NotificationChannel channel) async {
-    await _notifications?.cancel(idOf(channel));
+    await _notifications.cancel(idOf(channel));
   }
 
   /// Remove every notification this app is showing.
   Future<void> cancelAll() async {
-    await _notifications?.cancelAll();
+    await _notifications.cancelAll();
   }
 
   /// Actions received from the operating system.

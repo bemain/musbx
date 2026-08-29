@@ -19,7 +19,6 @@ import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
 import 'package:musbx/utils/deep_links.dart';
 import 'package:musbx/utils/launch_handler.dart';
-import 'package:musbx/utils/notifications.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +33,6 @@ Future<void> main() async {
 
   await Songs.initialize();
   await NotificationService.initialize();
-  await Notifications.initialize();
 
   await SoundCloudApiClient.initialize();
 

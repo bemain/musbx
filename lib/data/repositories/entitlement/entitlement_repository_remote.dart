@@ -24,20 +24,7 @@ class AccessRestrictedException implements Exception {
 
 class EntitlementRepositoryRemote extends EntitlementRepository {
   EntitlementRepositoryRemote({required PurchaseService purchaseService})
-    : _purchaseService = purchaseService;
-
-  final PurchaseService _purchaseService;
-
-  /// Whether the payment platform is ready and available.
-  bool get isAvailable => _purchaseService.isEnabled;
-
-  bool _isBuyingPremium = false;
-
-  bool _hasPremium = false;
-  @override
-  bool get hasPremium => _hasPremium;
-
-  Future<void> initialize() async {
+    : _purchaseService = purchaseService {
     if (!_purchaseService.isEnabled) {
       debugPrint("[PURCHASES] The current platform is not supported");
       _hasPremium = true;
@@ -49,8 +36,16 @@ class EntitlementRepositoryRemote extends EntitlementRepository {
       (record) => _processStatus(record.entitlement, record.status),
     );
 
-    await restore();
+    unawaited(restore());
   }
+
+  final PurchaseService _purchaseService;
+
+  bool _isBuyingPremium = false;
+  bool _hasPremium = false;
+
+  @override
+  bool get hasPremium => _hasPremium;
 
   @override
   Future<Result<void>> restore() async {

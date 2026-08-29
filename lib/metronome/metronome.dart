@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:musbx/data/repositories/notification/notification_repository.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/notification.dart';
-import 'package:musbx/utils/notifications.dart';
 
 /// A sound used by the metronome.
 class Tick {
@@ -46,7 +46,7 @@ class Metronome {
       },
       onDetach: () async {
         // FIXME: This doesn't work... The future never completes
-        await Notifications.cancelAll();
+        await NotificationRepository.instance.cancelAll();
       },
     );
 
@@ -197,7 +197,7 @@ class Metronome {
   Future<void> updateNotification() async {
     if (!showNotification) return;
 
-    await Notifications.post(
+    await NotificationRepository.instance.post(
       AppNotification(
         channel: NotificationChannel.metronomeControls,
         title: "Metronome",
