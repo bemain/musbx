@@ -7,7 +7,6 @@ import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/domain/models/song_preferences.dart';
 import 'package:musbx/domain/use_case/clear_song_cache.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
@@ -248,35 +247,16 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                               ),
                               FilledButton(
                                 onPressed: () async {
-                                  await ClearSongCache(
+                                  switch (await ClearSongCache(
                                     cache: SongCache.instance,
-                                  ).call(song);
-                                  switch (await SongPreferencesRepository
-                                      .instance
-                                      .read(song)) {
-                                    case Ok(value: final prefs):
-                                      switch (await SongPreferencesRepository
-                                          .instance
-                                          .write(
-                                            song,
-                                            prefs?.copyWith(
-                                                  shouldDemix: false,
-                                                ) ??
-                                                SongPreferences(
-                                                  shouldDemix: false,
-                                                ),
-                                          )) {
-                                        case Ok():
-                                          if (context.mounted) {
-                                            Navigator.of(context).pop();
-                                          }
-
-                                        case Failure(:final error):
-                                          debugPrint(
-                                            "[Songs] Couldn't get song preferences: $error",
-                                          );
-                                        // TODO: Show error snackbar
+                                    preferences:
+                                        SongPreferencesRepository.instance,
+                                  ).call(song)) {
+                                    case Ok():
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop();
                                       }
+
                                     case Failure(:final error):
                                       debugPrint(
                                         "[Songs] Couldn't clear cache: $error",

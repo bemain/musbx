@@ -8,7 +8,7 @@ import 'package:meta/meta.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/domain/use_case/clear_song_cache.dart';
+import 'package:musbx/domain/use_case/delete_song.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/utils/utils.dart';
@@ -54,7 +54,7 @@ class SongRepository extends ChangeNotifier {
         debugPrint(
           "[LIBRARY] Deleting cached files for song ${song.id}",
         );
-        await ClearSongCache(cache: SongCache.instance).call(song);
+        await DeleteSong(cache: SongCache.instance).call(song);
       },
     );
 

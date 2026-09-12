@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -198,12 +200,15 @@ class Navigation {
                                       .call(song)
                                       .timeout(
                                         const Duration(seconds: 30),
+                                        onTimeout: () => Result.failed(
+                                          TimeoutException(
+                                            "Loading the song took too long",
+                                          ),
+                                        ),
                                       ),
                               builder: (context, snapshot) {
-                                Widget fail(Widget dialog) {
-                                  debugPrint(
-                                    "[Navigation] ${snapshot.error}",
-                                  );
+                                Widget fail(Object error, Widget dialog) {
+                                  debugPrint("[Navigation] $error");
                                   WidgetsBinding.instance.addPostFrameCallback(
                                     (_) {
                                       showExceptionDialog(dialog);
@@ -217,10 +222,12 @@ class Navigation {
                                   null =>
                                     SongPage(), // loading — SongPage already shimmers on song == null
                                   Ok() => SongPage(),
-                                  AccessRestricted() => fail(
+                                  AccessRestricted(:final error) => fail(
+                                    error,
                                     const MusicPlayerAccessRestrictedDialog(),
                                   ),
                                   Failure(:final error) => fail(
+                                    error,
                                     SongCouldNotBeLoadedDialog(error: error),
                                   ),
                                 };
