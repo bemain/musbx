@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/deep_links_service.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/check_song_access.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
@@ -37,7 +38,10 @@ class DeepLinkHandler {
         return;
       }
 
-      if (Songs.isAccessRestricted) {
+      if (CheckSongAccess(
+        entitlement: EntitlementRepository.instance,
+        songs: SongRepository.instance,
+      ).isRestricted) {
         await showExceptionDialog(
           const MusicPlayerAccessRestrictedDialog(),
         );

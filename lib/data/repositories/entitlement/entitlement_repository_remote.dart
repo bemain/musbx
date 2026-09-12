@@ -9,19 +9,6 @@ import 'package:musbx/domain/models/entitlement.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
-class AccessRestrictedException implements Exception {
-  /// An exception thrown when access to a feature is restricted,
-  /// such as when the user has used up their free songs.
-  const AccessRestrictedException([this.message]);
-
-  final String? message;
-
-  @override
-  String toString() {
-    return message ?? "Access restricted";
-  }
-}
-
 class EntitlementRepositoryRemote extends EntitlementRepository {
   EntitlementRepositoryRemote({required PurchaseService purchaseService})
     : _purchaseService = purchaseService {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/loop/loop_slider.dart';
-import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -11,14 +10,15 @@ class PositionSlider extends StatelessWidget {
   ///
   /// Includes labels displaying the current position and duration of the current song.
   /// If looping is enabled, highlights the section of the slider being looped.
-  const PositionSlider({super.key, this.enabled = true});
+  PositionSlider({super.key, this.enabled = true});
 
   final bool enabled;
 
+  final PlaybackRepository playback = PlaybackRepository.instance;
+
   @override
   Widget build(BuildContext context) {
-    final SongPlayer? player = Songs.player;
-    if (player == null) {
+    if (playback.song == null) {
       return Column(
         children: [
           SizedBox(height: 24),
@@ -27,9 +27,9 @@ class PositionSlider extends StatelessWidget {
       );
     }
 
-    return ValueListenableBuilder(
-      valueListenable: player.positionNotifier,
-      builder: (context, position, child) {
+    return ListenableBuilder(
+      listenable: playback.positionNotifier,
+      builder: (context, child) {
         return SizedBox(
           height: 48 + 24,
           child: Stack(
@@ -39,17 +39,19 @@ class PositionSlider extends StatelessWidget {
                 alignment: Alignment.bottomCenter,
                 child: SizedBox(
                   height: 48,
-                  child: _buildSlider(context, player),
+                  child: _buildSlider(context),
                 ),
               ),
 
               Align(
                 alignment: Alignment.bottomLeft,
-                child: _buildDurationText(context, position),
+                child: _buildDurationText(context, playback.position),
               ),
               Align(
                 alignment: Alignment.bottomRight,
-                child: _buildDurationText(context, player.duration),
+                child: playback.duration == null
+                    ? null
+                    : _buildDurationText(context, playback.duration!),
               ),
 
               Align(
@@ -76,7 +78,7 @@ class PositionSlider extends StatelessWidget {
     );
   }
 
-  Widget _buildSlider(BuildContext context, SongPlayer player) {
+  Widget _buildSlider(BuildContext context) {
     PositionSliderStyle style = Theme.of(
       context,
     ).extension<PositionSliderStyle>()!;
@@ -105,25 +107,24 @@ class PositionSlider extends StatelessWidget {
           return Colors.transparent;
         }),
         min: 0,
-        max: player.duration.inMilliseconds.roundToDouble(),
-        value: player.position.inMilliseconds
+        max: playback.duration?.inMilliseconds.roundToDouble() ?? 1.0,
+        value: playback.position.inMilliseconds
             .clamp(
-              enabled ? player.loop.start.inMilliseconds : 0,
-              enabled
-                  ? player.loop.end.inMilliseconds
-                  : player.duration.inMilliseconds,
+              enabled ? playback.loopSection.start?.inMilliseconds ?? 0 : 0,
+              (enabled ? playback.loopSection.end?.inMilliseconds : null) ??
+                  (playback.duration?.inMilliseconds ?? 1.0),
             )
             .roundToDouble(),
         onChangeStart: (value) {
-          wasPlayingBeforeChange = player.isPlaying;
-          player.pause();
+          wasPlayingBeforeChange = playback.isPlaying;
+          playback.pause();
         },
         onChanged: (value) {
-          player.position = Duration(milliseconds: value.round());
+          playback.position = Duration(milliseconds: value.round());
         },
         onChangeEnd: (value) {
-          player.seek(Duration(milliseconds: value.round()));
-          if (wasPlayingBeforeChange) player.resume();
+          playback.seek(Duration(milliseconds: value.round()));
+          if (wasPlayingBeforeChange) playback.resume();
         },
       ),
     );
@@ -133,11 +134,9 @@ class PositionSlider extends StatelessWidget {
     BuildContext context,
     bool loopEnabled,
   ) {
-    if (Songs.player == null) {
+    if (playback.song == null) {
       return RoundedRectSliderTrackShape();
     }
-
-    final SongPlayer player = Songs.player!;
 
     PositionSliderStyle style = Theme.of(
       context,
@@ -145,9 +144,11 @@ class PositionSlider extends StatelessWidget {
 
     return HighlightedSectionSliderTrackShape(
       highlightStart:
-          player.loop.start.inMilliseconds / player.duration.inMilliseconds,
+          (playback.loopSection.start?.inMilliseconds ?? 0) /
+          (playback.duration?.inMilliseconds ?? 1.0),
       highlightEnd:
-          player.loop.end.inMilliseconds / player.duration.inMilliseconds,
+          (playback.loopSection.end?.inMilliseconds ?? 0) /
+          (playback.duration?.inMilliseconds ?? 1.0),
       nonHighlightColor: style.nonLoopedTrackColor,
       disabledNonHighlightColor: style.disabledNonLoopedTrackColor,
     );

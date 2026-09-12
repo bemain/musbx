@@ -4,25 +4,24 @@ import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
+import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/repositories/song/song_settings_repository.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/models/song_preferences.dart';
+import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/demixer/demixer.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
+import 'package:musbx/widgets/result_builder.dart';
 
 class DemixingProcessIndicator extends StatefulWidget {
-  const DemixingProcessIndicator({super.key, required this.player});
-
-  final SinglePlayer player;
-
-  Song get song => player.song;
+  const DemixingProcessIndicator({super.key});
 
   @override
   State<DemixingProcessIndicator> createState() =>
@@ -30,69 +29,95 @@ class DemixingProcessIndicator extends StatefulWidget {
 }
 
 class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
-  bool get demix => widget.player.demix ?? Songs.demixAutomatically;
+  final PlaybackRepository playback = PlaybackRepository.instance;
+
+  Future<void> _setDemix(
+    Song song,
+    bool value, {
+    SongPreferences? prefs,
+  }) async {
+    prefs ??= (await SongPreferencesRepository.instance.read(song)).asOk;
+    (await SongPreferencesRepository.instance.write(
+      song,
+      (prefs ?? SongPreferences()).copyWith(
+        shouldDemix: false,
+      ),
+    )).asOk;
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (!demix) {
-      return buildDemixDisabled();
-    }
+    final song = playback.song;
+    if (song == null) return buildDemixDisabled();
 
-    DemixingProcess? process = DemixingProcesses.start(widget.song);
+    return ResultBuilder(
+      future: SongPreferencesRepository.instance.read(song),
+      ok: (context, prefs) {
+        final demix =
+            prefs?.shouldDemix ??
+            SongSettingsRepository.instance.demixAutomatically;
 
-    return ListenableBuilder(
-      listenable: process,
-      builder: (context, child) {
-        if (process.hasError) {
-          if (process.error is OutOfDate) return buildOutOfDate();
-
-          return buildError();
+        if (!demix) {
+          return buildDemixDisabled();
         }
 
-        return Column(
-          children: [
-            Expanded(child: SizedBox()),
-            buildCookie(
-              child: ValueListenableBuilder(
-                valueListenable: process.progressNotifier,
-                builder: (context, progress, child) => CircularLoadingCheck(
-                  progress: progress,
-                  isComplete: !process.isRunning,
-                  size: 96,
-                ),
-              ),
-            ),
+        DemixingProcess? process = DemixingProcesses.start(song);
 
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 40,
-              child: Center(
-                child: ValueListenableBuilder(
-                  valueListenable: process.stepNotifier,
-                  builder: (context, step, child) =>
-                      buildLoadingText(context, process),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            process.isRunning
-                ? TextButton(
-                    onPressed: () {
-                      setState(() {
-                        widget.player.demix = false;
-                      });
-                    },
-                    child: const Text("Cancel"),
-                  )
-                : FilledButton(
-                    onPressed: () {
-                      context.replace(Routes.song(widget.song.id));
-                    },
-                    child: const Text("Reload"),
+        return ListenableBuilder(
+          listenable: process,
+          builder: (context, child) {
+            if (process.hasError) {
+              if (process.error is OutOfDate) return buildOutOfDate();
+
+              return buildError();
+            }
+
+            return Column(
+              children: [
+                Expanded(child: SizedBox()),
+                buildCookie(
+                  child: ValueListenableBuilder(
+                    valueListenable: process.progressNotifier,
+                    builder: (context, progress, child) =>
+                        CircularLoadingCheck(
+                          progress: progress,
+                          isComplete: !process.isRunning,
+                          size: 96,
+                        ),
                   ),
-            Expanded(child: SizedBox()),
-            const SizedBox(height: 24),
-          ],
+                ),
+
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 40,
+                  child: Center(
+                    child: ValueListenableBuilder(
+                      valueListenable: process.stepNotifier,
+                      builder: (context, step, child) =>
+                          buildLoadingText(context, process),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                process.isRunning
+                    ? TextButton(
+                        onPressed: () async {
+                          await _setDemix(song, false, prefs: prefs);
+                          if (mounted) setState(() {});
+                        },
+                        child: const Text("Cancel"),
+                      )
+                    : FilledButton(
+                        onPressed: () {
+                          context.replace(Routes.song(song.id));
+                        },
+                        child: const Text("Reload"),
+                      ),
+                Expanded(child: SizedBox()),
+                const SizedBox(height: 24),
+              ],
+            );
+          },
         );
       },
     );
@@ -126,9 +151,11 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
         ),
         OutlinedButton(
           onPressed: () {
-            setState(() {
-              widget.player.demix = true;
-            });
+            if (playback.song != null) {
+              setState(() {
+                _setDemix(playback.song!, true);
+              });
+            }
           },
           child: const Text("Continue anyway"),
         ),
@@ -157,10 +184,12 @@ Please update to the latest version to use the Demixer.""",
       ),
       OutlinedButton(
         onPressed: () {
-          setState(() {
-            DemixingProcesses.cancel(widget.song);
-            DemixingProcesses.start(widget.song);
-          });
+          if (playback.song != null) {
+            setState(() {
+              DemixingProcesses.cancel(playback.song!);
+              DemixingProcesses.start(playback.song!);
+            });
+          }
         },
         child: const Text("Retry"),
       ),
@@ -248,11 +277,13 @@ This only needs to be done once, so loading the song next time will be much fast
 }
 
 class DemixerCard extends StatelessWidget {
-  const DemixerCard({super.key});
+  DemixerCard({super.key});
+
+  final PlaybackRepository playback = PlaybackRepository.instance;
 
   @override
   Widget build(BuildContext context) {
-    if (Songs.player == null) {
+    if (playback.song == null) {
       return ShimmerLoading(
         child: FlatCard(
           color: Theme.of(context).colorScheme.surfaceContainer,
@@ -261,14 +292,12 @@ class DemixerCard extends StatelessWidget {
       );
     }
 
-    final SongPlayer player = Songs.player!;
-
     return FlatCard(
       child: Padding(
         padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
         child: () {
-          if (player is SinglePlayer) {
-            return DemixingProcessIndicator(player: player);
+          if (!playback.isMulti) {
+            return DemixingProcessIndicator();
           }
 
           return Column(
@@ -287,22 +316,20 @@ class DemixerCard extends StatelessWidget {
 
   /// Assumes [Songs.player] is a [MultiPlayer].
   Widget buildHeader(BuildContext context) {
-    final MultiPlayer player = Songs.player! as MultiPlayer;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        ValueListenableBuilder(
-          valueListenable: player.demixer.stemsNotifier,
-          builder: (context, stems, child) => IconButton(
+        ListenableBuilder(
+          listenable: playback,
+          builder: (context, child) => IconButton(
             iconSize: 20,
             onPressed:
-                stems.every(
+                playback.stems.values.every(
                   (stem) => stem.enabled && stem.volume == Stem.defaultVolume,
                 )
                 ? null
                 : () {
-                    for (Stem stem in stems) {
+                    for (Stem stem in playback.stems.values) {
                       stem.volume = Stem.defaultVolume;
                       stem.enabled = true;
                     }
@@ -316,13 +343,11 @@ class DemixerCard extends StatelessWidget {
 
   /// Assumes [Songs.player] is a [MultiPlayer].
   Widget buildBody(BuildContext context) {
-    final MultiPlayer player = Songs.player! as MultiPlayer;
-
-    return ValueListenableBuilder(
-      valueListenable: player.demixer.stemsNotifier,
-      builder: (context, stems, child) => ListView(
+    return ListenableBuilder(
+      listenable: playback,
+      builder: (context, child) => ListView(
         children: [
-          for (Stem stem in player.demixer.stems) StemControls(stem: stem),
+          for (Stem stem in playback.stems.values) StemControls(stem: stem),
         ],
       ),
     );
@@ -341,39 +366,38 @@ class StemControls extends StatefulWidget {
 }
 
 class StemControlsState extends State<StemControls> {
-  SongPlayer player = Songs.player!;
+  final PlaybackRepository playback = PlaybackRepository.instance;
 
   Stem get stem => widget.stem;
 
   @override
   Widget build(BuildContext context) {
-    if (this.player is! MultiPlayer) return const SizedBox();
-    final MultiPlayer player = this.player as MultiPlayer;
+    if (playback.isMulti) return const SizedBox();
 
     /// Whether this stem is allowed to be accessed.
     final bool accessAllowed =
         EntitlementRepository.instance.hasPremium ||
-        player.song.id == demoSong.id ||
-        DemixerComponent.freeStems.contains(stem.type);
+        playback.song?.id == demoSong.id ||
+        PlaybackRepository.freeStems.contains(stem.type);
 
     /// Whether all other stems are disabled
-    final bool allOtherStemsDisabled = player.demixer.stems
+    final bool allOtherStemsDisabled = playback.stems.values
         .where((stem) => stem != this.stem)
         .every((stem) => !stem.enabled);
 
-    return ValueListenableBuilder(
-      valueListenable: stem.volumeNotifier,
-      builder: (context, volume, child) => Row(
+    return ListenableBuilder(
+      listenable: playback,
+      builder: (context, child) => Row(
         children: [
           SizedBox(width: 12),
           GestureDetector(
             onLongPress: () {
               if (!EntitlementRepository.instance.hasPremium &&
-                  player.song.id != demoSong.id) {
+                  playback.song?.id != demoSong.id) {
                 return;
               }
 
-              for (Stem stem in player.demixer.stems) {
+              for (Stem stem in playback.stems.values) {
                 stem.enabled = allOtherStemsDisabled;
               }
               stem.enabled = !allOtherStemsDisabled;
@@ -419,7 +443,7 @@ class StemControlsState extends State<StemControls> {
           ),
           Expanded(
             child: Slider(
-              value: !stem.enabled ? 0 : volume,
+              value: !stem.enabled ? 0 : stem.volume,
               onChangeStart: (value) {
                 if (!accessAllowed) {
                   showAccessRestrictedDialog(context);

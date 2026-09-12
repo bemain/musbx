@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/check_song_access.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/options_sheet.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
@@ -36,10 +36,10 @@ class SongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLocked =
-        Songs.isAccessRestricted &&
-        !Songs.songsPlayedThisWeek.contains(song) &&
-        song != demoSong;
+    final bool isLocked = !CheckSongAccess(
+      entitlement: EntitlementRepository.instance,
+      songs: SongRepository.instance,
+    ).canPlay(song);
     final TextStyle? textStyle = !isLocked
         ? null
         : TextStyle(color: Theme.of(context).disabledColor);
@@ -127,7 +127,7 @@ class SongTile extends StatelessWidget {
     }
     return Icon(switch (song.audio) {
       FileAudio() => Symbols.file_present,
-      YtdlpAudio() => Symbols.music_note,
+      UrlAudio() => Symbols.music_note,
       _ => Symbols.music_note,
     });
   }

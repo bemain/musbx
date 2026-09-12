@@ -5,12 +5,11 @@ import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/youtube_video.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/repositories/song/song_settings_repository.dart';
 import 'package:musbx/data/services/youtube_api_client.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/add_song_to_library.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/widgets.dart';
@@ -32,12 +31,17 @@ class YoutubeSearch {
       title: HtmlUnescape().convert(video.title),
       artist: HtmlUnescape().convert(video.channelTitle),
       artUri: Uri.tryParse(video.thumbnails.high.url),
-      audio: YtdlpAudio(Uri.parse(video.url)),
+      audio: UrlAudio(Uri.parse(video.url)),
     );
-    if (await SongRepository.instance.add(song) case Ok()) {
-      if (Songs.demixAutomatically) DemixingProcesses.start(song);
-
-      if (context.mounted) context.go(Routes.song(video.id));
+    switch (await AddSongToLibrary(
+      settings: SongSettingsRepository.instance,
+      songs: SongRepository.instance,
+    ).call(song)) {
+      case Ok():
+        if (context.mounted) context.go(Routes.song(video.id));
+      case Failure(:final error):
+        debugPrint("[YOUTUBE] Adding song failed: $error");
+      // TODO: Show snack bar
     }
   }
 

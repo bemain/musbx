@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:musbx/domain/models/music/chord.dart';
 import 'package:musbx/songs/analyzer/chord_symbol.dart';
-import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/songs.dart';
 
 class ChordsDisplay extends StatefulWidget {
   const ChordsDisplay({super.key});

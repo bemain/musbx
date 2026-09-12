@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/repositories/song/song_settings_repository.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
@@ -10,7 +11,6 @@ import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
@@ -96,6 +96,8 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
     _cacheSize = _measureCache();
   });
 
+  final SongSettingsRepository songSettings = SongSettingsRepository.instance;
+
   @override
   Widget build(BuildContext context) {
     return SettingsSubPage(
@@ -104,7 +106,7 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
         SettingsGroup(
           children: [
             ValueListenableBuilder(
-              valueListenable: Songs.demixAutomaticallyNotifier,
+              valueListenable: songSettings.demixAutomaticallyNotifier,
               builder: (context, demixAutomatically, child) => ListTile(
                 leading: Icon(Symbols.piano),
                 title: Text("Split new songs"),
@@ -112,11 +114,13 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                   "Automatically split songs into instruments",
                 ),
                 onTap: () {
-                  Songs.demixAutomatically = !Songs.demixAutomatically;
+                  songSettings.demixAutomatically =
+                      !songSettings.demixAutomatically;
                 },
                 trailing: Switch(
-                  value: Songs.demixAutomatically,
-                  onChanged: (value) => Songs.demixAutomatically = value,
+                  value: songSettings.demixAutomatically,
+                  onChanged: (value) =>
+                      songSettings.demixAutomatically = value,
                 ),
               ),
             ),

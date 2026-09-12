@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/check_song_access.dart';
 import 'package:musbx/songs/library_page/search_bar.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
@@ -61,11 +62,15 @@ class LibraryPage extends StatelessWidget {
     return SpeedDial.extended(
       heroTag: heroTag,
       shouldExpand: () {
-        if (Songs.isAccessRestricted) {
+        final restricted = CheckSongAccess(
+          entitlement: EntitlementRepository.instance,
+          songs: SongRepository.instance,
+        ).isRestricted;
+        if (restricted) {
           showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
         }
 
-        return !Songs.isAccessRestricted;
+        return !restricted;
       },
       onExpandedPressed: () => SoundCloudSearch.pickSong(context),
       expandedChild: const Icon(Symbols.search),

@@ -6,8 +6,7 @@ import 'package:app_links/app_links.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:musbx/data/services/service.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
-import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/domain/models/song.dart';
 import 'package:uri_content/uri_content.dart';
 import 'package:uuid/uuid.dart';
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
@@ -51,17 +50,17 @@ class HistoryHandler<T> extends ChangeNotifier {
   ///
   /// Notifies listeners when done.
   Future<void> fetch() async {
-    final String? data = await _historyFile.readString();
-    if (data == null) return;
-    Json json;
+    final Json? json;
     try {
-      json = jsonDecode(data) as Json;
+      json = await _historyFile.readJson();
     } catch (e) {
       debugPrint(
         "[HISTORY] Unable to read history file ${_historyFile.path} as json: $e",
       );
       return;
     }
+
+    if (json == null) return;
 
     entries.clear();
 
@@ -132,13 +131,11 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// Save the current history entries to disk.
   Future<void> save() async {
-    await _historyFile.writeString(
-      jsonEncode(
-        entries.map(
-          (date, song) => MapEntry(
-            date.toString(),
-            toJson(song),
-          ),
+    await _historyFile.writeJson(
+      entries.map(
+        (date, song) => MapEntry(
+          date.toString(),
+          toJson(song),
         ),
       ),
     );

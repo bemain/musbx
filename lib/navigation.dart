@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/analytics_service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/check_song_access.dart';
+import 'package:musbx/domain/use_case/play_song.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/settings_sub_pages.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
 import 'package:musbx/utils/launch_handler.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
@@ -155,7 +158,7 @@ class Navigation {
                         WidgetsBinding.instance.addPostFrameCallback((
                           _,
                         ) async {
-                          await Songs.dispose();
+                          await PlaybackRepository.instance.dispose();
                         });
 
                         return LibraryPage();
@@ -183,35 +186,44 @@ class Navigation {
 
                             return FutureBuilder(
                               future:
-                                  Songs.load(
-                                    song,
-                                    ignoreFreeLimit: song.id == demoSong.id,
-                                  ).timeout(
-                                    const Duration(seconds: 30),
-                                  ),
+                                  PlaySong(
+                                        access: CheckSongAccess(
+                                          songs: SongRepository.instance,
+                                          entitlement:
+                                              EntitlementRepository.instance,
+                                        ),
+                                        playback: PlaybackRepository.instance,
+                                        songs: SongRepository.instance,
+                                      )
+                                      .call(song)
+                                      .timeout(
+                                        const Duration(seconds: 30),
+                                      ),
                               builder: (context, snapshot) {
-                                if (snapshot.hasError) {
+                                Widget fail(Widget dialog) {
                                   debugPrint(
-                                    "[MUSIC PLAYER] ${snapshot.error}",
+                                    "[Navigation] ${snapshot.error}",
                                   );
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) {
-                                    showExceptionDialog(
-                                      snapshot.error
-                                              is AccessRestrictedException
-                                          ? const MusicPlayerAccessRestrictedDialog()
-                                          : SongCouldNotBeLoadedDialog(
-                                              error: snapshot.error,
-                                            ),
-                                    );
-                                    context.go(Routes.library);
-                                  });
-
+                                  WidgetsBinding.instance.addPostFrameCallback(
+                                    (_) {
+                                      showExceptionDialog(dialog);
+                                      context.go(Routes.library);
+                                    },
+                                  );
                                   return const SizedBox();
                                 }
 
-                                return const SongPage();
+                                return switch (snapshot.data) {
+                                  null =>
+                                    SongPage(), // loading — SongPage already shimmers on song == null
+                                  Ok() => SongPage(),
+                                  AccessRestricted() => fail(
+                                    const MusicPlayerAccessRestrictedDialog(),
+                                  ),
+                                  Failure(:final error) => fail(
+                                    SongCouldNotBeLoadedDialog(error: error),
+                                  ),
+                                };
                               },
                             );
                           },

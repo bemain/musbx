@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:musbx/utils/num_iterable_extension.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -156,6 +158,11 @@ class CacheFile {
     return await _file.readAsBytes();
   }
 
+  Future<Json?> readJson() async {
+    if (!await _file.exists()) return null;
+    return jsonDecode(await _file.readAsString()) as Json;
+  }
+
   /// Temporary file that writes are staged in, so that they can be made atomic.
   File get _part => File("$path.part");
 
@@ -208,6 +215,10 @@ class CacheFile {
       if (_service._operations[path] == op) _service._operations.remove(path);
     });
     return await op;
+  }
+
+  Future<File> writeJson(Json content) async {
+    return await writeString(jsonEncode(content));
   }
 
   /// The file, produced first if absent. [produce] writes into [scratch], which is

@@ -3,11 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/models/song_preferences.dart';
+import 'package:musbx/domain/use_case/clear_song_cache.dart';
 import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
-import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/utils/result.dart';
 
 class DemixingProgressIndicator extends StatefulWidget {
@@ -110,7 +114,7 @@ class SongOptionsSheet extends StatefulWidget {
 
 class _SongOptionsSheetState extends State<SongOptionsSheet> {
   late Future<int> _cacheSize = _measureCache();
-  Future<int> _measureCache() => widget.song.cacheDirectory.size();
+  Future<int> _measureCache() => SongCache.instance.size(widget.song);
   void _refresh() => setState(() {
     _cacheSize = _measureCache();
   });
@@ -244,14 +248,34 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                               ),
                               FilledButton(
                                 onPressed: () async {
-                                  await song.clearCache();
-                                  song.shouldDemix = false;
-                                  switch (await SongRepository.instance.update(
-                                    song,
-                                  )) {
-                                    case Ok():
-                                      if (context.mounted) {
-                                        Navigator.of(context).pop();
+                                  await ClearSongCache(
+                                    cache: SongCache.instance,
+                                  ).call(song);
+                                  switch (await SongPreferencesRepository
+                                      .instance
+                                      .read(song)) {
+                                    case Ok(value: final prefs):
+                                      switch (await SongPreferencesRepository
+                                          .instance
+                                          .write(
+                                            song,
+                                            prefs?.copyWith(
+                                                  shouldDemix: false,
+                                                ) ??
+                                                SongPreferences(
+                                                  shouldDemix: false,
+                                                ),
+                                          )) {
+                                        case Ok():
+                                          if (context.mounted) {
+                                            Navigator.of(context).pop();
+                                          }
+
+                                        case Failure(:final error):
+                                          debugPrint(
+                                            "[Songs] Couldn't get song preferences: $error",
+                                          );
+                                        // TODO: Show error snackbar
                                       }
                                     case Failure(:final error):
                                       debugPrint(

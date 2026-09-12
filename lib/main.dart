@@ -4,18 +4,27 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/repositories/song/audio_repository.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
+import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/repositories/song/song_settings_repository.dart';
 import 'package:musbx/data/services/ad_service.dart';
 import 'package:musbx/data/services/analytics_service.dart';
+import 'package:musbx/data/services/audio_engine_service.dart';
+import 'package:musbx/data/services/audio_session_service.dart';
 import 'package:musbx/data/services/deep_links_service.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/media_notification_service.dart';
 import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
 import 'package:musbx/data/services/purchase_service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
+import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/data/services/soundcloud_api_client.dart';
 import 'package:musbx/data/services/supabase_service.dart';
+import 'package:musbx/domain/use_case/resume_demixing.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/theme.dart';
 import 'package:musbx/utils/launch_handler.dart';
 
@@ -30,7 +39,22 @@ Future<void> main() async {
   await AdService.initialize();
   await PurchaseService.initialize();
 
-  await Songs.initialize();
+  await AudioSessionService.initialize();
+  await AudioEngineService.initialize();
+  await MediaNotificationService.initialize();
+  await SongCache.initialize();
+  await SongSettingsRepository.initialize();
+  await SongPreferencesRepository.initialize();
+  await AudioRepository.initialize();
+  await SongRepository.initialize(); // reads history from disk
+  await PlaybackRepository.initialize();
+  unawaited(
+    ResumeDemixing(
+      songs: SongRepository.instance,
+      settings: SongSettingsRepository.instance,
+      preferences: SongPreferencesRepository.instance,
+    ).call(),
+  );
   await NotificationService.initialize();
 
   await SoundCloudApiClient.initialize();

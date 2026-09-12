@@ -9,8 +9,9 @@ import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/demix.dart';
 import 'package:musbx/data/services/musbx_api/jobs/job.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/demixer/demixer.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
+import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/utils/process.dart';
 
 enum DemixingStep {
@@ -47,16 +48,13 @@ final class ServerError extends DemixingError {
 }
 
 class DemixingProcess extends Process<Map<StemType, CacheFile>> {
-  /// Upload, separate and download stem files for a song.
+  /// Upload, separate and download stem files for a [song].
   DemixingProcess(
-    this.parentSource, {
-    required this.cacheDirectory,
+    this.song, {
     this.checkStatusInterval = const Duration(milliseconds: 300),
   });
 
-  final AudioProvider parentSource;
-
-  final CacheDirectory cacheDirectory;
+  final Song song;
 
   final Duration checkStatusInterval;
 
@@ -85,13 +83,14 @@ class DemixingProcess extends Process<Map<StemType, CacheFile>> {
   }
 
   /// Get stems for the song, if all stems (see [StemType]) were found with the correct [fileExtension].
-  static Future<Map<StemType, CacheFile>?> getStemsInCache({
-    required CacheDirectory directory,
+  static Future<Map<StemType, CacheFile>?> getStemsInCache(
+    Song song, {
+
     String fileExtension = "mp3",
   }) async {
     final stems = {
       for (final stem in StemType.values)
-        stem: directory.file("${stem.name}.$fileExtension"),
+        stem: SongCache.instance.stem(song, stem),
     };
 
     if ((await Future.wait(
@@ -109,9 +108,7 @@ class DemixingProcess extends Process<Map<StemType, CacheFile>> {
     // Try to grab stems from cache
     stepNotifier.value = DemixingStep.checkingCache;
 
-    Map<StemType, CacheFile>? cachedStemFiles = await getStemsInCache(
-      directory: cacheDirectory,
-    );
+    Map<StemType, CacheFile>? cachedStemFiles = await getStemsInCache(song);
     if (cachedStemFiles != null) {
       debugPrint("[DEMIXER] Using cached stems for song.");
 
@@ -127,22 +124,17 @@ class DemixingProcess extends Process<Map<StemType, CacheFile>> {
     stepNotifier.value = DemixingStep.uploading;
 
     // Upload song to server
-    final AudioProvider source = parentSource;
     final FileHandle file;
-    switch (source) {
+    switch (song.audio) {
       case FileAudio() || BytesAudio():
         file = await client.uploadFile(
-          File(source.cacheFile!.path),
+          File(SongCache.instance.audio(song).path),
           onSendProgress: (count, total) {
             stepProgressNotifier.value = count / total;
           },
         );
-      case YtdlpAudio():
-        file = await client.uploadYtdlp(source.url);
-      default:
-        throw UnsupportedError(
-          "Demixing cannot be performed on the source $source.",
-        );
+      case UrlAudio(:final url):
+        file = await client.uploadYtdlp(url);
     }
 
     breakIfCancelled();
@@ -203,12 +195,15 @@ class DemixingProcess extends Process<Map<StemType, CacheFile>> {
             ),
           );
 
-          final CacheFile destination = cacheDirectory.file("$stemName.mp3");
+          final StemType stem = StemType.values.firstWhere(
+            (stem) => stem.name == stemName,
+          );
 
+          final CacheFile destination = SongCache.instance.stem(song, stem);
           await destination.writeBytes(response.data!);
 
           return MapEntry(
-            StemType.values.firstWhere((stem) => stem.name == stemName),
+            stem,
             destination,
           );
         }),

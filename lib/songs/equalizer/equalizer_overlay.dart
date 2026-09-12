@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/songs/equalizer/equalizer.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
 
 class EqualizerOverlayPainter extends CustomPainter {
   /// Paints an overlay onto a set of sliders used to control the gain on
@@ -17,7 +17,7 @@ class EqualizerOverlayPainter extends CustomPainter {
   /// The Equalizer's parameters.
   ///
   /// If this is `null`, the sliders are painted as disabled.
-  final List<EqualizerBand>? bands;
+  final Map<int, double>? bands;
 
   /// The color of the line connecting the thumbs.
   final Color lineColor;
@@ -64,10 +64,11 @@ class EqualizerOverlayPainter extends CustomPainter {
     List<Offset> controlPoints = List.generate(
       bands!.length,
       (index) {
-        EqualizerBand band = bands![index];
+        double gain = bands![index] ?? PlaybackRepository.equalizerDefaultGain;
         double decibelFraction =
-            (band.gain - EqualizerBand.minGain) /
-            (EqualizerBand.maxGain - EqualizerBand.minGain);
+            (gain - PlaybackRepository.equalizerMinGain) /
+            (PlaybackRepository.equalizerMaxGain -
+                PlaybackRepository.equalizerMinGain);
 
         return Offset(
           size.width * (index + 0.5) / bands!.length,

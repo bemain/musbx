@@ -2,25 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
 
 class ButtonPanel extends StatelessWidget {
   /// Panel including play/pause, forward and rewind buttons for controlling a [SongPlayer].
   ///
   /// If no song is loaded, all buttons are disabled.
-  const ButtonPanel({super.key});
+  ButtonPanel({super.key});
+
+  final PlaybackRepository playback = PlaybackRepository.instance;
 
   Widget _buildButton({
-    required void Function(SongPlayer player)? onPressed,
+    required void Function()? onPressed,
     required Widget icon,
   }) {
     return AspectRatio(
       aspectRatio: 1,
       child: IconButton(
-        onPressed: Songs.player == null || onPressed == null
+        onPressed: playback.song == null || onPressed == null
             ? null
-            : () => onPressed(Songs.player!),
+            : () => onPressed(),
         icon: icon,
       ),
     );
@@ -28,16 +29,14 @@ class ButtonPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SongPlayer? player = Songs.player;
-
-    final Color? disabledColor = player == null
+    final Color? disabledColor = playback.song == null
         ? Theme.of(context).colorScheme.onSurface
         : null;
 
     return SizedBox(
       height: 64.0,
       child: ShimmerLoading(
-        isLoading: player == null,
+        isLoading: playback.song == null,
         child: ButtonTheme(
           disabledColor: disabledColor,
           child: Row(
@@ -46,25 +45,26 @@ class ButtonPanel extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildButton(
-                onPressed: (player) {
-                  player.seek(Duration.zero);
+                onPressed: () {
+                  playback.seek(Duration.zero);
                 },
                 icon: const Icon(Symbols.skip_previous),
               ),
 
               ContinuousButton(
                 interval: Duration(milliseconds: 10),
-                onContinuousPress: player == null
+                onContinuousPress: playback.song == null
                     ? null
                     : () {
-                        player.seek(
-                          player.position - const Duration(milliseconds: 100),
+                        playback.seek(
+                          playback.position -
+                              const Duration(milliseconds: 100),
                         );
                       },
                 child: _buildButton(
-                  onPressed: (player) {
-                    player.seek(
-                      player.position - const Duration(seconds: 5),
+                  onPressed: () {
+                    playback.seek(
+                      playback.position - const Duration(seconds: 5),
                     );
                   },
                   icon: const Icon(Symbols.replay_5),
@@ -72,8 +72,7 @@ class ButtonPanel extends StatelessWidget {
               ),
 
               ValueListenableBuilder<bool>(
-                valueListenable:
-                    player?.isPlayingNotifier ?? ValueNotifier(false),
+                valueListenable: playback.isPlayingNotifier,
                 builder: (_, isPlaying, _) {
                   return AspectRatio(
                     aspectRatio: 1.0,
@@ -81,17 +80,17 @@ class ButtonPanel extends StatelessWidget {
                       padding: const EdgeInsets.all(4.0),
                       child: M3Container.c6SidedCookie(
                         child: Material(
-                          color: player == null
+                          color: playback.song == null
                               ? Theme.of(context).colorScheme.surfaceContainer
                               : Theme.of(context).colorScheme.primary,
                           child: InkWell(
-                            onTap: player == null
+                            onTap: playback.song == null
                                 ? null
                                 : () {
                                     if (isPlaying) {
-                                      player.pause();
+                                      playback.pause();
                                     } else {
-                                      player.resume();
+                                      playback.resume();
                                     }
                                   },
                             child: Padding(
@@ -112,17 +111,18 @@ class ButtonPanel extends StatelessWidget {
 
               ContinuousButton(
                 interval: Duration(milliseconds: 10),
-                onContinuousPress: player == null
+                onContinuousPress: playback.song == null
                     ? null
                     : () {
-                        player.seek(
-                          player.position + const Duration(milliseconds: 100),
+                        playback.seek(
+                          playback.position +
+                              const Duration(milliseconds: 100),
                         );
                       },
                 child: _buildButton(
-                  onPressed: (player) {
-                    player.seek(
-                      player.position + const Duration(seconds: 10),
+                  onPressed: () {
+                    playback.seek(
+                      playback.position + const Duration(seconds: 10),
                     );
                   },
                   icon: const Icon(Symbols.forward_10),

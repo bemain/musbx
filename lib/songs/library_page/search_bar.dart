@@ -5,10 +5,10 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/soundcloud_api_client.dart';
+import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
-import 'package:musbx/songs/player/song.dart';
 import 'package:musbx/utils/result.dart';
 
 class LibrarySearchBar extends StatefulWidget {

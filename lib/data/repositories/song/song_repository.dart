@@ -6,10 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:meta/meta.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/clear_song_cache.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/utils/utils.dart';
@@ -23,7 +22,7 @@ final Song demoSong = Song(
   artUri: Uri.parse(
     "https://bemain.github.io/musbx/assets/album_art/demo.png",
   ),
-  audio: YtdlpAudio(Uri.parse("https://youtu.be/9ytqRUjYJ7s")),
+  audio: UrlAudio(Uri.parse("https://youtu.be/9ytqRUjYJ7s")),
 );
 
 enum GetOrder { ascending, descending }
@@ -42,19 +41,20 @@ class SongRepository extends ChangeNotifier {
         if (json is! Json) {
           throw "[LIBRARY] Incorrectly formatted entry in history file: ($json)";
         }
-        Song? song = Song.fromJson(json);
-        if (song == null) {
-          throw "[LIBRARY] History entry ($json) could not be parsed as a Song.";
+        try {
+          return Song.fromJson(json);
+        } catch (error) {
+          throw "[LIBRARY] History entry ($json) could not be parsed as a Song; $error";
         }
-        return song;
       },
       toJson: (value) => value.toJson(),
       onEntryRemoved: (entry) async {
+        final song = entry.value;
         // Remove cached files
         debugPrint(
-          "[LIBRARY] Deleting cached files for song ${entry.value.id}",
+          "[LIBRARY] Deleting cached files for song ${song.id}",
         );
-        await entry.value.clearCache();
+        await ClearSongCache(cache: SongCache.instance).call(song);
       },
     );
 
@@ -94,7 +94,6 @@ class SongRepository extends ChangeNotifier {
   Future<Result<Song>> add(Song song) async {
     try {
       await _history.add(song);
-      if (Songs.demixAutomatically) DemixingProcesses.start(song);
       return Result.ok(song);
     } catch (e, s) {
       return Result.failed(e, s);
@@ -129,7 +128,7 @@ class SongRepository extends ChangeNotifier {
           artUri: track.artworkUrl != null
               ? Uri.tryParse(track.artworkUrl!)
               : null,
-          audio: YtdlpAudio(Uri.parse(track.permalinkUrl)),
+          audio: UrlAudio(Uri.parse(track.permalinkUrl)),
         ),
       );
     } catch (e, s) {

@@ -20,6 +20,18 @@ sealed class Result<T> {
   factory Result.unavailable(String reason) = Unavailable._;
 
   factory Result.cancelled() = Cancelled._;
+
+  factory Result.accessRestricted() = AccessRestricted._;
+
+  T get asOk {
+    switch (this) {
+      case Failure(:final error):
+        throw error;
+
+      case Ok(:final value):
+        return value;
+    }
+  }
 }
 
 final class Ok<T> extends Result<T> {
@@ -72,4 +84,22 @@ class CancelledException implements Exception {
 /// The operation was cancelled before it finished. See [Process.cancel].
 final class Cancelled<T> extends Failure<T> {
   Cancelled._() : super._(CancelledException(), StackTrace.current);
+}
+
+class AccessRestrictedException implements Exception {
+  /// An exception thrown when access to a feature is restricted,
+  /// such as when the user has used up their free songs.
+  const AccessRestrictedException([this.message]);
+
+  final String? message;
+
+  @override
+  String toString() {
+    return message ?? "Access restricted";
+  }
+}
+
+final class AccessRestricted<T> extends Failure<T> {
+  AccessRestricted._()
+    : super._(AccessRestrictedException(), StackTrace.current);
 }

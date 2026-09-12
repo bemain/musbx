@@ -3,32 +3,31 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/analyzer/analyzer.dart';
 import 'package:musbx/songs/analyzer/waveform_painter.dart';
-import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 
 const int kSamplesPerPixel = 540;
 const int kSampleRate = 48000;
 
 class WaveformWidget extends StatelessWidget {
-  const WaveformWidget({super.key});
+  WaveformWidget({super.key});
+
+  final PlaybackRepository playback = PlaybackRepository.instance;
 
   Widget _buildPlaceholder(BuildContext context) {
-    final SongPlayer? player = Songs.player;
-
     final Color color = Theme.of(context).colorScheme.primary;
 
     return ShimmerLoading(
       child: CustomPaint(
         painter: WaveformPainter(
           waveform: _generateDummyWaveform(
-            player?.duration ?? AnalyzerComponent.defaultDurationShown,
+            playback.duration ?? AnalyzerComponent.defaultDurationShown,
           ),
-          position: player?.position ?? Duration.zero,
+          position: playback.position,
           duration:
-              player?.analyzer.durationShown ??
+              playback.analyzer.durationShown ??
               AnalyzerComponent.defaultDurationShown,
           style: PositionSliderStyle(
             activeTrackColor: color,
@@ -49,8 +48,7 @@ class WaveformWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SongPlayer? player = Songs.player;
-    if (player == null) return _buildPlaceholder(context);
+    if (playback.song == null) return _buildPlaceholder(context);
 
     return ValueListenableBuilder(
       valueListenable: player.analyzer.waveformNotifier,
@@ -58,7 +56,7 @@ class WaveformWidget extends StatelessWidget {
         return ValueListenableBuilder(
           valueListenable: player.analyzer.durationShownNotifier,
           builder: (context, durationShown, child) => ValueListenableBuilder(
-            valueListenable: player.positionNotifier,
+            valueListenable: playback.positionNotifier,
             builder: (context, position, child) {
               if (waveform == null) return _buildPlaceholder(context);
 
