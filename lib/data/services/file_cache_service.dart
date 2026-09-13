@@ -33,12 +33,6 @@ class FileCacheService {
     );
   }
 
-  // TODO: Remove once we introduce `provider`.
-  static late final FileCacheService instance;
-  static Future<void> initialize() async {
-    instance = await create();
-  }
-
   /// The root directory for regenerable data, such as downloaded audio and
   /// analysis results. The operating system may delete this at any time.
   CacheDirectory get scratch => CacheDirectory._(this, _temporary);

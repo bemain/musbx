@@ -4,20 +4,21 @@ import 'package:musbx/songs/loop/loop_slider.dart';
 import 'package:musbx/songs/song_page/highlighted_section_slider_track_shape.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 class PositionSlider extends StatelessWidget {
   /// Slider for seeking a position in the current song.
   ///
   /// Includes labels displaying the current position and duration of the current song.
   /// If looping is enabled, highlights the section of the slider being looped.
-  PositionSlider({super.key, this.enabled = true});
+  const PositionSlider({super.key, this.enabled = true});
 
   final bool enabled;
 
-  final PlaybackRepository playback = PlaybackRepository.instance;
-
   @override
   Widget build(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     if (playback.song == null) {
       return Column(
         children: [
@@ -79,6 +80,8 @@ class PositionSlider extends StatelessWidget {
   }
 
   Widget _buildSlider(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     PositionSliderStyle style = Theme.of(
       context,
     ).extension<PositionSliderStyle>()!;
@@ -134,6 +137,7 @@ class PositionSlider extends StatelessWidget {
     BuildContext context,
     bool loopEnabled,
   ) {
+    final PlaybackRepository playback = context.read();
     if (playback.song == null) {
       return RoundedRectSliderTrackShape();
     }

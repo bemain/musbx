@@ -6,19 +6,20 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/repositories/demix/demixing_process.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
-import 'package:musbx/data/repositories/song/song_settings_repository.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/song_preferences.dart';
 import 'package:musbx/domain/models/stem_type.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
 import 'package:musbx/widgets/result_builder.dart';
+import 'package:provider/provider.dart';
 
 class DemixingProcessIndicator extends StatefulWidget {
   const DemixingProcessIndicator({super.key});
@@ -29,21 +30,22 @@ class DemixingProcessIndicator extends StatefulWidget {
 }
 
 class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
-  final PlaybackRepository playback = PlaybackRepository.instance;
-
-  final DemixRepository demixing = DemixRepository.instance;
+  DemixRepository get demixing => context.read();
+  PlaybackRepository get playback => context.read();
+  SongPreferencesRepository get preferences => context.read();
+  SettingsRepository get settings => context.read();
 
   Future<void> _setDemix(
     Song song,
     bool value, {
     SongPreferences? prefs,
   }) async {
-    prefs ??= (await SongPreferencesRepository.instance.read(song)).asOk;
-    (await SongPreferencesRepository.instance.write(
+    prefs ??= (await preferences.read(
       song,
-      (prefs ?? SongPreferences()).copyWith(
-        shouldDemix: false,
-      ),
+    )).asOk;
+    (await preferences.write(
+      song,
+      (prefs ?? SongPreferences()).copyWith(shouldDemix: false),
     )).asOk;
   }
 
@@ -53,11 +55,9 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
     if (song == null) return buildDemixDisabled();
 
     return ResultBuilder(
-      future: SongPreferencesRepository.instance.read(song),
+      future: preferences.read(song),
       ok: (context, prefs) {
-        final demix =
-            prefs?.shouldDemix ??
-            SongSettingsRepository.instance.demixAutomatically;
+        final demix = prefs?.shouldDemix ?? settings.songs.demixAutomatically;
 
         if (!demix) {
           return buildDemixDisabled();
@@ -278,12 +278,12 @@ This only needs to be done once, so loading the song next time will be much fast
 }
 
 class DemixerCard extends StatelessWidget {
-  DemixerCard({super.key});
-
-  final PlaybackRepository playback = PlaybackRepository.instance;
+  const DemixerCard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     if (playback.song == null) {
       return ShimmerLoading(
         child: FlatCard(
@@ -317,6 +317,8 @@ class DemixerCard extends StatelessWidget {
 
   /// Assumes [Songs.player] is a [MultiPlayer].
   Widget buildHeader(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -344,6 +346,8 @@ class DemixerCard extends StatelessWidget {
 
   /// Assumes [Songs.player] is a [MultiPlayer].
   Widget buildBody(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     return ListenableBuilder(
       listenable: playback,
       builder: (context, child) => ListView(
@@ -367,7 +371,8 @@ class StemControls extends StatefulWidget {
 }
 
 class StemControlsState extends State<StemControls> {
-  final PlaybackRepository playback = PlaybackRepository.instance;
+  PlaybackRepository get playback => context.read();
+  EntitlementRepository get entitlement => context.read();
 
   Stem get stem => widget.stem;
 
@@ -377,7 +382,7 @@ class StemControlsState extends State<StemControls> {
 
     /// Whether this stem is allowed to be accessed.
     final bool accessAllowed =
-        EntitlementRepository.instance.hasPremium ||
+        entitlement.hasPremium ||
         playback.song?.id == demoSong.id ||
         PlaybackRepository.freeStems.contains(stem.type);
 
@@ -393,7 +398,7 @@ class StemControlsState extends State<StemControls> {
           SizedBox(width: 12),
           GestureDetector(
             onLongPress: () {
-              if (!EntitlementRepository.instance.hasPremium &&
+              if (!entitlement.hasPremium &&
                   playback.song?.id != demoSong.id) {
                 return;
               }

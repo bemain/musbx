@@ -80,17 +80,6 @@ class NotificationService extends OptionalService {
   /// A service with nothing behind it, for platforms without notifications.
   static NotificationService disabled() => NotificationService._(null);
 
-  // TODO: Remove once we introduce `provider`.
-  static late final NotificationService instance;
-  static Future<void> initialize() async {
-    try {
-      instance = await create();
-    } catch (error) {
-      debugPrint("[NOTIFICATIONS] Disabled, initialization failed: $error");
-      instance = disabled();
-    }
-  }
-
   /// Show [notification], replacing whatever is showing on its channel.
   ///
   /// Each channel carries a single notification, so calling this again with

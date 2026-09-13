@@ -48,19 +48,6 @@ class MediaNotificationService extends OptionalService {
   static MediaNotificationService disabled() =>
       MediaNotificationService._(null);
 
-  // TODO: Remove once we introduce `provider`.
-  static late final MediaNotificationService instance;
-  static Future<void> initialize() async {
-    try {
-      instance = await create();
-    } catch (error) {
-      debugPrint(
-        "[MEDIA NOTIFICATION] Disabled, initialization failed: $error",
-      );
-      instance = disabled();
-    }
-  }
-
   late final StreamSubscription<bool> _subscription;
 
   final _clicked = StreamController<void>.broadcast();

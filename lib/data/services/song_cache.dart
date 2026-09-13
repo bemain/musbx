@@ -4,15 +4,9 @@ import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/stem_type.dart';
 
 class SongCache {
-  SongCache(this._fileCache);
+  SongCache({required FileCacheService fileCache}) : _fileCache = fileCache;
 
   final FileCacheService _fileCache;
-
-  // TODO: Remove once we introduce 'provider'.
-  static late final SongCache instance;
-  static Future<void> initialize() async {
-    instance = SongCache(FileCacheService.instance);
-  }
 
   CacheDirectory _scratch(Song song) =>
       _fileCache.scratch.directory("songs/${song.id}");

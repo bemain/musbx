@@ -13,12 +13,6 @@ class AudioRepository {
 
   final SongCache _songCache;
 
-  // TODO: Remove once we introduce 'provider'.
-  static late final AudioRepository instance;
-  static Future<void> initialize() async {
-    instance = AudioRepository(songCache: SongCache.instance);
-  }
-
   Future<Result<AudioSource>> resolve(Song song) async {
     try {
       CacheFile cacheFile = _songCache.audio(song);

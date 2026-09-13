@@ -25,8 +25,9 @@ class Tuner {
   /// The number of previous data entries buffered.
   static const int bufferLength = 32;
 
-  late final AudioCaptureService _audioCapture;
+  late final SharedPreferencesService _sharedPreferences;
 
+  late final AudioCaptureService _audioCapture;
   late final PitchDetector _pitchDetector;
 
   /// Whether this has been initialized.
@@ -35,10 +36,13 @@ class Tuner {
   bool isInitialized = false;
 
   /// Initialize the [Tuner] and prepare playback.
-  Future<void> initialize() async {
+  Future<void> initialize({
+    required SharedPreferencesService sharedPreferences,
+  }) async {
     if (isInitialized) return;
     isInitialized = true;
 
+    _sharedPreferences = sharedPreferences;
     _audioCapture = await AudioCaptureService.create();
     _pitchDetector = PitchDetector(sampleRate: _audioCapture.sampleRate);
   }
@@ -56,7 +60,7 @@ class Tuner {
   /// Defaults to [Pitch.a440].
   Pitch get tuning => tuningNotifier.value;
   set tuning(Pitch value) => tuningNotifier.value = value;
-  final ValueNotifier<Pitch> tuningNotifier = SharedPreferencesService.instance
+  late final ValueNotifier<Pitch> tuningNotifier = _sharedPreferences
       .transformed<Pitch, String>(
         "tuner/tuning",
         initialValue: const Pitch(PitchClass.a(), 4, 440),
@@ -77,8 +81,8 @@ class Tuner {
   Accidental get preferredAccidental => preferredAccidentalNotifier.value;
   set preferredAccidental(Accidental value) =>
       preferredAccidentalNotifier.value = value;
-  final ValueNotifier<Accidental> preferredAccidentalNotifier =
-      SharedPreferencesService.instance.transformed<Accidental, String>(
+  late final ValueNotifier<Accidental> preferredAccidentalNotifier =
+      _sharedPreferences.transformed<Accidental, String>(
         "tuner/accidental",
         initialValue: Accidental.natural,
         to: (accidental) => accidental.name,

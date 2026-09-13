@@ -3,9 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
+import 'package:provider/provider.dart';
 
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Create an [AppBar] with the text "Musician's toolbox" as title
@@ -46,10 +47,12 @@ class GetPremiumButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    EntitlementRepository entitlements = context.read();
+
     return ListenableBuilder(
-      listenable: EntitlementRepository.instance,
+      listenable: entitlements,
       builder: (context, child) {
-        if (EntitlementRepository.instance.hasPremium) return const SizedBox();
+        if (entitlements.hasPremium) return const SizedBox();
 
         return IconButton(
           onPressed: () {

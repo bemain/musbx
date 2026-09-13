@@ -11,6 +11,7 @@ import 'package:musbx/metronome/subdivisions.dart';
 import 'package:musbx/metronome/volume_indicator.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/flat_card.dart';
+import 'package:provider/provider.dart';
 
 class MetronomePage extends StatelessWidget {
   /// Page for controlling [Metronome], including:
@@ -31,7 +32,10 @@ class MetronomePage extends StatelessWidget {
     );
 
     return FutureBuilder(
-      future: Metronome.initialize(),
+      future: Metronome.initialize(
+        sharedPreferences: context.read(),
+        notifications: context.read(),
+      ),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const SizedBox(); // TODO: Show shimmer loading

@@ -7,10 +7,12 @@ import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/domain/models/permission.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/router.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/permission_builder.dart';
+import 'package:provider/provider.dart';
 
 const List<String> allowedExtensions = [
   "mp3",
@@ -62,9 +64,10 @@ class UploadSongButton extends SpeedDialChild {
       return;
     }
 
-    switch (await SongRepository.instance.addFile(File(file.path!))) {
+    if (!context.mounted) return;
+    switch (await context.read<SongRepository>().addFile(File(file.path!))) {
       case Ok(value: final song):
-        Navigation.navigatorKey.currentContext?.go(Routes.song(song.id));
+        navigatorKey.currentContext?.go(Routes.song(song.id));
       case Failure(:final error):
         debugPrint("[Library] Uploading file failed; $error");
       // TODO: Show error snackbar

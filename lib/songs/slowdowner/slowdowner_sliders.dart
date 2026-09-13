@@ -6,6 +6,7 @@ import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/widgets/custom_icons.dart';
+import 'package:provider/provider.dart';
 
 Widget _buildCircularPlaceholder(BuildContext context, {double radius = 64}) {
   return ShimmerLoading(
@@ -22,12 +23,12 @@ Widget _buildCircularPlaceholder(BuildContext context, {double radius = 64}) {
 }
 
 class PitchSpeedResetButton extends StatelessWidget {
-  PitchSpeedResetButton({super.key});
-
-  final PlaybackRepository playback = PlaybackRepository.instance;
+  const PitchSpeedResetButton({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     if (playback.song == null) {
       return IconButton(
         onPressed: null,
@@ -52,14 +53,14 @@ class PitchSpeedResetButton extends StatelessWidget {
 }
 
 class PitchSlider extends StatelessWidget {
-  PitchSlider({super.key, this.radius = 64});
+  const PitchSlider({super.key, this.radius = 64});
 
   final double radius;
 
-  final PlaybackRepository playback = PlaybackRepository.instance;
-
   @override
   Widget build(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     if (playback.song == null) {
       return _buildCircularPlaceholder(context, radius: radius);
     }
@@ -112,14 +113,14 @@ class PitchSlider extends StatelessWidget {
 }
 
 class SpeedSlider extends StatelessWidget {
-  SpeedSlider({super.key, this.radius = 64});
+  const SpeedSlider({super.key, this.radius = 64});
 
   final double radius;
 
-  final PlaybackRepository playback = PlaybackRepository.instance;
-
   @override
   Widget build(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     if (playback.song == null) {
       return _buildCircularPlaceholder(context, radius: radius);
     }

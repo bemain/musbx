@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/equalizer/equalizer_sliders.dart';
+import 'package:provider/provider.dart';
 
 class EqualizerSheet extends StatelessWidget {
   const EqualizerSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final PlaybackRepository playback = PlaybackRepository.instance;
+    final PlaybackRepository playback = context.read();
 
     final numBands = playback.numEqualizerBands;
     final bool isReset = numBands == null

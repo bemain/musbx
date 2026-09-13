@@ -54,17 +54,6 @@ class DeepLinksService extends OptionalService {
   /// A service that emits nothing, for platforms that open no files.
   static DeepLinksService disabled() => DeepLinksService._(null);
 
-  // TODO: Remove once we introduce `provider`.
-  static late final DeepLinksService instance;
-  static Future<void> initialize() async {
-    try {
-      instance = await create();
-    } catch (error) {
-      debugPrint("[DEEP LINKS] Disabled, initialization failed: $error");
-      instance = disabled();
-    }
-  }
-
   /// Carries the URIs the operating system sends, for as long as the app runs.
   StreamSubscription<Uri>? _subscription;
 

@@ -5,13 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/settings/selectors.dart';
-import 'package:musbx/theme.dart';
-import 'package:musbx/utils/launch_handler.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final Uri? storeUrl = Platform.isAndroid
@@ -78,6 +79,8 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SettingsRepository settings = context.read();
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Settings"),
@@ -124,7 +127,7 @@ class SettingsPage extends StatelessWidget {
           SettingsGroup(
             children: [
               ValueListenableBuilder(
-                valueListenable: AppTheme.themeModeNotifier,
+                valueListenable: settings.themeModeNotifier,
                 builder: (context, themeMode, child) => ListTile(
                   leading: Icon(Symbols.routine),
                   title: Text("Theme"),
@@ -135,13 +138,13 @@ class SettingsPage extends StatelessWidget {
                     await showAlertSheet<void>(
                       context: context,
                       builder: (context) => ThemeSelector(
-                        themeNotifier: AppTheme.themeModeNotifier,
+                        themeNotifier: settings.themeModeNotifier,
                       ),
                     );
                   },
                 ),
               ),
-              if (!EntitlementRepository.instance.hasPremium)
+              if (!context.read<EntitlementRepository>().hasPremium)
                 ListTile(
                   leading: Icon(Symbols.workspace_premium),
                   title: Text("Get Premium"),
@@ -222,7 +225,7 @@ class SettingsPage extends StatelessWidget {
           const SizedBox(height: 16),
           RichText(
             text: TextSpan(
-              text: "Version ${LaunchHandler.info.version}\n",
+              text: "Version ${context.read<PackageInfo>().version}\n",
               style: TextTheme.of(context).bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurface.withAlpha(0x50),
               ),

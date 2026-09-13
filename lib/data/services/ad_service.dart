@@ -76,17 +76,6 @@ class AdService extends OptionalService {
   /// switched off.
   static AdService disabled() => AdService._(null);
 
-  // TODO: Remove once we introduce `provider`.
-  static late final AdService instance;
-  static Future<void> initialize() async {
-    try {
-      instance = await create();
-    } catch (error) {
-      debugPrint("[ADS] Disabled, initialization failed: $error");
-      instance = disabled();
-    }
-  }
-
   /// Show a full-screen ad, and wait until the user dismisses it.
   ///
   /// Throws when no ad could be loaded, when the ad failed to appear, and

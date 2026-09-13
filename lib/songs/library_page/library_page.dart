@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/check_song_access.dart';
@@ -12,6 +11,7 @@ import 'package:musbx/songs/library_page/upload_file_button.dart';
 import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
+import 'package:provider/provider.dart';
 
 class LibraryPage extends StatelessWidget {
   const LibraryPage({super.key});
@@ -35,14 +35,15 @@ class LibraryPage extends StatelessWidget {
             ],
           ),
           ListenableBuilder(
-            listenable: SongRepository.instance,
+            listenable: context.read<SongRepository>(),
             builder: (context, child) {
               return SliverList.list(
                 children: [
                   const SizedBox(height: 8),
-                  for (final Song song in SongRepository.instance.getAll(
-                    order: GetOrder.descending,
-                  ))
+                  for (final Song song
+                      in context.read<SongRepository>().getAll(
+                        order: GetOrder.descending,
+                      ))
                     SongTile(
                       song: song,
                       showOptions: true,
@@ -62,10 +63,7 @@ class LibraryPage extends StatelessWidget {
     return SpeedDial.extended(
       heroTag: heroTag,
       shouldExpand: () {
-        final restricted = CheckSongAccess(
-          entitlement: EntitlementRepository.instance,
-          songs: SongRepository.instance,
-        ).isRestricted;
+        final restricted = context.read<CheckSongAccess>().isRestricted;
         if (restricted) {
           showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
         }

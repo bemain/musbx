@@ -5,13 +5,13 @@ import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/repositories/demix/demixing_process.dart';
-import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/clear_song_cache.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/utils/result.dart';
+import 'package:provider/provider.dart';
 
 class DemixingProgressIndicator extends StatefulWidget {
   const DemixingProgressIndicator({
@@ -31,18 +31,19 @@ class DemixingProgressIndicator extends StatefulWidget {
 
 class _DemixingProgressIndicatorState
     extends State<DemixingProgressIndicator> {
-  final DemixRepository demixing = DemixRepository.instance;
+  DemixRepository get demix => context.read();
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: demixing.hasStems(widget.song),
+      future: demix.hasStems(widget.song),
       builder: (context, snapshot) {
         if (snapshot.data != false) {
           // Already demixed or loading
           return const SizedBox();
         }
 
-        DemixingProcess? process = demixing.get(
+        DemixingProcess? process = demix.get(
           widget.song,
         );
         if (process == null) return _buildNotDemixed(context);
@@ -74,7 +75,7 @@ class _DemixingProgressIndicatorState
                       if (process.isRunning)
                         IconButton(
                           onPressed: () {
-                            demixing.cancel(widget.song);
+                            demix.cancel(widget.song);
                             setState(() {});
                           },
                           icon: const Icon(Symbols.piano),
@@ -95,8 +96,8 @@ class _DemixingProgressIndicatorState
       message: "This song has not been split into instruments.",
       child: IconButton(
         onPressed: () {
-          demixing.cancel(widget.song);
-          demixing.start(widget.song);
+          demix.cancel(widget.song);
+          demix.start(widget.song);
           setState(() {});
         },
         icon: const Icon(Symbols.piano_off),
@@ -116,7 +117,7 @@ class SongOptionsSheet extends StatefulWidget {
 
 class _SongOptionsSheetState extends State<SongOptionsSheet> {
   late Future<int> _cacheSize = _measureCache();
-  Future<int> _measureCache() => SongCache.instance.size(widget.song);
+  Future<int> _measureCache() => context.read<SongCache>().size(widget.song);
   void _refresh() => setState(() {
     _cacheSize = _measureCache();
   });
@@ -124,15 +125,18 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: SongRepository.instance,
+      listenable: context.read<SongRepository>(),
       builder: (context, child) {
         // Any update to the history could be an update to *this* song.
         // Thus, we get the song from history each time we build instead of using
         // the song passed in the constructor.
         // For example, if the song is renamed while the sheet is open, it will
         // automatically be rebuilt with the correct information.
-        final Song? song = SongRepository.instance
-            .getWhere((song, _) => song.id == widget.song.id)
+        final Song? song = context
+            .read<SongRepository>()
+            .getWhere(
+              (song, _) => song.id == widget.song.id,
+            )
             .firstOrNull;
 
         if (song == null) {
@@ -204,7 +208,7 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                             onPressed: () {
                               if (controller.text.isNotEmpty) {
                                 unawaited(
-                                  SongRepository.instance.add(
+                                  context.read<SongRepository>().add(
                                     song.copyWith(
                                       title: controller.text,
                                     ),
@@ -250,12 +254,9 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                               ),
                               FilledButton(
                                 onPressed: () async {
-                                  switch (await ClearSongCache(
-                                    cache: SongCache.instance,
-                                    preferences:
-                                        SongPreferencesRepository.instance,
-                                    demixing: DemixRepository.instance,
-                                  ).call(song)) {
+                                  switch (await context
+                                      .read<ClearSongCache>()
+                                      .call(song)) {
                                     case Ok():
                                       if (context.mounted) {
                                         Navigator.of(context).pop();
@@ -303,7 +304,7 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                           ),
                           FilledButton(
                             onPressed: () {
-                              SongRepository.instance.remove(song);
+                              context.read<SongRepository>().remove(song);
                               Navigator.of(context).pop();
                               Navigator.of(context).pop();
                             },

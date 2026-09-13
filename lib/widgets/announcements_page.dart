@@ -8,12 +8,13 @@ import 'package:musbx/data/models/feedback/feedback_entry.dart';
 import 'package:musbx/data/repositories/announcement/announcement_repository.dart';
 import 'package:musbx/data/repositories/feedback/feedback_repository.dart';
 import 'package:musbx/data/services/supabase_service.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/announcement_tile.dart';
 import 'package:musbx/widgets/result_builder.dart';
 import 'package:musbx/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AnnouncementsPage extends StatefulWidget {
@@ -24,8 +25,10 @@ class AnnouncementsPage extends StatefulWidget {
 }
 
 class _AnnouncementsPageState extends State<AnnouncementsPage> {
-  final Future<Result<List<Announcement>>> _future = AnnouncementRepository
-      .instance
+  AnnouncementRepository get announcements => context.read();
+  FeedbackRepository get feedback => context.read();
+
+  late final Future<Result<List<Announcement>>> _future = announcements
       .getAll();
 
   final TextEditingController feedbackController = TextEditingController();
@@ -38,10 +41,10 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final DateTime previousReadAt = AnnouncementRepository.instance.readAt;
+    final DateTime previousReadAt = announcements.readAt;
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      AnnouncementRepository.instance.markRead();
+      announcements.markRead();
     });
 
     return Scaffold(
@@ -156,16 +159,15 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
                       onPressed: feedbackController.text.trim().isEmpty
                           ? null
                           : () async {
-                              final result = await FeedbackRepository.instance
-                                  .insert(
-                                    FeedbackEntry(
-                                      content: feedbackController.text.trim(),
-                                      sentBy: SupabaseService
-                                          .instance
-                                          .currentUser
-                                          ?.id,
-                                    ),
-                                  );
+                              final result = await feedback.insert(
+                                FeedbackEntry(
+                                  content: feedbackController.text.trim(),
+                                  sentBy: context
+                                      .read<SupabaseService>()
+                                      .currentUser
+                                      ?.id,
+                                ),
+                              );
 
                               switch (result) {
                                 case Failure():
@@ -249,10 +251,12 @@ class AnnouncementsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AnnouncementRepository announcements = context.read();
+
     return ListenableBuilder(
-      listenable: AnnouncementRepository.instance,
+      listenable: announcements,
       builder: (context, child) => ResultBuilder(
-        future: AnnouncementRepository.instance.getUnread(),
+        future: announcements.getUnread(),
         loading: (context) {
           return _buildButton(context, []);
         },
@@ -294,7 +298,7 @@ class AnnouncementsButton extends StatelessWidget {
                   },
                 );
 
-                AnnouncementRepository.instance.markRead(popup.createdAt);
+                announcements.markRead(popup.createdAt);
               });
             } else {
               SchedulerBinding.instance.addPostFrameCallback((_) {

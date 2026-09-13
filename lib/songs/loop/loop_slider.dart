@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
+import 'package:provider/provider.dart';
 
 class LoopSlider extends StatelessWidget {
   /// Range slider for selecting the section to loop.
-  LoopSlider({super.key});
+  const LoopSlider({super.key});
 
   /// Whether the player was playing before the user began changing the position.
   static bool wasPlayingBeforeChange = false;
@@ -12,10 +13,10 @@ class LoopSlider extends StatelessWidget {
   /// The position that the player was at before the user began changing the loop section.
   static Duration positionBeforeChange = Duration.zero;
 
-  final PlaybackRepository playback = PlaybackRepository.instance;
-
   @override
   Widget build(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     if (playback.song == null) return SizedBox(height: 24);
 
     PositionSliderStyle style = Theme.of(

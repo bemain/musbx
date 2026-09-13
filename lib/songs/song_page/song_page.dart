@@ -12,14 +12,15 @@ import 'package:musbx/songs/song_page/position_slider.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/flat_card.dart';
+import 'package:provider/provider.dart';
 
 class SongPage extends StatelessWidget {
-  SongPage({super.key});
-
-  final PlaybackRepository playback = PlaybackRepository.instance;
+  const SongPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     return ListenableBuilder(
       listenable: playback,
       builder: (context, child) {
@@ -108,9 +109,7 @@ class SongPage extends StatelessWidget {
 }
 
 class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
-  SongAppBar({super.key});
-
-  final PlaybackRepository playback = PlaybackRepository.instance;
+  const SongAppBar({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(
@@ -119,6 +118,8 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     if (playback.song == null) {
       return AppBar(
         titleSpacing: 0,

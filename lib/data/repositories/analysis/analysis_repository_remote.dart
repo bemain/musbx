@@ -87,7 +87,7 @@ class AnalysisRepositoryRemote extends AnalysisRepository {
         return Result.ok(await JustWaveform.parse(File(outFile.path)));
       }
 
-      final CacheFile inFile = SongCache.instance.audio(song);
+      final CacheFile inFile = _cache.audio(song);
       if (!await inFile.exists()) {
         throw FileSystemException("File doesn't exist", inFile.path);
       }

@@ -6,10 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:meta/meta.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
-import 'package:musbx/data/repositories/demix/demix_repository.dart';
-import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/domain/use_case/delete_song.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/utils/utils.dart';
@@ -35,9 +33,11 @@ class SongRepository extends ChangeNotifier {
 
   final HistoryHandler<Song> _history;
 
-  static Future<SongRepository> create() async {
+  static Future<SongRepository> create({
+    required FileCacheService fileCache,
+  }) async {
     final history = HistoryHandler<Song>(
-      historyFileName: "songs/history",
+      file: fileCache.persistent.file("songs/history.json"),
       fromJson: (json) {
         if (json is! Json) {
           throw "[LIBRARY] Incorrectly formatted entry in history file: ($json)";
@@ -49,17 +49,6 @@ class SongRepository extends ChangeNotifier {
         }
       },
       toJson: (value) => value.toJson(),
-      onEntryRemoved: (entry) async {
-        final song = entry.value;
-        // Remove cached files
-        debugPrint(
-          "[LIBRARY] Deleting cached files for song ${song.id}",
-        );
-        await DeleteSong(
-          cache: SongCache.instance,
-          demixing: DemixRepository.instance,
-        ).call(song);
-      },
     );
 
     await history.fetch();
@@ -69,12 +58,6 @@ class SongRepository extends ChangeNotifier {
     }
 
     return SongRepository._(history);
-  }
-
-  // TODO: Remove once we introduce 'provider'.
-  static late final SongRepository instance;
-  static Future<void> initialize() async {
-    instance = await create();
   }
 
   bool get isEmpty => _history.entries.isEmpty;
@@ -93,6 +76,8 @@ class SongRepository extends ChangeNotifier {
         .where((e) => test(e.value, e.key))
         .map((e) => e.value);
   }
+
+  Song? getById(String id) => getWhere((song, _) => song.id == id).firstOrNull;
 
   @useResult
   Future<Result<Song>> add(Song song) async {
@@ -153,15 +138,6 @@ class SongRepository extends ChangeNotifier {
   Future<Result<void>> remove(Song song) async {
     try {
       await _history.remove(song);
-      return Result.ok(null);
-    } catch (e, s) {
-      return Result.failed(e, s);
-    }
-  }
-
-  Future<Result<void>> removeAll() async {
-    try {
-      await _history.clear();
       return Result.ok(null);
     } catch (e, s) {
       return Result.failed(e, s);

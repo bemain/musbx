@@ -1,4 +1,5 @@
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
@@ -9,17 +10,22 @@ class ClearSongCache {
   ClearSongCache({
     required SongCache cache,
     required SongPreferencesRepository preferences,
+    required PlaybackRepository playback,
     required DemixRepository demixing,
   }) : _cache = cache,
        _preferences = preferences,
+       _playback = playback,
        _demixing = demixing;
 
   final SongCache _cache;
   final SongPreferencesRepository _preferences;
+  final PlaybackRepository _playback;
   final DemixRepository _demixing;
 
   Future<Result<void>> call(Song song) async {
     try {
+      if (_playback.song == song) await _playback.unload();
+
       _demixing.cancel(song);
       await _cache.clear(song);
 

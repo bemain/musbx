@@ -4,6 +4,7 @@ import 'package:musbx/data/repositories/notification/notification_repository.dar
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/metronome/notification_indicator.dart';
 import 'package:musbx/utils/result.dart';
+import 'package:provider/provider.dart';
 
 class PlayButton extends StatelessWidget {
   /// Play / pause button to start or stop the [Metronome].
@@ -48,8 +49,9 @@ class PlayButton extends StatelessWidget {
   }
 
   Future<void> _requestNotificationPermission(BuildContext context) async {
-    if (!NotificationRepository.instance.hasPermission &&
-        !NotificationRepository.instance.hasRequestedPermission) {
+    final NotificationRepository notifications = context.read();
+    if (!notifications.hasPermission &&
+        !notifications.hasRequestedPermission) {
       if (!context.mounted) return;
 
       final bool mayRequestPermission =
@@ -60,7 +62,7 @@ class PlayButton extends StatelessWidget {
           false;
       if (!mayRequestPermission) return;
 
-      if (await NotificationRepository.instance.requestPermission() case Ok(
+      if (await notifications.requestPermission() case Ok(
         value: true,
       )) {
         await Metronome.instance.updateNotification();

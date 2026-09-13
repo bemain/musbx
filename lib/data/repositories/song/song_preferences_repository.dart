@@ -12,12 +12,6 @@ class SongPreferencesRepository {
 
   final SongCache _songCache;
 
-  // TODO: Remove once we introduce 'provider'.
-  static late final SongPreferencesRepository instance;
-  static Future<void> initialize() async {
-    instance = SongPreferencesRepository(songCache: SongCache.instance);
-  }
-
   CacheFile _songFile(Song song) => _songCache.preferences(song);
 
   @useResult

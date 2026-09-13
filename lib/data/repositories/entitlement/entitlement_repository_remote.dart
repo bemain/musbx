@@ -10,23 +10,23 @@ import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
 class EntitlementRepositoryRemote extends EntitlementRepository {
-  EntitlementRepositoryRemote({required PurchaseService purchaseService})
-    : _purchaseService = purchaseService {
-    if (!_purchaseService.isEnabled) {
+  EntitlementRepositoryRemote({required PurchaseService purchase})
+    : _purchase = purchase {
+    if (!_purchase.isEnabled) {
       debugPrint("[PURCHASES] The current platform is not supported");
       _hasPremium = true;
       notifyListeners();
       return;
     }
 
-    PurchaseService.instance.statusStream.listen(
+    _purchase.statusStream.listen(
       (record) => _processStatus(record.entitlement, record.status),
     );
 
     unawaited(restore());
   }
 
-  final PurchaseService _purchaseService;
+  final PurchaseService _purchase;
 
   bool _isBuyingPremium = false;
   bool _hasPremium = false;
@@ -37,7 +37,7 @@ class EntitlementRepositoryRemote extends EntitlementRepository {
   @override
   Future<Result<void>> restore() async {
     return OptionalService.guard(
-      _purchaseService.restore,
+      _purchase.restore,
       "In app purchase service disabled",
     );
   }
@@ -92,7 +92,7 @@ class EntitlementRepositoryRemote extends EntitlementRepository {
 
     try {
       return Result.ok(
-        await _purchaseService.buy(Entitlement.premium),
+        await _purchase.buy(Entitlement.premium),
       );
     } on ServiceDisabled catch (_) {
       _isBuyingPremium = false;

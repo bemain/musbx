@@ -38,7 +38,7 @@ class Ticks {
 }
 
 class Metronome {
-  Metronome._() {
+  Metronome._(this._sharedPreferences, this._notifications) {
     // Listen to app lifecycle
     AppLifecycleListener(
       onHide: () async {
@@ -46,7 +46,7 @@ class Metronome {
       },
       onDetach: () async {
         // FIXME: This doesn't work... The future never completes
-        await NotificationRepository.instance.cancelAll();
+        await _notifications.cancelAll();
       },
     );
 
@@ -54,7 +54,7 @@ class Metronome {
   }
 
   /// The instance of this singleton.
-  static final Metronome instance = Metronome._();
+  static late final Metronome instance;
 
   /// Minimum [bpm] allowed. [bpm] can never be less than this.
   static const int minBpm = 20;
@@ -68,23 +68,32 @@ class Metronome {
   static bool isInitialized = false;
 
   /// Initialize the [Metronome] and prepare playback.
-  static Future<void> initialize() async {
+  static Future<void> initialize({
+    required SharedPreferencesService sharedPreferences,
+    required NotificationRepository notifications,
+  }) async {
     if (isInitialized) return;
 
-    instance.ticks = Ticks(
+    final metronome = Metronome._(sharedPreferences, notifications);
+    metronome.ticks = Ticks(
       accented: await Tick.load("beat_accented.mp3"),
       primary: await Tick.load("beat_primary.mp3"),
       subdivision: await Tick.load("beat_subdivision.mp3"),
     );
 
+    instance = metronome;
+
     isInitialized = true;
   }
+
+  final SharedPreferencesService _sharedPreferences;
+  final NotificationRepository _notifications;
 
   /// Whether to show a notification while the Metronome is playing.
   bool get showNotification => showNotificationNotifier.value;
   set showNotification(bool value) => showNotificationNotifier.value = value;
   late final PersistentValue<bool> showNotificationNotifier =
-      SharedPreferencesService.instance.value(
+      _sharedPreferences.value(
         "metronome/notification",
         initialValue: true,
       )..addListener(reset);
@@ -96,12 +105,10 @@ class Metronome {
   /// Does not actually update the playback. This needs to be done manually by calling [reset].
   int get bpm => bpmNotifier.value;
   set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
-  late final PersistentValue<int> bpmNotifier = SharedPreferencesService
-      .instance
-      .value(
-        "metronome/bpm",
-        initialValue: 60,
-      );
+  late final PersistentValue<int> bpmNotifier = _sharedPreferences.value(
+    "metronome/bpm",
+    initialValue: 60,
+  );
 
   /// The duration of a beat.
   Duration get beatDuration =>
@@ -110,17 +117,16 @@ class Metronome {
   /// The number of beats per bar.
   int get higher => higherNotifier.value;
   set higher(int value) => higherNotifier.value = value;
-  late final PersistentValue<int> higherNotifier =
-      SharedPreferencesService.instance.value(
-        "metronome/higher",
-        initialValue: 4,
-      )..addListener(reset);
+  late final PersistentValue<int> higherNotifier = _sharedPreferences.value(
+    "metronome/higher",
+    initialValue: 4,
+  )..addListener(reset);
 
   /// The number of notes each beat is divided into.
   int get subdivisions => subdivisionsNotifier.value;
   set subdivisions(int value) => subdivisionsNotifier.value = value;
   late final PersistentValue<int> subdivisionsNotifier =
-      SharedPreferencesService.instance.value(
+      _sharedPreferences.value(
         "metronome/subdivisions",
         initialValue: 1,
       )..addListener(reset);
@@ -197,7 +203,7 @@ class Metronome {
   Future<void> updateNotification() async {
     if (!showNotification) return;
 
-    await NotificationRepository.instance.post(
+    await _notifications.post(
       AppNotification(
         channel: NotificationChannel.metronomeControls,
         title: "Metronome",

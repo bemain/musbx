@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
 import 'package:musbx/data/models/feedback/feedback_entry.dart';
 import 'package:musbx/data/services/service.dart';
@@ -59,25 +58,6 @@ class SupabaseService extends OptionalService {
 
   /// A service with no backend behind it, for when it could not be reached.
   static SupabaseService disabled() => SupabaseService._(null);
-
-  // TODO: Remove once we introduce `provider`.
-  // If signInAnonymously() throws — no connectivity at launch, Supabase briefly
-  // unreachable — this installs disabled() permanently. Every call then throws
-  // ServiceDisabled for the rest of the process lifetime, even once the network
-  // comes back, and the only recovery is a full app restart.
-  //
-  // Since launch-time connectivity is genuinely unreliable on mobile, the
-  // sign-in is better attempted lazily on first use, or retried, rather than
-  // latched off after one failure.
-  static late final SupabaseService instance;
-  static Future<void> initialize() async {
-    try {
-      instance = await create();
-    } catch (error) {
-      debugPrint("[SUPABASE] Disabled, initialization failed: $error");
-      instance = disabled();
-    }
-  }
 
   /// Who the backend takes this device to be, or `null` if there is no session
   /// to speak of.

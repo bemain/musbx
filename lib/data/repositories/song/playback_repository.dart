@@ -91,11 +91,13 @@ class PlaybackRepository extends ChangeNotifier {
     required AudioSessionService audioSession,
     required SongPreferencesRepository songPreferences,
     required MediaNotificationService mediaNotification,
+    required DemixRepository demix,
   }) : _audio = audio,
        _audioEngine = audioEngine,
        _audioSession = audioSession,
        _songPreferences = songPreferences,
-       _mediaNotification = mediaNotification {
+       _mediaNotification = mediaNotification,
+       _demix = demix {
     _audioSession.eventStream.listen((event) {
       switch (event) {
         case AudioSessionEvent.resume || AudioSessionEvent.unduck:
@@ -157,18 +159,7 @@ class PlaybackRepository extends ChangeNotifier {
   final AudioSessionService _audioSession;
   final SongPreferencesRepository _songPreferences;
   final MediaNotificationService _mediaNotification;
-
-  // TODO: Remove once we introduce 'provider'.
-  static late final PlaybackRepository instance;
-  static Future<void> initialize() async {
-    instance = PlaybackRepository(
-      audio: AudioRepository.instance,
-      audioEngine: AudioEngineService.instance,
-      audioSession: AudioSessionService.instance,
-      songPreferences: SongPreferencesRepository.instance,
-      mediaNotification: MediaNotificationService.instance,
-    );
-  }
+  final DemixRepository _demix;
 
   Song? get song => _song;
   Song? _song;
@@ -349,7 +340,7 @@ class PlaybackRepository extends ChangeNotifier {
 
     try {
       final AudioSource source = (await _audio.resolve(song)).asOk;
-      final stems = await DemixRepository.instance.stemsFor(song);
+      final stems = await _demix.stemsFor(song);
 
       final Map<StemType?, AudioSource> sources;
       if (stems != null) {

@@ -4,16 +4,15 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/youtube_video.dart';
-import 'package:musbx/data/repositories/demix/demix_repository.dart';
-import 'package:musbx/data/repositories/song/song_repository.dart';
-import 'package:musbx/data/repositories/song/song_settings_repository.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/youtube_api_client.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/add_song_to_library.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 class YoutubeSearch {
   /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
@@ -34,11 +33,8 @@ class YoutubeSearch {
       artUri: Uri.tryParse(video.thumbnails.high.url),
       audio: UrlAudio(Uri.parse(video.url)),
     );
-    switch (await AddSongToLibrary(
-      settings: SongSettingsRepository.instance,
-      songs: SongRepository.instance,
-      demixing: DemixRepository.instance,
-    ).call(song)) {
+    if (!context.mounted) return;
+    switch (await context.read<AddSongToLibrary>().call(song)) {
       case Ok():
         if (context.mounted) context.go(Routes.song(video.id));
       case Failure(:final error):
@@ -48,11 +44,14 @@ class YoutubeSearch {
   }
 
   /// The history of previous search queries.
-  static final HistoryHandler<String> history = HistoryHandler<String>(
-    fromJson: (json) => json as String,
-    toJson: (value) => value,
-    historyFileName: "search_history",
-  );
+  static HistoryHandler<String> history(BuildContext context) =>
+      HistoryHandler<String>(
+        file: context.read<FileCacheService>().persistent.file(
+          "search_history.json",
+        ),
+        fromJson: (json) => json as String,
+        toJson: (value) => value,
+      );
 }
 
 /// [SearchDelegate] for searching for a song on Youtube.
@@ -96,7 +95,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (YoutubeSearch.history.entries.isEmpty) {
+    if (YoutubeSearch.history(context).entries.isEmpty) {
       // Show help text
       return Padding(
         padding: const EdgeInsets.all(16.0),
@@ -113,7 +112,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
       );
     }
 
-    final searchHistory = YoutubeSearch.history.sorted().where(
+    final searchHistory = YoutubeSearch.history(context).sorted().where(
       (e) => e.toLowerCase().contains(query.toLowerCase()),
     );
 
@@ -166,7 +165,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
             return YoutubeVideoListItem(
               video: video,
               onTap: () {
-                YoutubeSearch.history.add(query.trim());
+                YoutubeSearch.history(context).add(query.trim());
                 close(context, video);
               },
             );

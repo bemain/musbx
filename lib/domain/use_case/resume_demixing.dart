@@ -1,13 +1,13 @@
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
-import 'package:musbx/data/repositories/song/song_settings_repository.dart';
 import 'package:musbx/utils/result.dart';
 
 class ResumeDemixing {
   ResumeDemixing({
     required SongRepository songs,
-    required SongSettingsRepository settings,
+    required SettingsRepository settings,
     required SongPreferencesRepository preferences,
     required DemixRepository demixing,
   }) : _songs = songs,
@@ -16,7 +16,7 @@ class ResumeDemixing {
        _demixing = demixing;
 
   final SongRepository _songs;
-  final SongSettingsRepository _settings;
+  final SettingsRepository _settings;
   final SongPreferencesRepository _preferences;
   final DemixRepository _demixing;
 
@@ -26,7 +26,7 @@ class ResumeDemixing {
         Ok(:final value) => value,
         _ => null,
       };
-      if (prefs?.shouldDemix ?? _settings.demixAutomatically) {
+      if (prefs?.shouldDemix ?? _settings.songs.demixAutomatically) {
         _demixing.start(song);
       }
     }

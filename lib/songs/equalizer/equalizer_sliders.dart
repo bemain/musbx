@@ -2,14 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/equalizer/equalizer_overlay.dart';
 import 'package:musbx/songs/equalizer/inactive_slider_track_shape.dart';
+import 'package:provider/provider.dart';
 
-class EqualizerSliders extends StatelessWidget {
+class EqualizerSliders extends StatefulWidget {
   /// A widget used to control the gain on Equalizer's bands.
-  EqualizerSliders({super.key, this.enabled = true});
+  const EqualizerSliders({super.key, this.enabled = true});
 
   final bool enabled;
 
-  final PlaybackRepository playback = PlaybackRepository.instance;
+  @override
+  State<EqualizerSliders> createState() => _EqualizerSlidersState();
+}
+
+class _EqualizerSlidersState extends State<EqualizerSliders> {
+  PlaybackRepository get playback => context.read();
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +30,10 @@ class EqualizerSliders extends StatelessWidget {
                         playback.getBandGain(i) ??
                         PlaybackRepository.equalizerDefaultGain,
                 },
-          lineColor: enabled
+          lineColor: widget.enabled
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.onSurface.withAlpha(0x61),
-          fillColor: enabled
+          fillColor: widget.enabled
               ? Theme.of(context).colorScheme.inversePrimary
               : null,
         ),
@@ -41,7 +47,7 @@ class EqualizerSliders extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               for (int i = 0; i < playback.numEqualizerBands!; i++)
-                buildSlider(i, enabled: enabled),
+                buildSlider(i, enabled: widget.enabled),
             ],
           ),
         ),

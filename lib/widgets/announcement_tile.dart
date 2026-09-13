@@ -7,6 +7,7 @@ import 'package:musbx/data/models/feedback/feedback_entry.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 class AnnouncementTile extends StatefulWidget {
   static const List<String> months = [
@@ -40,6 +41,8 @@ class AnnouncementTile extends StatefulWidget {
 }
 
 class _AnnouncementTileState extends State<AnnouncementTile> {
+  SupabaseService get supabase => context.read();
+
   /// The currently selected responses.
   /// The special value '[otherFieldName]' signifies that the 'Other' option is
   /// selected, and the value of [otherFieldController] should be used.
@@ -50,7 +53,7 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
   late final PersistentValue<String>? sentResponse =
       widget.announcement == null
       ? null
-      : SharedPreferencesService.instance.value<String>(
+      : context.read<SharedPreferencesService>().value<String>(
           "announcements/${widget.announcement!.id}/response",
           initialValue: "",
         );
@@ -141,12 +144,11 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
                                 .toList();
 
                             for (final response in responses) {
-                              await SupabaseService.instance.insertFeedback(
+                              await supabase.insertFeedback(
                                 FeedbackEntry(
                                   content: response,
                                   responseTo: announcement.id,
-                                  sentBy:
-                                      SupabaseService.instance.currentUser?.id,
+                                  sentBy: supabase.currentUser?.id,
                                 ),
                               );
                             }

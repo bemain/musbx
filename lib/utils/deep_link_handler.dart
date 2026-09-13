@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/deep_links_service.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/check_song_access.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/router.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
@@ -28,32 +28,28 @@ import 'package:musbx/widgets/exception_dialogs.dart';
 /// built any earlier adds the song to the library and then silently fails to
 /// navigate to it.
 class DeepLinkHandler {
-  DeepLinkHandler({required DeepLinksService deepLinksService})
-    : _deepLinksService = deepLinksService {
-    _subscription = _deepLinksService.songStream.listen((song) async {
-      if (await SongRepository.instance.add(song) case Failure(:final error)) {
+  DeepLinkHandler({
+    required DeepLinksService deepLinks,
+    required SongRepository songs,
+    required CheckSongAccess checkSongAccess,
+  }) {
+    _subscription = deepLinks.songStream.listen((song) async {
+      if (await songs.add(song) case Failure(:final error)) {
         debugPrint(
           "[Launch handler] Error occured while adding song '$song': $error",
         );
         return;
       }
 
-      if (CheckSongAccess(
-        entitlement: EntitlementRepository.instance,
-        songs: SongRepository.instance,
-      ).isRestricted) {
+      if (checkSongAccess.isRestricted) {
         await showExceptionDialog(
           const MusicPlayerAccessRestrictedDialog(),
         );
       } else {
-        await Navigation.navigatorKey.currentContext?.push(
-          Routes.song(song.id),
-        );
+        await navigatorKey.currentContext?.push(Routes.song(song.id));
       }
     });
   }
-
-  final DeepLinksService _deepLinksService;
 
   /// Carries the songs the service resolves, for as long as this handler lives.
   late final StreamSubscription<Song> _subscription;

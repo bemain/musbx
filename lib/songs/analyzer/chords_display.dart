@@ -6,6 +6,7 @@ import 'package:musbx/domain/models/music/chord.dart';
 import 'package:musbx/songs/analyzer/chord_symbol.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/result_builder.dart';
+import 'package:provider/provider.dart';
 
 class ChordsDisplay extends StatefulWidget {
   const ChordsDisplay({super.key, required this.durationShown});
@@ -17,12 +18,12 @@ class ChordsDisplay extends StatefulWidget {
 }
 
 class _ChordsDisplayState extends State<ChordsDisplay> {
-  final PlaybackRepository playback = PlaybackRepository.instance;
+  PlaybackRepository get playback => context.read();
 
   Future<Result<Map<Duration, Chord?>>>? _future;
   void _updateFuture() {
     if (playback.song == null) return;
-    _future = AnalysisRepository.instance.chords(playback.song!);
+    _future = context.read<AnalysisRepository>().chords(playback.song!);
   }
 
   Widget _buildPlaceholder(BuildContext context) {

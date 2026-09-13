@@ -3,14 +3,20 @@ import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
+import 'package:provider/provider.dart';
 
-class ButtonPanel extends StatelessWidget {
+class ButtonPanel extends StatefulWidget {
   /// Panel including play/pause, forward and rewind buttons for controlling a [SongPlayer].
   ///
   /// If no song is loaded, all buttons are disabled.
-  ButtonPanel({super.key});
+  const ButtonPanel({super.key});
 
-  final PlaybackRepository playback = PlaybackRepository.instance;
+  @override
+  State<ButtonPanel> createState() => _ButtonPanelState();
+}
+
+class _ButtonPanelState extends State<ButtonPanel> {
+  PlaybackRepository get playback => context.read();
 
   Widget _buildButton({
     required void Function()? onPressed,

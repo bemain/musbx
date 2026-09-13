@@ -109,12 +109,6 @@ class SharedPreferencesService {
     }
   }
 
-  // TODO: Remove once we introduce `provider`.
-  static late final SharedPreferencesService instance;
-  static Future<void> initialize() async {
-    instance = await create();
-  }
-
   /// A value stored under [key], reading as [initialValue] until something has
   /// been stored there.
   ///

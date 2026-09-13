@@ -14,12 +14,6 @@ class AudioEngineService {
     return AudioEngineService._(s);
   }
 
-  // TODO: Remove once we introduce `provider`.
-  static late final AudioEngineService instance;
-  static Future<void> initialize() async {
-    instance = await create();
-  }
-
   Future<void> dispose() async {
     soLoud.deinit();
   }

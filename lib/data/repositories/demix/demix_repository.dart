@@ -8,11 +8,6 @@ import 'package:musbx/domain/models/stem_type.dart';
 class DemixRepository extends ChangeNotifier {
   DemixRepository({required SongCache cache}) : _cache = cache;
 
-  // TODO: Remove once we introduce 'provider'
-  static final DemixRepository instance = DemixRepository(
-    cache: SongCache.instance,
-  );
-
   final SongCache _cache;
 
   static final Map<Song, DemixingProcess> _processes = {};

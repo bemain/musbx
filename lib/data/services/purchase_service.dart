@@ -65,12 +65,6 @@ class PurchaseService extends OptionalService {
   /// A service with no store behind it, for when none is available.
   static PurchaseService disabled() => PurchaseService._(null);
 
-  // TODO: Remove once we introduce `provider`.
-  static late final PurchaseService instance;
-  static Future<void> initialize() async {
-    instance = await create();
-  }
-
   final _statusController =
       StreamController<
         ({Entitlement entitlement, EntitlementStatus status})

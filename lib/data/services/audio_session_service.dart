@@ -46,12 +46,6 @@ class AudioSessionService {
     return AudioSessionService(session);
   }
 
-  // TODO: Remove once we introduce `provider`.
-  static late final AudioSessionService instance;
-  static Future<void> initialize() async {
-    instance = await create();
-  }
-
   Future<void> setActive(bool value) => _session.setActive(value);
 
   final StreamController<AudioSessionEvent> _controller =

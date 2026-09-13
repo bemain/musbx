@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/repositories/demix/demix_repository.dart';
-import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
-import 'package:musbx/data/repositories/song/song_settings_repository.dart';
-import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/use_case/clear_song_cache.dart';
+import 'package:musbx/domain/use_case/delete_song.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/router.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
+import 'package:provider/provider.dart';
 
 SlideFromRightTransitionPage Function(BuildContext, GoRouterState)
-settingsPageBuilder(Widget child) => (context, state) {
-  return SlideFromRightTransitionPage(
-    key: state.pageKey,
-    child: child,
-  );
-};
+settingsPageBuilder(Widget Function(BuildContext context) builder) =>
+    (context, state) {
+      return SlideFromRightTransitionPage(
+        key: state.pageKey,
+        child: builder(context),
+      );
+    };
 
 class SettingsSubPage extends StatelessWidget {
   const SettingsSubPage({
@@ -93,23 +93,24 @@ class SongsSettingsPage extends StatefulWidget {
 
 class _SongsSettingsPageState extends State<SongsSettingsPage> {
   late Future<int> _cacheSize = _measureCache();
-  Future<int> _measureCache() =>
-      FileCacheService.instance.scratch.directory("songs").size();
+  Future<int> _measureCache() => context.read<SongCache>().totalSize();
   void _refresh() => setState(() {
     _cacheSize = _measureCache();
   });
 
-  final SongSettingsRepository songSettings = SongSettingsRepository.instance;
+  SettingsRepository get settings => context.read();
 
   @override
   Widget build(BuildContext context) {
+    final SongRepository songs = context.read();
+
     return SettingsSubPage(
       title: Text("Songs settings"),
       children: [
         SettingsGroup(
           children: [
             ValueListenableBuilder(
-              valueListenable: songSettings.demixAutomaticallyNotifier,
+              valueListenable: settings.songs.demixAutomaticallyNotifier,
               builder: (context, demixAutomatically, child) => ListTile(
                 leading: Icon(Symbols.piano),
                 title: Text("Split new songs"),
@@ -117,13 +118,13 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                   "Automatically split songs into instruments",
                 ),
                 onTap: () {
-                  songSettings.demixAutomatically =
-                      !songSettings.demixAutomatically;
+                  settings.songs.demixAutomatically =
+                      !settings.songs.demixAutomatically;
                 },
                 trailing: Switch(
-                  value: songSettings.demixAutomatically,
+                  value: settings.songs.demixAutomatically,
                   onChanged: (value) =>
-                      songSettings.demixAutomatically = value,
+                      settings.songs.demixAutomatically = value,
                 ),
               ),
             ),
@@ -133,15 +134,14 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
         SettingsGroup(
           children: [
             ListenableBuilder(
-              listenable: SongRepository.instance,
+              listenable: songs,
               builder: (context, child) => FutureBuilder<int>(
                 future: _cacheSize,
                 builder: (context, snapshot) {
                   final cacheSize = snapshot.data ?? 0;
 
                   return ListTile(
-                    enabled:
-                        SongRepository.instance.isNotEmpty && cacheSize > 0,
+                    enabled: songs.isNotEmpty && cacheSize > 0,
                     leading: Icon(Symbols.cloud_off),
                     title: Text("Free up storage"),
                     onTap: () async {
@@ -172,20 +172,16 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                         },
                       );
 
-                      if (shouldContinue == true) {
-                        // Make sure a song is not open
-                        Navigation.navigationShell.goBranch(
-                          Navigation.currentBranch.value,
-                          initialLocation: true,
+                      if (shouldContinue == true && context.mounted) {
+                        // Make sure the song is not open
+                        libraryNavigatorKey.currentState?.popUntil(
+                          (route) => route.isFirst,
                         );
 
                         // Remove cache
-                        for (final song in SongRepository.instance.getAll()) {
-                          await ClearSongCache(
-                            cache: SongCache.instance,
-                            preferences: SongPreferencesRepository.instance,
-                            demixing: DemixRepository.instance,
-                          ).call(song);
+                        final ClearSongCache clearSongCache = context.read();
+                        for (final song in songs.getAll()) {
+                          await clearSongCache.call(song);
                         }
 
                         if (!mounted) return;
@@ -197,9 +193,9 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
               ),
             ),
             ListenableBuilder(
-              listenable: SongRepository.instance,
+              listenable: songs,
               builder: (context, child) => ListTile(
-                enabled: SongRepository.instance.isNotEmpty,
+                enabled: songs.isNotEmpty,
                 leading: Icon(Symbols.delete_sweep),
                 title: Text("Remove all songs"),
                 onTap: () async {
@@ -230,14 +226,18 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                     },
                   );
 
-                  if (shouldContinue == true) {
-                    // Make sure a song is not open
-                    Navigation.navigationShell.goBranch(
-                      Navigation.currentBranch.value,
-                      initialLocation: true,
+                  if (shouldContinue == true && context.mounted) {
+                    // Make sure the song is not open
+                    libraryNavigatorKey.currentState?.popUntil(
+                      (route) => route.isFirst,
                     );
 
-                    await SongRepository.instance.removeAll();
+                    final DeleteSong deleteSong = context.read();
+
+                    for (final song in songs.getAll()) {
+                      await deleteSong.call(song);
+                    }
+
                     if (!mounted) return;
                     _refresh();
                   }

@@ -3,6 +3,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/notification/notification_repository.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/utils/result.dart';
+import 'package:provider/provider.dart';
 
 class MetronomeNotificationIndicator extends StatelessWidget {
   const MetronomeNotificationIndicator({super.key});
@@ -10,7 +11,9 @@ class MetronomeNotificationIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: NotificationRepository.instance.hasPermissionNotifier,
+      valueListenable: context
+          .read<NotificationRepository>()
+          .hasPermissionNotifier,
       builder: (context, hasPermission, child) => ValueListenableBuilder(
         valueListenable: Metronome.instance.showNotificationNotifier,
         builder: (context, showNotification, child) {
@@ -31,7 +34,8 @@ class MetronomeNotificationIndicator extends StatelessWidget {
 
   /// Ask for permission to send notifications.
   Future<void> _requestPermission(BuildContext context) async {
-    if (NotificationRepository.instance.hasPermission) return;
+    final NotificationRepository notifications = context.read();
+    if (notifications.hasPermission) return;
 
     if (!context.mounted) return;
     final bool mayRequestPermission =
@@ -42,7 +46,7 @@ class MetronomeNotificationIndicator extends StatelessWidget {
         false;
     if (!mayRequestPermission) return;
 
-    if (await NotificationRepository.instance.requestPermission() case Ok(
+    if (await notifications.requestPermission() case Ok(
       value: true,
     )) {
       // When permission is given, we assume the user wants us to show a notification.
@@ -104,7 +108,8 @@ class NotificationPermissionRationale extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    NotificationRepository.instance.hasRequestedPermission = true;
+    final NotificationRepository notifications = context.read();
+    notifications.hasRequestedPermission = true;
 
     return AlertDialog(
       title: const Text("Enable notifications"),
@@ -121,7 +126,7 @@ class NotificationPermissionRationale extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () {
-            NotificationRepository.instance.requestPermission();
+            notifications.requestPermission();
             Navigator.of(context).pop(true);
           },
           child: const Text("Allow"),

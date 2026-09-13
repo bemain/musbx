@@ -4,6 +4,7 @@ import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/analyzer/chords_display.dart';
 import 'package:musbx/songs/analyzer/waveform_widget.dart';
 import 'package:musbx/widgets/flat_card.dart';
+import 'package:provider/provider.dart';
 
 class WaveformCard extends StatelessWidget {
   static const Duration minDurationShown = Duration(seconds: 7);
@@ -34,10 +35,10 @@ class WaveformCard extends StatelessWidget {
     defaultDurationShown,
   );
 
-  final PlaybackRepository playback = PlaybackRepository.instance;
-
   @override
   Widget build(BuildContext context) {
+    final PlaybackRepository playback = context.read();
+
     return GestureDetector(
       onScaleStart: (_) {
         if (playback.song != null) {

@@ -50,12 +50,6 @@ class PermissionService {
   static PermissionService unavailable() =>
       PermissionService._(null, isAvailable: false);
 
-  // TODO: Remove once we introduce `provider`.
-  static late final PermissionService instance;
-  static Future<void> initialize() async {
-    instance = await create();
-  }
-
   /// The current status of [permission], without prompting the user.
   ///
   /// On Android this never returns [PermissionStatus.permanentlyDenied]; the

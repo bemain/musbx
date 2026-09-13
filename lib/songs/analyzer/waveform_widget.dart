@@ -10,6 +10,7 @@ import 'package:musbx/songs/analyzer/waveform_painter.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/result_builder.dart';
+import 'package:provider/provider.dart';
 
 const int kSamplesPerPixel = 540;
 const int kSampleRate = 48000;
@@ -24,13 +25,13 @@ class WaveformWidget extends StatefulWidget {
 }
 
 class _WaveformWidgetState extends State<WaveformWidget> {
-  final PlaybackRepository playback = PlaybackRepository.instance;
+  PlaybackRepository get playback => context.read();
 
   Future<Result<Waveform>>? _future;
 
   void _updateFuture() {
     if (playback.song == null) return;
-    _future = AnalysisRepository.instance.waveform(playback.song!);
+    _future = context.read<AnalysisRepository>().waveform(playback.song!);
   }
 
   Widget _buildPlaceholder(BuildContext context) {

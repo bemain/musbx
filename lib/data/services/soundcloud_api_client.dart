@@ -80,26 +80,6 @@ class SoundCloudApiClient extends OptionalService {
   /// A service with no credentials behind it, for when none could be scraped.
   static SoundCloudApiClient disabled() => SoundCloudApiClient._("", null);
 
-  // TODO: Remove once we introduce `provider`.
-  static late final SoundCloudApiClient instance;
-
-  /// Create [instance], falling back to [disabled] if that fails.
-  ///
-  /// Searching SoundCloud is not essential to the app starting, so a failure
-  /// here is logged and swallowed rather than allowed to escape into `main`.
-  ///
-  /// The fallback is permanent for the lifetime of the process: a device that
-  /// is offline at launch keeps a disabled client even once the network comes
-  /// back, and only a restart recovers it.
-  static Future<void> initialize() async {
-    try {
-      instance = await create();
-    } catch (error) {
-      debugPrint("[SOUND CLOUD] Disabled, initialization failed: $error");
-      instance = disabled();
-    }
-  }
-
   /// Finds a client id by reading the one SoundCloud's own web player uses.
   ///
   /// SoundCloud issues no keys to third parties, so the id is recovered from

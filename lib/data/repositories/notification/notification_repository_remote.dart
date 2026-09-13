@@ -9,7 +9,8 @@ import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/notification.dart';
 import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/metronome/metronome.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/router.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/utils/result.dart';
 
 final class PermissionException implements Exception {
@@ -105,7 +106,7 @@ class NotificationRepositoryRemote extends NotificationRepository {
   ) async {
     if (action.channel == NotificationChannel.metronomeControls) {
       // Navigate to the metronome page
-      Navigation.navigationShell.goBranch(
+      navigationShell.goBranch(
         Routes.branches.indexOf(Routes.metronome),
       );
 

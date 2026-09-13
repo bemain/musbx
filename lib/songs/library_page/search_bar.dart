@@ -6,10 +6,11 @@ import 'package:musbx/data/models/soundcloud_track.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/soundcloud_api_client.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/utils/result.dart';
+import 'package:provider/provider.dart';
 
 class LibrarySearchBar extends StatefulWidget {
   const LibrarySearchBar({super.key});
@@ -79,13 +80,16 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         }
 
         // History entries that match the search query
-        final Iterable<Song> songHistory = SongRepository.instance
+        final Iterable<Song> songHistory = context
+            .read<SongRepository>()
             .getAll(order: GetOrder.descending)
             .where(
               (song) =>
                   song.title.toLowerCase().contains(query) ||
                   (song.artist?.toLowerCase().contains(query) ?? false),
             );
+
+        final SoundCloudApiClient client = context.read();
 
         return [
           const SizedBox(height: 8),
@@ -99,7 +103,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
               },
             ),
           if (songHistory.isNotEmpty) const Divider(),
-          if (SoundCloudApiClient.instance.isEnabled)
+          if (client.isEnabled)
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
@@ -107,10 +111,11 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-          if (SoundCloudApiClient.instance.isEnabled)
+          if (client.isEnabled)
             FutureBuilder(
               future: SoundCloudSearch.searchTracks(
                 query,
+                context: context,
               ).timeout(Duration(seconds: 2), onTimeout: () => []),
               builder: (context, snapshot) {
                 if (snapshot.hasError) return SizedBox();
@@ -124,7 +129,8 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                           track: track,
                           onTap: () async {
                             this.controller.closeView(null);
-                            final result = await SongRepository.instance
+                            final result = await context
+                                .read<SongRepository>()
                                 .addTrack(
                                   track,
                                 );

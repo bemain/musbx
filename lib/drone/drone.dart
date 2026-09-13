@@ -8,12 +8,22 @@ import 'package:musbx/domain/models/music/temperament.dart';
 /// Singleton for playing drone tones.
 class Drone {
   // Only way to access is through [instance].
-  Drone._() : handle = _soloud.createVoiceGroup() {
+  Drone._(this._sharedPreferences) : handle = _soloud.createVoiceGroup() {
     _onPitchesChanged();
   }
 
   /// The instance of this singleton.
-  static final Drone instance = Drone._();
+  static late final Drone instance;
+
+  static bool initialized = false;
+
+  static void initialize({
+    required SharedPreferencesService sharedPreferences,
+  }) {
+    if (initialized) return;
+    instance = Drone._(sharedPreferences);
+    initialized = true;
+  }
 
   static final SoLoud _soloud = SoLoud.instance;
 
@@ -23,13 +33,15 @@ class Drone {
   /// The maximum octave of the [root].
   static int maxOctave = 5;
 
+  late final SharedPreferencesService _sharedPreferences;
+
   /// The frequency of A4, in Hz. Used as a reference for all other notes.
   ///
   /// Defaults to [Pitch.a440].
   Pitch get tuning => tuningNotifier.value;
   set tuning(Pitch value) => tuningNotifier.value = value;
   late final ValueNotifier<Pitch> tuningNotifier =
-      SharedPreferencesService.instance.transformed<Pitch, String>(
+      _sharedPreferences.transformed<Pitch, String>(
         "drone/tuning",
         initialValue: const Pitch(PitchClass.a(), 4, 440),
         from: Pitch.parse,
@@ -42,7 +54,7 @@ class Drone {
   WaveForm get waveform => waveformNotifier.value;
   set waveform(WaveForm value) => waveformNotifier.value = value;
   late final ValueNotifier<WaveForm> waveformNotifier =
-      SharedPreferencesService.instance.transformed<WaveForm, String>(
+      _sharedPreferences.transformed<WaveForm, String>(
         "drone/waveform",
         initialValue: WaveForm.sin,
         to: (waveform) => waveform.name,
@@ -58,11 +70,10 @@ class Drone {
 
   Pitch get root => tuning.transposed(rootStepNotifier.value);
   set root(Pitch value) => rootStepNotifier.value = tuning.semitonesTo(value);
-  late final ValueNotifier<int> rootStepNotifier =
-      SharedPreferencesService.instance.value(
-        "drone/root",
-        initialValue: -12,
-      )..addListener(_onPitchesChanged);
+  late final ValueNotifier<int> rootStepNotifier = _sharedPreferences.value(
+    "drone/root",
+    initialValue: -12,
+  )..addListener(_onPitchesChanged);
 
   /// The temperament used for generating pitches
   Temperament get temperament => temperamentNotifier.value;
@@ -79,7 +90,7 @@ class Drone {
   List<int> get intervals => List.unmodifiable(intervalsNotifier.value);
   set intervals(List<int> value) => intervalsNotifier.value = value;
   late final ValueNotifier<List<int>> intervalsNotifier =
-      SharedPreferencesService.instance.transformed<List<int>, List<String>>(
+      _sharedPreferences.transformed<List<int>, List<String>>(
         "drone/intervals",
         initialValue: [],
         from: (strings) => [for (final s in strings) int.parse(s)],

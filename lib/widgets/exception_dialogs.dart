@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/domain/use_case/check_song_access.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/router.dart';
 import 'package:musbx/utils/result.dart';
+import 'package:provider/provider.dart';
 
 /// Show an exception dialog.
 ///
@@ -15,13 +16,13 @@ Future<void> showExceptionDialog(
   Widget dialog, {
   bool barrierDismissible = true,
 }) async {
-  if (Navigation.navigatorKey.currentContext == null ||
-      !Navigation.navigatorKey.currentContext!.mounted) {
+  if (navigatorKey.currentContext == null ||
+      !navigatorKey.currentContext!.mounted) {
     return;
   }
 
   await showDialog<void>(
-    context: Navigation.navigatorKey.currentContext!,
+    context: navigatorKey.currentContext!,
     builder: (context) => dialog,
     barrierDismissible: barrierDismissible,
   );
@@ -72,12 +73,14 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: () async {
-              final result = await EntitlementRepository.instance.restore();
+              final result = await context
+                  .read<EntitlementRepository>()
+                  .restore();
               switch (result) {
                 case Ok():
                   if (context.mounted) Navigator.of(context).pop();
 
-                default:
+                case Failure():
                 // TODO: Show error snackbar
               }
             },
@@ -97,7 +100,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            unawaited(EntitlementRepository.instance.buyPremium());
+            unawaited(context.read<EntitlementRepository>().buyPremium());
             Navigator.of(context).pop();
           },
           child: const Text("Upgrade"),
@@ -152,7 +155,7 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            unawaited(EntitlementRepository.instance.buyPremium());
+            unawaited(context.read<EntitlementRepository>().buyPremium());
             if (context.mounted) Navigator.of(context).pop();
           },
           child: const Text("Try again"),

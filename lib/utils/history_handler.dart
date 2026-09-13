@@ -8,18 +8,17 @@ import 'package:musbx/utils/utils.dart';
 /// TODO: Rethink
 class HistoryHandler<T> extends ChangeNotifier {
   HistoryHandler({
+    required this.file,
     required this.fromJson,
     required this.toJson,
-    required this.historyFileName,
     this.onEntryRemoved,
     this.maxEntries,
   });
 
+  final CacheFile file;
+
   /// The maximum number of entries saved in history.
   final int? maxEntries;
-
-  /// The name of the file where entries are persisted, without extension.
-  final String historyFileName;
 
   /// Convert json from the history file to the desired type.
   final T Function(dynamic json) fromJson;
@@ -29,10 +28,6 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// Callback for when an entry is removed from the history due to [maxEntries] being exceeded.
   final FutureOr<void> Function(MapEntry<DateTime, T> entry)? onEntryRemoved;
-
-  /// The file where song history is saved.
-  CacheFile get _historyFile =>
-      FileCacheService.instance.persistent.file("$historyFileName.json");
 
   /// The history entries, with the previously loaded songs and the time they were loaded.
   final Map<DateTime, T> entries = {};
@@ -52,10 +47,10 @@ class HistoryHandler<T> extends ChangeNotifier {
   Future<void> fetch() async {
     final Json? json;
     try {
-      json = await _historyFile.readJson();
+      json = await file.readJson();
     } catch (e) {
       debugPrint(
-        "[HISTORY] Unable to read history file ${_historyFile.path} as json: $e",
+        "[HISTORY] Unable to read history file ${file.path} as json: $e",
       );
       return;
     }
@@ -131,7 +126,7 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// Save the current history entries to disk.
   Future<void> save() async {
-    await _historyFile.writeJson(
+    await file.writeJson(
       entries.map(
         (date, song) => MapEntry(
           date.toString(),
