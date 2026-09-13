@@ -29,6 +29,8 @@ Future<void> main() async {
   );
 }
 
+/// The app itself: the router, the theme, and the analytics that follow
+/// navigation.
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 

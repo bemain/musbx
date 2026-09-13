@@ -4,6 +4,10 @@ import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/check_song_access.dart';
 import 'package:musbx/utils/result.dart';
 
+/// Open a song and make it the most recently played one.
+///
+/// Fails with [Result.accessRestricted] when the user's free allowance is used
+/// up; see [CheckSongAccess].
 class PlaySong {
   PlaySong({
     required CheckSongAccess access,

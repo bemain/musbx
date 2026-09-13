@@ -5,8 +5,8 @@ import 'package:musbx/utils/utils.dart';
 part 'announcement.g.dart';
 
 @JsonSerializable()
+/// An announcement shown to all users on startup.
 class Announcement extends SupabaseModel {
-  /// An announcement shown to all users on startup.
   Announcement({
     super.id,
     super.createdAt,
@@ -38,8 +38,8 @@ class Announcement extends SupabaseModel {
 }
 
 @JsonSerializable()
+/// Responses that allows the user to react to an [Announcement].
 class AnnouncementResponses {
-  /// Responses that allows the user to react to an [Announcement].
   AnnouncementResponses({
     this.allowMultiple = false,
     this.showOther = false,

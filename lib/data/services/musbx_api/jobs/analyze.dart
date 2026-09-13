@@ -7,6 +7,7 @@ import 'package:musbx/utils/utils.dart';
 /// The keys are timestamps, and the values are chords.
 typedef AnalyzeJobResult = Map<double, String>;
 
+/// A [JobReport] for a chord analysis job.
 class AnalyzeJobReport extends JobReport<AnalyzeJobResult> {
   const AnalyzeJobReport._(
     super.id, {

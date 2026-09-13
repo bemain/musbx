@@ -5,13 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/domain/models/music/pitch.dart';
 import 'package:musbx/tuner/tuner.dart';
 
+/// Gauge for showing how out of tune [pitch] is.
+///
+/// Includes labels displaying the name of the note closest to [pitch]
+/// and how many cents out of tune it is.
+///
+/// If [pitch] is `null`, instead displays a "listening" label.
 class TunerGauge extends StatelessWidget {
-  /// Gauge for showing how out of tune [pitch] is.
-  ///
-  /// Includes labels displaying the name of the note closest to [pitch]
-  /// and how many cents out of tune it is.
-  ///
-  /// If [pitch] is `null`, instead displays a "listening" label.
   const TunerGauge({
     super.key,
     required this.pitch,
@@ -22,8 +22,10 @@ class TunerGauge extends StatelessWidget {
   /// The frequency to display.
   final Pitch? pitch;
 
+  /// Whether to label the gauge with the name of the note being played.
   final bool showPitchText;
 
+  /// How far the needle swings, in degrees, at the ends of the scale.
   final double maxAngle;
 
   @override

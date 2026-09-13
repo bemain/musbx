@@ -24,8 +24,14 @@ final Song demoSong = Song(
   audio: UrlAudio(Uri.parse("https://youtu.be/9ytqRUjYJ7s")),
 );
 
+/// Whether the oldest or the most recently played song comes first.
 enum GetOrder { ascending, descending }
 
+/// The user's song library.
+///
+/// Backed by a [HistoryHandler], so the library doubles as a play history: each
+/// song carries the time it was last played, and adding a song that is already
+/// there just moves it to the top.
 class SongRepository extends ChangeNotifier {
   SongRepository._(this._history) {
     _history.addListener(notifyListeners);
@@ -33,6 +39,7 @@ class SongRepository extends ChangeNotifier {
 
   final HistoryHandler<Song> _history;
 
+  /// Read the library from disk, seeding it with [demoSong] when empty.
   static Future<SongRepository> create({
     required FileCacheService fileCache,
   }) async {
@@ -63,12 +70,15 @@ class SongRepository extends ChangeNotifier {
   bool get isEmpty => _history.entries.isEmpty;
   bool get isNotEmpty => !isEmpty;
 
+  /// Every song in the library, ordered by when it was last played.
   List<Song> getAll({
     GetOrder order = GetOrder.descending,
   }) {
     return _history.sorted(ascending: order == GetOrder.ascending);
   }
 
+  /// The songs for which [test] holds, given the song and when it was last
+  /// played.
   Iterable<Song> getWhere(
     bool Function(Song song, DateTime accessedAt) test,
   ) {
@@ -77,9 +87,11 @@ class SongRepository extends ChangeNotifier {
         .map((e) => e.value);
   }
 
+  /// The song with this [id], if the library holds it.
   Song? getById(String id) => getWhere((song, _) => song.id == id).firstOrNull;
 
   @useResult
+  /// Add [song], or move it to the top if it is already in the library.
   Future<Result<Song>> add(Song song) async {
     try {
       await _history.add(song);
@@ -90,6 +102,7 @@ class SongRepository extends ChangeNotifier {
   }
 
   @useResult
+  /// Add a song read from a local [file], titled after the file name.
   Future<Result<Song>> addFile(File file) async {
     try {
       return await add(
@@ -105,6 +118,7 @@ class SongRepository extends ChangeNotifier {
   }
 
   @useResult
+  /// Add a song streamed from a SoundCloud [track].
   Future<Result<Song>> addTrack(SoundCloudTrack track) async {
     try {
       return await add(
@@ -126,6 +140,7 @@ class SongRepository extends ChangeNotifier {
   }
 
   @useResult
+  /// Replace the stored song with the same id, keeping its place in the history.
   Future<Result<Song>> update(Song song) async {
     try {
       await _history.update(song);
@@ -135,6 +150,8 @@ class SongRepository extends ChangeNotifier {
     }
   }
 
+  /// Remove [song] from the library. Its cached files are left alone; see
+  /// `DeleteSong` to be rid of those too.
   Future<Result<void>> remove(Song song) async {
     try {
       await _history.remove(song);

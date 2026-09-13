@@ -23,6 +23,7 @@ class Tick {
   final AudioSource source;
 }
 
+/// The three sounds a beat can be marked with.
 class Ticks {
   const Ticks({
     required this.accented,
@@ -30,13 +31,28 @@ class Ticks {
     required this.subdivision,
   });
 
+  /// The first beat of a bar.
   final Tick accented;
+
+  /// A beat that is not the first of the bar.
   final Tick primary;
+
+  /// A note between two beats.
   final Tick subdivision;
 
+  /// Every tick, for loading or disposing them together.
   List<Tick> get all => [accented, primary, subdivision];
 }
 
+/// The metronome, ticking on a timer and reporting where in the bar it is.
+///
+/// A singleton, because the notification it posts can be acted on while the app
+/// is in the background and so has to reach one known instance. Every setting is
+/// persisted; changing one that affects timing restarts the tick through
+/// [reset].
+///
+/// With the volume at zero it vibrates instead of playing, so it can be followed
+/// without sound.
 class Metronome {
   Metronome._(this._sharedPreferences, this._notifications) {
     // Listen to app lifecycle
@@ -177,6 +193,7 @@ class Metronome {
     await updateNotification();
   }
 
+  /// Play or vibrate the beat at [index], and advance [count].
   Future<void> _timeout(int index) async {
     countNotifier.value = (index ~/ subdivisions) % higher;
     final int subcount = index % subdivisions;
@@ -200,6 +217,8 @@ class Metronome {
     }
   }
 
+  /// Push the current tempo and play state to the notification. Does nothing if
+  /// the user has turned the notification off.
   Future<void> updateNotification() async {
     if (!showNotification) return;
 

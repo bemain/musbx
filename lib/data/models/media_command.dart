@@ -1,3 +1,4 @@
+/// Something the user pressed on the media notification or lock screen.
 sealed class MediaCommand {
   static Play get play => Play._();
 

@@ -13,6 +13,11 @@ import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/utils/utils.dart';
 
+/// Analyses songs through the Musbx API, caching every result on disk.
+///
+/// Both analyses are expensive enough to only ever run once per song: a cached
+/// result short-circuits the work. Chords are identified server-side, while
+/// waveforms are extracted locally and only on mobile.
 class AnalysisRepositoryRemote extends AnalysisRepository {
   AnalysisRepositoryRemote({
     required SongCache cache,

@@ -8,9 +8,13 @@ import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/result_builder.dart';
 import 'package:provider/provider.dart';
 
+/// The chords of the loaded song, scrolling past with the playback position.
+///
+/// Keeps shimmering while the analysis is still running, and when it fails.
 class ChordsDisplay extends StatefulWidget {
   const ChordsDisplay({super.key, required this.durationShown});
 
+  /// How much of the song is visible at once.
   final Duration durationShown;
 
   @override

@@ -1,5 +1,7 @@
 import 'package:musbx/domain/models/music/pitch_class.dart';
 
+/// The triad a chord is built on, which decides whether it sounds major,
+/// minor, augmented or diminished.
 enum ChordQuality {
   major(""),
   minor("m"),
@@ -9,6 +11,7 @@ enum ChordQuality {
 
   const ChordQuality(this.abbreviation);
 
+  /// What is written after the root note, e.g. "m". Empty for [major].
   final String abbreviation;
 
   /// Parse [string] as a chord quality.
@@ -23,6 +26,8 @@ enum ChordQuality {
   String toString() => abbreviation;
 }
 
+/// A note stacked on top of a chord's triad, named by the scale degree it sits
+/// at.
 enum ChordExtension {
   sixth(6),
 
@@ -46,6 +51,7 @@ enum ChordExtension {
   /// Whether the seventh (if any) is a major seventh.
   final bool isMajor;
 
+  /// What is written after the quality, e.g. "7" or "Δ13".
   String get abbreviation =>
       (isMajor && degree == 7) ? "Δ" : "${isMajor ? "Δ" : ""}$degree";
 
@@ -67,8 +73,9 @@ enum ChordExtension {
   String toString() => abbreviation;
 }
 
+/// A group of notes sounding together, named by its [root] and the intervals
+/// stacked above it.
 class Chord {
-  /// Representation of a musical chord.
   const Chord(
     this.root,
     this.quality, {
@@ -80,12 +87,18 @@ class Chord {
   /// The root note of this chord, e.g. C or G♭
   final PitchClass root;
 
+  /// The triad this chord is built on.
   final ChordQuality quality;
 
+  /// The note stacked on top of the triad, if any.
   final ChordExtension? extension;
 
+  /// Any further alterations, written as they appear in the chord symbol,
+  /// e.g. "♭5add9".
   final String? alterations;
 
+  /// The lowest note. Equal to [root] unless the chord is inverted or has a
+  /// slash bass.
   final PitchClass bassNote;
 
   /// Parse [string] as a chord.
@@ -123,6 +136,8 @@ class Chord {
     );
   }
 
+  /// Parse [string] as a chord.
+  /// Throws a [FormatException] if [string] is not a valid chord.
   static Chord parse(String string) {
     Chord? chord = tryParse(string);
     if (chord == null) {

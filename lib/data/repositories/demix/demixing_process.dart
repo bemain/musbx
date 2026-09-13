@@ -14,6 +14,7 @@ import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/utils/process.dart';
 
+/// The stages a [DemixingProcess] passes through, in order.
 enum DemixingStep {
   /// The API is looking for an available host with the correct version.
   findingHost,
@@ -31,6 +32,7 @@ enum DemixingStep {
   downloading,
 }
 
+/// A demixing failure that the user can be told about as-is.
 sealed class DemixingError implements Exception {}
 
 final class NoServerFound extends DemixingError {
@@ -44,8 +46,8 @@ final class ServerError extends DemixingError {
   String toString() => "The Musbx API server was unable to demix the song";
 }
 
+/// Upload, separate and download stem files for a [song].
 class DemixingProcess extends Process<Map<StemType, CacheFile>> {
-  /// Upload, separate and download stem files for a [song].
   DemixingProcess(
     this.song, {
     required SongCache cache,

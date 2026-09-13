@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:musbx/domain/models/notification.dart';
 import 'package:musbx/utils/result.dart';
 
+/// The notifications the app shows, and the permission needed to show them.
 abstract class NotificationRepository {
   /// Whether the user has given the app permission to show notifications
   bool get hasPermission => hasPermissionNotifier.value;
@@ -17,6 +18,7 @@ abstract class NotificationRepository {
   /// Request permission to show notifications, if it has not been given already.
   Future<Result<bool>> requestPermission();
 
+  /// Show [notification], replacing any earlier one with the same id.
   Future<Result<void>> post(AppNotification notification);
 
   /// Cancel all notifications

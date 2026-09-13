@@ -3,8 +3,9 @@ import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:provider/provider.dart';
 
+/// Range slider for selecting the section to loop.
+/// A range slider for setting the section of the song that playback loops over.
 class LoopSlider extends StatelessWidget {
-  /// Range slider for selecting the section to loop.
   const LoopSlider({super.key});
 
   /// Whether the player was playing before the user began changing the position.
@@ -83,6 +84,8 @@ class LoopSlider extends StatelessWidget {
   }
 }
 
+/// Draws the looped section as an outlined band across the track, rather than as
+/// a coloured line.
 class LoopSliderTrackShape extends RangeSliderTrackShape
     with BaseRangeSliderTrackShape {
   const LoopSliderTrackShape({
@@ -93,7 +96,10 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
     this.disabledOutlineColor = Colors.grey,
   });
 
+  /// How tall the band is.
   final double height;
+
+  /// How thick the band's outline is.
   final double outlineWidth;
 
   final PositionSliderStyle style;
@@ -189,6 +195,8 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
   }
 }
 
+/// A rounded rectangular thumb, shaped to sit flush with the ends of
+/// [LoopSliderTrackShape]'s band.
 class LoopSectionThumbShape extends RangeSliderThumbShape {
   const LoopSectionThumbShape({
     required this.style,
@@ -198,7 +206,10 @@ class LoopSectionThumbShape extends RangeSliderThumbShape {
     this.disabledColor = Colors.grey,
   });
 
+  /// The size of the thumb.
   final Size size;
+
+  /// The rounding of the thumb's corners.
   final Radius radius;
 
   final PositionSliderStyle style;

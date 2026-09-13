@@ -9,6 +9,11 @@ import 'package:musbx/domain/models/entitlement.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 
+/// Tracks entitlements through the store, restoring previous purchases at
+/// startup.
+///
+/// On platforms without a store there is nothing to sell, so everything is
+/// unlocked.
 class EntitlementRepositoryRemote extends EntitlementRepository {
   EntitlementRepositoryRemote({required PurchaseService purchase})
     : _purchase = purchase {

@@ -2,6 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:musbx/keys.dart';
 import 'package:musbx/utils/utils.dart';
 
+/// Attaches the access token to every request, and renews it once when the
+/// server rejects it.
+///
+/// A 401 on anything but the token endpoint triggers a single refresh that all
+/// waiting requests share, after which the original request is replayed with the
+/// new token. Failing that, the error is passed on untouched.
 class AuthInterceptor extends Interceptor {
   final Dio dio;
   Future<String?>? _refreshTokenFuture;

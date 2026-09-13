@@ -6,9 +6,12 @@ import 'package:musbx/utils/utils.dart';
 
 part 'song.g.dart';
 
+/// A song in the user's library, as it is described rather than as it sounds.
+///
+/// Two songs are the same song when their [id] matches; nothing else is
+/// compared.
 @JsonSerializable()
 class Song {
-  /// Representation of a song, to be played by a [SongPlayer].
   Song({
     required this.id,
     required this.title,
@@ -34,14 +37,10 @@ class Song {
   /// The genre of this song.
   final String? genre;
 
-  /// The artwork URI for this song.
-  ///
-  /// See [MediaItem.artUri]
+  /// Where to find the artwork for this song.
   final Uri? artUri;
 
-  /// Where this song's audio was loaded from, e.g. a YouTube video or a local file.
-  ///
-  /// Can be used to create an [AudioSource] playable by [SongPlayer].
+  /// Where this song's audio comes from, e.g. a YouTube video or a local file.
   @JsonKey(fromJson: AudioReference.fromJson)
   final AudioReference audio;
 
@@ -92,7 +91,15 @@ class Song {
   }
 }
 
+/// Where a song's audio comes from.
+///
+/// Says how the audio can be obtained, not how it is played; `AudioRepository`
+/// turns one of these into something the audio engine can play.
 sealed class AudioReference {
+  /// Read a reference of any kind back from [json].
+  ///
+  /// Throws a [FormatException] for a [BytesAudio], which has no bytes left to
+  /// point at once it has been written to disk.
   static AudioReference fromJson(Json json) {
     String? type = json['type'] as String;
 
@@ -111,12 +118,14 @@ sealed class AudioReference {
   Json toJson();
 }
 
+/// Audio downloaded from a [url], e.g. a YouTube or SoundCloud page.
 class UrlAudio extends AudioReference {
   UrlAudio(this.url);
 
+  /// The page the audio is downloaded from.
   final Uri url;
 
-  /// Try to create a [UrlAudio] from a [json] object.
+  /// Read a [UrlAudio] from a [json] object.
   static UrlAudio fromJson(Json json) =>
       UrlAudio(Uri.parse(json['url'] as String));
 
@@ -127,17 +136,21 @@ class UrlAudio extends AudioReference {
   };
 }
 
+/// Audio held in memory as raw bytes.
+///
+/// The bytes survive only until they have been written to the cache, which is
+/// why this reference cannot be read back from disk.
+// TODO: Revise this class
 class BytesAudio extends AudioReference {
-  /// A source that constructs audio from raw bytes.
-  /// TODO: Revise this class
   BytesAudio(this.bytes);
 
   /// The bytes to construct the audio from.
   ///
-  /// If this is `null`, the audio is expected to already be loaded into the [cacheFile]
+  /// `null` once the audio has been written to the cache, which is then the
+  /// only place it can be read from.
   final Uint8List? bytes;
 
-  /// Try to create a [FileAudio] from a [json] object.
+  /// Read a [BytesAudio] from a [json] object. The bytes are always `null`.
   static BytesAudio fromJson(Json json) => BytesAudio(null);
 
   @override
@@ -146,14 +159,14 @@ class BytesAudio extends AudioReference {
   };
 }
 
+/// Audio read from a file on the device.
 class FileAudio extends AudioReference {
-  /// A source that reads audio from a file.
   FileAudio(this.file);
 
   /// The file to read.
   final File file;
 
-  /// Try to create a [FileAudio] from a [json] object.
+  /// Read a [FileAudio] from a [json] object.
   static FileAudio fromJson(Json json) =>
       FileAudio(File(json['path'] as String));
 

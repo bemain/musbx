@@ -6,6 +6,10 @@ import 'package:musbx/domain/models/song_preferences.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/utils/utils.dart';
 
+/// Where each song's [SongPreferences] are stored between sessions.
+///
+/// These live in the persistent half of the cache, so clearing a song's audio
+/// leaves them intact.
 class SongPreferencesRepository {
   SongPreferencesRepository({required SongCache songCache})
     : _songCache = songCache;

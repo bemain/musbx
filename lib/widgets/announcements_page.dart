@@ -17,6 +17,10 @@ import 'package:musbx/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// Every announcement ever published, newest first, with a field for sending
+/// feedback.
+///
+/// Opening the page marks the announcements as read.
 class AnnouncementsPage extends StatefulWidget {
   const AnnouncementsPage({super.key});
 
@@ -239,9 +243,9 @@ Do not send any personal details here. Remember that we cannot respond to your f
   }
 }
 
+/// A simple icon button that opens the "Announcements"-page when pressed
+/// and displays the number of unread announcements.
 class AnnouncementsButton extends StatelessWidget {
-  /// A simple icon button that opens the "Announcements"-page when pressed
-  /// and displays the number of unread announcements.
   AnnouncementsButton({super.key});
 
   /// Whether the tooltip with the title of the latest announcement has been shown.

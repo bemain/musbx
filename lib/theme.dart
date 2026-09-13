@@ -3,9 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 
+/// The app's light and dark themes.
 abstract final class AppTheme {
+  /// The colour the themes are generated from when the platform offers no dynamic
+  /// colours.
   static const Color defaultSeed = Color(0xff578cff);
 
+  /// Build both themes, seeding them from the platform's dynamic colours when it
+  /// has any.
   static (ThemeData light, ThemeData dark) generate(
     ColorScheme? lightDynamic,
     ColorScheme? darkDynamic,

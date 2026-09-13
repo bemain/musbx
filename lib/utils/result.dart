@@ -12,17 +12,27 @@
 sealed class Result<T> {
   const Result();
 
+  /// The operation produced [value].
   const factory Result.ok(T value) = Ok._;
 
+  /// The operation threw.
   factory Result.failed(Object error, [StackTrace? stackTrace]) =>
       Failure._(error, stackTrace ?? StackTrace.current);
 
+  /// The feature is switched off, so nothing was attempted.
   factory Result.unavailable(String reason) = Unavailable._;
 
+  /// The operation was cancelled before it finished.
   factory Result.cancelled() = Cancelled._;
 
+  /// The user is not allowed to do this, e.g. because their free allowance is
+  /// used up.
   factory Result.accessRestricted() = AccessRestricted._;
 
+  /// The value, throwing whatever went wrong if there isn't one.
+  ///
+  /// For when the caller cannot carry on without the value and a [Failure] is
+  /// already being caught further out.
   T get asOk {
     switch (this) {
       case Failure(:final error):
@@ -34,6 +44,7 @@ sealed class Result<T> {
   }
 }
 
+/// The operation produced a value.
 final class Ok<T> extends Result<T> {
   const Ok._(this.value);
   final T value;
@@ -45,7 +56,11 @@ final class Ok<T> extends Result<T> {
 /// not care about the distinction keeps compiling.
 class Failure<T> extends Result<T> {
   const Failure._(this.error, this.stackTrace);
+
+  /// What went wrong.
   final Object error;
+
+  /// Where it went wrong.
   final StackTrace stackTrace;
 
   /// What to tell the user. Subtypes override it.
@@ -55,6 +70,7 @@ class Failure<T> extends Result<T> {
   bool get isRetryable => true;
 }
 
+/// The error carried by an [Unavailable] result.
 class UnavailableException implements Exception {
   @override
   String toString() => "The feature is currently unavailable";
@@ -67,6 +83,8 @@ final class Unavailable<T> extends Failure<T> {
   Unavailable._(this.reason)
     : super._(UnavailableException(), StackTrace.current);
 
+  /// Why the feature is unavailable, read as the end of "This feature is
+  /// currently unavailable; ...".
   final String reason;
 
   @override
@@ -76,6 +94,7 @@ final class Unavailable<T> extends Failure<T> {
   bool get isRetryable => false;
 }
 
+/// The error carried by a [Cancelled] result.
 class CancelledException implements Exception {
   @override
   String toString() => "The operation was cancelled before it finished";
@@ -86,9 +105,8 @@ final class Cancelled<T> extends Failure<T> {
   Cancelled._() : super._(CancelledException(), StackTrace.current);
 }
 
+/// The error carried by an [AccessRestricted] result.
 class AccessRestrictedException implements Exception {
-  /// An exception thrown when access to a feature is restricted,
-  /// such as when the user has used up their free songs.
   const AccessRestrictedException([this.message]);
 
   final String? message;
@@ -99,6 +117,8 @@ class AccessRestrictedException implements Exception {
   }
 }
 
+/// The user is not allowed to do this, e.g. because their free allowance is used
+/// up. Retrying without buying premium or waiting will not help.
 final class AccessRestricted<T> extends Failure<T> {
   AccessRestricted._()
     : super._(AccessRestrictedException(), StackTrace.current);

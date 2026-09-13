@@ -15,9 +15,13 @@ import 'package:provider/provider.dart';
 const int kSamplesPerPixel = 540;
 const int kSampleRate = 48000;
 
+/// The waveform of the loaded song, scrolling past with the playback position.
+///
+/// Shimmers over a generated placeholder while the waveform is being extracted.
 class WaveformWidget extends StatefulWidget {
   const WaveformWidget({super.key, required this.durationShown});
 
+  /// How much of the song is visible at once.
   final Duration durationShown;
 
   @override

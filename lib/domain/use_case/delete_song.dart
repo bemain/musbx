@@ -6,6 +6,9 @@ import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/routing/router.dart';
 import 'package:musbx/utils/result.dart';
 
+/// Remove a song from the library and delete everything cached for it.
+///
+/// Closes the song first if it is the one open.
 class DeleteSong {
   DeleteSong({
     required SongCache cache,

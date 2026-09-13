@@ -10,8 +10,8 @@ import 'package:provider/provider.dart';
 
 /// Show an exception dialog.
 ///
-/// This is only dependent on [Navigation.navigatorKey]'s context, and can thus be
-/// used in places where no local context is available, such as button callbacks.
+/// Only depends on the root [navigatorKey]'s context, and can thus be used in
+/// places where no local context is available, such as button callbacks.
 Future<void> showExceptionDialog(
   Widget dialog, {
   bool barrierDismissible = true,
@@ -28,6 +28,7 @@ Future<void> showExceptionDialog(
   );
 }
 
+/// Explains that the week's free songs have been used up, and offers premium.
 class MusicPlayerAccessRestrictedDialog extends StatelessWidget {
   const MusicPlayerAccessRestrictedDialog({super.key});
 
@@ -40,6 +41,7 @@ class MusicPlayerAccessRestrictedDialog extends StatelessWidget {
   }
 }
 
+/// Offers premium, optionally saying what the user ran into.
 class FreeAccessRestrictedDialog extends StatelessWidget {
   // TODO: Redesign this
   const FreeAccessRestrictedDialog({super.key, this.reason});
@@ -110,6 +112,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
   }
 }
 
+/// Confirms that a premium purchase has gone through and is being processed.
 class PremiumPurchasedDialog extends StatelessWidget {
   const PremiumPurchasedDialog({super.key});
 
@@ -135,6 +138,7 @@ Your purchase is processing and premium features will soon be activated. Please 
   }
 }
 
+/// Reports that a premium purchase did not go through.
 class PremiumPurchaseFailedDialog extends StatelessWidget {
   const PremiumPurchaseFailedDialog({super.key});
 
@@ -165,8 +169,8 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
   }
 }
 
+/// Creates an alert dialog with the message that the selected file type is not supported.
 class UnsupportedFileExtensionDialog extends StatelessWidget {
-  /// Creates an alert dialog with the message that the selected file type is not supported.
   const UnsupportedFileExtensionDialog({super.key, required this.extension});
 
   final String extension;
@@ -197,8 +201,8 @@ class UnsupportedFileExtensionDialog extends StatelessWidget {
   }
 }
 
+/// Creates an alert dialog with the message that the selected file could not be loaded.
 class SongCouldNotBeLoadedDialog extends StatelessWidget {
-  /// Creates an alert dialog with the message that the selected file could not be loaded.
   const SongCouldNotBeLoadedDialog({super.key, this.error});
 
   final Object? error;
@@ -255,8 +259,8 @@ class SongCouldNotBeLoadedDialog extends StatelessWidget {
   }
 }
 
+/// Creates an alert dialog with the message that the Youtube service is unavailable.
 class SearchUnavailableDialog extends StatelessWidget {
-  /// Creates an alert dialog with the message that the Youtube service is unavailable.
   const SearchUnavailableDialog({super.key});
 
   @override

@@ -14,6 +14,11 @@ import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/flat_card.dart';
 import 'package:provider/provider.dart';
 
+/// The player for one song: the position slider and transport controls, above
+/// two tabs holding the stem controls and the waveform, chords, pitch and
+/// speed.
+///
+/// Shimmers until the song has finished loading.
 class SongPage extends StatelessWidget {
   const SongPage({super.key});
 
@@ -108,6 +113,7 @@ class SongPage extends StatelessWidget {
   }
 }
 
+/// The title and artwork of the loaded song, above the tab bar.
 class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
   const SongAppBar({super.key});
 

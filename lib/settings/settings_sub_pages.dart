@@ -17,6 +17,7 @@ import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:provider/provider.dart';
 
+/// Build a settings route that slides in from the right.
 SlideFromRightTransitionPage Function(BuildContext, GoRouterState)
 settingsPageBuilder(Widget Function(BuildContext context) builder) =>
     (context, state) {
@@ -26,6 +27,7 @@ settingsPageBuilder(Widget Function(BuildContext context) builder) =>
       );
     };
 
+/// A settings page below the top level, with a back button and its own title.
 class SettingsSubPage extends StatelessWidget {
   const SettingsSubPage({
     super.key,
@@ -33,8 +35,10 @@ class SettingsSubPage extends StatelessWidget {
     required this.children,
   });
 
+  /// The heading of the page.
   final Widget? title;
 
+  /// The settings shown on the page.
   final List<Widget> children;
 
   @override
@@ -48,6 +52,7 @@ class SettingsSubPage extends StatelessWidget {
   }
 }
 
+/// Settings for the metronome.
 class MetronomeSettingsPage extends StatelessWidget {
   const MetronomeSettingsPage({super.key});
 
@@ -84,6 +89,7 @@ class MetronomeSettingsPage extends StatelessWidget {
   }
 }
 
+/// Settings for the song library, including how much space it takes up on disk.
 class SongsSettingsPage extends StatefulWidget {
   const SongsSettingsPage({super.key});
 
@@ -251,6 +257,7 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
   }
 }
 
+/// Settings for the tuner.
 class TunerSettingsPage extends StatelessWidget {
   const TunerSettingsPage({super.key});
 
@@ -305,6 +312,7 @@ class TunerSettingsPage extends StatelessWidget {
   }
 }
 
+/// Settings for the drone.
 class DroneSettingsPage extends StatelessWidget {
   const DroneSettingsPage({super.key});
 

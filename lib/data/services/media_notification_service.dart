@@ -11,6 +11,13 @@ final Uri _defaultAlbumArt = Uri.parse(
   "https://bemain.github.io/musbx/assets/album_art/default.png",
 );
 
+/// The playback notification, and the transport controls on the lock screen.
+///
+/// Carries no playback state of its own: [update] pushes a snapshot out, and
+/// [commands] reports what the user pressed for playback to act on.
+///
+/// Optional: [disabled] returns a service with no notification behind it, for a
+/// platform that has none.
 class MediaNotificationService extends OptionalService {
   MediaNotificationService._(this._handler) {
     _subscription = AudioService.notificationClicked.listen(
@@ -51,13 +58,18 @@ class MediaNotificationService extends OptionalService {
   late final StreamSubscription<bool> _subscription;
 
   final _clicked = StreamController<void>.broadcast();
+
+  /// Fires when the user taps the notification itself rather than a control.
   Stream<void> get notificationClicked => _clicked.stream;
 
+  /// What the user pressed on the notification or lock screen.
   Stream<MediaCommand> get commands {
     throwIfDisabled();
     return _handler!.commands;
   }
 
+  /// Show [state] in the notification, or remove the notification when it is
+  /// `null`.
   void update(MediaNotificationState? state) {
     throwIfDisabled();
     _handler!.update(state);

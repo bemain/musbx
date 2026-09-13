@@ -16,13 +16,20 @@ import 'package:musbx/domain/models/song_preferences.dart';
 import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/utils/result.dart';
 
+/// The part of a song that playback is confined to. A `null` end is the end of
+/// the song, a `null` start its beginning.
 typedef LoopSection = ({Duration? start, Duration? end});
 
+/// One separated instrument of the song that is loaded, as the user controls it.
+///
+/// Exists whether or not the song has been demixed; when it has not, changing
+/// it has no audible effect but is still remembered.
 class Stem extends ChangeNotifier {
   static const double defaultVolume = 1.0;
 
   Stem(this.type, this._playback);
 
+  /// Which instrument this stem holds.
   final StemType type;
 
   final PlaybackRepository _playback;
@@ -31,6 +38,8 @@ class Stem extends ChangeNotifier {
 
   SoLoud get _soLoud => _playback._audioEngine.soLoud;
 
+  /// Whether this stem is heard. A disabled stem is silenced rather than
+  /// unloaded, so it keeps its [volume].
   bool get enabled => _playback._stemsState[type]?.enabled ?? true;
   set enabled(bool value) {
     _playback._stemsState[type] = (enabled: value, volume: _volume);
@@ -48,6 +57,7 @@ class Stem extends ChangeNotifier {
 
   double get _volume => _playback._stemsState[type]?.volume ?? 1.0;
 
+  /// How loud this stem is relative to the others, between `0.0` and `1.0`.
   double get volume => _volume;
   set volume(double value) {
     _playback._stemsState[type] = (enabled: enabled, volume: value);
@@ -59,6 +69,15 @@ class Stem extends ChangeNotifier {
 }
 
 // TODO: Keep all song state in a struct
+/// The song that is loaded, and everything the user can do to it while it
+/// plays.
+///
+/// One song is loaded at a time. If it has been demixed, each stem is played as
+/// its own sound and the whole set is driven through a single voice group, so
+/// speed, pitch and seeking stay in lockstep; otherwise a single source is
+/// played. Either way the audible state — [speed], [pitch], [loopSection], the
+/// equalizer and the [stems] — is read from that song's [SongPreferences] on
+/// [load] and written back on [unload].
 class PlaybackRepository extends ChangeNotifier {
   /// The minimum number of frequency bands.
   static const int minNumBands = 4;
@@ -66,18 +85,19 @@ class PlaybackRepository extends ChangeNotifier {
   /// The maximum number of frequency bands.
   static const int maxNumBands = 15;
 
-  /// The minimum value for the [gain].
+  /// The lowest gain an equalizer band can be set to.
   static const double equalizerMinGain = 0.0;
 
-  /// The maximum value for the [gain].
+  /// The highest gain an equalizer band can be set to.
   ///
-  /// [SoLoud] technically allows values up to 4.0, but too high values makes
-  /// the audio very distorted.
+  /// SoLoud technically allows values up to 4.0, but too high values make the
+  /// audio very distorted.
   static const double equalizerMaxGain = 2.0;
 
+  /// The gain of a band that is left alone.
   static const double equalizerDefaultGain = 1.0;
 
-  /// The stems that are available on the free version of the app.
+  /// The stems that can be controlled without premium.
   static const List<StemType> freeStems = [
     StemType.vocals,
     StemType.bass,
@@ -173,16 +193,21 @@ class PlaybackRepository extends ChangeNotifier {
 
   late final Timer _positionUpdater;
 
+  /// Whether the loaded song is playing as separate stems rather than as one
+  /// sound.
   bool get isMulti => _handles.length > 1;
 
+  /// How long the loaded song is, or `null` when nothing is loaded.
   Duration? get duration => _sources.isEmpty
       ? null
       : _audioEngine.soLoud.getLength(_sources.values.first);
 
+  /// Whether the song is currently being played.
   bool get isPlaying => isPlayingNotifier.value;
   late final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false)
     ..addListener(notifyListeners);
 
+  /// Pause playback, keeping the song loaded.
   void pause() {
     if (_groupHandle == null) return;
 
@@ -201,6 +226,9 @@ class PlaybackRepository extends ChangeNotifier {
     await _audioSession.setActive(true);
   }
 
+  /// How far into the song playback has come.
+  ///
+  /// Polled from the engine while playing, and always inside [loopSection].
   Duration get position => positionNotifier.value;
   set position(Duration value) => positionNotifier.value = value;
   ValueNotifier<Duration> positionNotifier = ValueNotifier(Duration.zero);
@@ -215,6 +243,7 @@ class PlaybackRepository extends ChangeNotifier {
     return position;
   }
 
+  /// Jump to [position], clamped into [loopSection].
   void seek(Duration position) {
     position = _clamp(position);
 
@@ -226,6 +255,11 @@ class PlaybackRepository extends ChangeNotifier {
   }
 
   double _speed = 1.0;
+
+  /// How fast the song is played, as a fraction of its original tempo.
+  ///
+  /// Changing this does not change the perceived pitch: [pitch] is re-applied to
+  /// cancel out the shift that the rate change would otherwise cause.
   double get speed => _speed;
   set speed(double value) {
     _speed = value;
@@ -237,6 +271,8 @@ class PlaybackRepository extends ChangeNotifier {
   }
 
   double _pitch = 0.0;
+
+  /// How many semitones the song is transposed, independently of [speed].
   double get pitch => _pitch;
   set pitch(double value) {
     _pitch = value;
@@ -253,9 +289,15 @@ class PlaybackRepository extends ChangeNotifier {
     }
   }
 
+  /// The section playback is confined to. Playback jumps back to its start on
+  /// reaching its end.
   LoopSection get loopSection => _loopSection;
   LoopSection _loopSection = (start: null, end: null);
 
+  /// Move one or both ends of [loopSection], leaving the unspecified end alone.
+  ///
+  /// An end before the start is pushed up to it, and the [position] is pulled
+  /// into the new section.
   void setLoopSection({Duration? start, Duration? end}) {
     start ??= loopSection.start;
     end ??= loopSection.end;
@@ -274,6 +316,8 @@ class PlaybackRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// How many bands the equalizer is split into, or `null` when nothing is
+  /// loaded.
   int? get numEqualizerBands => _sources
       .values
       .firstOrNull
@@ -283,6 +327,7 @@ class PlaybackRepository extends ChangeNotifier {
       .value
       .toInt();
 
+  /// The gain of an equalizer [band], or `null` if there is no such band.
   double? getBandGain(int band) {
     final bands = numEqualizerBands;
     if (bands == null || band >= bands) return null;
@@ -292,6 +337,8 @@ class PlaybackRepository extends ChangeNotifier {
         .value;
   }
 
+  /// Set the gain of an equalizer [band], clamped between [equalizerMinGain] and
+  /// [equalizerMaxGain]. Does nothing if there is no such band.
   void setBandGain(int band, double gain) {
     final bands = numEqualizerBands;
     if (bands == null || band >= bands) return;
@@ -309,6 +356,7 @@ class PlaybackRepository extends ChangeNotifier {
 
   Map<StemType, ({bool enabled, double volume})> _stemsState = {};
 
+  /// Every stem, whether or not the loaded song has been demixed.
   late final Map<StemType, Stem> stems = Map.fromIterables(
     StemType.values,
     StemType.values.map(
@@ -316,6 +364,8 @@ class PlaybackRepository extends ChangeNotifier {
     ),
   );
 
+  /// Return everything the user can adjust to its default, and rewind to the
+  /// start. The song stays loaded.
   void reset() {
     pause();
     _speed = 1.0;
@@ -332,6 +382,11 @@ class PlaybackRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Unload whatever is playing and load [song], paused at wherever it was left
+  /// off.
+  ///
+  /// Plays the demixed stems if the cache holds all of them, and the song as one
+  /// sound otherwise.
   Future<Result<void>> load(Song song) async {
     // Unload previous song
     if (await unload() case Failure(:final error)) {
@@ -406,6 +461,7 @@ class PlaybackRepository extends ChangeNotifier {
     }
   }
 
+  /// Stop and unload the current song, saving its preferences on the way out.
   Future<Result<void>> unload() async {
     try {
       final song = _song;

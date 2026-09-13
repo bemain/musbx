@@ -25,9 +25,9 @@ final Uri? storeUrl = Platform.isAndroid
 
 final Uri developerEmail = Uri.parse("mailto:bemain.dev@gmail.com");
 
+/// Displays a list of [children] with formatting appropriate for a page in
+/// the settings menu.
 class SettingsList extends StatelessWidget {
-  /// Displays a list of [children] with formatting appropriate for a page in
-  /// the settings menu.
   const SettingsList({
     super.key,
     required this.children,
@@ -60,6 +60,7 @@ class SettingsList extends StatelessWidget {
   }
 }
 
+/// A group of related settings, drawn as one segmented card.
 class SettingsGroup extends StatelessWidget {
   const SettingsGroup({super.key, required this.children});
 
@@ -74,6 +75,7 @@ class SettingsGroup extends StatelessWidget {
   }
 }
 
+/// The top-level settings, with a section per tool below the app-wide ones.
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 

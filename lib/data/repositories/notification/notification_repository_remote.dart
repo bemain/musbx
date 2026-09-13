@@ -13,12 +13,18 @@ import 'package:musbx/routing/router.dart';
 import 'package:musbx/routing/routes.dart';
 import 'package:musbx/utils/result.dart';
 
+/// Thrown when a notification is posted without the user having allowed them.
 final class PermissionException implements Exception {
   @override
   String toString() => "Notification permission has not been given!";
 }
 
 @pragma("vm:entry-point")
+/// Posts notifications through the platform, and routes taps on them back into
+/// the app.
+///
+/// An action tapped while the app is in the background arrives on a background
+/// isolate, which is why the handler is static.
 class NotificationRepositoryRemote extends NotificationRepository {
   NotificationRepositoryRemote({
     required SharedPreferencesService sharedPreferences,

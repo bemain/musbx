@@ -165,9 +165,15 @@ class Yin extends PitchAlgorithm {
   }
 }
 
+/// The outcome of the YIN absolute-threshold step.
 class Pitched {
+  /// The period of the detected pitch, in samples, or `-1` if none was found.
   final int tau;
+
+  /// How periodic the buffer is at [tau], between `0.0` and `1.0`.
   final double probability;
+
+  /// Whether a pitch was found at all.
   final bool pitched;
 
   Pitched(this.tau, this.probability, this.pitched);

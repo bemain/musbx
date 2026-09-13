@@ -4,10 +4,13 @@ import 'package:musbx/songs/equalizer/equalizer_overlay.dart';
 import 'package:musbx/songs/equalizer/inactive_slider_track_shape.dart';
 import 'package:provider/provider.dart';
 
+/// A widget used to control the gain on Equalizer's bands.
+/// One vertical slider per equalizer band, with the response curve drawn over
+/// them.
 class EqualizerSliders extends StatefulWidget {
-  /// A widget used to control the gain on Equalizer's bands.
   const EqualizerSliders({super.key, this.enabled = true});
 
+  /// Whether the bands can be adjusted.
   final bool enabled;
 
   @override

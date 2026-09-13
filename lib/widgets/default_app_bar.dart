@@ -8,10 +8,10 @@ import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:provider/provider.dart';
 
+/// Create an [AppBar] with the text "Musician's toolbox" as title
+/// that features a button for opening an about dialog, that displays
+/// [helpText] and general information about the app.
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
-  /// Create an [AppBar] with the text "Musician's toolbox" as title
-  /// that features a button for opening an about dialog, that displays
-  /// [helpText] and general information about the app.
   const DefaultAppBar({
     super.key,
     this.title,
@@ -21,6 +21,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// The primary widget displayed in the app bar.
   final Widget? title;
 
+  /// The widget shown before the [title].
   final Widget? leading;
 
   @override
@@ -40,9 +41,9 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
+/// A simple icon button that opens the "Get Premium"-dialog when pressed.
+/// If [EntitlementRepositoryRemote.hasPremium] is true, returns a zero-sized box.
 class GetPremiumButton extends StatelessWidget {
-  /// A simple icon button that opens the "Get Premium"-dialog when pressed.
-  /// If [EntitlementRepositoryRemote.hasPremium] is true, returns a zero-sized box.
   const GetPremiumButton({super.key});
 
   @override
@@ -69,6 +70,7 @@ class GetPremiumButton extends StatelessWidget {
   }
 }
 
+/// An icon button that opens the settings page.
 class SettingsButton extends StatelessWidget {
   const SettingsButton({super.key});
 

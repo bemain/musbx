@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_soloud/flutter_soloud.dart';
 
+/// Owns the SoLoud audio engine, which has to be initialized once before any
+/// sound can be played.
 class AudioEngineService {
   AudioEngineService._(this.soLoud);
 

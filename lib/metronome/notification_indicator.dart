@@ -5,6 +5,11 @@ import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:provider/provider.dart';
 
+/// A button offering to turn the metronome notification back on.
+///
+/// Shown only when the notification is off, either because the user disabled it
+/// or because permission was never granted; tapping it asks for whichever is
+/// missing.
 class MetronomeNotificationIndicator extends StatelessWidget {
   const MetronomeNotificationIndicator({super.key});
 
@@ -74,6 +79,8 @@ class MetronomeNotificationIndicator extends StatelessWidget {
   }
 }
 
+/// Asks whether the metronome notification may be shown. Pops `true` to enable
+/// it.
 class NotificationShowRequestDialog extends StatelessWidget {
   const NotificationShowRequestDialog({super.key});
 
@@ -103,6 +110,8 @@ class NotificationShowRequestDialog extends StatelessWidget {
   }
 }
 
+/// Explains what notifications are used for before the system prompt appears.
+/// Pops `true` if the user agreed to be asked.
 class NotificationPermissionRationale extends StatelessWidget {
   const NotificationPermissionRationale({super.key});
 

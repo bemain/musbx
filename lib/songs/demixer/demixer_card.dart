@@ -21,6 +21,8 @@ import 'package:musbx/widgets/flat_card.dart';
 import 'package:musbx/widgets/result_builder.dart';
 import 'package:provider/provider.dart';
 
+/// Follows the demixing of the loaded song, and offers to start, cancel or retry
+/// it.
 class DemixingProcessIndicator extends StatefulWidget {
   const DemixingProcessIndicator({super.key});
 
@@ -277,6 +279,8 @@ This only needs to be done once, so loading the song next time will be much fast
   }
 }
 
+/// The stem controls for the loaded song, or the demixing progress while its
+/// stems are still being separated.
 class DemixerCard extends StatelessWidget {
   const DemixerCard({super.key});
 
@@ -315,7 +319,7 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// Assumes [Songs.player] is a [MultiPlayer].
+  /// The button resetting every stem, shown above the stem controls.
   Widget buildHeader(BuildContext context) {
     final PlaybackRepository playback = context.read();
 
@@ -344,7 +348,7 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// Assumes [Songs.player] is a [MultiPlayer].
+  /// The controls for each stem of the loaded song.
   Widget buildBody(BuildContext context) {
     final PlaybackRepository playback = context.read();
 
@@ -359,8 +363,8 @@ class DemixerCard extends StatelessWidget {
   }
 }
 
+/// Widget for enabling/disabling and changing the volume of a demixer [stem].
 class StemControls extends StatefulWidget {
-  /// Widget for enabling/disabling and changing the volume of a demixer [stem].
   const StemControls({super.key, required this.stem});
 
   @override

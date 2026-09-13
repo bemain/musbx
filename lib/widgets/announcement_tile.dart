@@ -9,7 +9,12 @@ import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
+/// One announcement, rendered from Markdown, with its poll if it has one.
+///
+/// Shimmers as a placeholder when [announcement] is `null`. A poll can only be
+/// answered once; the answer is remembered locally and shown afterwards.
 class AnnouncementTile extends StatefulWidget {
+  /// Month abbreviations, for dating an announcement.
   static const List<String> months = [
     "jan",
     "feb",
@@ -32,8 +37,13 @@ class AnnouncementTile extends StatefulWidget {
     this.onResponseSent,
   });
 
+  /// The announcement to show, or `null` to shimmer as a placeholder.
   final Announcement? announcement;
+
+  /// Whether to mark this announcement as not yet read.
   final bool isUnread;
+
+  /// Called with the user's answer when they respond to the poll.
   final void Function(String response)? onResponseSent;
 
   @override
@@ -48,6 +58,8 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
   /// selected, and the value of [otherFieldController] should be used.
   List<String> _selectedResponses = [];
   TextEditingController otherFieldController = TextEditingController();
+
+  /// Stands in for the free-text "Other" option among the poll's answers.
   static const otherFieldName = "__other__";
 
   late final PersistentValue<String>? sentResponse =

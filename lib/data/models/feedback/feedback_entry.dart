@@ -5,8 +5,8 @@ import 'package:musbx/utils/utils.dart';
 part 'feedback_entry.g.dart';
 
 @JsonSerializable()
+/// A feedback entry from a user.
 class FeedbackEntry extends SupabaseModel {
-  /// A feedback entry from a user.
   FeedbackEntry({
     super.id,
     super.createdAt,

@@ -4,6 +4,10 @@ import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/utils/result.dart';
 
+/// Pick demixing back up where the last session left it.
+///
+/// Run at startup. A song is demixed again if it was asked for explicitly, or,
+/// when nothing was asked either way, if the user demixes automatically.
 class ResumeDemixing {
   ResumeDemixing({
     required SongRepository songs,

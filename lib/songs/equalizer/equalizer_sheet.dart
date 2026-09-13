@@ -4,6 +4,7 @@ import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/equalizer/equalizer_sliders.dart';
 import 'package:provider/provider.dart';
 
+/// A bottom sheet holding the equalizer sliders for the loaded song.
 class EqualizerSheet extends StatelessWidget {
   const EqualizerSheet({super.key});
 

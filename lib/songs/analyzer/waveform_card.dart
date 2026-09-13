@@ -6,9 +6,18 @@ import 'package:musbx/songs/analyzer/waveform_widget.dart';
 import 'package:musbx/widgets/flat_card.dart';
 import 'package:provider/provider.dart';
 
+/// The waveform and the chords of the loaded song, side by side on one card.
+///
+/// Dragging horizontally scrubs through the song; pinching zooms between
+/// [minDurationShown] and [maxDurationShown].
 class WaveformCard extends StatelessWidget {
+  /// The closest the user can zoom in.
   static const Duration minDurationShown = Duration(seconds: 7);
+
+  /// The furthest the user can zoom out.
   static const Duration maxDurationShown = Duration(seconds: 10);
+
+  /// How much of the song is shown before the user zooms.
   static const Duration defaultDurationShown = Duration(seconds: 8);
 
   WaveformCard({
@@ -26,8 +35,11 @@ class WaveformCard extends StatelessWidget {
   /// The speed at which the widget scales.
   final double scaleSpeed;
 
+  /// The rounding of the card.
   final BorderRadiusGeometry radius;
 
+  /// How much of the song is visible at once, clamped between
+  /// [minDurationShown] and [maxDurationShown].
   Duration get durationShown => durationShownNotifier.value;
   set durationShown(Duration value) => durationShownNotifier.value = value
       .clamp(minDurationShown, maxDurationShown);

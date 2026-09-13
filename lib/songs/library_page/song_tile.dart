@@ -11,8 +11,8 @@ import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:provider/provider.dart';
 
+/// A list tile widget that displays information about a [song].
 class SongTile extends StatelessWidget {
-  /// A list tile widget that displays information about a [song].
   const SongTile({
     super.key,
     required this.song,
@@ -22,16 +22,20 @@ class SongTile extends StatelessWidget {
   });
 
   /// The song this tile represents.
+  /// The song this tile shows.
   final Song song;
 
   /// Called when the tile is tapped.
+  /// Called when the tile is tapped. The tile is not tappable without it.
   final void Function()? onSelected;
 
   /// Whether to show the options button.
+  /// Whether to offer the options sheet for this song.
   final bool showOptions;
 
   /// The color used behind the leading icon.
   /// Defaults to [ColorScheme.surfaceContainerHigh].
+  /// The background of the artwork, used while none has loaded.
   final Color? leadingColor;
 
   @override

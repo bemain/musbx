@@ -6,13 +6,14 @@ import 'package:musbx/songs/song_page/position_slider_style.dart';
 import 'package:musbx/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
+/// Slider for seeking a position in the current song.
+///
+/// Includes labels displaying the current position and duration of the current song.
+/// If looping is enabled, highlights the section of the slider being looped.
 class PositionSlider extends StatelessWidget {
-  /// Slider for seeking a position in the current song.
-  ///
-  /// Includes labels displaying the current position and duration of the current song.
-  /// If looping is enabled, highlights the section of the slider being looped.
   const PositionSlider({super.key, this.enabled = true});
 
+  /// Whether the position can be dragged.
   final bool enabled;
 
   @override

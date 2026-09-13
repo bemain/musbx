@@ -14,15 +14,19 @@ import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/permission_builder.dart';
 import 'package:provider/provider.dart';
 
+/// The audio file formats a song can be uploaded from.
 const List<String> allowedExtensions = [
   "mp3",
   "ogg",
   "wav",
 ];
 
-/// A child of [SpeedDial] that looks similar to a [SpeedDialAction] but with a primary color.
+/// A child of [SpeedDial] that looks similar to a [SpeedDialAction] but with a
+/// primary color.
 ///
-/// When pressed, allows the user to upload a song from their devices and loads that song to [MusicPlayer].
+/// When pressed, lets the user pick an audio file from their device, adds it to
+/// the library and opens it. Asks for file access first if it has not been
+/// granted.
 class UploadSongButton extends SpeedDialChild {
   /// Whether permission to read external storage has been given or not.
   static bool permissionGranted = Platform.isAndroid || Platform.isIOS

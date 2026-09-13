@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 
+/// Paints an overlay onto a set of sliders used to control the gain on
+/// Equalizer's bands.
+///
+/// Connects the thumbs of the sliders using a line, and fills the area
+/// between the line and the center with a gradient.
 class EqualizerOverlayPainter extends CustomPainter {
-  /// Paints an overlay onto a set of sliders used to control the gain on
-  /// Equalizer's bands.
-  ///
-  /// Connects the thumbs of the sliders using a line, and fills the area
-  /// between the line and the center with a gradient.
   EqualizerOverlayPainter({
     required this.bands,
     required this.lineColor,

@@ -72,8 +72,11 @@ class JobReport<T> {
   }
 }
 
+/// Work the server does on an uploaded file, identified by [id].
+///
+/// The server does not push updates, so progress is followed by asking for a
+/// [JobReport] over and over; [complete] does that until the job is done.
 abstract class Job<T> {
-  /// Representation of a job that the API performs.
   Job(this.dio, this.id);
 
   /// The Dio instance that handles the interaction with the API.

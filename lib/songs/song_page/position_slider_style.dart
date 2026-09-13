@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// The colours the position and loop sliders are drawn with.
+///
+/// A [ThemeExtension], so the sliders and the waveform painted behind them read
+/// the same colours out of the theme.
 class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
   const PositionSliderStyle({
     required this.activeTrackColor,
@@ -36,12 +40,15 @@ class PositionSliderStyle extends ThemeExtension<PositionSliderStyle> {
     );
   }
 
+  /// The part of the track that has been played.
   final Color activeTrackColor;
   final Color disabledActiveTrackColor;
 
+  /// The part of the track that has not been played yet.
   final Color inactiveTrackColor;
   final Color disabledInactiveTrackColor;
 
+  /// The part of the track outside the looped section.
   final Color nonLoopedTrackColor;
   final Color disabledNonLoopedTrackColor;
 

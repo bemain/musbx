@@ -11,8 +11,13 @@ import 'package:musbx/domain/models/music/temperament.dart';
 import 'package:musbx/domain/use_case/pitch_detector.dart';
 import 'package:musbx/tuner/view_model/tuner_reading.dart';
 
-/// Singleton for detecting what pitch is being played.
-/// TODO: Remove this class
+/// Listens to the microphone and reports what pitch is being played.
+///
+/// [dataStream] is where the work happens: each frame from the microphone is
+/// run through pitch detection, matched to the closest [Pitch] under the
+/// current [tuning] and [temperament], and kept in [dataBuffer] for the graphs
+/// to draw. Nothing is recorded until something listens.
+// TODO: Remove this class
 class Tuner {
   Tuner._();
 
@@ -119,7 +124,7 @@ class Tuner {
     return reading;
   });
 
-  /// The most recent pitch detected, averaged and filtered.
+  /// The most recent pitch detected, or `null` until one has been.
   Pitch? pitch;
 
   /// Get the pitch closest to the given [frequency].

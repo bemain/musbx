@@ -1,6 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+/// Lays out the shell branches, keeping the inactive ones alive but offstage.
+///
+/// A branch with [ExtendedShellBranch.saveState] turned off is built only while
+/// it is the active one, so leaving it tears it down.
 class ExtendedShellBranchContainer extends StatelessWidget {
   const ExtendedShellBranchContainer({
     required this.currentIndex,

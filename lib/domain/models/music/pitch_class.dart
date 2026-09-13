@@ -15,15 +15,18 @@ enum NaturalPitchClass {
 
   const NaturalPitchClass(this.abbreviation, this.chroma);
 
+  /// The letter naming this pitch class.
   final String abbreviation;
 
   /// The chroma that this pitch class belongs to.
   final Chroma chroma;
 }
 
+/// A set of all pitches that share the same [chroma].
+///
+/// Due to enharmonic equivalence, they can belong to different
+/// [NaturalPitchClass]es and have different [accidental]s.
 class PitchClass {
-  /// A set of all pitches that share the same [chroma].
-  /// Due to enharmonic equivalence, they can belong to different [NaturalPitchClass]es and have different [accidental]s.
   const PitchClass(this.naturalClass, [this.accidental = Accidental.natural]);
 
   /// The "natural" pitch class (the seven pitch classes represented by just a letter)
@@ -164,6 +167,7 @@ class PitchClass {
   /// Due to enharmonic equivalence, many pitch classes (e.g F# and Gb) share the same chroma.
   Chroma get chroma => naturalClass.chroma.transposed(accidental.alteration);
 
+  /// How far above C this pitch class sits, between `0` and `11`.
   int get semitonesFromC => chroma.semitonesFromC;
 
   /// The name of this pitch class.

@@ -152,6 +152,7 @@ class CacheFile {
     return await _file.readAsBytes();
   }
 
+  /// Read this file as JSON, or `null` if it doesn't exist.
   Future<Json?> readJson() async {
     if (!await _file.exists()) return null;
     return jsonDecode(await _file.readAsString()) as Json;
@@ -211,6 +212,7 @@ class CacheFile {
     return await op;
   }
 
+  /// Write [content] to the file as JSON. Creates the file if it doesn't exist.
   Future<File> writeJson(Json content) async {
     return await writeString(jsonEncode(content));
   }

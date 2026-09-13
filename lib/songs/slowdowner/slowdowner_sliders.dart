@@ -22,6 +22,8 @@ Widget _buildCircularPlaceholder(BuildContext context, {double radius = 64}) {
   );
 }
 
+/// A button returning the pitch and speed to their defaults. Disabled while they
+/// already are.
 class PitchSpeedResetButton extends StatelessWidget {
   const PitchSpeedResetButton({super.key});
 
@@ -52,6 +54,7 @@ class PitchSpeedResetButton extends StatelessWidget {
   }
 }
 
+/// A circular slider for transposing the song, in semitones.
 class PitchSlider extends StatelessWidget {
   const PitchSlider({super.key, this.radius = 64});
 
@@ -112,6 +115,8 @@ class PitchSlider extends StatelessWidget {
   }
 }
 
+/// A circular slider for changing the tempo of the song, as a fraction of its
+/// original.
 class SpeedSlider extends StatelessWidget {
   const SpeedSlider({super.key, this.radius = 64});
 

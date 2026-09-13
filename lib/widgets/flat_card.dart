@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// A card with no elevation and rounded corners.
+/// Creates a [FlatCard].
 class FlatCard extends StatelessWidget {
-  /// Creates a [FlatCard].
   const FlatCard({
     super.key,
     this.color,

@@ -27,6 +27,8 @@ enum DemixStep {
 /// The keys are the name of the separated stems, and the values are the download URLs.
 typedef DemixJobResult = Map<String, String>;
 
+/// A [JobReport] for a demixing job, which also says how far the separation has
+/// come.
 class DemixJobReport extends JobReport<DemixJobResult> {
   const DemixJobReport._(
     super.id, {

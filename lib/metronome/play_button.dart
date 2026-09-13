@@ -6,8 +6,8 @@ import 'package:musbx/metronome/notification_indicator.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:provider/provider.dart';
 
+/// Play / pause button to start or stop the [Metronome].
 class PlayButton extends StatelessWidget {
-  /// Play / pause button to start or stop the [Metronome].
   const PlayButton({super.key, this.size});
 
   final double? size;

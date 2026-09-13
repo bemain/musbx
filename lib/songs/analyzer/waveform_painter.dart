@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 
+/// Paints the stretch of a waveform around [position], with a marker at the
+/// centre showing where playback is.
 class WaveformPainter extends CustomPainter {
   WaveformPainter({
     required this.waveform,
@@ -17,13 +19,18 @@ class WaveformPainter extends CustomPainter {
     this.waveformPixelsPerStep = 12.0,
   });
 
+  /// The waveform of the whole song.
   final Waveform waveform;
 
+  /// Where playback is, drawn at the centre.
   final Duration position;
+
+  /// How much of the song to fit across the canvas.
   final Duration duration;
 
   final PositionSliderStyle style;
 
+  /// How much the waveform is scaled vertically.
   final double amplitude;
 
   /// The number of waveform pixels per step.
@@ -33,7 +40,10 @@ class WaveformPainter extends CustomPainter {
   /// The number of empty pixels between each step.
   final double padding;
 
+  /// The colour of the marker showing [position].
   final Color markerColor;
+
+  /// The width of the marker showing [position].
   final double markerWidth;
 
   @override
@@ -98,6 +108,7 @@ class WaveformPainter extends CustomPainter {
     return true;
   }
 
+  /// Map a raw waveform sample onto a y coordinate on a canvas [height] tall.
   double normalize(int s, double height) {
     if (waveform.flags == 0) {
       final y = 32768 + (amplitude * s).clamp(-32768.0, 32767.0).toDouble();

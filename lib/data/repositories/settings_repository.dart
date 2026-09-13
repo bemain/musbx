@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 
+/// The user's app-wide preferences, persisted as they change.
 class SettingsRepository {
   SettingsRepository({required SharedPreferencesService sharedPreferences})
     : _sharedPreferences = sharedPreferences;
@@ -11,6 +12,7 @@ class SettingsRepository {
     _sharedPreferences,
   );
 
+  /// Whether to follow the system theme, or force light or dark.
   ThemeMode get themeMode => themeModeNotifier.value;
   late final TransformedPersistentValue<ThemeMode, String> themeModeNotifier =
       _sharedPreferences.transformed<ThemeMode, String>(
@@ -22,6 +24,9 @@ class SettingsRepository {
       );
 }
 
+/// Preferences applying to every song, as opposed to a single one.
+///
+/// See `SongPreferences` for the per-song counterpart.
 class SongSettingsRepository {
   SongSettingsRepository._(this._sharedPreferences);
 

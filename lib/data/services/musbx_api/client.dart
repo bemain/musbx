@@ -9,8 +9,10 @@ import 'package:musbx/data/services/musbx_api/jobs/demix.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+/// Something that went wrong while talking to a Musbx API server.
 sealed class MusbxApiClientError implements Exception {}
 
+/// The server answered, but not with a success.
 final class BadStatusCode extends MusbxApiClientError {
   BadStatusCode(this.code);
 
@@ -22,16 +24,19 @@ final class BadStatusCode extends MusbxApiClientError {
       : "The HTTP request returned a status code marking a failure";
 }
 
+/// The server could not be reached at all.
 final class ConnectionFailed extends MusbxApiClientError {
   @override
   String toString() => "Connecting to the Musx API server failed";
 }
 
+/// The server's answer did not have the shape the client expected.
 final class MalformedResponse extends MusbxApiClientError {
   @override
   String toString() => "The server sent a response that could not be parsed";
 }
 
+/// The server understood the request and refused it, explaining why.
 final class RequestFailed extends MusbxApiClientError {
   RequestFailed(this.message);
 
@@ -42,6 +47,7 @@ final class RequestFailed extends MusbxApiClientError {
       "The server failed to process the request with message: $message";
 }
 
+/// Logs the body of every failed request. Changes nothing about the outcome.
 class ErrorInterceptor extends Interceptor {
   @override
   Future<void> onError(

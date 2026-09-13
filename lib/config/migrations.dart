@@ -4,6 +4,11 @@ import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+/// Brings data written by an older build up to date.
+///
+/// Runs once per launch, before anything reads the caches. Each migration names
+/// the build number it belongs to and runs only when the app has crossed it, so
+/// skipping several versions still applies each one in turn.
 class Migrations {
   Migrations({
     required SharedPreferencesService sharedPreferences,
@@ -23,6 +28,9 @@ class Migrations {
         initialValue: "0",
       );
 
+  /// Apply every migration between the last launched build and this one.
+  ///
+  /// Does nothing on a fresh install or an unchanged build.
   Future<void> run() async {
     final int current = int.parse(_packageInfo.buildNumber);
     final int? previous = int.tryParse(_lastVersionLaunched.value);

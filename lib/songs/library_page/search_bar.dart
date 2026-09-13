@@ -12,12 +12,15 @@ import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:provider/provider.dart';
 
+/// Searches the library as the user types, listing matching SoundCloud tracks
+/// below the songs already in it.
 class LibrarySearchBar extends StatefulWidget {
   const LibrarySearchBar({super.key});
 
   @override
   State<LibrarySearchBar> createState() => _LibrarySearchBarState();
 
+  /// The artwork stand-in for a search result that has none.
   static Widget placeholderIcon(BuildContext context, {Color? color}) {
     return M3Container.c4SidedCookie(
       color: color ?? Theme.of(context).colorScheme.surfaceContainerHigh,

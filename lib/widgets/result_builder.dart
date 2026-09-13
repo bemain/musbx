@@ -2,6 +2,10 @@ import 'package:flutter/widgets.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/widgets.dart';
 
+/// Builds from a [Result] that is still being awaited, taking a branch for each
+/// of the three states it passes through.
+///
+/// [loading] and [failure] fall back to a generic page when not given.
 class ResultBuilder<T> extends StatelessWidget {
   const ResultBuilder({
     super.key,
@@ -11,10 +15,16 @@ class ResultBuilder<T> extends StatelessWidget {
     this.failure,
   });
 
+  /// The result to wait for.
   final Future<Result<T>> future;
 
+  /// Built while [future] is still running.
   final Widget Function(BuildContext context)? loading;
+
+  /// Built once [future] produces a value.
   final Widget Function(BuildContext context, T value) ok;
+
+  /// Built when [future] fails, or throws.
   final Widget Function(BuildContext context, Object error)? failure;
 
   @override

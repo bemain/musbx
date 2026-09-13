@@ -5,7 +5,11 @@ import 'package:musbx/domain/models/music/pitch.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
 import 'package:musbx/domain/models/music/temperament.dart';
 
-/// Singleton for playing drone tones.
+/// Plays a sustained chord of pure tones to play along with.
+///
+/// A [root] pitch plus a set of [intervals] above it, each sounded by its own
+/// [FrequencyPlayer] and played through one voice group. Changing the root, the
+/// tuning, the temperament or the intervals retunes the players in place.
 class Drone {
   // Only way to access is through [instance].
   Drone._(this._sharedPreferences) : handle = _soloud.createVoiceGroup() {
@@ -15,8 +19,10 @@ class Drone {
   /// The instance of this singleton.
   static late final Drone instance;
 
+  /// Whether [initialize] has run.
   static bool initialized = false;
 
+  /// Create the singleton, unless it already exists.
   static void initialize({
     required SharedPreferencesService sharedPreferences,
   }) {
@@ -68,6 +74,7 @@ class Drone {
         }
       });
 
+  /// The pitch the [intervals] are counted from.
   Pitch get root => tuning.transposed(rootStepNotifier.value);
   set root(Pitch value) => rootStepNotifier.value = tuning.semitonesTo(value);
   late final ValueNotifier<int> rootStepNotifier = _sharedPreferences.value(
@@ -101,8 +108,12 @@ class Drone {
   bool get isPlaying => isPlayingNotifier.value;
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 
+  /// One player per playing interval, kept in step with [intervals].
+  /// One player per playing interval, kept in step with [intervals].
   final List<FrequencyPlayer> players = [];
 
+  /// The voice group every player is played through, so they start, stop and
+  /// pause together.
   final SoundHandle handle;
 
   /// Pause playback.
@@ -117,6 +128,9 @@ class Drone {
     isPlayingNotifier.value = true;
   }
 
+  /// Match the players to [intervals] and retune them.
+  ///
+  /// Run whenever anything affecting the sounding pitches changes.
   Future<void> _onPitchesChanged() async {
     // Add missing players
     for (int i = players.length; i < intervals.length; i++) {
@@ -144,10 +158,10 @@ class Drone {
   }
 }
 
+/// Plays a single continuous tone at a given frequency.
 class FrequencyPlayer {
   static final SoLoud _soloud = SoLoud.instance;
 
-  /// Helper class for playing a single [frequency], using [SoLoud] waveforms.
   FrequencyPlayer._(this.source, this.handle, {double frequency = 440}) {
     this.frequency = frequency;
   }
@@ -161,8 +175,10 @@ class FrequencyPlayer {
     return FrequencyPlayer._(source, handle, frequency: frequency);
   }
 
+  /// The waveform being played.
   final AudioSource source;
 
+  /// The sound this player is driving.
   final SoundHandle handle;
 
   /// Free the resources used by this player.

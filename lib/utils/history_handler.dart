@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/utils/utils.dart';
 
-/// Helper class for persisting history entries to disk.
-/// TODO: Rethink
+/// Entries kept in the order they were last used, persisted to disk.
+///
+/// Each entry is stored against the time it was added. Adding one that is
+/// already there moves it to the top rather than duplicating it, which is what
+/// makes this usable both as a history and as a library.
+// TODO: Rethink
 class HistoryHandler<T> extends ChangeNotifier {
   HistoryHandler({
     required this.file,
@@ -15,6 +19,7 @@ class HistoryHandler<T> extends ChangeNotifier {
     this.maxEntries,
   });
 
+  /// The file the entries are persisted to.
   final CacheFile file;
 
   /// The maximum number of entries saved in history.
@@ -29,10 +34,10 @@ class HistoryHandler<T> extends ChangeNotifier {
   /// Callback for when an entry is removed from the history due to [maxEntries] being exceeded.
   final FutureOr<void> Function(MapEntry<DateTime, T> entry)? onEntryRemoved;
 
-  /// The history entries, with the previously loaded songs and the time they were loaded.
+  /// The entries, against the time each was last added.
   final Map<DateTime, T> entries = {};
 
-  /// The previously played songs, sorted by date.
+  /// The entries, sorted by the time they were last added.
   List<T> sorted({bool ascending = false}) {
     List<T> sorted =
         (entries.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))

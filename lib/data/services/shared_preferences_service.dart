@@ -65,8 +65,8 @@ class SharedPreferencesService {
   /// Move values stored before [_prefix] was introduced under it.
   ///
   /// Has to run before anything reads a value: an unmigrated key reads as its
-  /// initial value, which would look to [LaunchHandler] like a fresh install
-  /// and trigger the migration that erases settings and the song library.
+  /// initial value, which would look to `Migrations` like a fresh install and
+  /// trigger the migration that erases settings and the song library.
   ///
   /// Only keys the app is known to have written are moved, so that preferences
   /// belonging to plugins are left where they are. Once moved they are removed,

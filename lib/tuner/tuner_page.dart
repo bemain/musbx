@@ -11,12 +11,12 @@ import 'package:musbx/widgets/flat_card.dart';
 import 'package:musbx/widgets/permission_builder.dart';
 import 'package:provider/provider.dart';
 
+/// Page that detects the pitch from the microphone and displays it.
+///
+/// Includes:
+///  - Gauge showing what note is being played and how out of tune it is.
+///  - Graph showing how the tuning has changed over time.
 class TunerPage extends StatefulWidget {
-  /// Page that detects the pitch from the microphone and displays it.
-  ///
-  /// Includes:
-  ///  - Gauge showing what note is being played and how out of tune it is.
-  ///  - Graph showing how the tuning has changed over time.
   const TunerPage({super.key});
 
   @override

@@ -4,6 +4,7 @@ import 'package:musbx/data/services/service.dart';
 import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/utils/result.dart';
 
+/// Writes feedback to Supabase.
 class FeedbackRepositoryRemote extends FeedbackRepository {
   FeedbackRepositoryRemote({required SupabaseService supabaseService})
     : _supabaseService = supabaseService;

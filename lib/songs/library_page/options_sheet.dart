@@ -13,6 +13,11 @@ import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:provider/provider.dart';
 
+/// Follows the demixing of [song], showing which step it is on and how far it
+/// has come.
+///
+/// Offers to start demixing when nothing is running, and to cancel or retry once
+/// something is.
 class DemixingProgressIndicator extends StatefulWidget {
   const DemixingProgressIndicator({
     super.key,
@@ -22,6 +27,7 @@ class DemixingProgressIndicator extends StatefulWidget {
 
   final Song song;
 
+  /// Called once the stems are ready.
   final void Function()? onDemixingComplete;
 
   @override
@@ -106,9 +112,12 @@ class _DemixingProgressIndicatorState
   }
 }
 
+/// A bottom sheet for one song: what it takes up on disk, whether it is demixed,
+/// and the options to clear its cache or delete it.
 class SongOptionsSheet extends StatefulWidget {
   const SongOptionsSheet({super.key, required this.song});
 
+  /// The song these options apply to.
   final Song song;
 
   @override

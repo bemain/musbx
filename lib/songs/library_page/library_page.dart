@@ -13,6 +13,8 @@ import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:provider/provider.dart';
 
+/// The user's songs, most recently played first, with search and upload above
+/// them.
 class LibraryPage extends StatelessWidget {
   const LibraryPage({super.key});
 

@@ -29,6 +29,10 @@ import 'package:provider/provider.dart';
 /// This is used to show dialogs in places where no local context is available.
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+/// The key for the navigator of the songs branch.
+///
+/// Used to close an open song from outside the widget tree, e.g. when it is
+/// deleted.
 final GlobalKey<NavigatorState> libraryNavigatorKey =
     GlobalKey<NavigatorState>();
 
@@ -37,6 +41,12 @@ final GlobalKey<NavigatorState> libraryNavigatorKey =
 /// This is used to navigate to different branches of the app.
 late StatefulNavigationShell navigationShell;
 
+/// Build the app's router.
+///
+/// The four tools sit in branches of a [StatefulShellRoute], each keeping its
+/// own navigation stack; the branch the user was last on is restored at launch.
+/// Settings and announcements sit outside the shell, so they cover the
+/// navigation bar.
 GoRouter router({required SharedPreferencesService sharedPreferences}) {
   /// The current shell branch. This is persisted across app restarts.
   final PersistentValue<int> currentBranch = sharedPreferences.value(
@@ -246,6 +256,7 @@ GoRouter router({required SharedPreferencesService sharedPreferences}) {
   );
 }
 
+/// The navigation bar entry for a branch.
 NavigationDestination _destination(String route) {
   switch (route) {
     case Routes.metronome:

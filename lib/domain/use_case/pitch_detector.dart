@@ -8,8 +8,10 @@ import 'package:musbx/utils/num_iterable_extension.dart';
 class PitchDetector {
   PitchDetector({this.sampleRate = 22050, this.averageCount = 3});
 
+  /// The sample rate of the audio handed to [add], in Hz.
   final int sampleRate;
 
+  /// How many recent readings are averaged into the reported frequency.
   final int averageCount;
 
   final List<double?> _recent = [];

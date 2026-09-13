@@ -5,6 +5,7 @@ import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/utils/result.dart';
 
+/// Reads announcements from Supabase, and remembers locally what has been read.
 class AnnouncementRepositoryRemote extends AnnouncementRepository {
   AnnouncementRepositoryRemote({
     required SharedPreferencesService sharedPreferences,
@@ -16,12 +17,6 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
 
   final SupabaseService _supabaseService;
 
-  /// The last time the announcements were read.
-  ///
-  /// Everything written after this is unread, so moving it forward is how
-  /// announcements are dismissed. It defaults to the moment it is first read,
-  /// which means a fresh install starts with nothing unread rather than with
-  /// the entire history.
   late final TransformedPersistentValue<DateTime, String> _readAtNotifier =
       _sharedPreferences.transformed(
         "announcements/readAt",
@@ -55,9 +50,7 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
     );
   }
 
-  /// Get all announcements from the database that have not been seen before.
-  ///
-  /// Reads [_readAtNotifier] as it stands when called, so this has to be run again to
+  /// Reads [readAt] as it stands when called, so this has to be run again to
   /// pick up a change rather than being awaited once.
   @override
   Future<Result<List<Announcement>>> getUnread() async {

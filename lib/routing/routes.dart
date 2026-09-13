@@ -1,6 +1,9 @@
+/// Every location in the app, so that no route is written out as a string twice.
 abstract final class Routes {
   static const String metronome = "/metronome";
   static const String library = "/songs";
+
+  /// The page for one song in the library.
   static String song(String songId) => "$library/$songId";
   static const String tuner = "/tuner";
   static const String drone = "/drone";

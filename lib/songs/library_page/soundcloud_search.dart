@@ -56,6 +56,7 @@ class SoundCloudSearch {
         toJson: (value) => value,
       );
 
+  /// The tracks matching [query].
   static Future<List<SoundCloudTrack>> searchTracks(
     String query, {
     required BuildContext context,
@@ -219,6 +220,8 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
 /// This widget shows track information including artwork, title, artist,
 /// duration, and download status. It handles loading states with placeholder
 /// content and provides visual feedback for user interactions.
+/// One SoundCloud track in a list of search results. Shimmers as a placeholder
+/// when [track] is `null`.
 class SoundCloudTrackListItem extends StatelessWidget {
   /// HTML unescaper for cleaning up track titles and artist names.
   static final HtmlUnescape htmlUnescape = HtmlUnescape();
@@ -231,9 +234,11 @@ class SoundCloudTrackListItem extends StatelessWidget {
   });
 
   /// The SoundCloud track to display, or null for loading state.
+  /// The track to show, or `null` to shimmer as a placeholder.
   final SoundCloudTrack? track;
 
   /// Callback function called when the item is tapped.
+  /// Called when the item is tapped.
   final void Function()? onTap;
 
   @override

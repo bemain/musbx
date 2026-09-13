@@ -8,11 +8,17 @@ import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/utils/result.dart';
 
+/// Turns a song's [AudioReference] into audio the engine can play.
+///
+/// Whatever the reference points at — a URL, a file, raw bytes — the audio ends
+/// up as one file in the cache, so a song is only ever fetched once.
 class AudioRepository {
   AudioRepository({required SongCache songCache}) : _songCache = songCache;
 
   final SongCache _songCache;
 
+  /// Fetch [song]'s audio unless it is already cached, and load it into the
+  /// audio engine.
   Future<Result<AudioSource>> resolve(Song song) async {
     try {
       CacheFile cacheFile = _songCache.audio(song);

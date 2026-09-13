@@ -13,13 +13,12 @@ import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/flat_card.dart';
 import 'package:provider/provider.dart';
 
+/// Page for controlling the [Metronome], including:
+/// - Play / pause button
+/// - Buttons, a slider and a tap target for setting the bpm
+/// - Buttons for setting the beats per bar and the subdivisions
+/// - Buttons for muting it and for managing its notification
 class MetronomePage extends StatelessWidget {
-  /// Page for controlling [Metronome], including:
-  /// - Play / pause button
-  /// - Buttons for adjusting bpm
-  /// - Slider for adjusting bpm
-  /// - Button for setting bpm by tapping.
-  /// - Buttons for setting what sound is played each beat.
   const MetronomePage({super.key});
 
   @override

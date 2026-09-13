@@ -5,10 +5,11 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:provider/provider.dart';
 
+/// Panel including play/pause, forward and rewind buttons for controlling
+/// playback.
+///
+/// If no song is loaded, all buttons are disabled.
 class ButtonPanel extends StatefulWidget {
-  /// Panel including play/pause, forward and rewind buttons for controlling a [SongPlayer].
-  ///
-  /// If no song is loaded, all buttons are disabled.
   const ButtonPanel({super.key});
 
   @override

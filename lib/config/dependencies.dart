@@ -43,6 +43,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
+/// Build the object graph the whole app runs on.
+///
+/// Everything that cannot fail and that something else needs immediately is
+/// created here, before the first frame. Optional services are wrapped in a
+/// [ServiceLoader] instead, so a missing store or a device offline at launch
+/// delays nothing. Repositories and use cases are created lazily from what is
+/// already in the tree.
 Future<List<SingleChildWidget>> loadProviders() async {
   final packageInfo = await PackageInfo.fromPlatform();
 
@@ -95,6 +102,8 @@ List<SingleChildWidget> _services = [
   Provider(create: (context) => SongCache(fileCache: context.read())),
 ];
 
+/// Providers for a service that may fail or be unsupported: the [ServiceLoader]
+/// holding it, and the service itself, swapped in as soon as one is created.
 List<SingleChildWidget> _optional<T extends OptionalService>(
   Future<T> Function() create,
   T Function() fallback,

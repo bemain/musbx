@@ -1,3 +1,4 @@
+/// What the media notification shows: the song, and how far playback has come.
 class MediaNotificationState {
   MediaNotificationState({
     required this.id,

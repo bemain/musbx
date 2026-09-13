@@ -202,6 +202,8 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   }
 }
 
+/// One YouTube video in a list of search results. Shimmers as a placeholder when
+/// [video] is `null`.
 class YoutubeVideoListItem extends StatelessWidget {
   static final HtmlUnescape htmlUnescape = HtmlUnescape();
 
@@ -210,9 +212,11 @@ class YoutubeVideoListItem extends StatelessWidget {
 
   /// The video whose properties to show.
   /// If `null`, shows a simple placeholder widget.
+  /// The video to show, or `null` to shimmer as a placeholder.
   final YoutubeVideo? video;
 
   /// Called when the user taps this list tile.
+  /// Called when the item is tapped.
   final void Function()? onTap;
 
   @override
