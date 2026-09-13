@@ -3,6 +3,8 @@ import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/demix/demix_repository.dart';
+import 'package:musbx/data/repositories/demix/demixing_process.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
@@ -13,8 +15,6 @@ import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/song_preferences.dart';
 import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/demixer/demixing_process.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
@@ -30,6 +30,8 @@ class DemixingProcessIndicator extends StatefulWidget {
 
 class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
   final PlaybackRepository playback = PlaybackRepository.instance;
+
+  final DemixRepository demixing = DemixRepository.instance;
 
   Future<void> _setDemix(
     Song song,
@@ -61,7 +63,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
           return buildDemixDisabled();
         }
 
-        DemixingProcess? process = DemixingProcesses.start(song);
+        DemixingProcess? process = demixing.start(song);
 
         return ListenableBuilder(
           listenable: process,
@@ -186,8 +188,8 @@ Please update to the latest version to use the Demixer.""",
         onPressed: () {
           if (playback.song != null) {
             setState(() {
-              DemixingProcesses.cancel(playback.song!);
-              DemixingProcesses.start(playback.song!);
+              demixing.cancel(playback.song!);
+              demixing.start(playback.song!);
             });
           }
         },
@@ -205,7 +207,6 @@ Please update to the latest version to use the Demixer.""",
     }
 
     switch (process.step) {
-      case DemixingStep.checkingCache:
       case DemixingStep.findingHost:
         return buildLoadingTextWithInfoButton(context, "Preparing...");
       case DemixingStep.uploading:

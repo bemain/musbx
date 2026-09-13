@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/demix/demix_repository.dart';
+import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/repositories/song/song_settings_repository.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/domain/use_case/clear_song_cache.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/navigation.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
@@ -178,11 +181,12 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
 
                         // Remove cache
                         for (final song in SongRepository.instance.getAll()) {
-                          DemixingProcesses.cancel(song);
+                          await ClearSongCache(
+                            cache: SongCache.instance,
+                            preferences: SongPreferencesRepository.instance,
+                            demixing: DemixRepository.instance,
+                          ).call(song);
                         }
-                        await FileCacheService.instance.scratch
-                            .directory("songs")
-                            .delete();
 
                         if (!mounted) return;
                         _refresh();

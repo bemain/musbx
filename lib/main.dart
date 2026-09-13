@@ -4,6 +4,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/repositories/song/audio_repository.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
@@ -53,6 +54,7 @@ Future<void> main() async {
       songs: SongRepository.instance,
       settings: SongSettingsRepository.instance,
       preferences: SongPreferencesRepository.instance,
+      demixing: DemixRepository.instance,
     ).call(),
   );
   await NotificationService.initialize();

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/data/models/media_command.dart';
 import 'package:musbx/data/models/media_notification_state.dart';
+import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/repositories/song/audio_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/services/audio_engine_service.dart';
@@ -13,7 +14,6 @@ import 'package:musbx/data/services/media_notification_service.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/song_preferences.dart';
 import 'package:musbx/domain/models/stem_type.dart';
-import 'package:musbx/songs/demixer/demixing_process.dart';
 import 'package:musbx/utils/result.dart';
 
 typedef LoopSection = ({Duration? start, Duration? end});
@@ -349,7 +349,7 @@ class PlaybackRepository extends ChangeNotifier {
 
     try {
       final AudioSource source = (await _audio.resolve(song)).asOk;
-      final stems = await DemixingProcess.getStemsInCache(song);
+      final stems = await DemixRepository.instance.stemsFor(song);
 
       final Map<StemType?, AudioSource> sources;
       if (stems != null) {

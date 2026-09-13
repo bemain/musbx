@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:meta/meta.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
+import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/delete_song.dart';
@@ -54,7 +55,10 @@ class SongRepository extends ChangeNotifier {
         debugPrint(
           "[LIBRARY] Deleting cached files for song ${song.id}",
         );
-        await DeleteSong(cache: SongCache.instance).call(song);
+        await DeleteSong(
+          cache: SongCache.instance,
+          demixing: DemixRepository.instance,
+        ).call(song);
       },
     );
 

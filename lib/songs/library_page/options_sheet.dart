@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/demix/demix_repository.dart';
+import 'package:musbx/data/repositories/demix/demixing_process.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/clear_song_cache.dart';
-import 'package:musbx/songs/demixer/demixing_process.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/utils/result.dart';
 
@@ -31,17 +31,20 @@ class DemixingProgressIndicator extends StatefulWidget {
 
 class _DemixingProgressIndicatorState
     extends State<DemixingProgressIndicator> {
+  final DemixRepository demixing = DemixRepository.instance;
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: widget.song.isDemixed,
+      future: demixing.hasStems(widget.song),
       builder: (context, snapshot) {
         if (snapshot.data != false) {
           // Already demixed or loading
           return const SizedBox();
         }
 
-        DemixingProcess? process = DemixingProcesses.get(widget.song);
+        DemixingProcess? process = demixing.get(
+          widget.song,
+        );
         if (process == null) return _buildNotDemixed(context);
 
         return ListenableBuilder(
@@ -71,7 +74,7 @@ class _DemixingProgressIndicatorState
                       if (process.isRunning)
                         IconButton(
                           onPressed: () {
-                            DemixingProcesses.cancel(widget.song);
+                            demixing.cancel(widget.song);
                             setState(() {});
                           },
                           icon: const Icon(Symbols.piano),
@@ -92,8 +95,8 @@ class _DemixingProgressIndicatorState
       message: "This song has not been split into instruments.",
       child: IconButton(
         onPressed: () {
-          DemixingProcesses.cancel(widget.song);
-          DemixingProcesses.start(widget.song);
+          demixing.cancel(widget.song);
+          demixing.start(widget.song);
           setState(() {});
         },
         icon: const Icon(Symbols.piano_off),
@@ -251,6 +254,7 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                                     cache: SongCache.instance,
                                     preferences:
                                         SongPreferencesRepository.instance,
+                                    demixing: DemixRepository.instance,
                                   ).call(song)) {
                                     case Ok():
                                       if (context.mounted) {

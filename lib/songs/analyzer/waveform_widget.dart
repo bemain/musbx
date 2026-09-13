@@ -3,18 +3,35 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
 import 'package:material_plus/material_plus.dart';
+import 'package:musbx/data/repositories/analysis/analysis_repository.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
-import 'package:musbx/songs/analyzer/analyzer.dart';
+import 'package:musbx/songs/analyzer/waveform_card.dart';
 import 'package:musbx/songs/analyzer/waveform_painter.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
+import 'package:musbx/utils/result.dart';
+import 'package:musbx/widgets/result_builder.dart';
 
 const int kSamplesPerPixel = 540;
 const int kSampleRate = 48000;
 
-class WaveformWidget extends StatelessWidget {
-  WaveformWidget({super.key});
+class WaveformWidget extends StatefulWidget {
+  const WaveformWidget({super.key, required this.durationShown});
 
+  final Duration durationShown;
+
+  @override
+  State<WaveformWidget> createState() => _WaveformWidgetState();
+}
+
+class _WaveformWidgetState extends State<WaveformWidget> {
   final PlaybackRepository playback = PlaybackRepository.instance;
+
+  Future<Result<Waveform>>? _future;
+
+  void _updateFuture() {
+    if (playback.song == null) return;
+    _future = AnalysisRepository.instance.waveform(playback.song!);
+  }
 
   Widget _buildPlaceholder(BuildContext context) {
     final Color color = Theme.of(context).colorScheme.primary;
@@ -23,12 +40,10 @@ class WaveformWidget extends StatelessWidget {
       child: CustomPaint(
         painter: WaveformPainter(
           waveform: _generateDummyWaveform(
-            playback.duration ?? AnalyzerComponent.defaultDurationShown,
+            playback.duration ?? WaveformCard.defaultDurationShown,
           ),
           position: playback.position,
-          duration:
-              playback.analyzer.durationShown ??
-              AnalyzerComponent.defaultDurationShown,
+          duration: widget.durationShown,
           style: PositionSliderStyle(
             activeTrackColor: color,
             inactiveTrackColor: color,
@@ -49,31 +64,29 @@ class WaveformWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (playback.song == null) return _buildPlaceholder(context);
+    if (_future == null) _updateFuture();
 
-    return ValueListenableBuilder(
-      valueListenable: player.analyzer.waveformNotifier,
-      builder: (context, waveform, child) {
+    return ResultBuilder(
+      future: _future!,
+      loading: _buildPlaceholder,
+      failure: (c, e) => _buildPlaceholder(c),
+      ok: (context, waveform) {
         return ValueListenableBuilder(
-          valueListenable: player.analyzer.durationShownNotifier,
-          builder: (context, durationShown, child) => ValueListenableBuilder(
-            valueListenable: playback.positionNotifier,
-            builder: (context, position, child) {
-              if (waveform == null) return _buildPlaceholder(context);
-
-              return CustomPaint(
-                painter: WaveformPainter(
-                  waveform: waveform,
-                  position: position,
-                  duration: durationShown,
-                  style: Theme.of(context).extension<PositionSliderStyle>()!,
-                  markerColor: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant,
-                ),
-                size: const Size(double.infinity, 64.0),
-              );
-            },
-          ),
+          valueListenable: playback.positionNotifier,
+          builder: (context, position, child) {
+            return CustomPaint(
+              painter: WaveformPainter(
+                waveform: waveform,
+                position: position,
+                duration: widget.durationShown,
+                style: Theme.of(context).extension<PositionSliderStyle>()!,
+                markerColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+              ),
+              size: const Size(double.infinity, 64.0),
+            );
+          },
         );
       },
     );

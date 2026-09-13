@@ -4,6 +4,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/youtube_video.dart';
+import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/repositories/song/song_settings_repository.dart';
 import 'package:musbx/data/services/youtube_api_client.dart';
@@ -36,6 +37,7 @@ class YoutubeSearch {
     switch (await AddSongToLibrary(
       settings: SongSettingsRepository.instance,
       songs: SongRepository.instance,
+      demixing: DemixRepository.instance,
     ).call(song)) {
       case Ok():
         if (context.mounted) context.go(Routes.song(video.id));
