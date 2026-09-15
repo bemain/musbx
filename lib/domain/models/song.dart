@@ -41,7 +41,7 @@ class Song {
   final Uri? artUri;
 
   /// Where this song's audio comes from, e.g. a YouTube video or a local file.
-  @JsonKey(fromJson: AudioReference.fromJson)
+  @JsonKey(name: "source", fromJson: AudioReference.fromJson)
   final AudioReference audio;
 
   /// Create a copy of this [Song] with the specified fields replaced with new values.
@@ -59,7 +59,6 @@ class Song {
     String? artist,
     String? genre,
     Uri? artUri,
-    Json? preferences,
     AudioReference? audio,
   }) {
     return Song(
