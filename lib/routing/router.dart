@@ -163,7 +163,7 @@ GoRouter router({required SharedPreferencesService sharedPreferences}) {
                   WidgetsBinding.instance.addPostFrameCallback((
                     _,
                   ) async {
-                    await context.read<PlaybackRepository>().unload();
+                    await context.read<PlaybackRepository>().stop();
                   });
 
                   return LibraryPage();

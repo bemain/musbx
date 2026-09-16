@@ -27,8 +27,8 @@ import 'package:musbx/widgets/exception_dialogs.dart';
 /// show it in, and the song is held until this listener attaches, so a handler
 /// built any earlier adds the song to the library and then silently fails to
 /// navigate to it.
-class DeepLinkHandler {
-  DeepLinkHandler({
+class DeepLinkAdapter {
+  DeepLinkAdapter({
     required DeepLinksService deepLinks,
     required SongRepository songs,
     required CheckSongAccess checkSongAccess,

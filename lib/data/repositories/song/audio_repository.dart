@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:musbx/data/services/audio_engine_service.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
@@ -13,13 +13,16 @@ import 'package:musbx/utils/result.dart';
 /// Whatever the reference points at — a URL, a file, raw bytes — the audio ends
 /// up as one file in the cache, so a song is only ever fetched once.
 class AudioRepository {
-  AudioRepository({required SongCache songCache}) : _songCache = songCache;
+  AudioRepository({
+    required SongCache songCache,
+    required AudioEngineService audioPlayer,
+  }) : _songCache = songCache;
 
   final SongCache _songCache;
 
   /// Fetch [song]'s audio unless it is already cached, and load it into the
   /// audio engine.
-  Future<Result<AudioSource>> resolve(Song song) async {
+  Future<Result<File>> resolve(Song song) async {
     try {
       CacheFile cacheFile = _songCache.audio(song);
 
@@ -52,7 +55,7 @@ class AudioRepository {
         },
       );
 
-      return Result.ok(await SoLoud.instance.loadFile(cacheFile.path));
+      return Result.ok(File(cacheFile.path));
     } catch (e, s) {
       return Result.failed(e, s);
     }

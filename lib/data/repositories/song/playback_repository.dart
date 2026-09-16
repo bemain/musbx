@@ -1,16 +1,11 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:musbx/data/models/media_command.dart';
-import 'package:musbx/data/models/media_notification_state.dart';
-import 'package:musbx/data/repositories/demix/demix_repository.dart';
-import 'package:musbx/data/repositories/song/audio_repository.dart';
-import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
+import 'package:meta/meta.dart';
+import 'package:musbx/data/models/sound_group.dart';
 import 'package:musbx/data/services/audio_engine_service.dart';
 import 'package:musbx/data/services/audio_session_service.dart';
-import 'package:musbx/data/services/media_notification_service.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/song_preferences.dart';
 import 'package:musbx/domain/models/stem_type.dart';
@@ -34,9 +29,9 @@ class Stem extends ChangeNotifier {
 
   final PlaybackRepository _playback;
 
-  SoundHandle? get _handle => _playback._handles[type];
+  SoundGroup? get _sound => _playback._sound;
 
-  SoLoud get _soLoud => _playback._audioEngine.soLoud;
+  AudioEngineService get _audioEngine => _playback._audioEngine;
 
   /// Whether this stem is heard. A disabled stem is silenced rather than
   /// unloaded, so it keeps its [volume].
@@ -44,11 +39,11 @@ class Stem extends ChangeNotifier {
   set enabled(bool value) {
     _playback._stemsState[type] = (enabled: value, volume: _volume);
 
-    if (_handle != null) {
+    if (_sound != null) {
       if (enabled) {
-        _soLoud.setVolume(_handle!, _volume);
+        _audioEngine.setStemVolume(_sound!, type, _volume);
       } else {
-        _soLoud.setVolume(_handle!, 0.0);
+        _audioEngine.setStemVolume(_sound!, type, 0.0);
       }
     }
 
@@ -62,8 +57,9 @@ class Stem extends ChangeNotifier {
   set volume(double value) {
     _playback._stemsState[type] = (enabled: enabled, volume: value);
 
-    if (enabled && _handle != null) _soLoud.setVolume(_handle!, _volume);
-
+    if (enabled && _sound != null) {
+      _audioEngine.setStemVolume(_sound!, type, _volume);
+    }
     notifyListeners();
   }
 }
@@ -77,7 +73,7 @@ class Stem extends ChangeNotifier {
 /// speed, pitch and seeking stay in lockstep; otherwise a single source is
 /// played. Either way the audible state — [speed], [pitch], [loopSection], the
 /// equalizer and the [stems] — is read from that song's [SongPreferences] on
-/// [load] and written back on [unload].
+/// [load] and written back on [stop].
 class PlaybackRepository extends ChangeNotifier {
   /// The minimum number of frequency bands.
   static const int minNumBands = 4;
@@ -106,18 +102,10 @@ class PlaybackRepository extends ChangeNotifier {
   ];
 
   PlaybackRepository({
-    required AudioRepository audio,
     required AudioEngineService audioEngine,
     required AudioSessionService audioSession,
-    required SongPreferencesRepository songPreferences,
-    required MediaNotificationService mediaNotification,
-    required DemixRepository demix,
-  }) : _audio = audio,
-       _audioEngine = audioEngine,
-       _audioSession = audioSession,
-       _songPreferences = songPreferences,
-       _mediaNotification = mediaNotification,
-       _demix = demix {
+  }) : _audioEngine = audioEngine,
+       _audioSession = audioSession {
     _audioSession.eventStream.listen((event) {
       switch (event) {
         case AudioSessionEvent.resume || AudioSessionEvent.unduck:
@@ -130,9 +118,9 @@ class PlaybackRepository extends ChangeNotifier {
     _positionUpdater = Timer.periodic(
       const Duration(milliseconds: 100),
       (timer) {
-        if (!isPlaying || _groupHandle == null) return;
+        if (!isPlaying || _sound == null) return;
 
-        final position = _audioEngine.soLoud.getPosition(_groupHandle!);
+        final position = _audioEngine.getPosition(_sound!);
 
         if ((loopSection.start != null && position < loopSection.start!) ||
             (loopSection.end != null && position > loopSection.end!)) {
@@ -142,52 +130,15 @@ class PlaybackRepository extends ChangeNotifier {
         }
       },
     );
-
-    if (_mediaNotification.isEnabled) {
-      _mediaNotification.commands.listen(
-        (command) => switch (command) {
-          Play() => resume(),
-          Pause() => pause(),
-          Stop() => unload(),
-          Seek(:final position) => seek(position),
-        },
-      );
-
-      addListener(() {
-        _mediaNotification.update(
-          song == null
-              ? null
-              : MediaNotificationState(
-                  id: song!.id,
-                  title: song!.title,
-                  artist: song!.artist,
-                  album: song!.album,
-                  genre: song!.genre,
-                  artUri: song!.artUri,
-                  duration: duration,
-                  isPlaying: isPlaying,
-                  position: position,
-                  speed: speed,
-                ),
-        );
-      });
-    }
   }
 
-  final AudioRepository _audio;
   final AudioEngineService _audioEngine;
   final AudioSessionService _audioSession;
-  final SongPreferencesRepository _songPreferences;
-  final MediaNotificationService _mediaNotification;
-  final DemixRepository _demix;
 
   Song? get song => _song;
   Song? _song;
 
-  Map<StemType?, AudioSource> _sources = {};
-  Map<StemType?, SoundHandle> _handles = {};
-
-  SoundHandle? _groupHandle;
+  SoundGroup? _sound;
 
   SongPreferences? _preferences;
 
@@ -195,12 +146,11 @@ class PlaybackRepository extends ChangeNotifier {
 
   /// Whether the loaded song is playing as separate stems rather than as one
   /// sound.
-  bool get isMulti => _handles.length > 1;
+  bool get isMulti => (_sound?.handles.length ?? 0) > 1;
 
   /// How long the loaded song is, or `null` when nothing is loaded.
-  Duration? get duration => _sources.isEmpty
-      ? null
-      : _audioEngine.soLoud.getLength(_sources.values.first);
+  Duration? get duration =>
+      _sound == null ? null : _audioEngine.getDuration(_sound!);
 
   /// Whether the song is currently being played.
   bool get isPlaying => isPlayingNotifier.value;
@@ -209,19 +159,19 @@ class PlaybackRepository extends ChangeNotifier {
 
   /// Pause playback, keeping the song loaded.
   void pause() {
-    if (_groupHandle == null) return;
+    if (_sound == null) return;
 
-    _audioEngine.soLoud.setPause(_groupHandle!, true);
+    _audioEngine.pause(_sound!);
     isPlayingNotifier.value = false;
   }
 
   /// Resume playback.
   Future<void> resume() async {
-    if (_groupHandle == null) return;
+    if (_sound == null) return;
 
     // Make sure we are inside the [loopSection], in case it has changed
     seek(position);
-    _audioEngine.soLoud.setPause(_groupHandle!, false);
+    _audioEngine.resume(_sound!);
     isPlayingNotifier.value = true;
     await _audioSession.setActive(true);
   }
@@ -247,9 +197,7 @@ class PlaybackRepository extends ChangeNotifier {
   void seek(Duration position) {
     position = _clamp(position);
 
-    _handles.forEach((stem, handle) {
-      _audioEngine.soLoud.seek(handle, position);
-    });
+    if (_sound != null) _audioEngine.seek(_sound!, position);
 
     positionNotifier.value = position;
   }
@@ -263,11 +211,11 @@ class PlaybackRepository extends ChangeNotifier {
   double get speed => _speed;
   set speed(double value) {
     _speed = value;
-    if (_groupHandle != null) {
-      _audioEngine.soLoud.setRelativePlaySpeed(_groupHandle!, value);
+    if (_sound != null) {
+      _audioEngine.setSpeed(_sound!, value);
+      _audioEngine.setPitch(_sound!, _pitch);
     }
     notifyListeners();
-    _setPitch();
   }
 
   double _pitch = 0.0;
@@ -276,17 +224,8 @@ class PlaybackRepository extends ChangeNotifier {
   double get pitch => _pitch;
   set pitch(double value) {
     _pitch = value;
-    _setPitch();
+    if (_sound != null) _audioEngine.setPitch(_sound!, value);
     notifyListeners();
-  }
-
-  void _setPitch() {
-    for (final stem in _sources.keys) {
-      _sources[stem]?.filters.pitchShiftFilter
-              .semitones(soundHandle: _handles[stem])
-              .value =
-          pitch - 12 * (log(speed) / ln2);
-    }
   }
 
   /// The section playback is confined to. Playback jumps back to its start on
@@ -318,23 +257,15 @@ class PlaybackRepository extends ChangeNotifier {
 
   /// How many bands the equalizer is split into, or `null` when nothing is
   /// loaded.
-  int? get numEqualizerBands => _sources
-      .values
-      .firstOrNull
-      ?.filters
-      .parametricEqFilter
-      .numBands(soundHandle: _handles.values.first)
-      .value
-      .toInt();
+  int? get numEqualizerBands =>
+      _sound == null ? null : _audioEngine.getNumBands(_sound!);
 
   /// The gain of an equalizer [band], or `null` if there is no such band.
   double? getBandGain(int band) {
     final bands = numEqualizerBands;
     if (bands == null || band >= bands) return null;
 
-    return _sources.values.first.filters.parametricEqFilter
-        .bandGain(band, soundHandle: _handles.values.first)
-        .value;
+    return _audioEngine.getBandGain(_sound!, band);
   }
 
   /// Set the gain of an equalizer [band], clamped between [equalizerMinGain] and
@@ -343,14 +274,11 @@ class PlaybackRepository extends ChangeNotifier {
     final bands = numEqualizerBands;
     if (bands == null || band >= bands) return;
 
-    _sources.forEach((type, source) {
-      source.filters.parametricEqFilter
-          .bandGain(band, soundHandle: _handles[type])
-          .value = gain.clamp(
-        equalizerMinGain,
-        equalizerMaxGain,
-      );
-    });
+    _audioEngine.setBandGain(
+      _sound!,
+      band,
+      gain.clamp(equalizerMinGain, equalizerMaxGain),
+    );
     notifyListeners();
   }
 
@@ -387,110 +315,46 @@ class PlaybackRepository extends ChangeNotifier {
   ///
   /// Plays the demixed stems if the cache holds all of them, and the song as one
   /// sound otherwise.
-  Future<Result<void>> load(Song song) async {
-    // Unload previous song
-    if (await unload() case Failure(:final error)) {
-      debugPrint("[SONGS] Unloading song failed; $error");
-    }
-
+  @useResult
+  Future<Result<void>> load(
+    Song song,
+    Map<StemType?, File> files, {
+    SongPreferences? preferences,
+  }) async {
     try {
-      final AudioSource source = (await _audio.resolve(song)).asOk;
-      final stems = await _demix.stemsFor(song);
-
-      final Map<StemType?, AudioSource> sources;
-      if (stems != null) {
-        // Load stems
-        sources = {
-          for (final e in stems.entries)
-            e.key: await _audioEngine.soLoud.loadFile(e.value.path),
-        };
-        await _audioEngine.soLoud.disposeSource(source);
-      } else {
-        sources = {null: source};
-      }
-
-      // Activate filters. This needs to be done before the sound is played.
-      sources.forEach((stem, source) {
-        for (var filter in [
-          source.filters.pitchShiftFilter,
-          source.filters.parametricEqFilter,
-        ]) {
-          if (!filter.isActive) filter.activate();
-        }
-      });
-
-      // Play sounds
-      final Map<StemType?, SoundHandle> handles = {
-        for (final e in sources.entries)
-          e.key: _audioEngine.soLoud.play(
-            e.value,
-            paused: true,
-            looping: true,
-          ),
+      final sources = {
+        for (final e in files.entries)
+          e.key: await _audioEngine.loadFile(e.value),
       };
+      final SoundGroup sound = _audioEngine.play(sources);
 
-      // Create group
-      final SoundHandle groupHandle = _audioEngine.soLoud.createVoiceGroup();
-      if (groupHandle.isError) {
-        throw Exception("Failed to create voice group");
-      }
-
-      _audioEngine.soLoud.addVoicesToGroup(
-        groupHandle,
-        handles.values.toList(),
-      );
-
-      _preferences = (await _songPreferences.read(song)).asOk;
-
-      _sources = sources;
-      _handles = handles;
-      _groupHandle = groupHandle;
+      _sound = sound;
       _song = song;
+      _preferences = preferences;
 
-      _loadPreferences(_preferences);
+      _loadPreferences(preferences);
 
       notifyListeners();
-
       await _audioSession.setActive(true);
-
       return Result.ok(null);
     } catch (e, s) {
       // TODO: Dispose handles already played
-      debugPrint("[SONGS] Loading song failed; $e");
       return Result.failed(e, s);
     }
   }
 
-  /// Stop and unload the current song, saving its preferences on the way out.
-  Future<Result<void>> unload() async {
+  /// Stop and unload the current song.
+  /// TODO: Should I mark all functions that return Result with @useResult?
+  Future<Result<void>> stop() async {
     try {
-      final song = _song;
-      final prefs = _readPreferences(_preferences);
-
       reset();
       await _audioSession.setActive(false);
 
-      await Future.wait([
-        for (var handle in _handles.values) _audioEngine.soLoud.stop(handle),
-        for (var source in _sources.values)
-          _audioEngine.soLoud.disposeSource(source),
-      ]);
+      if (_sound != null) await _audioEngine.stop(_sound!);
 
-      if (_groupHandle != null) {
-        _audioEngine.soLoud.destroyVoiceGroup(_groupHandle!);
-      }
-
-      _sources = {};
-      _handles = {};
-      _groupHandle = null;
-
+      _sound = null;
       _song = null;
       _preferences = null;
-
-      if (song != null) {
-        // Save preferences
-        (await _songPreferences.write(song, prefs)).asOk;
-      }
 
       notifyListeners();
 
@@ -510,14 +374,11 @@ class PlaybackRepository extends ChangeNotifier {
 
     seek(prefs.position ?? Duration.zero);
 
-    if (prefs.numEqualizerBands != null) {
-      _sources.forEach((stem, source) {
-        source.filters.parametricEqFilter
-            .numBands(soundHandle: _handles[stem])
-            .value = prefs!.numEqualizerBands!
-            .clamp(minNumBands, maxNumBands)
-            .toDouble();
-      });
+    if (prefs.numEqualizerBands != null && _sound != null) {
+      _audioEngine.setNumBands(
+        _sound!,
+        prefs.numEqualizerBands!.clamp(minNumBands, maxNumBands),
+      );
     }
     prefs.equalizerGains?.forEach(setBandGain);
 
@@ -530,14 +391,14 @@ class PlaybackRepository extends ChangeNotifier {
     });
   }
 
-  SongPreferences _readPreferences(SongPreferences? prefs) {
+  SongPreferences readPreferences() {
     final Map<int, double> gains = {};
     for (int band = 0; band < (numEqualizerBands ?? 0); band++) {
       final gain = getBandGain(band);
       if (gain != null) gains[band] = gain;
     }
 
-    return (prefs ?? SongPreferences()).copyWith(
+    return (_preferences ?? SongPreferences()).copyWith(
       position: position,
       speed: speed,
       pitch: pitch,
@@ -551,7 +412,7 @@ class PlaybackRepository extends ChangeNotifier {
 
   @override
   Future<void> dispose() async {
-    await unload();
+    await stop();
 
     _positionUpdater.cancel();
 

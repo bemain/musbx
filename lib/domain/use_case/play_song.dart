@@ -1,7 +1,7 @@
-import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/check_song_access.dart';
+import 'package:musbx/domain/use_case/load_song.dart';
 import 'package:musbx/utils/result.dart';
 
 /// Open a song and make it the most recently played one.
@@ -11,22 +11,20 @@ import 'package:musbx/utils/result.dart';
 class PlaySong {
   PlaySong({
     required CheckSongAccess access,
-    required PlaybackRepository playback,
+    required LoadSong loadSong,
     required SongRepository songs,
   }) : _access = access,
-       _playback = playback,
+       _loadSong = loadSong,
        _songs = songs;
 
   final CheckSongAccess _access;
-
-  final PlaybackRepository _playback;
-
+  final LoadSong _loadSong;
   final SongRepository _songs;
 
   Future<Result<void>> call(Song song) async {
     if (!_access.canPlay(song)) return Result.accessRestricted();
 
-    if (await _playback.load(song) case Failure<void> failure) return failure;
+    if (await _loadSong.call(song) case Failure<void> failure) return failure;
 
     return await _songs.add(song);
   }

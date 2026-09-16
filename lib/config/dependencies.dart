@@ -32,13 +32,16 @@ import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/data/services/soundcloud_api_client.dart';
 import 'package:musbx/data/services/supabase_service.dart';
+import 'package:musbx/domain/adapter/media_notification_adapter.dart';
 import 'package:musbx/domain/use_case/add_song_to_library.dart';
 import 'package:musbx/domain/use_case/check_song_access.dart';
 import 'package:musbx/domain/use_case/clear_song_cache.dart';
 import 'package:musbx/domain/use_case/delete_song.dart';
+import 'package:musbx/domain/use_case/load_song.dart';
 import 'package:musbx/domain/use_case/pitch_detector.dart';
 import 'package:musbx/domain/use_case/play_song.dart';
 import 'package:musbx/domain/use_case/resume_demixing.dart';
+import 'package:musbx/domain/use_case/unload_song.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
@@ -82,6 +85,14 @@ Future<List<SingleChildWidget>> loadProviders() async {
     ..._repositories,
 
     ..._useCases,
+
+    Provider(
+      create: (context) => MediaNotificationAdapter(
+        mediaNotification: context.read(),
+        playback: context.read(),
+        unloadSong: context.read(),
+      ),
+    ),
   ];
 }
 
@@ -116,6 +127,7 @@ List<SingleChildWidget> _optional<T extends OptionalService>(
   ProxyProvider<ServiceLoader<T>, T>(update: (_, loader, _) => loader.value),
 ];
 
+// TODO: Do these repos reload whenever an OptionalService is updated?
 List<SingleChildWidget> _repositories = [
   Provider(
     create: (context) =>
@@ -151,18 +163,19 @@ List<SingleChildWidget> _repositories = [
             )
             as NotificationRepository,
   ),
-  Provider(create: (context) => AudioRepository(songCache: context.read())),
+  Provider(
+    create: (context) => AudioRepository(
+      songCache: context.read(),
+      audioPlayer: context.read(),
+    ),
+  ),
   Provider(
     create: (context) => SongPreferencesRepository(songCache: context.read()),
   ),
   ChangeNotifierProvider(
     create: (context) => PlaybackRepository(
-      audio: context.read(),
       audioEngine: context.read(),
       audioSession: context.read(),
-      songPreferences: context.read(),
-      mediaNotification: context.read(),
-      demix: context.read(),
     ),
   ),
 
@@ -187,7 +200,33 @@ List<SingleChildWidget> _useCases = [
   ),
   Provider(
     lazy: true,
+    create: (context) => UnloadSong(
+      songPreferences: context.read(),
+      playback: context.read(),
+    ),
+  ),
+  Provider(
+    lazy: true,
+    create: (context) => LoadSong(
+      unloadSong: context.read(),
+      audio: context.read(),
+      songPreferences: context.read(),
+      playback: context.read(),
+      demix: context.read(),
+    ),
+  ),
+  Provider(
+    lazy: true,
+    create: (context) => PlaySong(
+      access: context.read(),
+      loadSong: context.read(),
+      songs: context.read(),
+    ),
+  ),
+  Provider(
+    lazy: true,
     create: (context) => ClearSongCache(
+      unloadSong: context.read(),
       cache: context.read(),
       preferences: context.read(),
       playback: context.read(),
@@ -197,6 +236,7 @@ List<SingleChildWidget> _useCases = [
   Provider(
     lazy: true,
     create: (context) => DeleteSong(
+      unloadSong: context.read(),
       cache: context.read(),
       songs: context.read(),
       playback: context.read(),
@@ -204,14 +244,6 @@ List<SingleChildWidget> _useCases = [
     ),
   ),
   Provider(lazy: true, create: (context) => PitchDetector()),
-  Provider(
-    lazy: true,
-    create: (context) => PlaySong(
-      access: context.read(),
-      playback: context.read(),
-      songs: context.read(),
-    ),
-  ),
   Provider(
     lazy: true,
     create: (context) => ResumeDemixing(
