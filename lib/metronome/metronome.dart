@@ -53,6 +53,7 @@ class Ticks {
 ///
 /// With the volume at zero it vibrates instead of playing, so it can be followed
 /// without sound.
+/// TODO: Should use [SoLoud.playClocked].
 class Metronome {
   Metronome._(this._sharedPreferences, this._notifications) {
     // Listen to app lifecycle
