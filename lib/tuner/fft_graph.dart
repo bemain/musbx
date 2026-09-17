@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/tuner/view_model/tuner_reading.dart';
 
+/// How an [FftGraph] is drawn.
 class FftGraphStyle {
   /// The radius used for the [RRect] bars.
   final Radius barRadius;
@@ -8,16 +9,15 @@ class FftGraphStyle {
   /// The color of the bars.
   final Color barColor;
 
-  /// Create [WaveformStyle] based on the given [theme].
+  /// Create an [FftGraphStyle] based on the given [theme].
   FftGraphStyle.fromTheme(
     ThemeData theme, {
     this.barRadius = const Radius.circular(4.0),
   }) : barColor = theme.colorScheme.primary;
 }
 
-/// Widget to draw the FFT data.
+/// Draws the frequency spectrum of the most recent reading as bars.
 class FftGraph extends StatelessWidget {
-  /// Constructor.
   const FftGraph({
     super.key,
     required this.data,
@@ -39,9 +39,8 @@ class FftGraph extends StatelessWidget {
   }
 }
 
-/// Custom painter to draw the FFT data.
+/// Paints the frequency spectrum as bars, one per averaged group of FFT bins.
 class FftPainter extends CustomPainter {
-  ///
   FftPainter({
     required this.data,
     required this.style,
@@ -57,6 +56,7 @@ class FftPainter extends CustomPainter {
 
   final FftGraphStyle style;
 
+  /// How much the bar heights are exaggerated.
   final double audioScale;
 
   /// Minimum bin index for FFT data.

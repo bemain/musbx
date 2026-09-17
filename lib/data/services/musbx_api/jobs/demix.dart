@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/job.dart';
 import 'package:musbx/utils/utils.dart';
 
@@ -25,6 +27,8 @@ enum DemixStep {
 /// The keys are the name of the separated stems, and the values are the download URLs.
 typedef DemixJobResult = Map<String, String>;
 
+/// A [JobReport] for a demixing job, which also says how far the separation has
+/// come.
 class DemixJobReport extends JobReport<DemixJobResult> {
   const DemixJobReport._(
     super.id, {
@@ -68,7 +72,16 @@ class DemixJob extends Job<DemixJobResult> {
 
   @override
   Future<DemixJobReport> get() async {
-    final response = await dio.get<Json>("/job/$id");
-    return DemixJobReport.fromJson(response.data!);
+    try {
+      final response = await dio.get<Json>("/job/$id");
+      return DemixJobReport.fromJson(response.data!);
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    } on TypeError catch (_) {
+      throw MalformedResponse();
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 
+/// Buttons for choosing how many notes each beat is divided into.
 class Subdivisions extends StatelessWidget {
   const Subdivisions({super.key, this.iconSize = 32.0});
 

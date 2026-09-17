@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/check_song_access.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/songs/library_page/options_sheet.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
+import 'package:provider/provider.dart';
 
+/// A list tile widget that displays information about a [song].
 class SongTile extends StatelessWidget {
-  /// A list tile widget that displays information about a [song].
   const SongTile({
     super.key,
     required this.song,
@@ -22,24 +22,25 @@ class SongTile extends StatelessWidget {
   });
 
   /// The song this tile represents.
+  /// The song this tile shows.
   final Song song;
 
   /// Called when the tile is tapped.
+  /// Called when the tile is tapped. The tile is not tappable without it.
   final void Function()? onSelected;
 
   /// Whether to show the options button.
+  /// Whether to offer the options sheet for this song.
   final bool showOptions;
 
   /// The color used behind the leading icon.
   /// Defaults to [ColorScheme.surfaceContainerHigh].
+  /// The background of the artwork, used while none has loaded.
   final Color? leadingColor;
 
   @override
   Widget build(BuildContext context) {
-    final bool isLocked =
-        Songs.isAccessRestricted &&
-        !Songs.songsPlayedThisWeek.contains(song) &&
-        song != demoSong;
+    final bool isLocked = !context.read<CheckSongAccess>().canPlay(song);
     final TextStyle? textStyle = !isLocked
         ? null
         : TextStyle(color: Theme.of(context).disabledColor);
@@ -127,7 +128,7 @@ class SongTile extends StatelessWidget {
     }
     return Icon(switch (song.audio) {
       FileAudio() => Symbols.file_present,
-      YtdlpAudio() => Symbols.music_note,
+      UrlAudio() => Symbols.music_note,
       _ => Symbols.music_note,
     });
   }

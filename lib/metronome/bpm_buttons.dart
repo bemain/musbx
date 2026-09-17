@@ -4,9 +4,9 @@ import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 
+/// Buttons for adjusting [Metronome]'s bpm and a label showing the current bpm,
+/// arranged horizontally.
 class BpmButtons extends StatelessWidget {
-  /// Buttons for adjusting [Metronome]'s bpm and a label showing the current bpm,
-  /// arranged horizontally.
   const BpmButtons({super.key, this.iconSize = 25});
 
   /// Size of the buttons for adjusting bpm.

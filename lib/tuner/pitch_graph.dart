@@ -9,6 +9,7 @@ import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/tuner/view_model/tuner_reading.dart';
 import 'package:musbx/tuner/waveform_graph.dart';
 
+/// How a [PitchGraph] is drawn.
 class PitchGraphStyle {
   PitchGraphStyle({
     this.continuous = false,
@@ -49,8 +50,8 @@ class PitchGraphStyle {
   final int renderTextThreshold;
 }
 
+/// Graph showing how the tuning of [data] has changed over time.
 class PitchGraph extends StatelessWidget {
-  /// Graph showing how the tuning of [data] has changed over time.
   const PitchGraph({super.key, required this.data});
 
   /// The frequencies to display.
@@ -110,11 +111,11 @@ enum TextPlacement {
   relative,
 }
 
+/// Paints a line showing how the tuning of [data] has changed over time.
+///
+/// Displays text showing the names of the closest [Pitch]es.
+/// Highlights the section where the tone is in tune in green.
 class PitchGraphPainter extends CustomPainter {
-  /// Paints a line showing the tuning of the frequencies in [frequencyHistory].
-  ///
-  /// Displays text showing the names of the closest [Pitch]es.
-  /// Highlights the section where the tone is in tune in green.
   PitchGraphPainter({
     required this.data,
     required this.style,
@@ -124,8 +125,11 @@ class PitchGraphPainter extends CustomPainter {
   /// The data to render.
   final List<TunerReading> data;
 
+  /// How to draw the graph.
   final PitchGraphStyle style;
 
+  /// How many entries the graph is scaled to fit. Defaults to however many there
+  /// currently are, which makes the line stretch as data comes in.
   final int? dataLength;
 
   late final Paint linePaint = Paint()
@@ -234,6 +238,8 @@ class PitchGraphPainter extends CustomPainter {
     }
   }
 
+  /// Where on the canvas the reading at [index] sits, given how many cents off it
+  /// is.
   Offset calculatePointOffset(int index, double pitchOffset, Size size) {
     double dataWidth = size.width / (dataLength ?? data.length);
     return Offset(

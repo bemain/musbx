@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/drone/drone.dart';
 
+/// Buttons for moving the drone's root an octave up or down.
 class DroneOctave extends StatelessWidget {
   const DroneOctave({super.key, this.size = 64.0});
 
+  /// The font size of the octave number.
   final double size;
 
   @override

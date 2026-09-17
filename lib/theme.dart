@@ -1,28 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
 
-class AppTheme {
-  const AppTheme._();
-
+/// The app's light and dark themes.
+abstract final class AppTheme {
+  /// The colour the themes are generated from when the platform offers no dynamic
+  /// colours.
   static const Color defaultSeed = Color(0xff578cff);
 
-  /// The theme mode currently used by the app.
-  static ThemeMode get themeMode => themeModeNotifier.value;
-  static final TransformedPersistentValue<ThemeMode, String>
-  themeModeNotifier = SharedPreferencesService.instance.transformed(
-    "theme/mode",
-    initialValue: ThemeMode.system,
-    to: (value) => value.name,
-    from: (value) => switch (value) {
-      "dark" => ThemeMode.dark,
-      "light" => ThemeMode.light,
-      _ => ThemeMode.system,
-    },
-  );
-
+  /// Build both themes, seeding them from the platform's dynamic colours when it
+  /// has any.
   static (ThemeData light, ThemeData dark) generate(
     ColorScheme? lightDynamic,
     ColorScheme? darkDynamic,

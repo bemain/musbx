@@ -6,8 +6,7 @@ import 'package:app_links/app_links.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:musbx/data/services/service.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
-import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/domain/models/song.dart';
 import 'package:uri_content/uri_content.dart';
 import 'package:uuid/uuid.dart';
 
@@ -35,11 +34,25 @@ class DeepLinksService extends OptionalService {
     );
   }
 
+  /// The plugin handle, or `null` when this service is [disabled].
+  final AppLinks? _appLinks;
+
   @override
   bool get isEnabled => _appLinks != null;
 
-  /// The plugin handle, or `null` when this service is [disabled].
-  final AppLinks? _appLinks;
+  /// Create the service and begin listening for URIs.
+  ///
+  /// Listening starts here rather than when [songStream] is first subscribed
+  /// to, because the operating system delivers the URI that launched the app
+  /// once and does not repeat it.
+  static Future<DeepLinksService> create({AppLinks? appLinks}) async {
+    final a = appLinks ?? AppLinks();
+
+    return DeepLinksService._(a);
+  }
+
+  /// A service that emits nothing, for platforms that open no files.
+  static DeepLinksService disabled() => DeepLinksService._(null);
 
   /// Carries the URIs the operating system sends, for as long as the app runs.
   StreamSubscription<Uri>? _subscription;
@@ -59,31 +72,6 @@ class DeepLinksService extends OptionalService {
   /// The songs are resolved but not stored — they are not in the library, and
   /// for a shared file the bytes exist only in memory.
   Stream<Song> get songStream => _songController.stream;
-
-  /// Create the service and begin listening for URIs.
-  ///
-  /// Listening starts here rather than when [songStream] is first subscribed
-  /// to, because the operating system delivers the URI that launched the app
-  /// once and does not repeat it.
-  static Future<DeepLinksService> create({AppLinks? appLinks}) async {
-    final a = appLinks ?? AppLinks();
-
-    return DeepLinksService._(a);
-  }
-
-  /// A service that emits nothing, for platforms that open no files.
-  static DeepLinksService disabled() => DeepLinksService._(null);
-
-  // TODO: Remove once we introduce `provider`.
-  static late final DeepLinksService instance;
-  static Future<void> initialize() async {
-    try {
-      instance = await create();
-    } catch (error) {
-      debugPrint("[DEEP LINKS] Disabled, initialization failed: $error");
-      instance = disabled();
-    }
-  }
 
   /// Resolve one URI into a song, if it names something the app can play.
   ///

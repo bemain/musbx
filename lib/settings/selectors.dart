@@ -11,8 +11,8 @@ import 'package:musbx/domain/models/music/pitch_class.dart';
 import 'package:musbx/domain/models/music/temperament.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 
+/// Widget for selecting a frequency to use as the tuning of A4.
 class TuningSelector extends StatelessWidget {
-  /// Widget for selecting a frequency to use as the tuning of A4.
   const TuningSelector({
     super.key,
     required this.tuningNotifier,
@@ -20,8 +20,10 @@ class TuningSelector extends StatelessWidget {
     this.maxFrequency = 456,
   });
 
+  /// The concert pitch offered as the default.
   static const int baseFrequency = 440;
 
+  /// The tuning this selector reads and writes.
   final ValueNotifier<Pitch> tuningNotifier;
 
   /// The minimum frequency that can be entered, in Hz.
@@ -147,13 +149,14 @@ class TuningSelector extends StatelessWidget {
   }
 }
 
+/// Widget for selecting an accidental.
 class AccidentalSelector extends StatelessWidget {
-  /// Widget for selecting an accidental.
   const AccidentalSelector({
     required this.accidentalNotifier,
     super.key,
   });
 
+  /// The preferred accidental this selector reads and writes.
   final ValueNotifier<Accidental> accidentalNotifier;
 
   /// Generate a short description for the given [accidental].
@@ -238,13 +241,14 @@ class AccidentalSelector extends StatelessWidget {
   }
 }
 
+/// Widget for selecting an accidental.
 class TemperamentSelector extends StatelessWidget {
-  /// Widget for selecting an accidental.
   const TemperamentSelector({
     required this.temperamentNotifier,
     super.key,
   });
 
+  /// The temperament this selector reads and writes.
   final ValueNotifier<Temperament> temperamentNotifier;
 
   /// Generate a short description for the given [temperament].
@@ -333,8 +337,8 @@ class TemperamentSelector extends StatelessWidget {
   }
 }
 
+/// Widget for selecting a wave shape.
 class WaveformShapeSelector extends StatelessWidget {
-  /// Widget for selecting a wave shape.
   const WaveformShapeSelector({
     required this.waveformNotifier,
     super.key,
@@ -347,6 +351,7 @@ class WaveformShapeSelector extends StatelessWidget {
     WaveForm.triangle,
   };
 
+  /// The waveform this selector reads and writes.
   final ValueNotifier<WaveForm> waveformNotifier;
 
   /// Generate a short description for the given [waveform] shape.
@@ -440,13 +445,14 @@ class WaveformShapeSelector extends StatelessWidget {
   }
 }
 
+/// Widget for selecting an accidental.
 class ThemeSelector extends StatelessWidget {
-  /// Widget for selecting an accidental.
   const ThemeSelector({
     required this.themeNotifier,
     super.key,
   });
 
+  /// The theme mode this selector reads and writes.
   final ValueNotifier<ThemeMode> themeNotifier;
 
   /// Generate a short description for the given [themeMode].

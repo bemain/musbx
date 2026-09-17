@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:musbx/utils/num_iterable_extension.dart';
+import 'package:musbx/utils/utils.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -17,9 +19,6 @@ class FileCacheService {
 
   final Directory _applicationDocuments;
 
-  /// The write operations currently being performed.
-  final Map<String, Future<File>> _operations = {};
-
   /// Create the service and resolve the directories it caches files in.
   static Future<FileCacheService> create() async {
     final temp = await getTemporaryDirectory();
@@ -34,12 +33,6 @@ class FileCacheService {
     );
   }
 
-  // TODO: Remove once we introduce `provider`.
-  static late final FileCacheService instance;
-  static Future<void> initialize() async {
-    instance = await create();
-  }
-
   /// The root directory for regenerable data, such as downloaded audio and
   /// analysis results. The operating system may delete this at any time.
   CacheDirectory get scratch => CacheDirectory._(this, _temporary);
@@ -49,6 +42,9 @@ class FileCacheService {
   /// regenerable files here.
   CacheDirectory get persistent =>
       CacheDirectory._(this, _applicationDocuments);
+
+  /// The write operations currently being performed.
+  final Map<String, Future<File>> _operations = {};
 }
 
 /// A directory in the cache. Does not have to exist on disk.
@@ -156,6 +152,12 @@ class CacheFile {
     return await _file.readAsBytes();
   }
 
+  /// Read this file as JSON, or `null` if it doesn't exist.
+  Future<Json?> readJson() async {
+    if (!await _file.exists()) return null;
+    return jsonDecode(await _file.readAsString()) as Json;
+  }
+
   /// Temporary file that writes are staged in, so that they can be made atomic.
   File get _part => File("$path.part");
 
@@ -208,6 +210,11 @@ class CacheFile {
       if (_service._operations[path] == op) _service._operations.remove(path);
     });
     return await op;
+  }
+
+  /// Write [content] to the file as JSON. Creates the file if it doesn't exist.
+  Future<File> writeJson(Json content) async {
+    return await writeString(jsonEncode(content));
   }
 
   /// The file, produced first if absent. [produce] writes into [scratch], which is

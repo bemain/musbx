@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:musbx/data/models/youtube_video.dart';
+import 'package:musbx/data/services/service.dart';
 import 'package:musbx/keys.dart';
 import 'package:musbx/utils/utils.dart';
 
@@ -20,10 +21,13 @@ import 'package:musbx/utils/utils.dart';
 /// The videos handed back are [YoutubeVideo], Youtube's own vocabulary rather
 /// than the app's. Mapping them to domain models is the repository's job;
 /// nothing above it should see this type.
-class YoutubeApiClient {
+///
+/// A key is required for every request, so [disabled] returns a client with
+/// none, which throws rather than spending a round trip it cannot authenticate.
+class YoutubeApiClient extends OptionalService {
   YoutubeApiClient._(
     this._baseUrl,
-    this._apiKey, {
+    this.__apiKey, {
     Map<String, String>? httpHeader,
   }) : _header = httpHeader ?? {"Accept": "application/json"};
 
@@ -37,7 +41,17 @@ class YoutubeApiClient {
   ///
   /// Sent as a query parameter, so any URI built here carries it and must not
   /// be shown to the user or written anywhere it might be read.
-  final String _apiKey;
+  ///
+  /// `null` on a [disabled] client, and only there.
+  final String? __apiKey;
+
+  String get _apiKey {
+    throwIfDisabled();
+    return __apiKey!;
+  }
+
+  @override
+  bool get isEnabled => __apiKey != null;
 
   /// Create the client.
   static Future<YoutubeApiClient> create({
@@ -54,6 +68,10 @@ class YoutubeApiClient {
     instance = await create();
   }
 
+  /// A client with no key behind it, whose every request throws
+  /// [ServiceDisabled].
+  static YoutubeApiClient disabled() => YoutubeApiClient._("", null);
+
   /// Get the video with [id] from Youtube, or null if there is no such video.
   ///
   /// Cheap enough against the quota to be worth calling speculatively, which is
@@ -61,7 +79,8 @@ class YoutubeApiClient {
   /// Null therefore means the id was not one, and is not a failure.
   ///
   /// Throws an [HttpException] if Youtube rejects the request, most often
-  /// because the daily quota has been spent or the key has been revoked.
+  /// because the daily quota has been spent or the key has been revoked, and
+  /// [ServiceDisabled] if this client is [disabled].
   Future<YoutubeVideo?> getVideoById(YoutubeVideoId id) async {
     // Generate search query
     final Json options = {
@@ -104,6 +123,8 @@ class YoutubeApiClient {
   /// Throws an [HttpException] if Youtube rejects the request, most often
   /// because the daily quota has been spent. The message is Youtube's own and
   /// is not written for the user.
+  ///
+  /// Throws [ServiceDisabled] if this client is [disabled].
   Future<List<YoutubeVideo>> search(
     String query, {
     String order = "relevance",

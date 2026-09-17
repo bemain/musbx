@@ -6,6 +6,8 @@ import 'package:musbx/domain/models/music/key.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
 import 'package:musbx/drone/drone.dart';
 
+/// How a pitch on the [DroneWheel] relates to the current root, which decides
+/// how its button is drawn.
 enum DroneButtonType {
   /// This pitch is the current root.
   root,
@@ -17,8 +19,8 @@ enum DroneButtonType {
   chromatic,
 }
 
+/// A wheel with buttons that create drone tones in the chromatic scale starting from the [Drone]'s root.
 class DroneWheel extends StatefulWidget {
-  /// A wheel with buttons that create drone tones in the chromatic scale starting from the [Drone]'s root.
   const DroneWheel({super.key, this.elasticity = 2.0});
 
   /// The strength of the contracting force applied when the wheel is at the minimum or maximum value,
@@ -33,6 +35,7 @@ class DroneWheelState extends State<DroneWheel> {
   final Drone drone = Drone.instance;
 
   /// The current rotation angle
+  /// How far the wheel is currently turned, in radians.
   double angle = 0;
 
   @override

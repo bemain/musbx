@@ -15,6 +15,7 @@ enum Chroma {
 
   const Chroma(this.semitonesFromC);
 
+  /// How far above C this chroma sits, between `0` and `11`.
   final int semitonesFromC;
 
   /// The number of perfect fifths from this chroma and c, following the circle of fifths.
@@ -24,6 +25,7 @@ enum Chroma {
     for (var i = -5; i <= 6; i++) i,
   ].firstWhere((i) => (i * 7) % 12 == semitonesFromC);
 
+  /// Transpose this chroma a number of semitones, wrapping around the octave.
   Chroma transposed(int semitones) => Chroma.values.singleWhere(
     (chroma) => chroma.semitonesFromC == (semitonesFromC + semitones) % 12,
   );

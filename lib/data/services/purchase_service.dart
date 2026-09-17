@@ -8,18 +8,19 @@ import 'package:musbx/domain/models/entitlement.dart';
 
 /// Sells the app's [Entitlement]s through the store the app was installed from.
 ///
-/// Purchases are optional. [disabled] returns a service that sells nothing, for
-/// platforms with no store and for devices where the store cannot be reached.
+/// Purchases are optional. [disabled] returns a service with no store behind
+/// it, for platforms that have none and for devices where the store cannot be
+/// reached.
 ///
 /// This reports what the store says but does not remember it. Which
 /// entitlements the user currently holds is app state, and belongs to the layer
 /// above.
 class PurchaseService extends OptionalService {
   PurchaseService._(
-    this._inAppPurchase,
+    this.__inAppPurchase,
   ) {
-    final purchases = _inAppPurchase?.purchaseStream;
-    if (purchases == null) return;
+    if (__inAppPurchase == null) return;
+    final purchases = __inAppPurchase.purchaseStream;
 
     _subscription = _processPurchases(purchases).listen(
       _statusController.add,
@@ -29,11 +30,16 @@ class PurchaseService extends OptionalService {
     );
   }
 
-  @override
-  bool get isEnabled => _inAppPurchase != null;
+  final InAppPurchase? __inAppPurchase;
 
   /// The store connection, or `null` when this service is [disabled].
-  final InAppPurchase? _inAppPurchase;
+  InAppPurchase get _inAppPurchase {
+    throwIfDisabled();
+    return __inAppPurchase!;
+  }
+
+  @override
+  bool get isEnabled => __inAppPurchase != null;
 
   /// Create the service, connecting to the store.
   ///
@@ -56,14 +62,8 @@ class PurchaseService extends OptionalService {
     return PurchaseService._(p);
   }
 
-  /// A service that sells nothing, for when no store is available.
+  /// A service with no store behind it, for when none is available.
   static PurchaseService disabled() => PurchaseService._(null);
-
-  // TODO: Remove once we introduce `provider`.
-  static late final PurchaseService instance;
-  static Future<void> initialize() async {
-    instance = await create();
-  }
 
   final _statusController =
       StreamController<
@@ -91,20 +91,19 @@ class PurchaseService extends OptionalService {
   /// reinstalling the app.
   ///
   /// Anything restored arrives on [statusStream] rather than being returned.
-  /// Does nothing when this service is [disabled].
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled].
   Future<void> restore() async {
-    await _inAppPurchase?.restorePurchases();
+    await _inAppPurchase.restorePurchases();
   }
 
   /// Look up how [entitlement] is presented to the user.
   ///
-  /// Returns `null` when this service is disabled, when the entitlement is not
-  /// for sale, and when the store cannot be reached.
-  Future<EntitlementDetails?> details(Entitlement entitlement) async {
-    if (_inAppPurchase == null) return null;
-
+  /// Throws [ServiceDisabled] when this service is [disabled], and a
+  /// [StateError] when the store has nothing to say about the entitlement —
+  /// because it is not for sale, or because the store could not be reached.
+  Future<EntitlementDetails> details(Entitlement entitlement) async {
     final details = await _details(entitlement);
-    if (details == null) return null;
 
     return EntitlementDetails(
       entitlement: entitlement,
@@ -118,11 +117,11 @@ class PurchaseService extends OptionalService {
   ///
   /// Returns whether the flow could be started, which says nothing about
   /// whether the user went on to buy anything — that arrives on [statusStream].
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled], and a
+  /// [StateError] when [entitlement] is not for sale.
   Future<bool> buy(Entitlement entitlement) async {
-    if (_inAppPurchase == null) return false;
-
     final d = await _details(entitlement);
-    if (d == null) return false;
 
     return await _inAppPurchase.buyNonConsumable(
       purchaseParam: PurchaseParam(productDetails: d),
@@ -137,12 +136,10 @@ class PurchaseService extends OptionalService {
       .firstOrNull;
 
   /// Ask the store to describe the product that sells [entitlement].
-  Future<ProductDetails?> _details(Entitlement entitlement) async {
-    if (_inAppPurchase == null) return null;
-
+  Future<ProductDetails> _details(Entitlement entitlement) async {
     final id = _productIdOf(entitlement);
     final response = await _inAppPurchase.queryProductDetails({id});
-    return response.productDetails.firstOrNull;
+    return response.productDetails.first;
   }
 
   /// Translate the store's purchase updates into entitlement statuses.
@@ -197,7 +194,7 @@ class PurchaseService extends OptionalService {
         }
         if (purchase.pendingCompletePurchase) {
           try {
-            await _inAppPurchase?.completePurchase(purchase);
+            await _inAppPurchase.completePurchase(purchase);
           } catch (error) {
             debugPrint(
               "[PURCHASES] Unable to complete ${purchase.productID}: $error",

@@ -2,22 +2,30 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
+/// A pitch found in a buffer of audio.
 class PitchDetectorResult {
   const PitchDetectorResult({
     required this.frequency,
     required this.confidence,
   });
 
+  /// The detected frequency, in Hz.
   final double frequency;
+
+  /// How sure the algorithm is of [frequency], between `0.0` and `1.0`.
   final double confidence;
 }
 
 /// Defines a contract on how a pitch can be obtained
+/// Detect a pitch from audio data.
 abstract class PitchAlgorithm {
-  /// Detect a pitch from audio data.
   FutureOr<PitchDetectorResult?> getPitch(final Float32List audioBuffer);
 }
 
+/// Pitch detection by autocorrelation over the C1–C7 range.
+///
+/// Cheaper and less accurate than [Yin], and weighted slightly against low
+/// frequencies to avoid reporting an octave too low.
 class BasicPitchAlgorithm extends PitchAlgorithm {
   BasicPitchAlgorithm({required this.sampleRate});
 

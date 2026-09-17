@@ -1,28 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/domain/use_case/clear_song_cache.dart';
+import 'package:musbx/domain/use_case/delete_song.dart';
 import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/routing/router.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
+import 'package:provider/provider.dart';
 
+/// Build a settings route that slides in from the right.
 SlideFromRightTransitionPage Function(BuildContext, GoRouterState)
-settingsPageBuilder(Widget child) => (context, state) {
-  return SlideFromRightTransitionPage(
-    key: state.pageKey,
-    child: child,
-  );
-};
+settingsPageBuilder(Widget Function(BuildContext context) builder) =>
+    (context, state) {
+      return SlideFromRightTransitionPage(
+        key: state.pageKey,
+        child: builder(context),
+      );
+    };
 
+/// A settings page below the top level, with a back button and its own title.
 class SettingsSubPage extends StatelessWidget {
   const SettingsSubPage({
     super.key,
@@ -30,8 +35,10 @@ class SettingsSubPage extends StatelessWidget {
     required this.children,
   });
 
+  /// The heading of the page.
   final Widget? title;
 
+  /// The settings shown on the page.
   final List<Widget> children;
 
   @override
@@ -45,6 +52,7 @@ class SettingsSubPage extends StatelessWidget {
   }
 }
 
+/// Settings for the metronome.
 class MetronomeSettingsPage extends StatelessWidget {
   const MetronomeSettingsPage({super.key});
 
@@ -81,6 +89,7 @@ class MetronomeSettingsPage extends StatelessWidget {
   }
 }
 
+/// Settings for the song library, including how much space it takes up on disk.
 class SongsSettingsPage extends StatefulWidget {
   const SongsSettingsPage({super.key});
 
@@ -90,21 +99,24 @@ class SongsSettingsPage extends StatefulWidget {
 
 class _SongsSettingsPageState extends State<SongsSettingsPage> {
   late Future<int> _cacheSize = _measureCache();
-  Future<int> _measureCache() =>
-      FileCacheService.instance.scratch.directory("songs").size();
+  Future<int> _measureCache() => context.read<SongCache>().totalSize();
   void _refresh() => setState(() {
     _cacheSize = _measureCache();
   });
 
+  SettingsRepository get settings => context.read();
+
   @override
   Widget build(BuildContext context) {
+    final SongRepository songs = context.read();
+
     return SettingsSubPage(
       title: Text("Songs settings"),
       children: [
         SettingsGroup(
           children: [
             ValueListenableBuilder(
-              valueListenable: Songs.demixAutomaticallyNotifier,
+              valueListenable: settings.songs.demixAutomaticallyNotifier,
               builder: (context, demixAutomatically, child) => ListTile(
                 leading: Icon(Symbols.piano),
                 title: Text("Split new songs"),
@@ -112,11 +124,13 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                   "Automatically split songs into instruments",
                 ),
                 onTap: () {
-                  Songs.demixAutomatically = !Songs.demixAutomatically;
+                  settings.songs.demixAutomatically =
+                      !settings.songs.demixAutomatically;
                 },
                 trailing: Switch(
-                  value: Songs.demixAutomatically,
-                  onChanged: (value) => Songs.demixAutomatically = value,
+                  value: settings.songs.demixAutomatically,
+                  onChanged: (value) =>
+                      settings.songs.demixAutomatically = value,
                 ),
               ),
             ),
@@ -126,16 +140,14 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
         SettingsGroup(
           children: [
             ListenableBuilder(
-              listenable: SongLibrary.history,
+              listenable: songs,
               builder: (context, child) => FutureBuilder<int>(
                 future: _cacheSize,
                 builder: (context, snapshot) {
                   final cacheSize = snapshot.data ?? 0;
 
                   return ListTile(
-                    enabled:
-                        SongLibrary.history.entries.isNotEmpty &&
-                        cacheSize > 0,
+                    enabled: songs.isNotEmpty && cacheSize > 0,
                     leading: Icon(Symbols.cloud_off),
                     title: Text("Free up storage"),
                     onTap: () async {
@@ -166,21 +178,17 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                         },
                       );
 
-                      if (shouldContinue == true) {
-                        // Make sure a song is not open
-                        Navigation.navigationShell.goBranch(
-                          Navigation.currentBranch.value,
-                          initialLocation: true,
+                      if (shouldContinue == true && context.mounted) {
+                        // Make sure the song is not open
+                        libraryNavigatorKey.currentState?.popUntil(
+                          (route) => route.isFirst,
                         );
 
                         // Remove cache
-                        for (final song
-                            in SongLibrary.history.entries.values) {
-                          DemixingProcesses.cancel(song);
+                        final ClearSongCache clearSongCache = context.read();
+                        for (final song in songs.getAll()) {
+                          await clearSongCache.call(song);
                         }
-                        await FileCacheService.instance.scratch
-                            .directory("songs")
-                            .delete();
 
                         if (!mounted) return;
                         _refresh();
@@ -191,9 +199,9 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
               ),
             ),
             ListenableBuilder(
-              listenable: SongLibrary.history,
+              listenable: songs,
               builder: (context, child) => ListTile(
-                enabled: SongLibrary.history.entries.isNotEmpty,
+                enabled: songs.isNotEmpty,
                 leading: Icon(Symbols.delete_sweep),
                 title: Text("Remove all songs"),
                 onTap: () async {
@@ -224,14 +232,18 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                     },
                   );
 
-                  if (shouldContinue == true) {
-                    // Make sure a song is not open
-                    Navigation.navigationShell.goBranch(
-                      Navigation.currentBranch.value,
-                      initialLocation: true,
+                  if (shouldContinue == true && context.mounted) {
+                    // Make sure the song is not open
+                    libraryNavigatorKey.currentState?.popUntil(
+                      (route) => route.isFirst,
                     );
 
-                    await SongLibrary.history.clear();
+                    final DeleteSong deleteSong = context.read();
+
+                    for (final song in songs.getAll()) {
+                      await deleteSong.call(song);
+                    }
+
                     if (!mounted) return;
                     _refresh();
                   }
@@ -245,6 +257,7 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
   }
 }
 
+/// Settings for the tuner.
 class TunerSettingsPage extends StatelessWidget {
   const TunerSettingsPage({super.key});
 
@@ -299,6 +312,7 @@ class TunerSettingsPage extends StatelessWidget {
   }
 }
 
+/// Settings for the drone.
 class DroneSettingsPage extends StatelessWidget {
   const DroneSettingsPage({super.key});
 

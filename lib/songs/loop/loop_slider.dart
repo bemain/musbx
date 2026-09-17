@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
+import 'package:provider/provider.dart';
 
+/// Range slider for selecting the section to loop.
+/// A range slider for setting the section of the song that playback loops over.
 class LoopSlider extends StatelessWidget {
-  /// Range slider for selecting the section to loop.
   const LoopSlider({super.key});
 
   /// Whether the player was playing before the user began changing the position.
@@ -15,78 +16,76 @@ class LoopSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SongPlayer? player = Songs.player;
-    if (player == null) return SizedBox(height: 24);
+    final PlaybackRepository playback = context.read();
 
-    return ValueListenableBuilder(
-      valueListenable: player.loop.sectionNotifier,
-      builder: (context, section, _) {
-        PositionSliderStyle style = Theme.of(
-          context,
-        ).extension<PositionSliderStyle>()!;
+    if (playback.song == null) return SizedBox(height: 24);
 
-        return SliderTheme(
-          data: Theme.of(context).sliderTheme.copyWith(
-            rangeThumbShape: LoopSectionThumbShape(
-              style: style,
-              color: Theme.of(context).colorScheme.primary,
-              disabledColor: Theme.of(context).colorScheme.primary,
-            ),
-            rangeTrackShape: LoopSliderTrackShape(
-              style: style,
-              outlineColor: Theme.of(context).colorScheme.primary,
-              disabledOutlineColor: Theme.of(context).colorScheme.primary,
-            ),
-            valueIndicatorColor: Theme.of(context).colorScheme.primary,
-            valueIndicatorStrokeColor: Colors.transparent,
-          ),
-          child: RangeSlider(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            labels: RangeLabels(
-              player.loop.start.toString().substring(2, 10),
-              player.loop.end.toString().substring(2, 10),
-            ),
-            min: 0,
-            max: player.duration.inMilliseconds.toDouble(),
-            values: RangeValues(
-              player.loop.start.inMilliseconds.toDouble(),
-              player.loop.end.inMilliseconds.toDouble(),
-            ),
-            onChangeStart: (value) {
-              positionBeforeChange = player.position;
-              wasPlayingBeforeChange = player.isPlaying;
-              player.pause();
-            },
-            onChanged: (values) {
-              final Duration previousStart = player.loop.start;
-              final Duration previousEnd = player.loop.end;
+    PositionSliderStyle style = Theme.of(
+      context,
+    ).extension<PositionSliderStyle>()!;
 
-              // Update section
-              player.loop.section = (
-                Duration(milliseconds: values.start.toInt()),
-                Duration(milliseconds: values.end.toInt()),
-              );
+    return SliderTheme(
+      data: Theme.of(context).sliderTheme.copyWith(
+        rangeThumbShape: LoopSectionThumbShape(
+          style: style,
+          color: Theme.of(context).colorScheme.primary,
+          disabledColor: Theme.of(context).colorScheme.primary,
+        ),
+        rangeTrackShape: LoopSliderTrackShape(
+          style: style,
+          outlineColor: Theme.of(context).colorScheme.primary,
+          disabledOutlineColor: Theme.of(context).colorScheme.primary,
+        ),
+        valueIndicatorColor: Theme.of(context).colorScheme.primary,
+        valueIndicatorStrokeColor: Colors.transparent,
+      ),
+      child: RangeSlider(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        labels: RangeLabels(
+          playback.loopSection.start.toString().substring(2, 10),
+          playback.loopSection.end.toString().substring(2, 10),
+        ),
+        min: 0,
+        max: playback.duration?.inMilliseconds.toDouble() ?? 1.0,
+        values: RangeValues(
+          playback.loopSection.start?.inMilliseconds.toDouble() ?? 0,
+          playback.loopSection.end?.inMilliseconds.toDouble() ?? 1.0,
+        ),
+        onChangeStart: (value) {
+          positionBeforeChange = playback.position;
+          wasPlayingBeforeChange = playback.isPlaying;
+          playback.pause();
+        },
+        onChanged: (values) {
+          final Duration? previousStart = playback.loopSection.start;
+          final Duration? previousEnd = playback.loopSection.end;
 
-              if (previousStart.inMilliseconds != values.start) {
-                // The start value changed
-                player.position = Duration(milliseconds: values.start.toInt());
-              }
-              if (previousEnd.inMilliseconds != values.end) {
-                // The end value changed
-                player.position = Duration(milliseconds: values.end.toInt());
-              }
-            },
-            onChangeEnd: (value) {
-              player.seek(positionBeforeChange);
-              if (wasPlayingBeforeChange) player.resume();
-            },
-          ),
-        );
-      },
+          final start = Duration(milliseconds: values.start.toInt());
+          final end = Duration(milliseconds: values.end.toInt());
+
+          // Update section
+          playback.setLoopSection(start: start, end: end);
+
+          if (previousStart != start) {
+            // The start value changed
+            playback.position = start;
+          }
+          if (previousEnd != end) {
+            // The end value changed
+            playback.position = end;
+          }
+        },
+        onChangeEnd: (value) {
+          playback.seek(positionBeforeChange);
+          if (wasPlayingBeforeChange) playback.resume();
+        },
+      ),
     );
   }
 }
 
+/// Draws the looped section as an outlined band across the track, rather than as
+/// a coloured line.
 class LoopSliderTrackShape extends RangeSliderTrackShape
     with BaseRangeSliderTrackShape {
   const LoopSliderTrackShape({
@@ -97,7 +96,10 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
     this.disabledOutlineColor = Colors.grey,
   });
 
+  /// How tall the band is.
   final double height;
+
+  /// How thick the band's outline is.
   final double outlineWidth;
 
   final PositionSliderStyle style;
@@ -193,6 +195,8 @@ class LoopSliderTrackShape extends RangeSliderTrackShape
   }
 }
 
+/// A rounded rectangular thumb, shaped to sit flush with the ends of
+/// [LoopSliderTrackShape]'s band.
 class LoopSectionThumbShape extends RangeSliderThumbShape {
   const LoopSectionThumbShape({
     required this.style,
@@ -202,7 +206,10 @@ class LoopSectionThumbShape extends RangeSliderThumbShape {
     this.disabledColor = Colors.grey,
   });
 
+  /// The size of the thumb.
   final Size size;
+
+  /// The rounding of the thumb's corners.
   final Radius radius;
 
   final PositionSliderStyle style;

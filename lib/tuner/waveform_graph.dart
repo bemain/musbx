@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:musbx/tuner/view_model/tuner_reading.dart';
 
+/// How a [WaveformGraph] is drawn.
 class WaveformGraphStyle {
   /// The number of empty pixels between each bar.
   final double barPadding;
@@ -41,7 +42,7 @@ class WaveformGraphStyle {
   }) : barColor = theme.colorScheme.primary;
 }
 
-/// Widget to draw the wave data.
+/// Draws the recorded waveform over time.
 class WaveformGraph extends StatelessWidget {
   const WaveformGraph({super.key, required this.data});
 
@@ -62,9 +63,8 @@ class WaveformGraph extends StatelessWidget {
   }
 }
 
-/// Custom painter to draw the wave data.
+/// Paints the waveform as a row of bars, newest on the right.
 class WavePainter extends CustomPainter {
-  ///
   WavePainter({
     required this.data,
     required this.style,
@@ -87,6 +87,7 @@ class WavePainter extends CustomPainter {
   /// The number of chunks to display.
   final int chunks;
 
+  /// How much the bar heights are exaggerated.
   final double audioScale;
 
   /// Process wave [data] by splitting it into chunks.

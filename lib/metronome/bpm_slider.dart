@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/metronome/metronome.dart';
 
+/// Slider for adjusting [Metronome]'s bpm.
 class BpmSlider extends StatelessWidget {
-  /// Slider for adjusting [Metronome]'s bpm.
   const BpmSlider({super.key});
 
   @override
