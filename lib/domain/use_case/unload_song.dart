@@ -1,7 +1,5 @@
-import 'package:meta/meta.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
-import 'package:musbx/routing/router.dart';
 import 'package:musbx/utils/result.dart';
 
 class UnloadSong {
@@ -14,14 +12,10 @@ class UnloadSong {
   final SongPreferencesRepository _songPreferences;
   final PlaybackRepository _playback;
 
-  @useResult
   Future<Result<void>> call() async {
     try {
       final song = _playback.song;
       if (song == null) return Result.ok(null);
-
-      // Close the song
-      libraryNavigatorKey.currentState?.popUntil((route) => route.isFirst);
 
       final prefs = _playback.readPreferences();
 

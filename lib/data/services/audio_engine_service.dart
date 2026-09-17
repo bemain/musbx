@@ -133,8 +133,10 @@ class AudioEngineService {
     });
   }
 
-  double getStemVolume(SoundGroup sound, StemType? stem) =>
-      _soLoud.getVolume(sound.handles[stem]!);
+  double? getStemVolume(SoundGroup sound, StemType? stem) =>
+      sound.handles[stem] == null
+      ? null
+      : _soLoud.getVolume(sound.handles[stem]!);
   void setStemVolume(SoundGroup sound, StemType? stem, double volume) {
     if (sound.handles[stem] == null) return;
     _soLoud.setVolume(sound.handles[stem]!, volume);

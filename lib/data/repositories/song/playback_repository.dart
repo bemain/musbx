@@ -321,6 +321,8 @@ class PlaybackRepository extends ChangeNotifier {
     Map<StemType?, File> files, {
     SongPreferences? preferences,
   }) async {
+    if (_sound != null) await stop();
+
     try {
       final sources = {
         for (final e in files.entries)

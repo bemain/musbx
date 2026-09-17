@@ -29,7 +29,7 @@ class MediaNotificationAdapter {
 
   final PlaybackRepository _playback;
   final MediaNotificationService _mediaNotification;
-  late final StreamSubscription<MediaCommand> _subscription;
+  StreamSubscription<MediaCommand>? _subscription;
 
   void _updateState() {
     final song = _playback.song;
@@ -52,7 +52,7 @@ class MediaNotificationAdapter {
   }
 
   Future<void> dispose() async {
-    await _subscription.cancel();
+    await _subscription?.cancel();
     _playback.removeListener(_updateState);
   }
 }

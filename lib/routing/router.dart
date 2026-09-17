@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/play_song.dart';
+import 'package:musbx/domain/use_case/unload_song.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
 import 'package:musbx/routing/routes.dart';
@@ -163,7 +163,7 @@ GoRouter router({required SharedPreferencesService sharedPreferences}) {
                   WidgetsBinding.instance.addPostFrameCallback((
                     _,
                   ) async {
-                    await context.read<PlaybackRepository>().stop();
+                    await context.read<UnloadSong>().call();
                   });
 
                   return LibraryPage();
