@@ -354,11 +354,13 @@ class DemixerCard extends StatelessWidget {
 
     return ListenableBuilder(
       listenable: playback,
-      builder: (context, child) => ListView(
-        children: [
-          for (Stem stem in playback.stems.values) StemControls(stem: stem),
-        ],
-      ),
+      builder: (context, child) {
+        return Column(
+          children: [
+            for (Stem stem in playback.stems.values) StemControls(stem: stem),
+          ],
+        );
+      },
     );
   }
 }
@@ -367,11 +369,11 @@ class DemixerCard extends StatelessWidget {
 class StemControls extends StatefulWidget {
   const StemControls({super.key, required this.stem});
 
-  @override
-  State<StatefulWidget> createState() => StemControlsState();
-
   /// The stem this widget controls.
   final Stem stem;
+
+  @override
+  State<StatefulWidget> createState() => StemControlsState();
 }
 
 class StemControlsState extends State<StemControls> {
@@ -382,7 +384,7 @@ class StemControlsState extends State<StemControls> {
 
   @override
   Widget build(BuildContext context) {
-    if (playback.isMulti) return const SizedBox();
+    if (!playback.isMulti) return const SizedBox();
 
     /// Whether this stem is allowed to be accessed.
     final bool accessAllowed =
@@ -453,6 +455,8 @@ class StemControlsState extends State<StemControls> {
           ),
           Expanded(
             child: Slider(
+              min: 0.0,
+              max: 2.0,
               value: !stem.enabled ? 0 : stem.volume,
               onChangeStart: (value) {
                 if (!accessAllowed) {

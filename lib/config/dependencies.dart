@@ -1,3 +1,4 @@
+import 'package:musbx/config/adapter/deep_link_adapter.dart';
 import 'package:musbx/config/adapter/media_notification_adapter.dart';
 import 'package:musbx/config/migrations.dart';
 import 'package:musbx/config/service_loader.dart';
@@ -86,15 +87,7 @@ Future<List<SingleChildWidget>> loadProviders() async {
 
     ..._useCases,
 
-    Provider(
-      lazy: false,
-      create: (context) => MediaNotificationAdapter(
-        mediaNotification: context.read(),
-        playback: context.read(),
-        unloadSong: context.read(),
-      ),
-      dispose: (context, value) => value.dispose(),
-    ),
+    ..._adapters,
   ];
 }
 
@@ -129,7 +122,6 @@ List<SingleChildWidget> _optional<T extends OptionalService>(
   ProxyProvider<ServiceLoader<T>, T>(update: (_, loader, _) => loader.value),
 ];
 
-// TODO: Do these repos reload whenever an OptionalService is updated?
 List<SingleChildWidget> _repositories = [
   Provider(
     create: (context) =>
@@ -139,7 +131,7 @@ List<SingleChildWidget> _repositories = [
     create: (context) =>
         AnnouncementRepositoryRemote(
               sharedPreferences: context.read(),
-              supabaseService: context.read(),
+              supabase: context.read(),
             )
             as AnnouncementRepository,
   ),
@@ -153,14 +145,14 @@ List<SingleChildWidget> _repositories = [
   ),
   Provider(
     create: (context) =>
-        FeedbackRepositoryRemote(supabaseService: context.read())
+        FeedbackRepositoryRemote(supabase: context.read())
             as FeedbackRepository,
   ),
   Provider(
     create: (context) =>
         NotificationRepositoryRemote(
               sharedPreferences: context.read(),
-              notificationService: context.read(),
+              notifications: context.read(),
               permissionService: context.read(),
             )
             as NotificationRepository,
@@ -254,5 +246,26 @@ List<SingleChildWidget> _useCases = [
       preferences: context.read(),
       demixing: context.read(),
     ),
+  ),
+];
+
+List<SingleChildWidget> _adapters = [
+  Provider(
+    lazy: false,
+    create: (context) => MediaNotificationAdapter(
+      mediaNotification: context.read(),
+      playback: context.read(),
+      unloadSong: context.read(),
+    ),
+    dispose: (context, value) => value.dispose(),
+  ),
+  Provider(
+    lazy: false,
+    create: (context) => DeepLinkAdapter(
+      deepLinks: context.read(),
+      songs: context.read(),
+      checkSongAccess: context.read(),
+    ),
+    dispose: (context, value) => value.dispose(),
   ),
 ];

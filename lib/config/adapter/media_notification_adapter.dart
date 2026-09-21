@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/models/media_command.dart';
 import 'package:musbx/data/models/media_notification_state.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
@@ -8,32 +10,43 @@ import 'package:musbx/domain/use_case/unload_song.dart';
 
 class MediaNotificationAdapter {
   MediaNotificationAdapter({
-    required MediaNotificationService mediaNotification,
+    required ServiceLoader<MediaNotificationService> mediaNotification,
     required PlaybackRepository playback,
     required UnloadSong unloadSong,
   }) : _playback = playback,
-       _mediaNotification = mediaNotification {
-    if (mediaNotification.isEnabled) {
-      _subscription = mediaNotification.commands.listen(
-        (command) => switch (command) {
-          Play() => playback.resume(),
-          Pause() => playback.pause(),
-          Stop() => unloadSong.call(),
-          Seek(:final position) => playback.seek(position),
-        },
-      );
-
-      playback.addListener(_updateState);
-    }
+       _mediaNotification = mediaNotification,
+       _unloadSong = unloadSong {
+    _unbind = mediaNotification.bind(_attach);
   }
 
   final PlaybackRepository _playback;
-  final MediaNotificationService _mediaNotification;
+  final ServiceLoader<MediaNotificationService> _mediaNotification;
+  final UnloadSong _unloadSong;
+  late final VoidCallback _unbind;
   StreamSubscription<MediaCommand>? _subscription;
+
+  void _attach(MediaNotificationService service) {
+    unawaited(_subscription?.cancel());
+    _subscription = null;
+    _playback.removeListener(_updateState);
+
+    if (!service.isEnabled) return;
+
+    _subscription = service.commands.listen(
+      (command) => switch (command) {
+        Play() => _playback.resume(),
+        Pause() => _playback.pause(),
+        Stop() => _unloadSong.call(),
+        Seek(:final position) => _playback.seek(position),
+      },
+    );
+
+    _playback.addListener(_updateState);
+  }
 
   void _updateState() {
     final song = _playback.song;
-    _mediaNotification.update(
+    _mediaNotification.value.update(
       song == null
           ? null
           : MediaNotificationState(
@@ -52,6 +65,7 @@ class MediaNotificationAdapter {
   }
 
   Future<void> dispose() async {
+    _unbind();
     await _subscription?.cancel();
     _playback.removeListener(_updateState);
   }

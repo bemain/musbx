@@ -260,12 +260,18 @@ class PlaybackRepository extends ChangeNotifier {
   int? get numEqualizerBands =>
       _sound == null ? null : _audioEngine.getNumBands(_sound!);
 
+  /// The gains set through [setBandGain], by band index.
+  ///
+  /// Kept here rather than read back from the audio engine, since SoLoud
+  /// reports an error when reading a parameter whose value is exactly zero.
+  Map<int, double> _bandGains = {};
+
   /// The gain of an equalizer [band], or `null` if there is no such band.
   double? getBandGain(int band) {
     final bands = numEqualizerBands;
     if (bands == null || band >= bands) return null;
 
-    return _audioEngine.getBandGain(_sound!, band);
+    return _bandGains[band] ?? equalizerDefaultGain;
   }
 
   /// Set the gain of an equalizer [band], clamped between [equalizerMinGain] and
@@ -274,11 +280,9 @@ class PlaybackRepository extends ChangeNotifier {
     final bands = numEqualizerBands;
     if (bands == null || band >= bands) return;
 
-    _audioEngine.setBandGain(
-      _sound!,
-      band,
-      gain.clamp(equalizerMinGain, equalizerMaxGain),
-    );
+    final double clamped = gain.clamp(equalizerMinGain, equalizerMaxGain);
+    _audioEngine.setBandGain(_sound!, band, clamped);
+    _bandGains = {..._bandGains, band: clamped};
     notifyListeners();
   }
 
@@ -301,9 +305,10 @@ class PlaybackRepository extends ChangeNotifier {
     _loopSection = (start: null, end: null);
     if (numEqualizerBands != null) {
       for (int band = 0; band < numEqualizerBands!; band++) {
-        setBandGain(band, 1.0);
+        setBandGain(band, equalizerDefaultGain);
       }
     }
+    _bandGains = {};
     _stemsState = {};
 
     seek(Duration.zero);

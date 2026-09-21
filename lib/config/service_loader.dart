@@ -51,6 +51,26 @@ class ServiceLoader<T extends OptionalService> extends ChangeNotifier {
       _availability == ServiceAvailability.unknown ||
       _availability == ServiceAvailability.failed;
 
+  /// Hand [value] to [attach] now, and again each time a created service
+  /// replaces it. Returns a callback that stops that.
+  ///
+  /// For holders of a subscription on the service: the fallback's stream is not
+  /// the created service's, so the subscription has to move when the value
+  /// does. Reading [value] at call time is enough for everything else.
+  VoidCallback bind(void Function(T service) attach) {
+    var attached = _value;
+    attach(attached);
+
+    void listener() {
+      if (identical(_value, attached)) return;
+      attached = _value;
+      attach(attached);
+    }
+
+    addListener(listener);
+    return () => removeListener(listener);
+  }
+
   DateTime? _lastAttempt;
   Future<void>? _attempt;
 

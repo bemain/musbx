@@ -1,3 +1,4 @@
+import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/models/feedback/feedback_entry.dart';
 import 'package:musbx/data/repositories/feedback/feedback_repository.dart';
 import 'package:musbx/data/services/service.dart';
@@ -6,15 +7,16 @@ import 'package:musbx/utils/result.dart';
 
 /// Writes feedback to Supabase.
 class FeedbackRepositoryRemote extends FeedbackRepository {
-  FeedbackRepositoryRemote({required SupabaseService supabaseService})
-    : _supabaseService = supabaseService;
+  FeedbackRepositoryRemote({required ServiceLoader<SupabaseService> supabase})
+    : _supabase = supabase;
 
-  final SupabaseService _supabaseService;
+  /// Read at call time, so a service created after this repository is used.
+  final ServiceLoader<SupabaseService> _supabase;
 
   @override
   Future<Result<void>> insert(FeedbackEntry value) async {
     return OptionalService.guard(
-      () => _supabaseService.insertFeedback(value),
+      () => _supabase.value.insertFeedback(value),
       "Supabase service disabled",
     );
   }

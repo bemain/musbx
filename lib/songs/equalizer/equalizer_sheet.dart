@@ -10,14 +10,14 @@ class EqualizerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final PlaybackRepository playback = context.read();
+    final PlaybackRepository playback = context.watch();
 
     final numBands = playback.numEqualizerBands;
     final bool isReset = numBands == null
         ? true
-        : [for (int i = 0; i < numBands; i++) i].every(
+        : [for (int i = 0; i < numBands; i++) playback.getBandGain(i)].every(
             (gain) =>
-                gain.toStringAsFixed(2) ==
+                gain?.toStringAsFixed(2) ==
                 PlaybackRepository.equalizerDefaultGain.toStringAsFixed(2),
           );
 

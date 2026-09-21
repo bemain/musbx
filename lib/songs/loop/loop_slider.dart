@@ -42,14 +42,23 @@ class LoopSlider extends StatelessWidget {
       child: RangeSlider(
         padding: EdgeInsets.symmetric(horizontal: 20),
         labels: RangeLabels(
-          playback.loopSection.start.toString().substring(2, 10),
-          playback.loopSection.end.toString().substring(2, 10),
+          (playback.loopSection.start ?? Duration.zero).toString().substring(
+            2,
+            10,
+          ),
+          (playback.loopSection.end ??
+                  playback.duration ??
+                  Duration(seconds: 1))
+              .toString()
+              .substring(2, 10),
         ),
         min: 0,
         max: playback.duration?.inMilliseconds.toDouble() ?? 1.0,
         values: RangeValues(
           playback.loopSection.start?.inMilliseconds.toDouble() ?? 0,
-          playback.loopSection.end?.inMilliseconds.toDouble() ?? 1.0,
+          (playback.loopSection.end ?? playback.duration)?.inMilliseconds
+                  .toDouble() ??
+              1.0,
         ),
         onChangeStart: (value) {
           positionBeforeChange = playback.position;

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/deep_links_service.dart';
 import 'package:musbx/domain/models/song.dart';
@@ -29,36 +30,49 @@ import 'package:musbx/widgets/exception_dialogs.dart';
 /// navigate to it.
 class DeepLinkAdapter {
   DeepLinkAdapter({
-    required DeepLinksService deepLinks,
+    required ServiceLoader<DeepLinksService> deepLinks,
     required SongRepository songs,
     required CheckSongAccess checkSongAccess,
-  }) {
-    _subscription = deepLinks.songStream.listen((song) async {
-      if (await songs.add(song) case Failure(:final error)) {
-        debugPrint(
-          "[Launch handler] Error occured while adding song '$song': $error",
-        );
-        return;
-      }
-
-      if (checkSongAccess.isRestricted) {
-        await showExceptionDialog(
-          const MusicPlayerAccessRestrictedDialog(),
-        );
-      } else {
-        await navigatorKey.currentContext?.push(Routes.song(song.id));
-      }
-    });
+  }) : _songs = songs,
+       _checkSongAccess = checkSongAccess {
+    _unbind = deepLinks.bind(_attach);
   }
 
+  final SongRepository _songs;
+  final CheckSongAccess _checkSongAccess;
+  late final VoidCallback _unbind;
+
   /// Carries the songs the service resolves, for as long as this handler lives.
-  late final StreamSubscription<Song> _subscription;
+  StreamSubscription<Song>? _subscription;
+
+  void _attach(DeepLinksService service) {
+    unawaited(_subscription?.cancel());
+    _subscription = service.songStream.listen(_open);
+  }
+
+  Future<void> _open(Song song) async {
+    if (await _songs.add(song) case Failure(:final error)) {
+      debugPrint(
+        "[Launch handler] Error occured while adding song '$song': $error",
+      );
+      return;
+    }
+
+    if (_checkSongAccess.isRestricted) {
+      await showExceptionDialog(
+        const MusicPlayerAccessRestrictedDialog(),
+      );
+    } else {
+      await navigatorKey.currentContext?.push(Routes.song(song.id));
+    }
+  }
 
   /// Stop opening incoming songs.
   ///
   /// Songs the service resolves after this reach nothing, so this belongs to the
   /// app shutting down rather than to a screen going away.
   Future<void> dispose() async {
-    await _subscription.cancel();
+    _unbind();
+    await _subscription?.cancel();
   }
 }

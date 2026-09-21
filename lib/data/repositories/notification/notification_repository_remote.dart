@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/repositories/notification/notification_repository.dart';
 import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
@@ -28,18 +29,22 @@ final class PermissionException implements Exception {
 class NotificationRepositoryRemote extends NotificationRepository {
   NotificationRepositoryRemote({
     required SharedPreferencesService sharedPreferences,
-    required NotificationService notificationService,
+    required ServiceLoader<NotificationService> notifications,
     required PermissionService permissionService,
   }) : _sharedPreferences = sharedPreferences,
-       _notificationService = notificationService,
+       _notifications = notifications,
        _permissionService = permissionService {
-    _notificationService.actionStream.listen(_onActionReceived);
+    // [NotificationService.actionStream] is shared by every instance, so one
+    // subscription outlives the swap from fallback to created service.
+    _notifications.value.actionStream.listen(_onActionReceived);
 
     unawaited(_checkPermissionStatus());
   }
 
   final SharedPreferencesService _sharedPreferences;
-  final NotificationService _notificationService;
+
+  /// Read at call time, so a service created after this repository is used.
+  final ServiceLoader<NotificationService> _notifications;
   final PermissionService _permissionService;
 
   @override
@@ -93,7 +98,7 @@ class NotificationRepositoryRemote extends NotificationRepository {
     if (!hasPermission) return Result.failed(PermissionException());
 
     return OptionalService.guard(
-      () => _notificationService.post(notification),
+      () => _notifications.value.post(notification),
       "Notification service disabled",
     );
   }
@@ -101,7 +106,7 @@ class NotificationRepositoryRemote extends NotificationRepository {
   @override
   Future<Result<void>> cancelAll() async {
     return OptionalService.guard(
-      _notificationService.cancelAll,
+      () => _notifications.value.cancelAll(),
       "Notification service disabled",
     );
   }

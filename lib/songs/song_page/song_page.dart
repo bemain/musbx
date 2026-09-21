@@ -1,7 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/play_song.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/songs/analyzer/waveform_card.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
 import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
@@ -9,8 +15,10 @@ import 'package:musbx/songs/equalizer/equalizer_sheet.dart';
 import 'package:musbx/songs/slowdowner/slowdowner_sliders.dart';
 import 'package:musbx/songs/song_page/button_panel.dart';
 import 'package:musbx/songs/song_page/position_slider.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
+import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
 import 'package:provider/provider.dart';
 
@@ -18,9 +26,69 @@ import 'package:provider/provider.dart';
 /// two tabs holding the stem controls and the waveform, chords, pitch and
 /// speed.
 ///
-/// Shimmers until the song has finished loading.
-class SongPage extends StatelessWidget {
-  const SongPage({super.key});
+/// Loads [song] when first shown, and shimmers until it has finished loading.
+/// If loading fails, shows a dialog and returns to the library.
+class SongPage extends StatefulWidget {
+  const SongPage({super.key, required this.song});
+
+  static const Duration loadTimeout = Duration(seconds: 30);
+
+  final Song song;
+
+  @override
+  State<SongPage> createState() => _SongPageState();
+}
+
+class _SongPageState extends State<SongPage> {
+  late final Future<Result<void>> _loading;
+
+  @override
+  void initState() {
+    super.initState();
+    final PlaySong playSong = context.read();
+    // Deferred so that the notifications emitted by unloading the previous
+    // song do not fire during the build phase.
+    _loading = Future.microtask(() => playSong.call(widget.song)).timeout(
+      SongPage.loadTimeout,
+      onTimeout: () => Result.failed(
+        TimeoutException("Loading the song took too long"),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _loading,
+      builder: (context, snapshot) {
+        Widget fail(Object error, Widget dialog) {
+          debugPrint("[Navigation] $error");
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showExceptionDialog(dialog);
+            context.go(Routes.library);
+          });
+          return const SizedBox();
+        }
+
+        return switch (snapshot.data) {
+          null || Ok() => const _SongPlayer(),
+          AccessRestricted(:final error) => fail(
+            error,
+            const MusicPlayerAccessRestrictedDialog(),
+          ),
+          Failure(:final error) => fail(
+            error,
+            SongCouldNotBeLoadedDialog(error: error),
+          ),
+        };
+      },
+    );
+  }
+}
+
+/// The player UI, shimmering while [PlaybackRepository.song] is `null`.
+class _SongPlayer extends StatelessWidget {
+  const _SongPlayer();
 
   @override
   Widget build(BuildContext context) {
@@ -158,9 +226,9 @@ class SongAppBar extends StatelessWidget implements PreferredSizeWidget {
     final numBands = playback.numEqualizerBands;
     final bool isEqualizerReset = numBands == null
         ? true
-        : [for (int i = 0; i < numBands; i++) i].every(
+        : [for (int i = 0; i < numBands; i++) playback.getBandGain(i)].every(
             (gain) =>
-                gain.toStringAsFixed(2) ==
+                gain?.toStringAsFixed(2) ==
                 PlaybackRepository.equalizerDefaultGain.toStringAsFixed(2),
           );
     return AppBar(

@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/domain/use_case/play_song.dart';
 import 'package:musbx/domain/use_case/unload_song.dart';
 import 'package:musbx/drone/drone_page.dart';
 import 'package:musbx/metronome/metronome_page.dart';
@@ -17,10 +14,8 @@ import 'package:musbx/settings/settings_sub_pages.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
-import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/custom_icons.dart';
-import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
@@ -178,51 +173,12 @@ GoRouter router({required SharedPreferencesService sharedPreferences}) {
                           : null;
                     },
                     builder: (context, state) {
-                      // TODO: Move this into SongPage
                       final String id = state.pathParameters['id']!;
                       final Song song = context.read<SongRepository>().getById(
                         id,
                       )!;
 
-                      return FutureBuilder(
-                        future: context
-                            .read<PlaySong>()
-                            .call(song)
-                            .timeout(
-                              const Duration(seconds: 30),
-                              onTimeout: () => Result.failed(
-                                TimeoutException(
-                                  "Loading the song took too long",
-                                ),
-                              ),
-                            ),
-                        builder: (context, snapshot) {
-                          Widget fail(Object error, Widget dialog) {
-                            debugPrint("[Navigation] $error");
-                            WidgetsBinding.instance.addPostFrameCallback(
-                              (_) {
-                                showExceptionDialog(dialog);
-                                context.go(Routes.library);
-                              },
-                            );
-                            return const SizedBox();
-                          }
-
-                          return switch (snapshot.data) {
-                            null =>
-                              SongPage(), // loading — SongPage already shimmers on song == null
-                            Ok() => SongPage(),
-                            AccessRestricted(:final error) => fail(
-                              error,
-                              const MusicPlayerAccessRestrictedDialog(),
-                            ),
-                            Failure(:final error) => fail(
-                              error,
-                              SongCouldNotBeLoadedDialog(error: error),
-                            ),
-                          };
-                        },
-                      );
+                      return SongPage(song: song);
                     },
                   ),
                 ],

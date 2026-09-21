@@ -118,12 +118,6 @@ class AudioEngineService {
         .toDouble();
   }
 
-  double getBandGain(SoundGroup sound, int band) {
-    return sound.sources.values.first.filters.parametricEqFilter
-        .bandGain(band, soundHandle: sound.handles.values.first)
-        .value;
-  }
-
   void setBandGain(SoundGroup sound, int band, double gain) {
     sound.sources.forEach((type, source) {
       source.filters.parametricEqFilter

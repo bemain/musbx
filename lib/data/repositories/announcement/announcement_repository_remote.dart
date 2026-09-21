@@ -1,3 +1,4 @@
+import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
 import 'package:musbx/data/repositories/announcement/announcement_repository.dart';
 import 'package:musbx/data/services/service.dart';
@@ -9,13 +10,14 @@ import 'package:musbx/utils/result.dart';
 class AnnouncementRepositoryRemote extends AnnouncementRepository {
   AnnouncementRepositoryRemote({
     required SharedPreferencesService sharedPreferences,
-    required SupabaseService supabaseService,
+    required ServiceLoader<SupabaseService> supabase,
   }) : _sharedPreferences = sharedPreferences,
-       _supabaseService = supabaseService;
+       _supabase = supabase;
 
   final SharedPreferencesService _sharedPreferences;
 
-  final SupabaseService _supabaseService;
+  /// Read at call time, so a service created after this repository is used.
+  final ServiceLoader<SupabaseService> _supabase;
 
   late final TransformedPersistentValue<DateTime, String> _readAtNotifier =
       _sharedPreferences.transformed(
@@ -37,7 +39,7 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   @override
   Future<Result<Announcement>> getLatest() async {
     return OptionalService.guard(
-      _supabaseService.getLatestAnnouncement,
+      () => _supabase.value.getLatestAnnouncement(),
       "Supabase service disabled",
     );
   }
@@ -45,7 +47,7 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   @override
   Future<Result<List<Announcement>>> getAll() async {
     return OptionalService.guard(
-      _supabaseService.getAnnouncements,
+      () => _supabase.value.getAnnouncements(),
       "Supabase service disabled",
     );
   }
@@ -55,8 +57,7 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   @override
   Future<Result<List<Announcement>>> getUnread() async {
     return OptionalService.guard(
-      () async =>
-          await _supabaseService.getAnnouncementsAfter(_readAtNotifier.value),
+      () => _supabase.value.getAnnouncementsAfter(_readAtNotifier.value),
       "Supabase service disabled",
     );
   }
