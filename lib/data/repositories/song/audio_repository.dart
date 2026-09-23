@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:musbx/data/services/audio_engine_service.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
@@ -15,7 +14,6 @@ import 'package:musbx/utils/result.dart';
 class AudioRepository {
   AudioRepository({
     required SongCache songCache,
-    required AudioEngineService audioPlayer,
   }) : _songCache = songCache;
 
   final SongCache _songCache;

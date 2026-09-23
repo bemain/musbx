@@ -59,7 +59,7 @@ class MediaNotificationAdapter {
               duration: _playback.duration,
               isPlaying: _playback.isPlaying,
               position: _playback.position,
-              speed: _playback.speed,
+              speed: _playback.speed ?? 1.0,
             ),
     );
   }

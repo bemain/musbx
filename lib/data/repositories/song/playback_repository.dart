@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
+import 'package:musbx/data/models/playback_state/playback_state.dart';
 import 'package:musbx/data/models/sound_group.dart';
 import 'package:musbx/data/services/audio_engine_service.dart';
 import 'package:musbx/data/services/audio_session_service.dart';
@@ -11,60 +12,6 @@ import 'package:musbx/domain/models/song_preferences.dart';
 import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/utils/result.dart';
 
-/// The part of a song that playback is confined to. A `null` end is the end of
-/// the song, a `null` start its beginning.
-typedef LoopSection = ({Duration? start, Duration? end});
-
-/// One separated instrument of the song that is loaded, as the user controls it.
-///
-/// Exists whether or not the song has been demixed; when it has not, changing
-/// it has no audible effect but is still remembered.
-class Stem extends ChangeNotifier {
-  static const double defaultVolume = 1.0;
-
-  Stem(this.type, this._playback);
-
-  /// Which instrument this stem holds.
-  final StemType type;
-
-  final PlaybackRepository _playback;
-
-  SoundGroup? get _sound => _playback._sound;
-
-  AudioEngineService get _audioEngine => _playback._audioEngine;
-
-  /// Whether this stem is heard. A disabled stem is silenced rather than
-  /// unloaded, so it keeps its [volume].
-  bool get enabled => _playback._stemsState[type]?.enabled ?? true;
-  set enabled(bool value) {
-    _playback._stemsState[type] = (enabled: value, volume: _volume);
-
-    if (_sound != null) {
-      if (enabled) {
-        _audioEngine.setStemVolume(_sound!, type, _volume);
-      } else {
-        _audioEngine.setStemVolume(_sound!, type, 0.0);
-      }
-    }
-
-    notifyListeners();
-  }
-
-  double get _volume => _playback._stemsState[type]?.volume ?? 1.0;
-
-  /// How loud this stem is relative to the others, between `0.0` and `1.0`.
-  double get volume => _volume;
-  set volume(double value) {
-    _playback._stemsState[type] = (enabled: enabled, volume: value);
-
-    if (enabled && _sound != null) {
-      _audioEngine.setStemVolume(_sound!, type, _volume);
-    }
-    notifyListeners();
-  }
-}
-
-// TODO: Keep all song state in a struct
 /// The song that is loaded, and everything the user can do to it while it
 /// plays.
 ///
@@ -92,6 +39,10 @@ class PlaybackRepository extends ChangeNotifier {
 
   /// The gain of a band that is left alone.
   static const double equalizerDefaultGain = 1.0;
+
+  static const int equalizerDefaultNumBands = 3;
+
+  static const double stemDefaultVolume = 1.0;
 
   /// The stems that can be controlled without premium.
   static const List<StemType> freeStems = [
@@ -122,9 +73,9 @@ class PlaybackRepository extends ChangeNotifier {
 
         final position = _audioEngine.getPosition(_sound!);
 
-        if ((loopSection.start != null && position < loopSection.start!) ||
-            (loopSection.end != null && position > loopSection.end!)) {
-          seek(loopSection.start ?? Duration.zero);
+        if ((loopSection?.start != null && position < loopSection!.start!) ||
+            (loopSection?.end != null && position > loopSection!.end!)) {
+          seek(loopSection!.start ?? Duration.zero);
         } else {
           positionNotifier.value = _clamp(position);
         }
@@ -135,14 +86,15 @@ class PlaybackRepository extends ChangeNotifier {
   final AudioEngineService _audioEngine;
   final AudioSessionService _audioSession;
 
-  Song? get song => _song;
-  Song? _song;
-
   SoundGroup? _sound;
+  PlaybackState? _state;
+  PlaybackState? get state => _state;
 
   SongPreferences? _preferences;
 
   late final Timer _positionUpdater;
+
+  Song? get song => state?.song;
 
   /// Whether the loaded song is playing as separate stems rather than as one
   /// sound.
@@ -153,16 +105,15 @@ class PlaybackRepository extends ChangeNotifier {
       _sound == null ? null : _audioEngine.getDuration(_sound!);
 
   /// Whether the song is currently being played.
-  bool get isPlaying => isPlayingNotifier.value;
-  late final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false)
-    ..addListener(notifyListeners);
+  bool get isPlaying => state?.isPlaying ?? false;
 
   /// Pause playback, keeping the song loaded.
   void pause() {
     if (_sound == null) return;
 
     _audioEngine.pause(_sound!);
-    isPlayingNotifier.value = false;
+    _updateState(isPlaying: false);
+    notifyListeners();
   }
 
   /// Resume playback.
@@ -172,8 +123,9 @@ class PlaybackRepository extends ChangeNotifier {
     // Make sure we are inside the [loopSection], in case it has changed
     seek(position);
     _audioEngine.resume(_sound!);
-    isPlayingNotifier.value = true;
+    _updateState(isPlaying: true);
     await _audioSession.setActive(true);
+    notifyListeners();
   }
 
   /// How far into the song playback has come.
@@ -184,11 +136,11 @@ class PlaybackRepository extends ChangeNotifier {
   ValueNotifier<Duration> positionNotifier = ValueNotifier(Duration.zero);
 
   Duration _clamp(Duration position) {
-    if (loopSection.start != null && position < loopSection.start!) {
-      return loopSection.start!;
+    if (loopSection?.start != null && position < loopSection!.start!) {
+      return loopSection!.start!;
     }
-    if (loopSection.end != null && position > loopSection.end!) {
-      return loopSection.end!;
+    if (loopSection?.end != null && position > loopSection!.end!) {
+      return loopSection!.end!;
     }
     return position;
   }
@@ -196,122 +148,169 @@ class PlaybackRepository extends ChangeNotifier {
   /// Jump to [position], clamped into [loopSection].
   void seek(Duration position) {
     position = _clamp(position);
-
-    if (_sound != null) _audioEngine.seek(_sound!, position);
-
+    _updateState(position: position);
     positionNotifier.value = position;
   }
-
-  double _speed = 1.0;
 
   /// How fast the song is played, as a fraction of its original tempo.
   ///
   /// Changing this does not change the perceived pitch: [pitch] is re-applied to
   /// cancel out the shift that the rate change would otherwise cause.
-  double get speed => _speed;
-  set speed(double value) {
-    _speed = value;
-    if (_sound != null) {
-      _audioEngine.setSpeed(_sound!, value);
-      _audioEngine.setPitch(_sound!, _pitch);
-    }
-    notifyListeners();
-  }
-
-  double _pitch = 0.0;
+  double? get speed => state?.speed;
+  set speed(double value) => _updateState(speed: value);
 
   /// How many semitones the song is transposed, independently of [speed].
-  double get pitch => _pitch;
-  set pitch(double value) {
-    _pitch = value;
-    if (_sound != null) _audioEngine.setPitch(_sound!, value);
-    notifyListeners();
-  }
+  double? get pitch => state?.pitch;
+  set pitch(double value) => _updateState(pitch: value);
 
   /// The section playback is confined to. Playback jumps back to its start on
   /// reaching its end.
-  LoopSection get loopSection => _loopSection;
-  LoopSection _loopSection = (start: null, end: null);
+  LoopSection? get loopSection => state?.loopSection;
 
   /// Move one or both ends of [loopSection], leaving the unspecified end alone.
   ///
   /// An end before the start is pushed up to it, and the [position] is pulled
   /// into the new section.
   void setLoopSection({Duration? start, Duration? end}) {
-    start ??= loopSection.start;
-    end ??= loopSection.end;
+    start ??= loopSection?.start;
+    end ??= loopSection?.end;
 
     if (start != null && end != null && end < start) end = start;
 
-    _loopSection = (
-      start: start,
-      end: end,
-    );
+    _updateState(loopSection: (start: start, end: end));
 
     if ((start != null && position < start) ||
         (end != null && position > end)) {
       positionNotifier.value = _clamp(position);
     }
-    notifyListeners();
   }
 
   /// How many bands the equalizer is split into, or `null` when nothing is
   /// loaded.
-  int? get numEqualizerBands =>
-      _sound == null ? null : _audioEngine.getNumBands(_sound!);
-
-  /// The gains set through [setBandGain], by band index.
-  ///
-  /// Kept here rather than read back from the audio engine, since SoLoud
-  /// reports an error when reading a parameter whose value is exactly zero.
-  Map<int, double> _bandGains = {};
+  int? get numEqualizerBands => _state?.equalizerGain.length;
 
   /// The gain of an equalizer [band], or `null` if there is no such band.
   double? getBandGain(int band) {
-    final bands = numEqualizerBands;
-    if (bands == null || band >= bands) return null;
-
-    return _bandGains[band] ?? equalizerDefaultGain;
+    if (numEqualizerBands case final bands? when band < bands) {
+      return _state?.equalizerGain[band] ?? equalizerDefaultGain;
+    }
+    return null;
   }
 
   /// Set the gain of an equalizer [band], clamped between [equalizerMinGain] and
   /// [equalizerMaxGain]. Does nothing if there is no such band.
   void setBandGain(int band, double gain) {
-    final bands = numEqualizerBands;
-    if (bands == null || band >= bands) return;
+    if (numEqualizerBands case final bands? when band < bands) {
+      // TODO: Move to ViewModel?
+      final double clamped = gain.clamp(equalizerMinGain, equalizerMaxGain);
+      final gains = _state!.equalizerGain;
+      gains[band] = clamped;
 
-    final double clamped = gain.clamp(equalizerMinGain, equalizerMaxGain);
-    _audioEngine.setBandGain(_sound!, band, clamped);
-    _bandGains = {..._bandGains, band: clamped};
-    notifyListeners();
+      _updateState(equalizerGain: gains);
+    }
   }
 
-  Map<StemType, ({bool enabled, double volume})> _stemsState = {};
+  Set<StemType>? get stems => _state?.stems.keys.toSet();
 
-  /// Every stem, whether or not the loaded song has been demixed.
-  late final Map<StemType, Stem> stems = Map.fromIterables(
-    StemType.values,
-    StemType.values.map(
-      (type) => Stem(type, this)..addListener(notifyListeners),
-    ),
+  bool? getStemEnabled(StemType type) => _state?.stems[type]?.enabled;
+  double? getStemVolume(StemType type) => _state?.stems[type]?.volume;
+
+  void setStem(StemType type, {bool? enabled, double? volume}) => _updateState(
+    stems: {
+      ..._state!.stems,
+      type: (
+        enabled: enabled ?? _state!.stems[type]?.enabled ?? true,
+        volume: volume ?? _state!.stems[type]?.volume ?? stemDefaultVolume,
+      ),
+    },
   );
 
   /// Return everything the user can adjust to its default, and rewind to the
   /// start. The song stays loaded.
   void reset() {
-    pause();
-    _speed = 1.0;
-    _pitch = 0.0;
-    _loopSection = (start: null, end: null);
-    if (numEqualizerBands != null) {
-      for (int band = 0; band < numEqualizerBands!; band++) {
-        setBandGain(band, equalizerDefaultGain);
+    _updateState(
+      isPlaying: false,
+      position: Duration.zero,
+      speed: 1.0,
+      pitch: 0.0,
+      loopSection: (start: null, end: null),
+      equalizerGain: List.generate(
+        _state!.equalizerGain.length,
+        (_) => equalizerDefaultGain,
+      ),
+      stems: {
+        for (var type in StemType.values)
+          type: (enabled: true, volume: PlaybackRepository.stemDefaultVolume),
+      },
+    );
+  }
+
+  void _updateState({
+    Song? song,
+    bool? isPlaying,
+    Duration? position,
+    double? speed,
+    double? pitch,
+    LoopSection? loopSection,
+    List<double>? equalizerGain,
+    Map<StemType, StemData>? stems,
+  }) {
+    if (song != null) {
+      _state = PlaybackState(song: song, isPlaying: false);
+      reset();
+    }
+
+    if (state == null) return;
+    _state = state?.copyWith(
+      song: song,
+      isPlaying: isPlaying,
+      position: position,
+      speed: speed,
+      pitch: pitch,
+      loopSection: loopSection,
+      equalizerGain: equalizerGain,
+      stems: stems,
+    );
+
+    if (_sound case final sound?) {
+      if (speed != null) _audioEngine.setSpeed(sound, speed);
+      if (pitch != null || speed != null) {
+        _audioEngine.setPitch(sound, pitch ?? this.pitch!);
+      }
+
+      if (equalizerGain != null) {
+        _audioEngine.setNumBands(sound, equalizerGain.length);
+        equalizerGain.asMap().forEach((band, gain) {
+          _audioEngine.setBandGain(_sound!, band, gain);
+        });
+      }
+
+      if (stems != null) {
+        for (var type in sound.handles.keys) {
+          final data = stems[type];
+          if (data?.enabled ?? true) {
+            _audioEngine.setStemVolume(
+              _sound!,
+              type,
+              data?.volume ?? stemDefaultVolume,
+            );
+          } else {
+            _audioEngine.setStemVolume(_sound!, type, 0.0);
+          }
+        }
+      }
+
+      if (position != null) _audioEngine.seek(_sound!, position);
+
+      switch (isPlaying) {
+        case true:
+          _audioEngine.resume(sound);
+        case false:
+          _audioEngine.pause(sound);
+        case null:
       }
     }
-    _bandGains = {};
-    _stemsState = {};
 
-    seek(Duration.zero);
     notifyListeners();
   }
 
@@ -336,12 +335,24 @@ class PlaybackRepository extends ChangeNotifier {
       final SoundGroup sound = _audioEngine.play(sources);
 
       _sound = sound;
-      _song = song;
+
+      // Load preferences
       _preferences = preferences;
+      preferences ??= SongPreferences();
+      _updateState(
+        song: song,
+        position: preferences.position,
+        speed: preferences.speed?.clamp(0.5, 2.0),
+        pitch: preferences.pitch?.clamp(-12, 12),
+        loopSection: (start: preferences.loopStart, end: preferences.loopEnd),
+        equalizerGain: List.generate(
+          preferences.numEqualizerBands?.clamp(minNumBands, maxNumBands) ??
+              equalizerDefaultNumBands,
+          (i) => preferences?.equalizerGains?[i] ?? equalizerDefaultGain,
+        ),
+        stems: preferences.stems,
+      );
 
-      _loadPreferences(preferences);
-
-      notifyListeners();
       await _audioSession.setActive(true);
       return Result.ok(null);
     } catch (e, s) {
@@ -360,7 +371,7 @@ class PlaybackRepository extends ChangeNotifier {
       if (_sound != null) await _audioEngine.stop(_sound!);
 
       _sound = null;
-      _song = null;
+      _state = null;
       _preferences = null;
 
       notifyListeners();
@@ -369,33 +380,6 @@ class PlaybackRepository extends ChangeNotifier {
     } catch (e, s) {
       return Result.failed(e, s);
     }
-  }
-
-  void _loadPreferences(SongPreferences? prefs) {
-    prefs ??= SongPreferences();
-
-    if (prefs.speed != null) speed = prefs.speed!.clamp(0.5, 2.0);
-    if (prefs.pitch != null) pitch = prefs.pitch!.clamp(-12, 12);
-
-    _loopSection = (start: prefs.loopStart, end: prefs.loopEnd);
-
-    seek(prefs.position ?? Duration.zero);
-
-    if (prefs.numEqualizerBands != null && _sound != null) {
-      _audioEngine.setNumBands(
-        _sound!,
-        prefs.numEqualizerBands!.clamp(minNumBands, maxNumBands),
-      );
-    }
-    prefs.equalizerGains?.forEach(setBandGain);
-
-    _stemsState = Map<StemType, ({bool enabled, double volume})>.from(
-      prefs.stems ?? {},
-    );
-    prefs.stems?.forEach((type, stem) {
-      stems[type]?.enabled = stem.enabled;
-      stems[type]?.volume = stem.volume;
-    });
   }
 
   SongPreferences readPreferences() {
@@ -409,11 +393,11 @@ class PlaybackRepository extends ChangeNotifier {
       position: position,
       speed: speed,
       pitch: pitch,
-      loopStart: loopSection.start,
-      loopEnd: loopSection.end,
+      loopStart: loopSection?.start,
+      loopEnd: loopSection?.end,
       numEqualizerBands: numEqualizerBands,
       equalizerGains: gains,
-      stems: _stemsState,
+      stems: state?.stems ?? {},
     );
   }
 

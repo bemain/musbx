@@ -78,9 +78,9 @@ class _ButtonPanelState extends State<ButtonPanel> {
                 ),
               ),
 
-              ValueListenableBuilder<bool>(
-                valueListenable: playback.isPlayingNotifier,
-                builder: (_, isPlaying, _) {
+              ListenableBuilder(
+                listenable: playback,
+                builder: (_, _) {
                   return AspectRatio(
                     aspectRatio: 1.0,
                     child: Padding(
@@ -94,7 +94,7 @@ class _ButtonPanelState extends State<ButtonPanel> {
                             onTap: playback.song == null
                                 ? null
                                 : () {
-                                    if (isPlaying) {
+                                    if (playback.isPlaying) {
                                       playback.pause();
                                     } else {
                                       playback.resume();
@@ -103,7 +103,9 @@ class _ButtonPanelState extends State<ButtonPanel> {
                             child: Padding(
                               padding: EdgeInsets.all(16),
                               child: Icon(
-                                isPlaying ? Symbols.stop : Symbols.play_arrow,
+                                playback.isPlaying
+                                    ? Symbols.stop
+                                    : Symbols.play_arrow,
                                 fill: 1,
                                 color: Theme.of(context).colorScheme.onPrimary,
                               ),

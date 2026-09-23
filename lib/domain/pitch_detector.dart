@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:musbx/domain/use_case/yin.dart';
+import 'package:musbx/domain/yin.dart';
 import 'package:musbx/utils/num_iterable_extension.dart';
 
 /// Detect a pitch in audio data.

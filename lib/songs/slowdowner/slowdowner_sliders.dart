@@ -41,8 +41,8 @@ class PitchSpeedResetButton extends StatelessWidget {
 
     return IconButton(
       onPressed:
-          (playback.speed.toStringAsFixed(2) == "1.00" &&
-              playback.pitch.abs().toStringAsFixed(1) == "0.0")
+          (playback.speed?.toStringAsFixed(2) == "1.00" &&
+              playback.pitch?.abs().toStringAsFixed(1) == "0.0")
           ? null
           : () {
               playback.speed = 1.0;
@@ -72,7 +72,7 @@ class PitchSlider extends StatelessWidget {
       alignment: Alignment.topCenter,
       children: [
         CircularSlider(
-          value: playback.pitch,
+          value: playback.pitch!,
           min: -12,
           max: 12,
           divisionValues: List.generate(25, (i) => i - 12.0),
@@ -98,7 +98,7 @@ class PitchSlider extends StatelessWidget {
             SizedBox(
               width: 64,
               child: NumberField<double>(
-                value: double.parse(playback.pitch.toStringAsFixed(1)),
+                value: double.parse(playback.pitch!.toStringAsFixed(1)),
                 min: -12.0,
                 max: 12.0,
                 style: Theme.of(context).textTheme.headlineMedium,
@@ -133,7 +133,7 @@ class SpeedSlider extends StatelessWidget {
       alignment: Alignment.topCenter,
       children: [
         CircularSlider(
-          value: sqrt(playback.speed - 7 / 16) - 0.25,
+          value: sqrt(playback.speed! - 7 / 16) - 0.25,
           min: 0,
           max: 1,
           divisionValues: List.generate(
@@ -162,7 +162,7 @@ class SpeedSlider extends StatelessWidget {
             SizedBox(
               width: 64,
               child: NumberField<double>(
-                value: double.parse(playback.speed.toStringAsFixed(2)),
+                value: double.parse(playback.speed!.toStringAsFixed(2)),
                 min: 0.5,
                 max: 2.0,
                 prefixWithSign: false,

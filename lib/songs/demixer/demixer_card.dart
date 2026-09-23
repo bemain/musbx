@@ -331,14 +331,21 @@ class DemixerCard extends StatelessWidget {
           builder: (context, child) => IconButton(
             iconSize: 20,
             onPressed:
-                playback.stems.values.every(
-                  (stem) => stem.enabled && stem.volume == Stem.defaultVolume,
-                )
+                playback.stems?.every(
+                      (stem) =>
+                          playback.getStemEnabled(stem) == true &&
+                          playback.getStemVolume(stem) ==
+                              PlaybackRepository.stemDefaultVolume,
+                    ) ??
+                    true
                 ? null
                 : () {
-                    for (Stem stem in playback.stems.values) {
-                      stem.volume = Stem.defaultVolume;
-                      stem.enabled = true;
+                    for (StemType stem in playback.stems ?? []) {
+                      playback.setStem(
+                        stem,
+                        enabled: true,
+                        volume: PlaybackRepository.stemDefaultVolume,
+                      );
                     }
                   },
             icon: const Icon(Symbols.refresh),
@@ -357,7 +364,8 @@ class DemixerCard extends StatelessWidget {
       builder: (context, child) {
         return Column(
           children: [
-            for (Stem stem in playback.stems.values) StemControls(stem: stem),
+            for (StemType stem in playback.stems ?? [])
+              StemControls(stem: stem),
           ],
         );
       },
@@ -370,7 +378,7 @@ class StemControls extends StatefulWidget {
   const StemControls({super.key, required this.stem});
 
   /// The stem this widget controls.
-  final Stem stem;
+  final StemType stem;
 
   @override
   State<StatefulWidget> createState() => StemControlsState();
@@ -380,7 +388,7 @@ class StemControlsState extends State<StemControls> {
   PlaybackRepository get playback => context.read();
   EntitlementRepository get entitlement => context.read();
 
-  Stem get stem => widget.stem;
+  StemType get stem => widget.stem;
 
   @override
   Widget build(BuildContext context) {
@@ -390,91 +398,101 @@ class StemControlsState extends State<StemControls> {
     final bool accessAllowed =
         entitlement.hasPremium ||
         playback.song?.id == demoSong.id ||
-        PlaybackRepository.freeStems.contains(stem.type);
+        PlaybackRepository.freeStems.contains(stem);
 
     /// Whether all other stems are disabled
-    final bool allOtherStemsDisabled = playback.stems.values
-        .where((stem) => stem != this.stem)
-        .every((stem) => !stem.enabled);
+    final bool allOtherStemsDisabled =
+        playback.stems
+            ?.where((stem) => stem != this.stem)
+            .every((stem) => playback.getStemEnabled(stem) ?? false) ??
+        false;
 
     return ListenableBuilder(
       listenable: playback,
-      builder: (context, child) => Row(
-        children: [
-          SizedBox(width: 12),
-          GestureDetector(
-            onLongPress: () {
-              if (!entitlement.hasPremium &&
-                  playback.song?.id != demoSong.id) {
-                return;
-              }
-
-              for (Stem stem in playback.stems.values) {
-                stem.enabled = allOtherStemsDisabled;
-              }
-              stem.enabled = !allOtherStemsDisabled;
-            },
-            child: Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                IconButton.filledTonal(
-                  isSelected: stem.enabled && stem.volume != 0,
-                  onPressed: () {
-                    if (!accessAllowed) {
-                      showAccessRestrictedDialog(context);
-                      return;
-                    }
-
-                    if (stem.volume == 0) {
-                      stem.volume = Stem.defaultVolume;
-                      stem.enabled = true;
-                    } else {
-                      stem.enabled = !stem.enabled;
-                    }
-                  },
-                  icon: Icon(getStemIcon(stem.type)),
-                ),
-                if (!accessAllowed)
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        iconSize: 16,
-                        onPressed: () {
-                          showAccessRestrictedDialog(context);
-                        },
-                        icon: Icon(Symbols.lock),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Slider(
-              min: 0.0,
-              max: 2.0,
-              value: !stem.enabled ? 0 : stem.volume,
-              onChangeStart: (value) {
-                if (!accessAllowed) {
-                  showAccessRestrictedDialog(context);
+      builder: (context, child) {
+        final bool enabled = playback.getStemEnabled(stem) ?? true;
+        final double volume =
+            playback.getStemVolume(stem) ??
+            PlaybackRepository.stemDefaultVolume;
+        return Row(
+          children: [
+            SizedBox(width: 12),
+            GestureDetector(
+              onLongPress: () {
+                if (!entitlement.hasPremium &&
+                    playback.song?.id != demoSong.id) {
                   return;
                 }
 
-                stem.enabled = true;
+                for (StemType stem in playback.stems ?? []) {
+                  playback.setStem(stem, enabled: allOtherStemsDisabled);
+                }
+                playback.setStem(stem, enabled: !allOtherStemsDisabled);
               },
-              onChanged: (value) {
-                if (!accessAllowed) return;
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  IconButton.filledTonal(
+                    isSelected: enabled && volume != 0,
+                    onPressed: () {
+                      if (!accessAllowed) {
+                        showAccessRestrictedDialog(context);
+                        return;
+                      }
 
-                stem.volume = value;
-              },
+                      if (volume == 0) {
+                        playback.setStem(
+                          stem,
+                          enabled: true,
+                          volume: PlaybackRepository.stemDefaultVolume,
+                        );
+                      } else {
+                        playback.setStem(stem, enabled: !enabled);
+                      }
+                    },
+                    icon: Icon(getStemIcon(stem)),
+                  ),
+                  if (!accessAllowed)
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          iconSize: 16,
+                          onPressed: () {
+                            showAccessRestrictedDialog(context);
+                          },
+                          icon: Icon(Symbols.lock),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+            Expanded(
+              child: Slider(
+                min: 0.0,
+                max: 2.0,
+                value: !enabled ? 0 : volume,
+                onChangeStart: (value) {
+                  if (!accessAllowed) {
+                    showAccessRestrictedDialog(context);
+                    return;
+                  }
+
+                  playback.setStem(stem, enabled: true);
+                },
+                onChanged: (value) {
+                  if (!accessAllowed) return;
+                  playback.setStem(stem, volume: value);
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

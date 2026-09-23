@@ -114,8 +114,8 @@ class PositionSlider extends StatelessWidget {
         max: playback.duration?.inMilliseconds.roundToDouble() ?? 1.0,
         value: playback.position.inMilliseconds
             .clamp(
-              enabled ? playback.loopSection.start?.inMilliseconds ?? 0 : 0,
-              (enabled ? playback.loopSection.end?.inMilliseconds : null) ??
+              enabled ? playback.loopSection?.start?.inMilliseconds ?? 0 : 0,
+              (enabled ? playback.loopSection?.end?.inMilliseconds : null) ??
                   (playback.duration?.inMilliseconds ?? 1.0),
             )
             .roundToDouble(),
@@ -149,10 +149,10 @@ class PositionSlider extends StatelessWidget {
 
     return HighlightedSectionSliderTrackShape(
       highlightStart:
-          (playback.loopSection.start?.inMilliseconds ?? 0) /
+          (playback.loopSection?.start?.inMilliseconds ?? 0) /
           (playback.duration?.inMilliseconds ?? 1.0),
       highlightEnd:
-          (playback.loopSection.end?.inMilliseconds ?? 0) /
+          (playback.loopSection?.end?.inMilliseconds ?? 0) /
           (playback.duration?.inMilliseconds ?? 1.0),
       nonHighlightColor: style.nonLoopedTrackColor,
       disabledNonHighlightColor: style.disabledNonLoopedTrackColor,

@@ -42,11 +42,11 @@ class LoopSlider extends StatelessWidget {
       child: RangeSlider(
         padding: EdgeInsets.symmetric(horizontal: 20),
         labels: RangeLabels(
-          (playback.loopSection.start ?? Duration.zero).toString().substring(
+          (playback.loopSection?.start ?? Duration.zero).toString().substring(
             2,
             10,
           ),
-          (playback.loopSection.end ??
+          (playback.loopSection?.end ??
                   playback.duration ??
                   Duration(seconds: 1))
               .toString()
@@ -55,8 +55,8 @@ class LoopSlider extends StatelessWidget {
         min: 0,
         max: playback.duration?.inMilliseconds.toDouble() ?? 1.0,
         values: RangeValues(
-          playback.loopSection.start?.inMilliseconds.toDouble() ?? 0,
-          (playback.loopSection.end ?? playback.duration)?.inMilliseconds
+          playback.loopSection?.start?.inMilliseconds.toDouble() ?? 0,
+          (playback.loopSection?.end ?? playback.duration)?.inMilliseconds
                   .toDouble() ??
               1.0,
         ),
@@ -66,8 +66,8 @@ class LoopSlider extends StatelessWidget {
           playback.pause();
         },
         onChanged: (values) {
-          final Duration? previousStart = playback.loopSection.start;
-          final Duration? previousEnd = playback.loopSection.end;
+          final Duration? previousStart = playback.loopSection?.start;
+          final Duration? previousEnd = playback.loopSection?.end;
 
           final start = Duration(milliseconds: values.start.toInt());
           final end = Duration(milliseconds: values.end.toInt());

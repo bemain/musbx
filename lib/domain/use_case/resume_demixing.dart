@@ -24,15 +24,20 @@ class ResumeDemixing {
   final SongPreferencesRepository _preferences;
   final DemixRepository _demixing;
 
-  Future<void> call() async {
-    for (final song in _songs.getAll()) {
-      final prefs = switch (await _preferences.read(song)) {
-        Ok(:final value) => value,
-        _ => null,
-      };
-      if (prefs?.shouldDemix ?? _settings.songs.demixAutomatically) {
-        _demixing.start(song);
+  Future<Result<void>> call() async {
+    try {
+      for (final song in _songs.getAll()) {
+        final prefs = switch (await _preferences.read(song)) {
+          Ok(:final value) => value,
+          _ => null,
+        };
+        if (prefs?.shouldDemix ?? _settings.songs.demixAutomatically) {
+          _demixing.start(song);
+        }
       }
+      return Result.ok(null);
+    } catch (e, s) {
+      return Result.failed(e, s);
     }
   }
 }

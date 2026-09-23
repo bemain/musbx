@@ -8,7 +8,7 @@ import 'package:musbx/domain/models/music/accidental.dart';
 import 'package:musbx/domain/models/music/pitch.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
 import 'package:musbx/domain/models/music/temperament.dart';
-import 'package:musbx/domain/use_case/pitch_detector.dart';
+import 'package:musbx/domain/pitch_detector.dart';
 import 'package:musbx/tuner/view_model/tuner_reading.dart';
 
 /// Listens to the microphone and reports what pitch is being played.

@@ -13,7 +13,7 @@ Song _$SongFromJson(Map<String, dynamic> json) => Song(
   artist: json['artist'] as String?,
   genre: json['genre'] as String?,
   artUri: json['artUri'] == null ? null : Uri.parse(json['artUri'] as String),
-  audio: AudioReference.fromJson(json['audio'] as Map<String, dynamic>),
+  audio: AudioReference.fromJson(json['source'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$SongToJson(Song instance) => <String, dynamic>{
@@ -23,5 +23,5 @@ Map<String, dynamic> _$SongToJson(Song instance) => <String, dynamic>{
   'artist': instance.artist,
   'genre': instance.genre,
   'artUri': instance.artUri?.toString(),
-  'audio': instance.audio,
+  'source': instance.audio,
 };
