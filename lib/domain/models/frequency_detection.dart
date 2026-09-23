@@ -1,12 +1,11 @@
 import 'package:musbx/domain/models/audio_frame.dart';
-import 'package:musbx/domain/models/music/pitch.dart';
 
-/// Data recorded from the microphone at a given [time].
-class TunerReading {
-  TunerReading({
+/// Frequency detected from the microphone at a given [time].
+class FrequencyDetection {
+  FrequencyDetection({
     DateTime? time,
     required this.frame,
-    required this.pitch,
+    required this.frequency,
   }) : time = time ?? DateTime.now();
 
   /// When this data was recorded.
@@ -16,5 +15,5 @@ class TunerReading {
   final AudioFrame frame;
 
   /// The pitch detected, if any.
-  final Pitch? pitch;
+  final double? frequency;
 }

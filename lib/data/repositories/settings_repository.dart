@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
+import 'package:musbx/domain/models/music/accidental.dart';
+import 'package:musbx/domain/models/music/pitch.dart';
+import 'package:musbx/domain/models/music/pitch_class.dart';
+import 'package:musbx/domain/models/music/temperament.dart';
 
 /// The user's app-wide preferences, persisted as they change.
 class SettingsRepository {
@@ -9,6 +13,10 @@ class SettingsRepository {
   final SharedPreferencesService _sharedPreferences;
 
   late final SongSettingsRepository songs = SongSettingsRepository._(
+    _sharedPreferences,
+  );
+
+  late final TunerSettingsRepository tuner = TunerSettingsRepository._(
     _sharedPreferences,
   );
 
@@ -40,5 +48,47 @@ class SongSettingsRepository {
       _sharedPreferences.value(
         "songs/autoDemix",
         initialValue: true,
+      );
+}
+
+class TunerSettingsRepository {
+  TunerSettingsRepository._(this._sharedPreferences);
+
+  final SharedPreferencesService _sharedPreferences;
+
+  /// The frequency of A4, in Hz. Used as a reference for all other notes.
+  ///
+  /// Defaults to [Pitch.a440].
+  Pitch get tuning => tuningNotifier.value;
+  set tuning(Pitch value) => tuningNotifier.value = value;
+  late final ValueNotifier<Pitch> tuningNotifier = _sharedPreferences
+      .transformed<Pitch, String>(
+        "tuner/tuning",
+        initialValue: const Pitch(PitchClass.a(), 4, 440),
+        from: Pitch.parse,
+        to: (pitch) => pitch.toString(),
+      );
+
+  /// The temperament that notes are tuned to.
+  ///
+  /// Defaults to [EqualTemperament].
+  Temperament get temperament => temperamentNotifier.value;
+  set temperament(Temperament value) => temperamentNotifier.value = value;
+  final ValueNotifier<Temperament> temperamentNotifier = ValueNotifier(
+    const EqualTemperament(),
+  );
+
+  /// The accidental to prefer when displaying notes.
+  Accidental get preferredAccidental => preferredAccidentalNotifier.value;
+  set preferredAccidental(Accidental value) =>
+      preferredAccidentalNotifier.value = value;
+  late final ValueNotifier<Accidental> preferredAccidentalNotifier =
+      _sharedPreferences.transformed<Accidental, String>(
+        "tuner/accidental",
+        initialValue: Accidental.natural,
+        to: (accidental) => accidental.name,
+        from: (string) => Accidental.values.firstWhere(
+          (accidental) => accidental.name == string,
+        ),
       );
 }

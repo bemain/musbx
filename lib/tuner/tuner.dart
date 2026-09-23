@@ -1,15 +1,9 @@
 import 'dart:io';
-import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:musbx/data/services/audio_capture_service.dart';
-import 'package:musbx/data/services/shared_preferences_service.dart';
-import 'package:musbx/domain/models/music/accidental.dart';
+import 'package:musbx/domain/models/frequency_detection.dart';
 import 'package:musbx/domain/models/music/pitch.dart';
-import 'package:musbx/domain/models/music/pitch_class.dart';
-import 'package:musbx/domain/models/music/temperament.dart';
 import 'package:musbx/domain/pitch_detector.dart';
-import 'package:musbx/tuner/view_model/tuner_reading.dart';
 
 /// Listens to the microphone and reports what pitch is being played.
 ///
@@ -17,12 +11,10 @@ import 'package:musbx/tuner/view_model/tuner_reading.dart';
 /// run through pitch detection, matched to the closest [Pitch] under the
 /// current [tuning] and [temperament], and kept in [dataBuffer] for the graphs
 /// to draw. Nothing is recorded until something listens.
-// TODO: Remove this class
-class Tuner {
-  Tuner._();
-
-  /// The instance of this singleton.
-  static final Tuner instance = Tuner._();
+class TunerRepository {
+  TunerRepository({required AudioCaptureService audioCapture})
+    : _audioCapture = audioCapture,
+      _pitchDetector = PitchDetector(sampleRate: audioCapture.sampleRate);
 
   /// How many cents off a frequency can be to be considered in tune.
   static const double inTuneThreshold = 10;
@@ -30,27 +22,8 @@ class Tuner {
   /// The number of previous data entries buffered.
   static const int bufferLength = 32;
 
-  late final SharedPreferencesService _sharedPreferences;
-
-  late final AudioCaptureService _audioCapture;
+  final AudioCaptureService _audioCapture;
   late final PitchDetector _pitchDetector;
-
-  /// Whether this has been initialized.
-  ///
-  /// See [initialize].
-  bool isInitialized = false;
-
-  /// Initialize the [Tuner] and prepare playback.
-  Future<void> initialize({
-    required SharedPreferencesService sharedPreferences,
-  }) async {
-    if (isInitialized) return;
-    isInitialized = true;
-
-    _sharedPreferences = sharedPreferences;
-    _audioCapture = await AudioCaptureService.create();
-    _pitchDetector = PitchDetector(sampleRate: _audioCapture.sampleRate);
-  }
 
   /// Whether permission to access the microphone has been given.
   ///
@@ -60,90 +33,33 @@ class Tuner {
   /// entitlement, which the system prompts for on first use.
   bool hasPermission = Platform.isLinux || Platform.isMacOS;
 
-  /// The frequency of A4, in Hz. Used as a reference for all other notes.
-  ///
-  /// Defaults to [Pitch.a440].
-  Pitch get tuning => tuningNotifier.value;
-  set tuning(Pitch value) => tuningNotifier.value = value;
-  late final ValueNotifier<Pitch> tuningNotifier = _sharedPreferences
-      .transformed<Pitch, String>(
-        "tuner/tuning",
-        initialValue: const Pitch(PitchClass.a(), 4, 440),
-        from: Pitch.parse,
-        to: (pitch) => pitch.toString(),
-      );
-
-  /// The temperament that notes are tuned to.
-  ///
-  /// Defaults to [EqualTemperament].
-  Temperament get temperament => temperamentNotifier.value;
-  set temperament(Temperament value) => temperamentNotifier.value = value;
-  final ValueNotifier<Temperament> temperamentNotifier = ValueNotifier(
-    const EqualTemperament(),
-  );
-
-  /// The accidental to prefer when displaying notes.
-  Accidental get preferredAccidental => preferredAccidentalNotifier.value;
-  set preferredAccidental(Accidental value) =>
-      preferredAccidentalNotifier.value = value;
-  late final ValueNotifier<Accidental> preferredAccidentalNotifier =
-      _sharedPreferences.transformed<Accidental, String>(
-        "tuner/accidental",
-        initialValue: Accidental.natural,
-        to: (accidental) => accidental.name,
-        from: (string) => Accidental.values.firstWhere(
-          (accidental) => accidental.name == string,
-        ),
-      );
-
   /// The recent data recorded from the [dataStream]. [bufferLength] data entries are kept.
   ///
   /// Note that this won't receive any data until streaming is started.
   /// For a [Stream] that automatically starts streaming when listened to,
   /// use [dataStream].
-  final List<TunerReading> dataBuffer = [];
+  final List<FrequencyDetection> dataBuffer = [];
 
   /// The realtime data recorded from the microphone.
-  Stream<TunerReading> get dataStream => _audioCapture.dataStream.map((frame) {
-    final freq = _pitchDetector.add(frame.data);
-    final pitch = freq == null ? null : getClosestPitch(freq);
+  Stream<FrequencyDetection> get dataStream =>
+      _audioCapture.dataStream.map((frame) {
+        final freq = _pitchDetector.add(frame.data);
 
-    final reading = TunerReading(
-      frame: frame,
-      pitch: pitch,
-    );
+        final reading = FrequencyDetection(
+          frame: frame,
+          frequency: freq,
+        );
+        latestReading = reading;
 
-    if (pitch != null) this.pitch = pitch;
+        // Add to buffer
+        dataBuffer.add(reading);
+        if (dataBuffer.length > bufferLength) {
+          dataBuffer.removeRange(0, dataBuffer.length - bufferLength);
+        }
 
-    // Add to buffer
-    dataBuffer.add(reading);
-    if (dataBuffer.length > bufferLength) {
-      dataBuffer.removeRange(0, dataBuffer.length - bufferLength);
-    }
-
-    return reading;
-  });
+        return reading;
+      });
 
   /// The most recent pitch detected, or `null` until one has been.
-  Pitch? pitch;
-
-  /// Get the pitch closest to the given [frequency].
-  Pitch getClosestPitch(double frequency) {
-    return Pitch.closest(
-      frequency,
-      tuning: tuning,
-      temperament: temperament,
-      preferredAccidental: preferredAccidental,
-    );
-  }
-
-  /// Calculate how many cents off a [pitch]'s frequency is from what it "should" be.
-  double getPitchOffset(Pitch pitch) {
-    /// The frequency this note "should" have
-    final double targetFrequency =
-        tuning.frequency *
-        temperament.frequencyRatio(tuning.semitonesTo(pitch));
-
-    return 1200 * log(pitch.frequency / targetFrequency) / log(2);
-  }
+  FrequencyDetection? latestReading;
 }

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:musbx/tuner/view_model/tuner_reading.dart';
+import 'package:musbx/tuner/tuner_reading.dart';
 
 /// How a [WaveformGraph] is drawn.
 class WaveformGraphStyle {

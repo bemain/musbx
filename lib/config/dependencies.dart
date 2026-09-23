@@ -34,7 +34,6 @@ import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/data/services/soundcloud_api_client.dart';
 import 'package:musbx/data/services/supabase_service.dart';
-import 'package:musbx/domain/pitch_detector.dart';
 import 'package:musbx/domain/use_case/add_song_to_library.dart';
 import 'package:musbx/domain/use_case/check_song_access.dart';
 import 'package:musbx/domain/use_case/clear_song_cache.dart';
@@ -236,7 +235,6 @@ List<SingleChildWidget> _useCases = [
       demixing: context.read(),
     ),
   ),
-  Provider(lazy: true, create: (context) => PitchDetector()),
   Provider(
     lazy: true,
     create: (context) => ResumeDemixing(

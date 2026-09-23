@@ -12,7 +12,6 @@ import 'package:musbx/routing/router.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
-import 'package:musbx/tuner/tuner.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:provider/provider.dart';
@@ -263,13 +262,15 @@ class TunerSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SettingsRepository settings = context.read();
+
     return SettingsSubPage(
       title: Text("Tuner settings"),
       children: [
         SettingsGroup(
           children: [
             ValueListenableBuilder(
-              valueListenable: Tuner.instance.tuningNotifier,
+              valueListenable: settings.tuner.tuningNotifier,
               builder: (context, tuning, child) => ListTile(
                 leading: Icon(CustomIcons.tuning_fork),
                 title: Text("Tuning"),
@@ -280,14 +281,14 @@ class TunerSettingsPage extends StatelessWidget {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => TuningSelector(
-                      tuningNotifier: Tuner.instance.tuningNotifier,
+                      tuningNotifier: settings.tuner.tuningNotifier,
                     ),
                   );
                 },
               ),
             ),
             ValueListenableBuilder(
-              valueListenable: Tuner.instance.preferredAccidentalNotifier,
+              valueListenable: settings.tuner.preferredAccidentalNotifier,
               builder: (context, accidental, child) => ListTile(
                 leading: Icon(CustomIcons.accidentals),
                 title: Text("Preferred accidentals"),
@@ -299,7 +300,7 @@ class TunerSettingsPage extends StatelessWidget {
                     context: context,
                     builder: (context) => AccidentalSelector(
                       accidentalNotifier:
-                          Tuner.instance.preferredAccidentalNotifier,
+                          settings.tuner.preferredAccidentalNotifier,
                     ),
                   );
                 },

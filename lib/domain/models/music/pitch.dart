@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/domain/models/music/accidental.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
@@ -48,6 +50,9 @@ class Pitch {
       frequency,
     );
   }
+
+  double offsetFrom(double frequency) =>
+      1200 * log(this.frequency / frequency) / log2e;
 
   /// Parse [string] as a pitch.
   ///
