@@ -18,6 +18,7 @@ import 'package:musbx/data/repositories/song/audio_repository.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/repositories/tuner_repository.dart';
 import 'package:musbx/data/services/ad_service.dart';
 import 'package:musbx/data/services/analytics_service.dart';
 import 'package:musbx/data/services/audio_capture_service.dart';
@@ -134,6 +135,11 @@ List<SingleChildWidget> _repositories = [
             )
             as AnnouncementRepository,
   ),
+  Provider(
+    create: (context) => AudioRepository(
+      songCache: context.read(),
+    ),
+  ),
   ChangeNotifierProvider(
     create: (context) => DemixRepository(cache: context.read()),
   ),
@@ -157,12 +163,11 @@ List<SingleChildWidget> _repositories = [
             as NotificationRepository,
   ),
   Provider(
-    create: (context) => AudioRepository(
-      songCache: context.read(),
-    ),
+    create: (context) => SongPreferencesRepository(songCache: context.read()),
   ),
   Provider(
-    create: (context) => SongPreferencesRepository(songCache: context.read()),
+    create: (context) => TunerRepository(audioCapture: context.read()),
+    dispose: (context, value) => value.dispose(),
   ),
   ChangeNotifierProvider(
     create: (context) => PlaybackRepository(
