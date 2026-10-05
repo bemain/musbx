@@ -3,33 +3,52 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
 import 'package:material_plus/material_plus.dart';
-import 'package:musbx/songs/analyzer/analyzer.dart';
+import 'package:musbx/data/repositories/analysis/analysis_repository.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
+import 'package:musbx/songs/analyzer/waveform_card.dart';
 import 'package:musbx/songs/analyzer/waveform_painter.dart';
-import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/songs.dart';
 import 'package:musbx/songs/song_page/position_slider_style.dart';
+import 'package:musbx/utils/result.dart';
+import 'package:musbx/widgets/result_builder.dart';
+import 'package:provider/provider.dart';
 
 const int kSamplesPerPixel = 540;
 const int kSampleRate = 48000;
 
-class WaveformWidget extends StatelessWidget {
-  const WaveformWidget({super.key});
+/// The waveform of the loaded song, scrolling past with the playback position.
+///
+/// Shimmers over a generated placeholder while the waveform is being extracted.
+class WaveformWidget extends StatefulWidget {
+  const WaveformWidget({super.key, required this.durationShown});
+
+  /// How much of the song is visible at once.
+  final Duration durationShown;
+
+  @override
+  State<WaveformWidget> createState() => _WaveformWidgetState();
+}
+
+class _WaveformWidgetState extends State<WaveformWidget> {
+  PlaybackRepository get playback => context.read();
+
+  Future<Result<Waveform>>? _future;
+
+  void _updateFuture() {
+    if (playback.song == null) return;
+    _future = context.read<AnalysisRepository>().waveform(playback.song!);
+  }
 
   Widget _buildPlaceholder(BuildContext context) {
-    final SongPlayer? player = Songs.player;
-
     final Color color = Theme.of(context).colorScheme.primary;
 
     return ShimmerLoading(
       child: CustomPaint(
         painter: WaveformPainter(
           waveform: _generateDummyWaveform(
-            player?.duration ?? AnalyzerComponent.defaultDurationShown,
+            playback.duration ?? WaveformCard.defaultDurationShown,
           ),
-          position: player?.position ?? Duration.zero,
-          duration:
-              player?.analyzer.durationShown ??
-              AnalyzerComponent.defaultDurationShown,
+          position: playback.position,
+          duration: widget.durationShown,
           style: PositionSliderStyle(
             activeTrackColor: color,
             inactiveTrackColor: color,
@@ -49,33 +68,30 @@ class WaveformWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SongPlayer? player = Songs.player;
-    if (player == null) return _buildPlaceholder(context);
+    if (playback.song == null) return _buildPlaceholder(context);
+    if (_future == null) _updateFuture();
 
-    return ValueListenableBuilder(
-      valueListenable: player.analyzer.waveformNotifier,
-      builder: (context, waveform, child) {
+    return ResultBuilder(
+      future: _future!,
+      loading: _buildPlaceholder,
+      failure: (c, e) => _buildPlaceholder(c),
+      ok: (context, waveform) {
         return ValueListenableBuilder(
-          valueListenable: player.analyzer.durationShownNotifier,
-          builder: (context, durationShown, child) => ValueListenableBuilder(
-            valueListenable: player.positionNotifier,
-            builder: (context, position, child) {
-              if (waveform == null) return _buildPlaceholder(context);
-
-              return CustomPaint(
-                painter: WaveformPainter(
-                  waveform: waveform,
-                  position: position,
-                  duration: durationShown,
-                  style: Theme.of(context).extension<PositionSliderStyle>()!,
-                  markerColor: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant,
-                ),
-                size: const Size(double.infinity, 64.0),
-              );
-            },
-          ),
+          valueListenable: playback.positionNotifier,
+          builder: (context, position, child) {
+            return CustomPaint(
+              painter: WaveformPainter(
+                waveform: waveform,
+                position: position,
+                duration: widget.durationShown,
+                style: Theme.of(context).extension<PositionSliderStyle>()!,
+                markerColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+              ),
+              size: const Size(double.infinity, 64.0),
+            );
+          },
         );
       },
     );

@@ -2,33 +2,35 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:gauges/gauges.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:musbx/domain/models/music/pitch.dart';
-import 'package:musbx/tuner/tuner.dart';
+import 'package:musbx/data/repositories/tuner_repository.dart';
+import 'package:musbx/tuner/tuner_reading.dart';
 
+/// Gauge for showing how out of tune [reading] is.
+///
+/// Includes labels displaying the name of the note closest to [reading]
+/// and how many cents out of tune it is.
+///
+/// If [reading] is `null`, instead displays a "listening" label.
 class TunerGauge extends StatelessWidget {
-  /// Gauge for showing how out of tune [pitch] is.
-  ///
-  /// Includes labels displaying the name of the note closest to [pitch]
-  /// and how many cents out of tune it is.
-  ///
-  /// If [pitch] is `null`, instead displays a "listening" label.
   const TunerGauge({
     super.key,
-    required this.pitch,
+    required this.reading,
     this.showPitchText = true,
     this.maxAngle = 70,
   });
 
   /// The frequency to display.
-  final Pitch? pitch;
+  final TunerReading? reading;
 
+  /// Whether to label the gauge with the name of the note being played.
   final bool showPitchText;
 
+  /// How far the needle swings, in degrees, at the ends of the scale.
   final double maxAngle;
 
   @override
   Widget build(BuildContext context) {
-    return (pitch == null)
+    return (reading == null)
         ? buildListeningGauge(context)
         : buildGaugeAndText(context);
   }
@@ -51,14 +53,15 @@ class TunerGauge extends StatelessWidget {
     );
   }
 
-  /// Build gage showing [pitch]'s name and tuning.
+  /// Build gage showing [reading]'s name and tuning.
   Widget buildGaugeAndText(BuildContext context) {
-    final double pitchOffset = Tuner.instance.getPitchOffset(pitch!);
-
     ColorScheme scheme = Theme.of(context).colorScheme;
 
+    if (reading?.pitch == null) return SizedBox();
+
     // If note is in tune, make needle green
-    List<Color> needleColors = (pitchOffset.abs() < Tuner.inTuneThreshold)
+    List<Color> needleColors =
+        (reading!.offset!.abs() < TunerRepository.inTuneThreshold)
         ? [
             Colors.lightGreen.harmonizeWith(scheme.primary),
             Colors.green.harmonizeWith(scheme.primary),
@@ -80,7 +83,7 @@ class TunerGauge extends StatelessWidget {
             child: Align(
               alignment: const Alignment(-0.55, 0.7),
               child: Text(
-                pitch!.abbreviation,
+                reading!.pitch!.abbreviation,
                 style: GoogleFonts.andikaTextTheme(
                   Theme.of(context).textTheme,
                 ).displayMedium,
@@ -91,16 +94,16 @@ class TunerGauge extends StatelessWidget {
           child: Align(
             alignment: const Alignment(0.6, 0.7),
             child: Text(
-              (pitchOffset.toInt().isNegative)
-                  ? "${pitchOffset.toInt()}¢"
-                  : "+${pitchOffset.toInt()}¢",
+              (reading!.offset!.toInt().isNegative)
+                  ? "${reading!.offset!.toInt()}¢"
+                  : "+${reading!.offset!.toInt()}¢",
               style: Theme.of(context).textTheme.displaySmall,
             ),
           ),
         ),
         buildGauge(context, [
           RadialNeedlePointer(
-            value: pitchOffset,
+            value: reading!.offset!,
             thicknessStart: 20,
             thicknessEnd: 0,
             length: 0.8,

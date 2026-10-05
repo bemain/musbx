@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:musbx/data/repositories/notification/notification_repository.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/notification.dart';
-import 'package:musbx/utils/notifications.dart';
 
 /// A sound used by the metronome.
 class Tick {
@@ -23,6 +23,7 @@ class Tick {
   final AudioSource source;
 }
 
+/// The three sounds a beat can be marked with.
 class Ticks {
   const Ticks({
     required this.accented,
@@ -30,15 +31,31 @@ class Ticks {
     required this.subdivision,
   });
 
+  /// The first beat of a bar.
   final Tick accented;
+
+  /// A beat that is not the first of the bar.
   final Tick primary;
+
+  /// A note between two beats.
   final Tick subdivision;
 
+  /// Every tick, for loading or disposing them together.
   List<Tick> get all => [accented, primary, subdivision];
 }
 
+/// The metronome, ticking on a timer and reporting where in the bar it is.
+///
+/// A singleton, because the notification it posts can be acted on while the app
+/// is in the background and so has to reach one known instance. Every setting is
+/// persisted; changing one that affects timing restarts the tick through
+/// [reset].
+///
+/// With the volume at zero it vibrates instead of playing, so it can be followed
+/// without sound.
+/// TODO: Should use [SoLoud.playClocked].
 class Metronome {
-  Metronome._() {
+  Metronome._(this._sharedPreferences, this._notifications) {
     // Listen to app lifecycle
     AppLifecycleListener(
       onHide: () async {
@@ -46,7 +63,7 @@ class Metronome {
       },
       onDetach: () async {
         // FIXME: This doesn't work... The future never completes
-        await Notifications.cancelAll();
+        await _notifications.cancelAll();
       },
     );
 
@@ -54,7 +71,7 @@ class Metronome {
   }
 
   /// The instance of this singleton.
-  static final Metronome instance = Metronome._();
+  static late final Metronome instance;
 
   /// Minimum [bpm] allowed. [bpm] can never be less than this.
   static const int minBpm = 20;
@@ -68,23 +85,32 @@ class Metronome {
   static bool isInitialized = false;
 
   /// Initialize the [Metronome] and prepare playback.
-  static Future<void> initialize() async {
+  static Future<void> initialize({
+    required SharedPreferencesService sharedPreferences,
+    required NotificationRepository notifications,
+  }) async {
     if (isInitialized) return;
 
-    instance.ticks = Ticks(
+    final metronome = Metronome._(sharedPreferences, notifications);
+    metronome.ticks = Ticks(
       accented: await Tick.load("beat_accented.mp3"),
       primary: await Tick.load("beat_primary.mp3"),
       subdivision: await Tick.load("beat_subdivision.mp3"),
     );
 
+    instance = metronome;
+
     isInitialized = true;
   }
+
+  final SharedPreferencesService _sharedPreferences;
+  final NotificationRepository _notifications;
 
   /// Whether to show a notification while the Metronome is playing.
   bool get showNotification => showNotificationNotifier.value;
   set showNotification(bool value) => showNotificationNotifier.value = value;
   late final PersistentValue<bool> showNotificationNotifier =
-      SharedPreferencesService.instance.value(
+      _sharedPreferences.value(
         "metronome/notification",
         initialValue: true,
       )..addListener(reset);
@@ -96,12 +122,10 @@ class Metronome {
   /// Does not actually update the playback. This needs to be done manually by calling [reset].
   int get bpm => bpmNotifier.value;
   set bpm(int value) => bpmNotifier.value = value.clamp(minBpm, maxBpm);
-  late final PersistentValue<int> bpmNotifier = SharedPreferencesService
-      .instance
-      .value(
-        "metronome/bpm",
-        initialValue: 60,
-      );
+  late final PersistentValue<int> bpmNotifier = _sharedPreferences.value(
+    "metronome/bpm",
+    initialValue: 60,
+  );
 
   /// The duration of a beat.
   Duration get beatDuration =>
@@ -110,17 +134,16 @@ class Metronome {
   /// The number of beats per bar.
   int get higher => higherNotifier.value;
   set higher(int value) => higherNotifier.value = value;
-  late final PersistentValue<int> higherNotifier =
-      SharedPreferencesService.instance.value(
-        "metronome/higher",
-        initialValue: 4,
-      )..addListener(reset);
+  late final PersistentValue<int> higherNotifier = _sharedPreferences.value(
+    "metronome/higher",
+    initialValue: 4,
+  )..addListener(reset);
 
   /// The number of notes each beat is divided into.
   int get subdivisions => subdivisionsNotifier.value;
   set subdivisions(int value) => subdivisionsNotifier.value = value;
   late final PersistentValue<int> subdivisionsNotifier =
-      SharedPreferencesService.instance.value(
+      _sharedPreferences.value(
         "metronome/subdivisions",
         initialValue: 1,
       )..addListener(reset);
@@ -171,6 +194,7 @@ class Metronome {
     await updateNotification();
   }
 
+  /// Play or vibrate the beat at [index], and advance [count].
   Future<void> _timeout(int index) async {
     countNotifier.value = (index ~/ subdivisions) % higher;
     final int subcount = index % subdivisions;
@@ -194,10 +218,12 @@ class Metronome {
     }
   }
 
+  /// Push the current tempo and play state to the notification. Does nothing if
+  /// the user has turned the notification off.
   Future<void> updateNotification() async {
     if (!showNotification) return;
 
-    await Notifications.post(
+    await _notifications.post(
       AppNotification(
         channel: NotificationChannel.metronomeControls,
         title: "Metronome",

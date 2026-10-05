@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:musbx/domain/models/music/chord.dart';
 
+/// Widget displaying a musical [chord].
+/// A chord written the way it appears in a lead sheet, with the extension and
+/// alterations raised.
 class ChordSymbol extends StatefulWidget {
-  /// Widget displaying a musical [chord].
   const ChordSymbol({super.key, required this.chord, this.color});
 
   /// The chord being displayed.

@@ -2,14 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
+/// A tuning system, determining what frequencies pitches are placed at.
 @immutable
 abstract class Temperament {
+  /// The temperaments the user can tune against.
   static const List<Temperament> temperaments = [
     EqualTemperament(),
     PythagoreanTuning(),
   ];
 
-  /// Representation of a musical temperament, determining what frequencies pitches are placed at.
   const Temperament();
 
   /// The ratio of the frequency between the pitch at [scaleStep] and the root of the scale.
@@ -21,6 +22,7 @@ abstract class Temperament {
   int scaleStep(double frequencyRatio);
 }
 
+/// The modern standard, dividing the octave into twelve equal semitones.
 class EqualTemperament extends Temperament {
   const EqualTemperament();
 
@@ -33,6 +35,8 @@ class EqualTemperament extends Temperament {
       (12 * log(frequencyRatio) / log(2)).round();
 }
 
+/// Tuning by stacked perfect fifths, giving pure fifths at the cost of uneven
+/// semitones.
 class PythagoreanTuning extends Temperament {
   const PythagoreanTuning();
 

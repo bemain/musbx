@@ -1,17 +1,20 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/domain/models/music/accidental.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
 import 'package:musbx/domain/models/music/temperament.dart';
 
+/// A musical tone at a specific frequency.
 @immutable
 class Pitch {
-  /// Representation of a musical tone with a specific frequency.
   const Pitch(
     this.pitchClass,
     this.octave,
     this.frequency,
   );
 
+  /// Concert A, the reference the tuner is calibrated against by default.
   const Pitch.a440()
     : pitchClass = const PitchClass.a(),
       octave = 4,
@@ -48,6 +51,9 @@ class Pitch {
     );
   }
 
+  double offsetFrom(double frequency) =>
+      1200 * log(this.frequency / frequency) / log2e;
+
   /// Parse [string] as a pitch.
   ///
   /// Throws a [FormatException] if [string] is not a valid pitch.
@@ -74,6 +80,7 @@ class Pitch {
     return Pitch(pitchClass, octave, frequency);
   }
 
+  /// The name of this pitch in scientific pitch notation, e.g. "A♯4".
   String get abbreviation => "${pitchClass.abbreviation}$octave";
 
   /// The number of semitones between this and [other].

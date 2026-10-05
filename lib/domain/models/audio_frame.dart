@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
+/// One buffer of microphone audio, and the two views of it the tuner draws.
 class AudioFrame {
-  /// Data recorded from the microphone at a given [time].
   AudioFrame({
     DateTime? time,
     required this.data,

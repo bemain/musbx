@@ -1,25 +1,29 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/utils/utils.dart';
 
-/// Helper class for persisting history entries to disk.
+/// Entries kept in the order they were last used, persisted to disk.
+///
+/// Each entry is stored against the time it was added. Adding one that is
+/// already there moves it to the top rather than duplicating it, which is what
+/// makes this usable both as a history and as a library.
+// TODO: Rethink
 class HistoryHandler<T> extends ChangeNotifier {
   HistoryHandler({
+    required this.file,
     required this.fromJson,
     required this.toJson,
-    required this.historyFileName,
     this.onEntryRemoved,
     this.maxEntries,
   });
 
+  /// The file the entries are persisted to.
+  final CacheFile file;
+
   /// The maximum number of entries saved in history.
   final int? maxEntries;
-
-  /// The name of the file where entries are persisted, without extension.
-  final String historyFileName;
 
   /// Convert json from the history file to the desired type.
   final T Function(dynamic json) fromJson;
@@ -30,14 +34,10 @@ class HistoryHandler<T> extends ChangeNotifier {
   /// Callback for when an entry is removed from the history due to [maxEntries] being exceeded.
   final FutureOr<void> Function(MapEntry<DateTime, T> entry)? onEntryRemoved;
 
-  /// The file where song history is saved.
-  CacheFile get _historyFile =>
-      FileCacheService.instance.persistent.file("$historyFileName.json");
-
-  /// The history entries, with the previously loaded songs and the time they were loaded.
+  /// The entries, against the time each was last added.
   final Map<DateTime, T> entries = {};
 
-  /// The previously played songs, sorted by date.
+  /// The entries, sorted by the time they were last added.
   List<T> sorted({bool ascending = false}) {
     List<T> sorted =
         (entries.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))
@@ -50,17 +50,17 @@ class HistoryHandler<T> extends ChangeNotifier {
   ///
   /// Notifies listeners when done.
   Future<void> fetch() async {
-    final String? data = await _historyFile.readString();
-    if (data == null) return;
-    Json json;
+    final Json? json;
     try {
-      json = jsonDecode(data) as Json;
+      json = await file.readJson();
     } catch (e) {
       debugPrint(
-        "[HISTORY] Unable to read history file ${_historyFile.path} as json: $e",
+        "[HISTORY] Unable to read history file ${file.path} as json: $e",
       );
       return;
     }
+
+    if (json == null) return;
 
     entries.clear();
 
@@ -102,6 +102,19 @@ class HistoryHandler<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Replace the stored value equal to [value], keeping its position in history.
+  Future<void> update(T value) async {
+    final key = entries.entries
+        .where((e) => e.value == value)
+        .firstOrNull
+        ?.key;
+    if (key == null) return;
+
+    entries[key] = value;
+    await save();
+    notifyListeners();
+  }
+
   /// Remove [value] from the history.
   ///
   /// Notifies listeners when done.
@@ -118,13 +131,11 @@ class HistoryHandler<T> extends ChangeNotifier {
 
   /// Save the current history entries to disk.
   Future<void> save() async {
-    await _historyFile.writeString(
-      jsonEncode(
-        entries.map(
-          (date, song) => MapEntry(
-            date.toString(),
-            toJson(song),
-          ),
+    await file.writeJson(
+      entries.map(
+        (date, song) => MapEntry(
+          date.toString(),
+          toJson(song),
         ),
       ),
     );

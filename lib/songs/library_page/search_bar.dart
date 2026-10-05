@@ -3,19 +3,24 @@ import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/soundcloud_api_client.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
 import 'package:musbx/songs/library_page/soundcloud_search.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/utils/result.dart';
+import 'package:provider/provider.dart';
 
+/// Searches the library as the user types, listing matching SoundCloud tracks
+/// below the songs already in it.
 class LibrarySearchBar extends StatefulWidget {
   const LibrarySearchBar({super.key});
 
   @override
   State<LibrarySearchBar> createState() => _LibrarySearchBarState();
 
+  /// The artwork stand-in for a search result that has none.
   static Widget placeholderIcon(BuildContext context, {Color? color}) {
     return M3Container.c4SidedCookie(
       color: color ?? Theme.of(context).colorScheme.surfaceContainerHigh,
@@ -78,13 +83,16 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         }
 
         // History entries that match the search query
-        final Iterable<Song> songHistory = SongLibrary.history
-            .sorted(ascending: false)
+        final Iterable<Song> songHistory = context
+            .read<SongRepository>()
+            .getAll(order: GetOrder.descending)
             .where(
               (song) =>
                   song.title.toLowerCase().contains(query) ||
                   (song.artist?.toLowerCase().contains(query) ?? false),
             );
+
+        final SoundCloudApiClient client = context.read();
 
         return [
           const SizedBox(height: 8),
@@ -98,7 +106,7 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
               },
             ),
           if (songHistory.isNotEmpty) const Divider(),
-          if (SoundCloudApiClient.instance.isEnabled)
+          if (client.isEnabled)
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
@@ -106,10 +114,11 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-          if (SoundCloudApiClient.instance.isEnabled)
+          if (client.isEnabled)
             FutureBuilder(
               future: SoundCloudSearch.searchTracks(
                 query,
+                context: context,
               ).timeout(Duration(seconds: 2), onTimeout: () => []),
               builder: (context, snapshot) {
                 if (snapshot.hasError) return SizedBox();
@@ -123,11 +132,21 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
                           track: track,
                           onTap: () async {
                             this.controller.closeView(null);
-                            final Song song = await SongLibrary.addTrack(
-                              track,
-                            );
-                            if (context.mounted) {
-                              context.go(Routes.song(song.id));
+                            final result = await context
+                                .read<SongRepository>()
+                                .addTrack(
+                                  track,
+                                );
+                            switch (result) {
+                              case Ok(value: final song):
+                                if (context.mounted) {
+                                  context.go(Routes.song(song.id));
+                                }
+                              case Failure(:final error):
+                                debugPrint(
+                                  "[Library] Failed to add SoundCloud track; $error",
+                                );
+                              // TODO: Show error snackbar
                             }
                           },
                         )

@@ -2,17 +2,20 @@ import 'package:musbx/domain/models/music/accidental.dart';
 import 'package:musbx/domain/models/music/chroma.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
 
+/// The different types of keys.
+///
+/// This describes the relationship between the tonic and the remaining notes in
+/// the key.
 enum KeyType {
   major("", [0, 2, 4, 5, 7, 9, 11]),
   minor("m", [0, 2, 3, 5, 7, 8, 10]);
 
-  /// The different types of keys.
-  ///
-  /// This describes the relationship between the tonic and the remaining notes in the key.
   const KeyType(this.abbreviation, this.intervalPattern);
 
+  /// What is written after the tonic, e.g. "m". Empty for [major].
   final String abbreviation;
 
+  /// The semitones between the tonic and each note in the key.
   final List<int> intervalPattern;
 }
 
@@ -81,6 +84,7 @@ class Key {
     return Key(tonic.transposed(semitones), type);
   }
 
+  /// The name of this key, e.g. "F♯m".
   String get abbreviation => "${tonic.abbreviation}${type.abbreviation}";
 
   @override

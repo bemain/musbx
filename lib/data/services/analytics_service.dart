@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:musbx/data/services/service.dart';
 import 'package:musbx/firebase_options.dart';
 
@@ -40,17 +39,6 @@ class AnalyticsService extends OptionalService {
   /// A service that discards everything logged to it, for when analytics is
   /// unavailable or switched off.
   static AnalyticsService disabled() => AnalyticsService._(null);
-
-  // TODO: Remove once we introduce `provider`.
-  static late final AnalyticsService instance;
-  static Future<void> initialize() async {
-    try {
-      instance = await create();
-    } catch (error) {
-      debugPrint("[ANALYTICS] Disabled, initialization failed: $error");
-      instance = disabled();
-    }
-  }
 
   /// Log that the current screen has changed.
   ///

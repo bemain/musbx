@@ -2,10 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart' hide Key;
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/drone_repository.dart';
 import 'package:musbx/domain/models/music/key.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
-import 'package:musbx/drone/drone.dart';
+import 'package:provider/provider.dart';
 
+/// How a pitch on the [DroneWheel] relates to the current root, which decides
+/// how its button is drawn.
 enum DroneButtonType {
   /// This pitch is the current root.
   root,
@@ -17,8 +20,8 @@ enum DroneButtonType {
   chromatic,
 }
 
+/// A wheel with buttons that create drone tones in the chromatic scale starting from the [Drone]'s root.
 class DroneWheel extends StatefulWidget {
-  /// A wheel with buttons that create drone tones in the chromatic scale starting from the [Drone]'s root.
   const DroneWheel({super.key, this.elasticity = 2.0});
 
   /// The strength of the contracting force applied when the wheel is at the minimum or maximum value,
@@ -30,9 +33,10 @@ class DroneWheel extends StatefulWidget {
 }
 
 class DroneWheelState extends State<DroneWheel> {
-  final Drone drone = Drone.instance;
+  DroneRepository get drone => context.read();
 
   /// The current rotation angle
+  /// How far the wheel is currently turned, in radians.
   double angle = 0;
 
   @override
@@ -64,8 +68,9 @@ class DroneWheelState extends State<DroneWheel> {
                     drone.root.pitchClass.semitonesFromC +
                     semitones;
 
-                if (targetSemitonesFromC0 < Drone.minOctave * 12 ||
-                    targetSemitonesFromC0 > Drone.maxOctave * 12 + 11) {
+                if (targetSemitonesFromC0 < DroneRepository.minOctave * 12 ||
+                    targetSemitonesFromC0 >
+                        DroneRepository.maxOctave * 12 + 11) {
                   angle -= deltaAngle / (angle.abs() * widget.elasticity + 1);
                   return;
                 }
@@ -73,7 +78,10 @@ class DroneWheelState extends State<DroneWheel> {
                 angle -= deltaAngle;
 
                 if (semitones != 0) {
-                  drone.rootStepNotifier.value += semitones;
+                  drone.root = drone.root.transposed(
+                    semitones,
+                    temperament: drone.temperament,
+                  );
                   angle += semitones * 2 * pi / 12;
                 }
               });
@@ -92,33 +100,30 @@ class DroneWheelState extends State<DroneWheel> {
               });
             },
             child: ListenableBuilder(
-              listenable: drone.rootStepNotifier,
-              builder: (context, child) => ListenableBuilder(
-                listenable: drone.intervalsNotifier,
-                builder: (context, child) {
-                  return Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (drone.intervals.isNotEmpty)
-                        SizedBox.square(
-                          dimension: (radius - 48) * 2,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              buildPlayButton(),
-                              const SizedBox(height: 4),
-                              buildResetButton(),
-                            ],
-                          ),
+              listenable: drone,
+              builder: (context, child) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (drone.intervals.isNotEmpty)
+                      SizedBox.square(
+                        dimension: (radius - 48) * 2,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            buildPlayButton(),
+                            const SizedBox(height: 4),
+                            buildResetButton(),
+                          ],
                         ),
-                      ...List.generate(
-                        12,
-                        (index) => buildPitchButton(index, radius),
                       ),
-                    ],
-                  );
-                },
-              ),
+                    ...List.generate(
+                      12,
+                      (index) => buildPitchButton(index, radius),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         );
@@ -127,13 +132,13 @@ class DroneWheelState extends State<DroneWheel> {
   }
 
   Widget buildPlayButton() {
-    return ValueListenableBuilder(
-      valueListenable: drone.isPlayingNotifier,
-      builder: (context, isPlaying, _) => IconButton.filled(
-        onPressed: isPlaying ? drone.pause : drone.resume,
+    return ListenableBuilder(
+      listenable: drone,
+      builder: (context, _) => IconButton.filled(
+        onPressed: drone.isPlaying ? drone.pause : drone.resume,
         iconSize: 75,
         icon: Icon(
-          isPlaying ? Symbols.stop_rounded : Symbols.play_arrow_rounded,
+          drone.isPlaying ? Symbols.stop_rounded : Symbols.play_arrow_rounded,
           fill: 1,
         ),
       ),
@@ -143,7 +148,7 @@ class DroneWheelState extends State<DroneWheel> {
   Widget buildResetButton() {
     return IconButton(
       onPressed: () {
-        drone.intervalsNotifier.value = [];
+        drone.intervals = {};
       },
       icon: const Icon(Symbols.refresh),
     );
@@ -188,11 +193,9 @@ class DroneWheelState extends State<DroneWheel> {
             : backgroundColor,
         onPressed: () {
           if (isPlaying) {
-            drone.intervals = drone.intervals
-                .where((i) => i != interval)
-                .toList();
+            drone.removeInterval(interval);
           } else {
-            drone.intervals = [...drone.intervals, interval];
+            drone.addInterval(interval);
             drone.resume();
           }
         },

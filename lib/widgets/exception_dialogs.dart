@@ -2,41 +2,46 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
+import 'package:musbx/domain/use_case/check_song_access.dart';
+import 'package:musbx/routing/router.dart';
+import 'package:musbx/utils/result.dart';
+import 'package:provider/provider.dart';
 
 /// Show an exception dialog.
 ///
-/// This is only dependent on [Navigation.navigatorKey]'s context, and can thus be
-/// used in places where no local context is available, such as button callbacks.
+/// Only depends on the root [navigatorKey]'s context, and can thus be used in
+/// places where no local context is available, such as button callbacks.
 Future<void> showExceptionDialog(
   Widget dialog, {
   bool barrierDismissible = true,
 }) async {
-  if (Navigation.navigatorKey.currentContext == null ||
-      !Navigation.navigatorKey.currentContext!.mounted) {
+  if (navigatorKey.currentContext == null ||
+      !navigatorKey.currentContext!.mounted) {
     return;
   }
 
   await showDialog<void>(
-    context: Navigation.navigatorKey.currentContext!,
+    context: navigatorKey.currentContext!,
     builder: (context) => dialog,
     barrierDismissible: barrierDismissible,
   );
 }
 
+/// Explains that the week's free songs have been used up, and offers premium.
 class MusicPlayerAccessRestrictedDialog extends StatelessWidget {
   const MusicPlayerAccessRestrictedDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const FreeAccessRestrictedDialog(
-      reason: "You have used your ${Songs.freeSongsPerWeek} weekly songs.",
+      reason:
+          "You have used your ${CheckSongAccess.freeSongsPerWeek} weekly songs.",
     );
   }
 }
 
+/// Offers premium, optionally saying what the user ran into.
 class FreeAccessRestrictedDialog extends StatelessWidget {
   // TODO: Redesign this
   const FreeAccessRestrictedDialog({super.key, this.reason});
@@ -70,8 +75,16 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: () async {
-              await Purchases.restore();
-              if (context.mounted) Navigator.of(context).pop();
+              final result = await context
+                  .read<EntitlementRepository>()
+                  .restore();
+              switch (result) {
+                case Ok():
+                  if (context.mounted) Navigator.of(context).pop();
+
+                case Failure():
+                // TODO: Show error snackbar
+              }
             },
             style: TextButton.styleFrom(
               padding: EdgeInsets.symmetric(horizontal: 8),
@@ -89,7 +102,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            unawaited(Purchases.buyPremium());
+            unawaited(context.read<EntitlementRepository>().buyPremium());
             Navigator.of(context).pop();
           },
           child: const Text("Upgrade"),
@@ -99,6 +112,7 @@ class FreeAccessRestrictedDialog extends StatelessWidget {
   }
 }
 
+/// Confirms that a premium purchase has gone through and is being processed.
 class PremiumPurchasedDialog extends StatelessWidget {
   const PremiumPurchasedDialog({super.key});
 
@@ -124,6 +138,7 @@ Your purchase is processing and premium features will soon be activated. Please 
   }
 }
 
+/// Reports that a premium purchase did not go through.
 class PremiumPurchaseFailedDialog extends StatelessWidget {
   const PremiumPurchaseFailedDialog({super.key});
 
@@ -144,7 +159,7 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () async {
-            unawaited(Purchases.buyPremium());
+            unawaited(context.read<EntitlementRepository>().buyPremium());
             if (context.mounted) Navigator.of(context).pop();
           },
           child: const Text("Try again"),
@@ -154,8 +169,8 @@ class PremiumPurchaseFailedDialog extends StatelessWidget {
   }
 }
 
+/// Creates an alert dialog with the message that the selected file type is not supported.
 class UnsupportedFileExtensionDialog extends StatelessWidget {
-  /// Creates an alert dialog with the message that the selected file type is not supported.
   const UnsupportedFileExtensionDialog({super.key, required this.extension});
 
   final String extension;
@@ -186,8 +201,8 @@ class UnsupportedFileExtensionDialog extends StatelessWidget {
   }
 }
 
+/// Creates an alert dialog with the message that the selected file could not be loaded.
 class SongCouldNotBeLoadedDialog extends StatelessWidget {
-  /// Creates an alert dialog with the message that the selected file could not be loaded.
   const SongCouldNotBeLoadedDialog({super.key, this.error});
 
   final Object? error;
@@ -244,8 +259,8 @@ class SongCouldNotBeLoadedDialog extends StatelessWidget {
   }
 }
 
+/// Creates an alert dialog with the message that the Youtube service is unavailable.
 class SearchUnavailableDialog extends StatelessWidget {
-  /// Creates an alert dialog with the message that the Youtube service is unavailable.
   const SearchUnavailableDialog({super.key});
 
   @override

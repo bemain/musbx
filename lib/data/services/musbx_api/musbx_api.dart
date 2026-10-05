@@ -2,24 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:pub_semver/pub_semver.dart';
 
-class NoHostAvailableException implements Exception {
-  final String? msg;
+/// A reason why no Musbx API server could be used.
+sealed class MusbxApiError implements Exception {}
 
-  const NoHostAvailableException([this.msg]);
-
+/// None of the known hosts answered.
+final class NoHostAvailable extends MusbxApiError {
   @override
-  String toString() => msg ?? "No host is available";
+  String toString() => "No Musbx API host is available";
 }
 
-class OutOfDateException implements Exception {
-  final String? msg;
-
-  const OutOfDateException([this.msg]);
-
+/// A host answered, but speaks a version of the API this app does not.
+final class OutOfDate extends MusbxApiError {
   @override
-  String toString() => msg ?? "The app is out of date with the server";
+  String toString() => "The app is out of date with the Musbx API server";
 }
 
+/// The known Musbx API servers, and which of them this app can talk to.
 class MusbxApi {
   /// The version of the API that this is compatible with.
   static final VersionConstraint version = VersionConstraint.parse("^0.4.0");
@@ -54,8 +52,6 @@ class MusbxApi {
       }
     }
 
-    throw hostAvailable
-        ? const OutOfDateException()
-        : const NoHostAvailableException();
+    return throw hostAvailable ? OutOfDate() : NoHostAvailable();
   }
 }

@@ -75,8 +75,8 @@ class SoundCloudTrack {
 }
 
 /// Represents a transcoding format for a SoundCloud track.
+/// Creates a new [SoundCloudTrackTranscoding] instance.
 class SoundCloudTrackTranscoding {
-  /// Creates a new [SoundCloudTrackTranscoding] instance.
   const SoundCloudTrackTranscoding({
     required this.url,
     required this.mimeType,

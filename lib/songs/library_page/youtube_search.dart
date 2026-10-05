@@ -4,15 +4,15 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/youtube_video.dart';
+import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/youtube_api_client.dart';
-import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/player/audio_provider.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/add_song_to_library.dart';
+import 'package:musbx/routing/routes.dart';
 import 'package:musbx/utils/history_handler.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 class YoutubeSearch {
   /// Open a full-screen dialog that allows the user to search for and pick a song from Youtube.
@@ -31,20 +31,27 @@ class YoutubeSearch {
       title: HtmlUnescape().convert(video.title),
       artist: HtmlUnescape().convert(video.channelTitle),
       artUri: Uri.tryParse(video.thumbnails.high.url),
-      audio: YtdlpAudio(Uri.parse(video.url)),
+      audio: UrlAudio(Uri.parse(video.url)),
     );
-    await SongLibrary.add(song);
-    if (Songs.demixAutomatically) DemixingProcesses.start(song);
-
-    if (context.mounted) context.go(Routes.song(video.id));
+    if (!context.mounted) return;
+    switch (await context.read<AddSongToLibrary>().call(song)) {
+      case Ok():
+        if (context.mounted) context.go(Routes.song(video.id));
+      case Failure(:final error):
+        debugPrint("[YOUTUBE] Adding song failed: $error");
+      // TODO: Show snack bar
+    }
   }
 
   /// The history of previous search queries.
-  static final HistoryHandler<String> history = HistoryHandler<String>(
-    fromJson: (json) => json as String,
-    toJson: (value) => value,
-    historyFileName: "search_history",
-  );
+  static HistoryHandler<String> history(BuildContext context) =>
+      HistoryHandler<String>(
+        file: context.read<FileCacheService>().persistent.file(
+          "search_history.json",
+        ),
+        fromJson: (json) => json as String,
+        toJson: (value) => value,
+      );
 }
 
 /// [SearchDelegate] for searching for a song on Youtube.
@@ -88,7 +95,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (YoutubeSearch.history.entries.isEmpty) {
+    if (YoutubeSearch.history(context).entries.isEmpty) {
       // Show help text
       return Padding(
         padding: const EdgeInsets.all(16.0),
@@ -105,7 +112,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
       );
     }
 
-    final searchHistory = YoutubeSearch.history.sorted().where(
+    final searchHistory = YoutubeSearch.history(context).sorted().where(
       (e) => e.toLowerCase().contains(query.toLowerCase()),
     );
 
@@ -158,7 +165,7 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
             return YoutubeVideoListItem(
               video: video,
               onTap: () {
-                YoutubeSearch.history.add(query.trim());
+                YoutubeSearch.history(context).add(query.trim());
                 close(context, video);
               },
             );
@@ -195,6 +202,8 @@ class YoutubeSearchDelegate extends SearchDelegate<YoutubeVideo?> {
   }
 }
 
+/// One YouTube video in a list of search results. Shimmers as a placeholder when
+/// [video] is `null`.
 class YoutubeVideoListItem extends StatelessWidget {
   static final HtmlUnescape htmlUnescape = HtmlUnescape();
 
@@ -203,9 +212,11 @@ class YoutubeVideoListItem extends StatelessWidget {
 
   /// The video whose properties to show.
   /// If `null`, shows a simple placeholder widget.
+  /// The video to show, or `null` to shimmer as a placeholder.
   final YoutubeVideo? video;
 
   /// Called when the user taps this list tile.
+  /// Called when the item is tapped.
   final void Function()? onTap;
 
   @override

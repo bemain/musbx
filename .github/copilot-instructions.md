@@ -1,129 +1,156 @@
 # Musician's Toolbox (musbx) - AI Coding Instructions
 
 ## Project Overview
-Flutter app combining metronome, tuner, drone, and music player features with AI-powered chord detection, audio demixing (separating vocals/instruments), and audio manipulation (pitch/speed changes).
+
+Flutter app combining a metronome, tuner, drone and music player, with
+AI-powered chord detection, audio demixing (separating vocals and instruments)
+and audio manipulation (pitch, speed, equalizer).
 
 ## Git Conventions (Required)
-Follow [Conventional Commits](https://www.conventionalcommits.org/) since Sep 25 2023:
-- Format: `<type>[(scope)]: <description>` (types: feat, fix, chore, etc.)
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+- Format: `<type>[(scope)]: <description>` (types: feat, fix, refactor, docs,
+  test, chore, perf, ci)
 - Breaking changes: `BREAKING CHANGE:` footer or `!` after type/scope
-- Branches: `feat/[area]/[issue-ref]/<kebab-case-description>` (areas: demixer, tuner, songs, metronome)
+- Branches: `feat/[area]/[issue-ref]/<kebab-case-description>` (areas: demixer,
+  tuner, songs, metronome)
 - Example: `feat/songs/issue72/configure-audio-session`
 
 ## Architecture
 
-### Core Structure
-- **Feature-based modules**: `lib/{songs,metronome,tuner,drone}/` - each self-contained
-- **Shared utilities**: `lib/utils/` - persistent storage, notifications, processes
-- **Navigation**: Shell routing with go_router, 4 main branches (metronome/songs/tuner/drone)
-- **Theme**: Material 3 with dynamic colors, tone-based from forked `dynamic_color` package
+Layered, with UI grouped by feature and data and domain grouped by type.
 
-### Key Components
-
-**Songs Module** (`lib/songs/`)
-- `player/` - Audio playback using flutter_soloud (SoLoud engine)
-  - `Song` class: immutable representation with `AudioProvider` for source resolution
-  - `SongPlayer` component pattern for features (demixer, slowdowner, equalizer, loop, analyzer)
-  - `SongsAudioHandler` extends AudioHandler for background playback/media notifications
-- `demixer/` - ML-based stem separation (vocals, piano, guitar, bass, drums, other)
-  - Jobs sent to backend API, stems cached locally as separate audio files
-  - `DemixingProcess` extends `Process<T>` pattern for cancellable async work
-- `musbx_api/` - Backend API client for demixing and chord analysis jobs
-  - Jobs use polling pattern with progress tracking
-  - Results cached in `song.cacheDirectory` under app documents
-
-**State Management Patterns**
-1. `PersistentValue<T>` - ValueNotifier that auto-saves to SharedPreferences
-2. `TransformedPersistentValue<T, S>` - Type conversion layer over PersistentValue
-3. Component pattern: `SongPlayerComponent<P extends SongPlayer>` for modular features
-4. `Process<T>` abstract class - standard pattern for cancellable long-running tasks with progress tracking
-
-**Singleton Services**
-- `Songs.handler` - AudioHandler (initialize with `Songs.initialize()`)
-- `Metronome.instance` - Global metronome with notification support
-- `SoLoud.instance` - Audio engine (init in `Songs.initialize()`)
-- `Analytics.initialize()` - Firebase analytics
-- `Notifications.initialize()` - awesome_notifications setup
-
-### Critical Patterns
-
-**Late Final Initialization**
-```dart
-// Common pattern throughout codebase
-late final ValueNotifier<bool> enabledNotifier = ValueNotifier(true)
-  ..addListener(_updateEnabled);
+```
+lib/
+  config/       Composition root: providers, migrations, optional-service loading
+  data/
+    services/   One wrapper per external system (SoLoud, Supabase, AdMob, …)
+    repositories/  Single source of truth per concern; consume services
+    models/     Models mirroring an external API's shape
+  domain/
+    models/     App models (Song, Pitch, Chord, …)
+    use_case/   Logic spanning several repositories
+  routing/      go_router configuration and the shell branches
+  <feature>/    UI: metronome, tuner, drone, songs, settings, widgets
 ```
 
-**Audio Source Resolution**
-`AudioProvider` subclasses (YtdlpAudio, FileAudio, DemixedAudio) resolve to `AudioSource` for playback. Always call `resolve(song: song)` before playing.
+Dependencies are wired in `lib/config/dependencies.dart` and injected with
+`package:provider`. Nothing is a global singleton except `Metronome.instance`,
+`Tuner.instance` and `Drone.instance`, which are being migrated away from.
 
-**Error Handling**
-- Use `Process<T>` for async operations - automatic error tracking via `errorNotifier`
-- Throw `Cancelled()` exception when user cancels operations
-- Check `breakIfCancelled()` periodically in long operations
+### Key pieces
 
-**Type Aliases**
-```dart
-typedef Json = Map<String, dynamic>;  // Used everywhere for JSON
-```
+**Songs** (`lib/songs/`, `lib/data/repositories/song/`)
+
+- `SongRepository` — the library, backed by a `HistoryHandler` so it doubles as
+  a play history.
+- `AudioRepository` — turns a `Song`'s `AudioReference` (`UrlAudio`,
+  `FileAudio`, `BytesAudio`) into a playable `AudioSource`, caching the audio.
+- `PlaybackRepository` — the loaded song and everything the user can do to it.
+  A demixed song plays as one sound per stem, driven through a single SoLoud
+  voice group. Audible state is read from `SongPreferences` on load and written
+  back on unload.
+- `DemixRepository` — at most one `DemixingProcess` per song; processes survive
+  a rebuild of the provider tree.
+- `AnalysisRepository` — chords (server-side) and waveform (local, mobile only),
+  both cached on disk.
+
+**Musbx API** (`lib/data/services/musbx_api/`)
+
+- `MusbxApi.getClient()` picks the first reachable host whose version satisfies
+  `MusbxApi.version`.
+- Work is submitted as a `Job` and polled for a `JobReport`; there are no push
+  updates.
+
+**Storage**
+
+- `FileCacheService` splits files by durability: `scratch` (regenerable, the OS
+  may purge it) and `persistent` (user data). Writes are atomic.
+- `SongCache` names every file belonging to a song within that split.
+- `SharedPreferencesService` hands out `PersistentValue` /
+  `TransformedPersistentValue` notifiers rather than raw reads and writes.
+
+### Patterns
+
+**`Result<T>`** (`lib/utils/result.dart`) — the outcome of anything that may
+fail. `Ok`, or a `Failure` subtype: `Unavailable`, `Cancelled`,
+`AccessRestricted`. Switch on it; the analyzer checks exhaustiveness.
+
+**`OptionalService`** (`lib/data/services/service.dart`) — a service that may
+have nothing behind it on a given device. Disabled instances throw
+`ServiceDisabled`; `OptionalService.guard` turns that into
+`Result.unavailable`. `ServiceLoader` keeps a fallback in place and retries
+when a failure could still pass.
+
+**`Process<T>`** (`lib/utils/process.dart`) — a long task with progress,
+cancellation and error capture. Implement `execute`, report through
+`progressNotifier`, and call `breakIfCancelled` between awaits. Runs once.
+
+**Type aliases** — `typedef Json = Map<String, dynamic>;` in
+`lib/utils/utils.dart`.
 
 ## Development Workflow
 
-### Building & Running
 ```bash
-flutter pub get                    # Install dependencies
-dart run flutter_launcher_icons    # Update app icons
-dart run flutter_native_splash:create  # Update splash screens
-flutter run                        # Run app
-flutter build apk --release        # Android release build
+flutter pub get                        # Install dependencies
+dart run flutter_launcher_icons         # Update app icons
+dart run flutter_native_splash:create   # Update splash screens
+dart run tool/generate_icons.dart       # Rebuild the CustomIcons font
+flutter run                             # Run the app
+flutter build apk --release             # Android release build
 ```
 
-### Dependencies
-- Audio: `flutter_soloud` (dev branch from GitHub), `audio_service`, `audio_session`
-- UI: `dynamic_color` (forked for tone-based colors), `google_fonts`, `material_symbols_icons`
-- State: `shared_preferences` (via PersistentValue), `go_router`
-- Backend: `dio` for API calls, Firebase for analytics
+### Dependencies of note
 
-### Linting & Formatting
-- Strict analysis enabled (strict-casts, strict-inference, strict-raw-types)
+- Audio: `flutter_soloud`, `audio_service`, `audio_session`, `flutter_recorder`
+- UI: `dynamic_color` and `material_plus` (both git forks), `google_fonts`,
+  `material_symbols_icons`
+- State and routing: `provider`, `go_router`, `shared_preferences`
+- Backend: `dio`, `supabase_flutter`, Firebase for analytics
+
+### Linting and formatting
+
+- Strict analysis: `strict-casts`, `strict-inference`, `strict-raw-types`
 - Formatter: `trailing_commas: preserve`, `page_width: 79`
-- Run `flutter analyze` before commits
+- Run `flutter analyze` and `dart format lib/` before committing
 
 ## UI Conventions
 
-**Custom Widgets** (`lib/widgets/widgets.dart`)
-- `ContinuousButton` - Hold for repeated actions (metronome BPM adjustment)
-- `Shimmer` - Loading effect, gradient configured per theme
-- `Directories` class - Static helpers for app/temp directories
+- Navigation: four shell branches (`Routes.branches`); settings and
+  announcements sit outside the shell. Use `navigatorKey.currentContext` when no
+  local context is available, and `navigationShell.goBranch(index)` to switch
+  tabs.
+- Theming: Material 3 with dynamic colors. Read colors from
+  `Theme.of(context).colorScheme`; the sliders and waveform read
+  `PositionSliderStyle` out of the theme extensions.
+- Theme mode is persisted through `SettingsRepository.themeModeNotifier`.
+- Shared widgets live in `lib/widgets/`; `ResultBuilder` builds from a pending
+  `Result`, and `PermissionBuilder` gates a feature behind a `Permission`.
 
-**Navigation**
-- Use `Navigation.router` (GoRouter) for all routing
-- Branch switching: `Navigation.navigationShell.goBranch(index)`
-- Dialog context: Use `Navigation.navigatorKey.currentContext!` when no local context available
+## Gotchas
 
-**Theming**
-- Theme mode persisted via `AppTheme.themeModeNotifier`
-- Custom theme extensions: `PositionSliderStyle` for song position slider
-- Always use `Theme.of(context).colorScheme` for colors
-
-## Common Gotchas
-
-1. **Audio initialization**: Always call `Songs.initialize()` before using any Songs features
-2. **Persistent values**: Must call `PersistentValue.initialize()` in main() before creating any instances
-3. **Demixing cache**: Songs store stems in `song.audioDirectory`, check `song.isDemixed` before assuming stems exist
-4. **Firebase**: `firebase_options.dart` auto-generated, don't edit manually
-6. **Component lifecycle**: SongPlayerComponents are tied to player instance, dispose with player
+1. `firebase_options.dart` is generated — do not edit it by hand.
+2. A song's preferences live in the persistent cache, so clearing its audio
+   leaves them intact; `DeleteSong` is what removes both.
+3. `SharedPreferencesService` prefixes every key with `musbx/`, so `clear()`
+   cannot reach preferences written by plugins.
+4. Demixing survives a provider rebuild, because `DemixRepository` holds its
+   processes statically.
 
 ## Testing
 
-Single test file: `test/widget_test.dart` (basic smoke test). No extensive test coverage yet.
+Single test file: `test/widget_test.dart` (basic smoke test). No extensive test
+coverage yet.
 
 ## Key Files Reference
 
-- [lib/main.dart](lib/main.dart) - App entry, initialization order critical
-- [lib/navigation.dart](lib/navigation.dart) - Router config, branch structure
-- [lib/songs/player/songs.dart](lib/songs/player/songs.dart) - Songs service, history handling
-- [lib/songs/player/song.dart](lib/songs/player/song.dart) - Song model, cache management
-- [lib/utils/persistent_value.dart](lib/utils/persistent_value.dart) - Persistent state pattern
-- [lib/utils/process.dart](lib/utils/process.dart) - Async task pattern with cancellation
-- [pubspec.yaml](pubspec.yaml) - Dependencies, note forked packages
+- [lib/main.dart](../lib/main.dart) — app entry
+- [lib/config/dependencies.dart](../lib/config/dependencies.dart) — composition
+  root
+- [lib/routing/router.dart](../lib/routing/router.dart) — router and shell
+- [lib/data/repositories/song/playback_repository.dart](../lib/data/repositories/song/playback_repository.dart)
+  — the loaded song and its playback
+- [lib/utils/result.dart](../lib/utils/result.dart) — the `Result` type
+- [lib/utils/process.dart](../lib/utils/process.dart) — cancellable async tasks
+- [pubspec.yaml](../pubspec.yaml) — dependencies, note the forked packages

@@ -7,10 +7,10 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:volume_controller/volume_controller.dart';
 
+/// Button that sets [Metronome.bpm] based on you tapping.
+/// Measures the interval between each tap and averages your taps to estimate
+/// a bpm.
 class BpmTapper extends StatelessWidget {
-  /// Button that sets [Metronome.bpm] based on you tapping.
-  /// Measures the interval between each tap and averages your taps to estimate
-  /// a bpm.
   const BpmTapper({
     super.key,
     this.resetDuration = const Duration(seconds: 60 ~/ Metronome.minBpm),

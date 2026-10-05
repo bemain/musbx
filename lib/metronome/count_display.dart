@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 
+/// Widget for displaying the number of beat and the [Metronome]'s current count.
 class CountDisplay extends StatefulWidget {
-  /// Widget for displaying the number of beat and the [Metronome]'s current count.
   const CountDisplay({super.key});
 
   @override

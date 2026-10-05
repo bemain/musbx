@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/metronome/metronome.dart';
 
+/// Displays and features buttons for changing the [Metronome]'s key signature.
 class Higher extends StatelessWidget {
-  /// Displays and features buttons for changing the [Metronome]'s key signature.
   const Higher({super.key, this.size = 64.0});
 
+  /// The font size of the beat count.
   final double size;
 
   @override

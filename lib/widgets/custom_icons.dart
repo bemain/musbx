@@ -2,6 +2,10 @@
 
 import 'package:flutter/widgets.dart';
 
+/// The icons drawn from the bundled `CustomIcons` font.
+///
+/// Generated from the SVGs in `assets/icons` by `tool/generate_icons.dart`; edit
+/// those rather than this.
 class CustomIcons {
   CustomIcons._();
 

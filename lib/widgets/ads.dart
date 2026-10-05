@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:musbx/data/services/ad_service.dart';
+import 'package:provider/provider.dart';
 
+/// A banner ad sized to the width it is given. Takes up no space until an ad has
+/// loaded, and none at all if none can be.
 class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({super.key});
 
@@ -11,8 +14,8 @@ class BannerAdWidget extends StatefulWidget {
   State<BannerAdWidget> createState() => _BannerAdWidgetState();
 }
 
+/// The banner ad to show. This is `null` until the ad is actually loaded.
 class _BannerAdWidgetState extends State<BannerAdWidget> {
-  /// The banner ad to show. This is `null` until the ad is actually loaded.
   BannerAd? _bannerAd;
 
   @override
@@ -44,8 +47,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   /// Load a banner ad.
   Future<void> _loadAd(int width) async {
-    final ad = await AdService.instance.loadBanner(width: width);
-    if (ad == null) return;
+    final ad = await context.read<AdService>().loadBanner(width: width);
     if (!mounted) {
       await ad.dispose();
       return;
