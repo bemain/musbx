@@ -140,7 +140,8 @@ class SettingsPage extends StatelessWidget {
                     await showAlertSheet<void>(
                       context: context,
                       builder: (context) => ThemeSelector(
-                        themeNotifier: settings.themeModeNotifier,
+                        initialValue: themeMode,
+                        onSelection: (value) => settings.themeMode = value,
                       ),
                     );
                   },

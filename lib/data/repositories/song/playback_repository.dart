@@ -332,7 +332,7 @@ class PlaybackRepository extends ChangeNotifier {
         for (final e in files.entries)
           e.key: await _audioEngine.loadFile(e.value),
       };
-      final SoundGroup sound = _audioEngine.play(sources);
+      final SoundGroup sound = _audioEngine.createSound(sources);
 
       _sound = sound;
 

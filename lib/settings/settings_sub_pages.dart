@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:musbx/data/repositories/drone_repository.dart';
 import 'package:musbx/data/repositories/settings_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/use_case/clear_song_cache.dart';
 import 'package:musbx/domain/use_case/delete_song.dart';
-import 'package:musbx/drone/drone.dart';
 import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/routing/router.dart';
 import 'package:musbx/settings/selectors.dart';
@@ -281,7 +281,8 @@ class TunerSettingsPage extends StatelessWidget {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => TuningSelector(
-                      tuningNotifier: settings.tuner.tuningNotifier,
+                      initialValue: tuning,
+                      onSelection: (value) => settings.tuner.tuning = value,
                     ),
                   );
                 },
@@ -299,8 +300,9 @@ class TunerSettingsPage extends StatelessWidget {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => AccidentalSelector(
-                      accidentalNotifier:
-                          settings.tuner.preferredAccidentalNotifier,
+                      initialValue: accidental,
+                      onSelection: (value) =>
+                          settings.tuner.preferredAccidental = value,
                     ),
                   );
                 },
@@ -319,68 +321,72 @@ class DroneSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SettingsSubPage(
-      title: Text("Drone settings"),
-      children: [
-        SettingsGroup(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: Drone.instance.tuningNotifier,
-              builder: (context, tuning, child) => ListTile(
+    final DroneRepository drone = context.read();
+
+    return ListenableBuilder(
+      listenable: drone,
+      builder: (context, child) => SettingsSubPage(
+        title: Text("Drone settings"),
+        children: [
+          SettingsGroup(
+            children: [
+              ListTile(
                 leading: Icon(CustomIcons.tuning_fork),
                 title: Text("Tuning"),
                 subtitle: Text(
-                  "${tuning.frequency.toStringAsFixed(0)} Hz",
+                  "${drone.tuning.frequency.toStringAsFixed(0)} Hz",
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => TuningSelector(
-                      tuningNotifier: Drone.instance.tuningNotifier,
+                      initialValue: drone.tuning,
+                      onSelection: (value) => drone.tuning = value,
                     ),
                   );
                 },
               ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: Drone.instance.temperamentNotifier,
-              builder: (context, temperament, child) => ListTile(
+
+              ListTile(
                 leading: Icon(Symbols.tune),
                 title: Text("Temperament"),
                 subtitle: Text(
-                  TemperamentSelector.temperamentDescription(temperament),
+                  TemperamentSelector.temperamentDescription(
+                    drone.temperament,
+                  ),
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => TemperamentSelector(
-                      temperamentNotifier: Drone.instance.temperamentNotifier,
+                      initialValue: drone.temperament,
+                      onSelection: (value) => drone.temperament = value,
                     ),
                   );
                 },
               ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: Drone.instance.waveformNotifier,
-              builder: (context, waveform, child) => ListTile(
-                leading: Icon(WaveformShapeSelector.waveformIcon(waveform)),
+              ListTile(
+                leading: Icon(
+                  WaveformShapeSelector.waveformIcon(drone.waveform),
+                ),
                 title: Text("Waveform shape"),
                 subtitle: Text(
-                  WaveformShapeSelector.waveformDescription(waveform),
+                  WaveformShapeSelector.waveformDescription(drone.waveform),
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => WaveformShapeSelector(
-                      waveformNotifier: Drone.instance.waveformNotifier,
+                      initialValue: drone.waveform,
+                      onSelection: (value) => drone.waveform = value,
                     ),
                   );
                 },
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

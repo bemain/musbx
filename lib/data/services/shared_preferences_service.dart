@@ -138,6 +138,11 @@ class SharedPreferencesService {
     from: from,
   );
 
+  /// Remove the value stored under [key], so it falls back to its initial one.
+  ///
+  /// Existing [PersistentValue] handles on [key] are not notified.
+  Future<void> remove(String key) => _preferences.remove("$_prefix$key");
+
   /// Remove everything stored by the app, so every value falls back to its initial one.
   ///
   /// Existing [PersistentValue] handles report their initial values again but

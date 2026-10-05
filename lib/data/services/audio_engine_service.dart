@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/data/models/sound_group.dart';
+import 'package:musbx/data/models/tone_group.dart';
 import 'package:musbx/domain/models/stem_type.dart';
 
 /// Owns the SoLoud audio engine, which has to be initialized once before any
@@ -23,7 +24,7 @@ class AudioEngineService {
   Future<AudioSource> loadFile(File file) => _soLoud.loadFile(file.path);
   Future<void> unload(AudioSource source) => _soLoud.disposeSource(source);
 
-  SoundGroup play(Map<StemType?, AudioSource> sources) {
+  SoundGroup createSound(Map<StemType?, AudioSource> sources) {
     // Activate filters. This needs to be done before the sound is played.
     sources.forEach((stem, source) {
       for (var filter in [
@@ -134,6 +135,68 @@ class AudioEngineService {
   void setStemVolume(SoundGroup sound, StemType? stem, double volume) {
     if (sound.handles[stem] == null) return;
     _soLoud.setVolume(sound.handles[stem]!, volume);
+  }
+
+  ToneGroup createTones() {
+    final SoundHandle groupHandle = _soLoud.createVoiceGroup();
+    if (groupHandle.isError) {
+      throw Exception("Failed to create voice group");
+    }
+
+    return ToneGroup(
+      sources: [],
+      handles: [],
+      groupHandle: groupHandle,
+    );
+  }
+
+  Future<ToneGroup> setTones(
+    ToneGroup group,
+    List<double> frequencies,
+    WaveForm waveform,
+  ) async {
+    final List<AudioSource> sources = [...group.sources];
+    final List<SoundHandle> handles = [...group.handles];
+    for (int i = handles.length; i < frequencies.length; i++) {
+      final source = await _soLoud.loadWaveform(waveform, false, 1.0, 0.0);
+      final handle = _soLoud.play(source, paused: true);
+      _soLoud.addVoicesToGroup(group.groupHandle, [handle]);
+      sources.add(source);
+      handles.add(handle);
+    }
+
+    // Remove excess players
+    for (int i = handles.length - 1; i >= frequencies.length; i--) {
+      await _soLoud.stop(handles[i]);
+      await _soLoud.disposeSource(sources[i]);
+
+      handles.removeAt(i);
+      sources.removeAt(i);
+    }
+
+    // Set frequencies
+    for (int i = 0; i < sources.length; i++) {
+      _soLoud.setWaveform(sources[i], waveform);
+      _soLoud.setWaveformFreq(sources[i], frequencies[i]);
+    }
+    return ToneGroup(
+      sources: sources,
+      handles: handles,
+      groupHandle: group.groupHandle,
+    );
+  }
+
+  void resumeTones(ToneGroup group) =>
+      _soLoud.setPause(group.groupHandle, false);
+  void pauseTones(ToneGroup group) =>
+      _soLoud.setPause(group.groupHandle, true);
+
+  Future<void> stopTones(ToneGroup group) async {
+    await Future.wait([
+      for (var handle in group.handles) _soLoud.stop(handle),
+      for (var source in group.sources) unload(source),
+    ]);
+    _soLoud.destroyVoiceGroup(group.groupHandle);
   }
 
   Future<void> dispose() async {

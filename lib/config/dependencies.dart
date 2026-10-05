@@ -7,6 +7,7 @@ import 'package:musbx/data/repositories/analysis/analysis_repository_remote.dart
 import 'package:musbx/data/repositories/announcement/announcement_repository.dart';
 import 'package:musbx/data/repositories/announcement/announcement_repository_remote.dart';
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
+import 'package:musbx/data/repositories/drone_repository.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
 import 'package:musbx/data/repositories/feedback/feedback_repository.dart';
@@ -142,6 +143,12 @@ List<SingleChildWidget> _repositories = [
   ),
   ChangeNotifierProvider(
     create: (context) => DemixRepository(cache: context.read()),
+  ),
+  ChangeNotifierProvider(
+    create: (context) => DroneRepository(
+      audioEngine: context.read(),
+      sharedPreferences: context.read(),
+    ),
   ),
   ChangeNotifierProvider(
     create: (context) =>

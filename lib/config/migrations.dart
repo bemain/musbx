@@ -61,7 +61,14 @@ class Migrations {
 
   late final List<_Migration> _migrations = [
     _Migration(70, _extractSongPreferences),
+    _Migration(70, _removeRelativeDroneRoot),
   ];
+
+  /// Up to build 69 the drone's root was stored under `drone/root` as
+  /// semitones from its tuning pitch. It is now stored relative to C0 under
+  /// another key, so the old value is dropped and the root resets to A3.
+  Future<void> _removeRelativeDroneRoot() =>
+      _sharedPreferences.remove("drone/root");
 
   /// Move each song's preferences out of the library history into its own file.
   ///

@@ -22,6 +22,7 @@ class SettingsRepository {
 
   /// Whether to follow the system theme, or force light or dark.
   ThemeMode get themeMode => themeModeNotifier.value;
+  set themeMode(ThemeMode value) => themeModeNotifier.value = value;
   late final TransformedPersistentValue<ThemeMode, String> themeModeNotifier =
       _sharedPreferences.transformed<ThemeMode, String>(
         "theme/mode",
@@ -56,9 +57,6 @@ class TunerSettingsRepository {
 
   final SharedPreferencesService _sharedPreferences;
 
-  /// The frequency of A4, in Hz. Used as a reference for all other notes.
-  ///
-  /// Defaults to [Pitch.a440].
   Pitch get tuning => tuningNotifier.value;
   set tuning(Pitch value) => tuningNotifier.value = value;
   late final ValueNotifier<Pitch> tuningNotifier = _sharedPreferences
@@ -69,16 +67,12 @@ class TunerSettingsRepository {
         to: (pitch) => pitch.toString(),
       );
 
-  /// The temperament that notes are tuned to.
-  ///
-  /// Defaults to [EqualTemperament].
   Temperament get temperament => temperamentNotifier.value;
   set temperament(Temperament value) => temperamentNotifier.value = value;
   final ValueNotifier<Temperament> temperamentNotifier = ValueNotifier(
     const EqualTemperament(),
   );
 
-  /// The accidental to prefer when displaying notes.
   Accidental get preferredAccidental => preferredAccidentalNotifier.value;
   set preferredAccidental(Accidental value) =>
       preferredAccidentalNotifier.value = value;
