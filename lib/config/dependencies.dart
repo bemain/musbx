@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:musbx/config/adapter/deep_link_adapter.dart';
 import 'package:musbx/config/adapter/media_notification_adapter.dart';
 import 'package:musbx/config/adapter/metronome_notification_adapter.dart';
@@ -46,6 +50,7 @@ import 'package:musbx/domain/use_case/load_song.dart';
 import 'package:musbx/domain/use_case/play_song.dart';
 import 'package:musbx/domain/use_case/resume_demixing.dart';
 import 'package:musbx/domain/use_case/unload_song.dart';
+import 'package:musbx/firebase_options.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
@@ -69,6 +74,8 @@ Future<List<SingleChildWidget>> loadProviders() async {
     packageInfo: packageInfo,
   ).run();
 
+  final firebase = await _initializeFirebase();
+
   final audioEngine = await AudioEngineService.create();
   final audioSession = await AudioSessionService.create();
   final permission = await PermissionService.create();
@@ -87,6 +94,10 @@ Future<List<SingleChildWidget>> loadProviders() async {
     Provider.value(value: fileCache),
     Provider.value(value: sharedPreferences),
     Provider.value(value: permission),
+    ..._optional(
+      () => AnalyticsService.create(app: firebase),
+      AnalyticsService.disabled,
+    ),
     ..._services,
 
     ChangeNotifierProvider.value(value: songs),
@@ -99,9 +110,20 @@ Future<List<SingleChildWidget>> loadProviders() async {
   ];
 }
 
+Future<FirebaseApp?> _initializeFirebase() async {
+  if (Platform.isLinux) return null;
+  try {
+    return await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on FirebaseException catch (e) {
+    debugPrint("[FIREBASE] Initialization failed: $e");
+    return null;
+  }
+}
+
 List<SingleChildWidget> _services = [
   ..._optional(AdService.create, AdService.disabled),
-  ..._optional(AnalyticsService.create, AnalyticsService.disabled),
   ..._optional(AudioCaptureService.create, AudioCaptureService.disabled),
   ..._optional(DeepLinksService.create, DeepLinksService.disabled),
   ..._optional(

@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:musbx/data/services/service.dart';
-import 'package:musbx/firebase_options.dart';
 
 /// Reports how the app is used to Firebase Analytics.
 ///
@@ -25,15 +22,10 @@ class AnalyticsService extends OptionalService {
   /// Returns a [disabled] if the platform lacks a Firebase configuration.
   /// Throws if initialization fails anywhere else; since analytics is optional,
   /// callers should fall back to [disabled] rather than propagate that.
-  static Future<AnalyticsService> create({FirebaseOptions? options}) async {
-    if (Platform.isLinux) return disabled();
-
-    // TODO: Move this to a composition root
-    await Firebase.initializeApp(
-      options: options ?? DefaultFirebaseOptions.currentPlatform,
-    );
-
-    return AnalyticsService._(FirebaseAnalytics.instance);
+  static Future<AnalyticsService> create({FirebaseApp? app}) async {
+    return (app == null)
+        ? disabled()
+        : AnalyticsService._(FirebaseAnalytics.instanceFor(app: app));
   }
 
   /// A service that discards everything logged to it, for when analytics is
