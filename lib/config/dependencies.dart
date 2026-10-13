@@ -1,5 +1,6 @@
 import 'package:musbx/config/adapter/deep_link_adapter.dart';
 import 'package:musbx/config/adapter/media_notification_adapter.dart';
+import 'package:musbx/config/adapter/metronome_notification_adapter.dart';
 import 'package:musbx/config/migrations.dart';
 import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/repositories/analysis/analysis_repository.dart';
@@ -12,6 +13,7 @@ import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart'
 import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
 import 'package:musbx/data/repositories/feedback/feedback_repository.dart';
 import 'package:musbx/data/repositories/feedback/feedback_repository_remote.dart';
+import 'package:musbx/data/repositories/metronome_repository.dart';
 import 'package:musbx/data/repositories/notification/notification_repository.dart';
 import 'package:musbx/data/repositories/notification/notification_repository_remote.dart';
 import 'package:musbx/data/repositories/settings_repository.dart';
@@ -72,6 +74,10 @@ Future<List<SingleChildWidget>> loadProviders() async {
   final permission = await PermissionService.create();
 
   final songs = await SongRepository.create(fileCache: fileCache);
+  final metronome = await MetronomeRepository.create(
+    audioEngine: audioEngine,
+    sharedPreferences: sharedPreferences,
+  );
 
   return [
     Provider.value(value: packageInfo),
@@ -84,6 +90,7 @@ Future<List<SingleChildWidget>> loadProviders() async {
     ..._services,
 
     ChangeNotifierProvider.value(value: songs),
+    ChangeNotifierProvider.value(value: metronome),
     ..._repositories,
 
     ..._useCases,
@@ -261,6 +268,15 @@ List<SingleChildWidget> _useCases = [
 List<SingleChildWidget> _adapters = [
   Provider(
     lazy: false,
+    create: (context) => DeepLinkAdapter(
+      deepLinks: context.read(),
+      songs: context.read(),
+      checkSongAccess: context.read(),
+    ),
+    dispose: (context, value) => value.dispose(),
+  ),
+  Provider(
+    lazy: false,
     create: (context) => MediaNotificationAdapter(
       mediaNotification: context.read(),
       playback: context.read(),
@@ -270,10 +286,10 @@ List<SingleChildWidget> _adapters = [
   ),
   Provider(
     lazy: false,
-    create: (context) => DeepLinkAdapter(
-      deepLinks: context.read(),
-      songs: context.read(),
-      checkSongAccess: context.read(),
+    create: (context) => MetronomeNotificationAdapter(
+      notifications: context.read(),
+      metronome: context.read(),
+      settings: context.read(),
     ),
     dispose: (context, value) => value.dispose(),
   ),

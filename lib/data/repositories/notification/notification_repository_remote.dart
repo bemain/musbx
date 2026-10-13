@@ -9,9 +9,6 @@ import 'package:musbx/data/services/service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/notification.dart';
 import 'package:musbx/domain/models/permission.dart';
-import 'package:musbx/metronome/metronome.dart';
-import 'package:musbx/routing/router.dart';
-import 'package:musbx/routing/routes.dart';
 import 'package:musbx/utils/result.dart';
 
 /// Thrown when a notification is posted without the user having allowed them.
@@ -34,10 +31,6 @@ class NotificationRepositoryRemote extends NotificationRepository {
   }) : _sharedPreferences = sharedPreferences,
        _notifications = notifications,
        _permissionService = permissionService {
-    // [NotificationService.actionStream] is shared by every instance, so one
-    // subscription outlives the swap from fallback to created service.
-    _notifications.value.actionStream.listen(_onActionReceived);
-
     unawaited(_checkPermissionStatus());
   }
 
@@ -48,9 +41,7 @@ class NotificationRepositoryRemote extends NotificationRepository {
   final PermissionService _permissionService;
 
   @override
-  final ValueNotifier<bool> hasPermissionNotifier = ValueNotifier(
-    false,
-  );
+  final ValueNotifier<bool> hasPermissionNotifier = ValueNotifier(false);
 
   late final PersistentValue<bool> _hasRequestedPermission = _sharedPreferences
       .value(
@@ -104,6 +95,14 @@ class NotificationRepositoryRemote extends NotificationRepository {
   }
 
   @override
+  Future<Result<void>> cancel(NotificationChannel channel) async {
+    return OptionalService.guard(
+      () => _notifications.value.cancel(channel),
+      "Notification service disabled",
+    );
+  }
+
+  @override
   Future<Result<void>> cancelAll() async {
     return OptionalService.guard(
       () => _notifications.value.cancelAll(),
@@ -111,22 +110,7 @@ class NotificationRepositoryRemote extends NotificationRepository {
     );
   }
 
-  /// Callback for when the user taps an action on the notification while the app is the background.
-  static Future<void> _onActionReceived(
-    NotificationActionTapped action,
-  ) async {
-    if (action.channel == NotificationChannel.metronomeControls) {
-      // Navigate to the metronome page
-      navigationShell.goBranch(
-        Routes.branches.indexOf(Routes.metronome),
-      );
-
-      switch (action.key) {
-        case "play":
-          Metronome.instance.resume();
-        case "pause":
-          Metronome.instance.pause();
-      }
-    }
-  }
+  @override
+  Stream<NotificationActionTapped> get actions =>
+      _notifications.value.actionStream;
 }

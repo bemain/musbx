@@ -7,7 +7,6 @@ import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/use_case/clear_song_cache.dart';
 import 'package:musbx/domain/use_case/delete_song.dart';
-import 'package:musbx/metronome/metronome.dart';
 import 'package:musbx/routing/router.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
@@ -57,13 +56,15 @@ class MetronomeSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SettingsRepository settings = context.read();
+
     return SettingsSubPage(
       title: Text("Metronome settings"),
       children: [
         SettingsGroup(
           children: [
             ValueListenableBuilder(
-              valueListenable: Metronome.instance.showNotificationNotifier,
+              valueListenable: settings.metronome.showNotificationNotifier,
               builder: (context, showNotification, child) => ListTile(
                 leading: Icon(Symbols.notification_settings),
                 title: Text("Show notification"),
@@ -71,13 +72,13 @@ class MetronomeSettingsPage extends StatelessWidget {
                   "Control the Metronome from the notifications drawer",
                 ),
                 onTap: () {
-                  Metronome.instance.showNotification =
-                      !Metronome.instance.showNotification;
+                  settings.metronome.showNotification =
+                      !settings.metronome.showNotification;
                 },
                 trailing: Switch(
-                  value: Metronome.instance.showNotification,
+                  value: settings.metronome.showNotification,
                   onChanged: (value) =>
-                      Metronome.instance.showNotification = value,
+                      settings.metronome.showNotification = value,
                 ),
               ),
             ),

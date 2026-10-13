@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/notification/notification_repository.dart';
-import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:provider/provider.dart';
 
@@ -15,12 +15,14 @@ class MetronomeNotificationIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SettingsRepository settings = context.read();
+
     return ValueListenableBuilder(
       valueListenable: context
           .read<NotificationRepository>()
           .hasPermissionNotifier,
       builder: (context, hasPermission, child) => ValueListenableBuilder(
-        valueListenable: Metronome.instance.showNotificationNotifier,
+        valueListenable: settings.metronome.showNotificationNotifier,
         builder: (context, showNotification, child) {
           if (showNotification && hasPermission) return const SizedBox();
 
@@ -40,6 +42,8 @@ class MetronomeNotificationIndicator extends StatelessWidget {
   /// Ask for permission to send notifications.
   Future<void> _requestPermission(BuildContext context) async {
     final NotificationRepository notifications = context.read();
+    final SettingsRepository settings = context.read();
+
     if (notifications.hasPermission) return;
 
     if (!context.mounted) return;
@@ -55,18 +59,16 @@ class MetronomeNotificationIndicator extends StatelessWidget {
       value: true,
     )) {
       // When permission is given, we assume the user wants us to show a notification.
-      Metronome.instance.showNotification = true;
-
-      if (Metronome.instance.isPlaying) {
-        await Metronome.instance.updateNotification();
-      }
+      settings.metronome.showNotification = true;
     }
   }
 
   /// Ask if we can show a Metronome notification, if the user has disabled it
   /// in the settings.
   Future<void> _requestShowNotification(BuildContext context) async {
-    if (Metronome.instance.showNotification) return;
+    final SettingsRepository settings = context.read();
+
+    if (settings.metronome.showNotification) return;
 
     final bool? mayShowNotification = await showDialog(
       context: context,
@@ -74,7 +76,7 @@ class MetronomeNotificationIndicator extends StatelessWidget {
     );
 
     if (mayShowNotification != null) {
-      Metronome.instance.showNotification = mayShowNotification;
+      settings.metronome.showNotification = mayShowNotification;
     }
   }
 }

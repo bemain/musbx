@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:provider/provider.dart';
 
 /// Slider for adjusting [Metronome]'s bpm.
 class BpmSlider extends StatelessWidget {
@@ -7,20 +8,14 @@ class BpmSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: Metronome.instance.bpmNotifier,
-      builder: (context, child) {
-        return Slider(
-          min: Metronome.minBpm.toDouble(),
-          max: Metronome.maxBpm.toDouble(),
-          value: Metronome.instance.bpm.toDouble(),
-          onChanged: (value) {
-            Metronome.instance.bpm = value.toInt();
-          },
-          onChangeEnd: (value) {
-            Metronome.instance.reset();
-          },
-        );
+    final MetronomeRepository metronome = context.read();
+
+    return Slider(
+      min: MetronomeRepository.minBpm.toDouble(),
+      max: MetronomeRepository.maxBpm.toDouble(),
+      value: metronome.bpm.toDouble(),
+      onChanged: (value) {
+        metronome.bpm = value.toInt();
       },
     );
   }

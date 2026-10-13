@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:provider/provider.dart';
 import 'package:volume_controller/volume_controller.dart';
 
 /// Button that sets [Metronome.bpm] based on you tapping.
@@ -13,7 +14,9 @@ import 'package:volume_controller/volume_controller.dart';
 class BpmTapper extends StatelessWidget {
   const BpmTapper({
     super.key,
-    this.resetDuration = const Duration(seconds: 60 ~/ Metronome.minBpm),
+    this.resetDuration = const Duration(
+      seconds: 60 ~/ MetronomeRepository.minBpm,
+    ),
     this.tapsRemembered = 10,
   });
 
@@ -31,6 +34,8 @@ class BpmTapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final MetronomeRepository metronome = context.read();
+
     final Stopwatch stopwatch = Stopwatch();
     List<int> tapBpms = [];
 
@@ -49,7 +54,7 @@ class BpmTapper extends StatelessWidget {
         if (sound != null) SoLoud.instance.play(sound!);
 
         if (await VolumeController.instance.isMuted() ||
-            Metronome.instance.volume == 0.0) {
+            metronome.volume == 0.0) {
           // Vibrate
           await HapticFeedback.vibrate();
         }
@@ -64,7 +69,7 @@ class BpmTapper extends StatelessWidget {
         }
 
         // Stop metronome so it doesn't play sound while user is tapping
-        Metronome.instance.pause();
+        metronome.pause();
 
         // Add bpm
         if (stopwatch.elapsed > Duration.zero) {
@@ -74,9 +79,7 @@ class BpmTapper extends StatelessWidget {
         tapBpms.removeRange(0, max(tapBpms.length - tapsRemembered, 0));
 
         // Update bpm
-        Metronome.instance.bpm =
-            tapBpms.reduce((a, b) => a + b) ~/ tapBpms.length;
-        await Metronome.instance.reset();
+        metronome.bpm = tapBpms.reduce((a, b) => a + b) ~/ tapBpms.length;
 
         // Reset stopwatch
         stopwatch.reset();

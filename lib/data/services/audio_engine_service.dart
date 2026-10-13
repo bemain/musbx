@@ -22,6 +22,7 @@ class AudioEngineService {
   }
 
   Future<AudioSource> loadFile(File file) => _soLoud.loadFile(file.path);
+  Future<AudioSource> loadAsset(String key) => _soLoud.loadAsset(key);
   Future<void> unload(AudioSource source) => _soLoud.disposeSource(source);
 
   SoundGroup createSound(Map<StemType?, AudioSource> sources) {
@@ -61,6 +62,12 @@ class AudioEngineService {
     );
   }
 
+  SoundHandle schedule(
+    AudioSource source,
+    Duration atTime, {
+    double volume = 1.0,
+  }) => _soLoud.playScheduled(source, atTime, volume: volume);
+
   Future<void> stop(SoundGroup sound) async {
     await Future.wait([
       for (var handle in sound.handles.values) _soLoud.stop(handle),
@@ -68,6 +75,8 @@ class AudioEngineService {
     ]);
     _soLoud.destroyVoiceGroup(sound.groupHandle);
   }
+
+  void unschedule(SoundHandle handle) => _soLoud.stop(handle);
 
   void resume(SoundGroup sound) => _soLoud.setPause(sound.groupHandle, false);
   void pause(SoundGroup sound) => _soLoud.setPause(sound.groupHandle, true);
@@ -77,6 +86,9 @@ class AudioEngineService {
 
   Duration getPosition(SoundGroup sound) =>
       _soLoud.getPosition(sound.handles.values.first);
+
+  Duration getEngineTime() => _soLoud.getEngineTime();
+  Duration getPlayheadTime() => _soLoud.getPlayheadTime();
 
   void seek(SoundGroup sound, Duration position) {
     sound.handles.forEach((stem, handle) {

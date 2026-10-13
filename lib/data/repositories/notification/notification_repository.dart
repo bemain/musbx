@@ -21,6 +21,10 @@ abstract class NotificationRepository {
   /// Show [notification], replacing any earlier one with the same id.
   Future<Result<void>> post(AppNotification notification);
 
+  Future<Result<void>> cancel(NotificationChannel channel);
+
   /// Cancel all notifications
   Future<Result<void>> cancelAll();
+
+  Stream<NotificationActionTapped> get actions;
 }
