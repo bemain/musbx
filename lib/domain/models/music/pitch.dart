@@ -26,10 +26,11 @@ class Pitch {
   /// The octave of the pitch, in [scientific pitch notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation).
   final int octave;
 
-  /// The frequency of the pitch.
+  /// The frequency of the pitch, in Hz.
   final double frequency;
 
-  /// Get the pitch closest to a specific [frequency].
+  /// The pitch closest to [frequency] under [tuning] and [temperament],
+  /// carrying [frequency] itself rather than the pitch's exact one.
   factory Pitch.closest(
     double frequency, {
     Pitch tuning = const Pitch.a440(),
@@ -51,6 +52,7 @@ class Pitch {
     );
   }
 
+  /// How many cents this pitch is above [frequency].
   double offsetFrom(double frequency) =>
       1200 * log(this.frequency / frequency) / log2e;
 
@@ -63,9 +65,10 @@ class Pitch {
     return pitch;
   }
 
-  /// Parse [string] as a pitch class. See [abbreviation] for how the string should be formatted, e.g. A#4@440Hz.
+  /// Parse [string] as a pitch, in the format [toString] produces, e.g.
+  /// "A#4@440Hz".
   ///
-  /// Returns `null` if [string] is not a valid pitch class.
+  /// Returns `null` if [string] is not a valid pitch.
   static Pitch? tryParse(String string) {
     final match = RegExp(
       r"^([A-G][b♭#♯]?)(\d+)@(\d+(\.\d+)?)(Hz)?$",

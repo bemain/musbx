@@ -49,11 +49,13 @@ class SongSettings extends ChangeNotifier {
       )..addListener(notifyListeners);
 }
 
+/// How the tuner names and measures what it hears.
 class TunerSettings extends ChangeNotifier {
   TunerSettings._(this._sharedPreferences);
 
   final SharedPreferencesService _sharedPreferences;
 
+  /// The reference pitch readings are measured against.
   Pitch get tuning => _tuning.value;
   set tuning(Pitch value) => _tuning.value = value;
   late final ValueNotifier<Pitch> _tuning =
@@ -64,12 +66,14 @@ class TunerSettings extends ChangeNotifier {
         to: (pitch) => pitch.toString(),
       )..addListener(notifyListeners);
 
+  /// The tuning system readings are matched against. Not persisted.
   Temperament get temperament => _temperament.value;
   set temperament(Temperament value) => _temperament.value = value;
   late final ValueNotifier<Temperament> _temperament = ValueNotifier(
     const EqualTemperament(),
   )..addListener(notifyListeners);
 
+  /// Whether to name pitches with sharps or flats.
   Accidental get preferredAccidental => _preferredAccidental.value;
   set preferredAccidental(Accidental value) =>
       _preferredAccidental.value = value;
@@ -84,6 +88,7 @@ class TunerSettings extends ChangeNotifier {
       )..addListener(notifyListeners);
 }
 
+/// Preferences for the metronome beyond what it is playing.
 class MetronomeSettings extends ChangeNotifier {
   MetronomeSettings._(this._sharedPreferences);
 

@@ -14,10 +14,10 @@ class YoutubeVideo {
   /// The ID that YouTube uses to uniquely identify the video.
   final YoutubeVideoId id;
 
-  /// The video's url
+  /// The video's url.
   final String url;
 
-  /// The video's title
+  /// The video's title.
   final String title;
 
   /// The video's description.

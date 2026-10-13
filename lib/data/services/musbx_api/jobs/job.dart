@@ -126,7 +126,10 @@ abstract class Job<T> {
     }
   }
 
-  /// Check the status of this job periodically until it completes and return it's result.
+  /// Check the status of this job periodically until it completes, and return
+  /// its result.
+  ///
+  /// Throws [RequestFailed] if the job fails or returns nothing.
   Future<T> complete({
     Duration checkStatusInterval = const Duration(milliseconds: 500),
   }) async {

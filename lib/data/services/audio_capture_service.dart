@@ -51,12 +51,8 @@ class AudioCaptureService extends OptionalService {
   /// Create the service, claiming the microphone at [sampleRate].
   ///
   /// Throws if the recorder cannot be set up, which includes the device having
-  /// no input at all. It does not start recording, and does not need the
-  /// microphone permission yet; that is only asked for on the first listen.
-  ///
-  /// The device may not support [sampleRate] and can settle on a nearby one, so
-  /// callers that care about the exact rate should read it back rather than
-  /// assume what they asked for.
+  /// no input at all. It does not start recording, so the microphone
+  /// permission is not needed yet.
   static Future<AudioCaptureService> create({
     Recorder? recorder,
     int sampleRate = 22050,
@@ -124,10 +120,6 @@ class AudioCaptureService extends OptionalService {
   ///
   /// Built once, but only attached to while [_controller] has listeners, so the
   /// recorder is left alone the rest of the time.
-  ///
-  /// Note that this won't receive any data until streaming is started.
-  /// For a [Stream] that automatically starts streaming when listened to,
-  /// use [dataStream].
   late final Stream<AudioFrame> _dataStream = _recorder.uint8ListStream.map(
     _processData,
   );

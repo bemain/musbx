@@ -2,6 +2,8 @@ import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/utils/result.dart';
 
+/// Stop the loaded song, saving its preferences. Does nothing if no song is
+/// loaded.
 class UnloadSong {
   UnloadSong({
     required SongPreferencesRepository songPreferences,

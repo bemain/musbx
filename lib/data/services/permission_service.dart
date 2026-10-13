@@ -33,9 +33,8 @@ class PermissionService {
   /// Create the service.
   ///
   /// Returns an [unavailable] service on platforms that have no permission
-  /// model.
-  /// Reads the Android version once, since it decides which platform permission
-  /// [Permission.audioFiles] maps to.
+  /// model. Reads the Android version once, since it decides which platform
+  /// permission [Permission.audioFiles] maps to.
   static Future<PermissionService> create() async {
     if (Platform.isLinux || Platform.isMacOS) return unavailable();
 

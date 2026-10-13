@@ -30,9 +30,9 @@ class PurchaseService extends OptionalService {
     );
   }
 
+  /// The store connection, or `null` when this service is [disabled].
   final InAppPurchase? __inAppPurchase;
 
-  /// The store connection, or `null` when this service is [disabled].
   InAppPurchase get _inAppPurchase {
     throwIfDisabled();
     return __inAppPurchase!;

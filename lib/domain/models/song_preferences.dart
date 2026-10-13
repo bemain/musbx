@@ -8,7 +8,7 @@ part 'song_preferences.g.dart';
 /// How the user last left a song: where they were in it, and what they had
 /// adjusted.
 ///
-/// Read when a song is opened and written when it is closed, so that reopening
+/// Read when a song is loaded and written when it is unloaded, so that reopening
 /// it picks up where they stopped. Every field is nullable, meaning "never set",
 /// which is what lets a default change without overriding a deliberate choice.
 class SongPreferences {
@@ -45,7 +45,8 @@ class SongPreferences {
   /// The gain of each equalizer band, by band index.
   final Map<int, double>? equalizerGains;
 
-  /// Whether this song should be demixed or not.
+  /// Whether this song should be demixed. `null` defers to
+  /// `SongSettings.demixAutomatically`.
   final bool? shouldDemix;
 
   /// How loud each stem was, and whether it was heard at all.

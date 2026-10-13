@@ -11,17 +11,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// the device: signing in from another one, or clearing the app's data, makes
 /// the user someone else as far as the backend is concerned.
 ///
-/// Only the tables the app actually uses are reachable, through
-/// [announcements] and [feedback], rather than the client being handed out.
+/// Only the queries the app actually needs are exposed, rather than the client
+/// being handed out.
 ///
 /// Nothing here is essential, so reaching the backend is allowed to fail:
 /// [disabled] returns a service with no client behind it.
 class SupabaseService extends OptionalService {
   SupabaseService._(this.__client);
 
+  /// The Supabase client, or `null` when this service is [disabled].
   final SupabaseClient? __client;
 
-  /// The supabase client used internally.
   SupabaseClient get _client {
     throwIfDisabled();
     return __client!;
@@ -73,6 +73,9 @@ class SupabaseService extends OptionalService {
   );
 
   /// Get the latest announcement from the database.
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled], as does every
+  /// query below.
   Future<Announcement> getLatestAnnouncement() async {
     return await _announcements
         .select()
@@ -82,7 +85,7 @@ class SupabaseService extends OptionalService {
         .withConverter(Announcement.fromJson);
   }
 
-  /// Get all announcements from the database.
+  /// Get all announcements from the database, newest first.
   Future<List<Announcement>> getAnnouncements() async {
     return await _announcements
         .select()
@@ -92,6 +95,7 @@ class SupabaseService extends OptionalService {
         );
   }
 
+  /// Get the announcements published after [date], newest first.
   Future<List<Announcement>> getAnnouncementsAfter(DateTime date) async {
     return await _announcements
         .select()

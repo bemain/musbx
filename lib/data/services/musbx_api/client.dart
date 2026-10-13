@@ -27,7 +27,7 @@ final class BadStatusCode extends MusbxApiClientError {
 /// The server could not be reached at all.
 final class ConnectionFailed extends MusbxApiClientError {
   @override
-  String toString() => "Connecting to the Musx API server failed";
+  String toString() => "Connecting to the Musbx API server failed";
 }
 
 /// The server's answer did not have the shape the client expected.
@@ -204,7 +204,7 @@ class MusbxApiClient {
     }
   }
 
-  /// Download a file that was previously uploaded from the server.
+  /// Download the file behind [file] from the server into [destination].
   Future<File> download(
     FileHandle file,
     File destination, {

@@ -18,6 +18,7 @@ class SongPreferencesRepository {
 
   CacheFile _songFile(Song song) => _songCache.preferences(song);
 
+  /// The stored preferences for [song], or `null` if none have been saved.
   @useResult
   Future<Result<SongPreferences?>> read(Song song) async {
     try {
@@ -29,6 +30,7 @@ class SongPreferencesRepository {
     }
   }
 
+  /// Replace the stored preferences for [song].
   @useResult
   Future<Result<void>> write(Song song, SongPreferences preferences) async {
     try {

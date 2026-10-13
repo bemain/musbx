@@ -18,11 +18,9 @@ final class PermissionException implements Exception {
 }
 
 @pragma("vm:entry-point")
-/// Posts notifications through the platform, and routes taps on them back into
-/// the app.
-///
-/// An action tapped while the app is in the background arrives on a background
-/// isolate, which is why the handler is static.
+/// Posts notifications through [NotificationService], refusing to while the
+/// user has not given permission, and remembers whether permission has been
+/// asked for.
 class NotificationRepositoryRemote extends NotificationRepository {
   NotificationRepositoryRemote({
     required SharedPreferencesService sharedPreferences,

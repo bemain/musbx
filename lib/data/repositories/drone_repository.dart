@@ -9,6 +9,9 @@ import 'package:musbx/domain/models/music/pitch.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
 import 'package:musbx/domain/models/music/temperament.dart';
 
+/// Sustained tones at chosen intervals above a [root], for playing along to.
+///
+/// [tuning], [waveform], [root] and [intervals] are persisted.
 class DroneRepository extends ChangeNotifier {
   /// The minimum octave of the [root].
   static const int minOctave = 2;
@@ -34,6 +37,7 @@ class DroneRepository extends ChangeNotifier {
   /// created while it runs are freed too.
   Future<void> _pendingTones = Future.value();
 
+  /// The reference pitch every other pitch is tuned relative to.
   Pitch get tuning => tuningNotifier.value;
   set tuning(Pitch value) => tuningNotifier.value = value;
   late final ValueNotifier<Pitch> tuningNotifier =
@@ -44,6 +48,7 @@ class DroneRepository extends ChangeNotifier {
         to: (pitch) => pitch.toString(),
       )..addListener(_onPitchesChanged);
 
+  /// The shape of the generated tones, which decides their timbre.
   WaveForm get waveform => waveformNotifier.value;
   set waveform(WaveForm value) => waveformNotifier.value = value;
   late final ValueNotifier<WaveForm> waveformNotifier =
@@ -57,6 +62,7 @@ class DroneRepository extends ChangeNotifier {
         ),
       )..addListener(_onPitchesChanged);
 
+  /// How the [intervals] are turned into frequencies.
   Temperament get temperament => _temperament.value;
   set temperament(Temperament value) => _temperament.value = value;
   late final ValueNotifier<Temperament> _temperament = ValueNotifier(
@@ -85,11 +91,13 @@ class DroneRepository extends ChangeNotifier {
   static int _semitonesFromC0(Pitch pitch) =>
       pitch.octave * 12 + pitch.pitchClass.semitonesFromC;
 
-  /// The pitches that are currently playing.
+  /// The pitches sounded while playing, one per interval.
   Iterable<Pitch> get pitches => intervals.map(
     (interval) => root.transposed(interval, temperament: temperament),
   );
 
+  /// The semitones above [root] that are sounded. Emptying this pauses the
+  /// drone.
   Set<int> get intervals => Set.unmodifiable(_intervals.value);
   set intervals(Set<int> value) {
     _intervals.value = value;

@@ -8,6 +8,7 @@ import 'package:musbx/data/services/shared_preferences_service.dart';
 
 enum _TickKind { accented, primary, subdivision }
 
+/// The sounds loaded for each [_TickKind].
 class _Ticks {
   const _Ticks({
     required this.accented,
@@ -45,6 +46,12 @@ class _Ticks {
   }
 }
 
+/// A metronome whose ticks are scheduled on the audio engine's clock.
+///
+/// A timer looks [_scheduleAhead] into the future and schedules every tick
+/// falling inside it, so timing does not depend on when Dart gets to run. With
+/// the volume at zero, ticks are felt as haptics instead. [bpm], [higher] and
+/// [subdivisions] are persisted.
 class MetronomeRepository extends ChangeNotifier {
   static const int minBpm = 20;
 
@@ -69,6 +76,7 @@ class MetronomeRepository extends ChangeNotifier {
   final AudioEngineService _audioEngine;
   final _Ticks _ticks;
 
+  /// Create the repository, loading the tick sounds into the audio engine.
   static Future<MetronomeRepository> create({
     required SharedPreferencesService sharedPreferences,
     required AudioEngineService audioEngine,
@@ -81,6 +89,7 @@ class MetronomeRepository extends ChangeNotifier {
     );
   }
 
+  /// Beats per minute, clamped between [minBpm] and [maxBpm].
   int get bpm => _bpm.value;
   set bpm(int value) => _bpm.value = value.clamp(minBpm, maxBpm);
   late final PersistentValue<int> _bpm =
@@ -91,6 +100,7 @@ class MetronomeRepository extends ChangeNotifier {
         ..addListener(_restart)
         ..addListener(notifyListeners);
 
+  /// Beats per bar. The first beat of each bar is accented.
   int get higher => _higher.value;
   set higher(int value) => _higher.value = value;
   late final PersistentValue<int> _higher =
@@ -101,6 +111,7 @@ class MetronomeRepository extends ChangeNotifier {
         ..addListener(_restart)
         ..addListener(notifyListeners);
 
+  /// Ticks per beat, the first of which is the beat itself.
   int get subdivisions => _subdivisions.value;
   set subdivisions(int value) => _subdivisions.value = value;
   late final PersistentValue<int> _subdivisions =
@@ -143,6 +154,7 @@ class MetronomeRepository extends ChangeNotifier {
     return time.inMicroseconds ~/ _beatDuration.inMicroseconds;
   }
 
+  /// The beat of the bar currently being heard, from `0` to [higher] - 1.
   int get beat => _beat;
   int _beat = 0;
 

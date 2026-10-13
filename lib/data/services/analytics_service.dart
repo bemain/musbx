@@ -16,12 +16,11 @@ class AnalyticsService extends OptionalService {
   @override
   bool get isEnabled => _firebase != null;
 
-  /// Create the service, initializing Firebase with [options] or the options
-  /// generated for the current platform.
+  /// Create the service, reporting through an already initialized Firebase
+  /// [app].
   ///
-  /// Returns a [disabled] if the platform lacks a Firebase configuration.
-  /// Throws if initialization fails anywhere else; since analytics is optional,
-  /// callers should fall back to [disabled] rather than propagate that.
+  /// Returns a [disabled] service when there is no [app], as on platforms
+  /// without a Firebase configuration.
   static Future<AnalyticsService> create({FirebaseApp? app}) async {
     return (app == null)
         ? disabled()

@@ -28,11 +28,13 @@ class MusbxApi {
     "http://musbx.agardh.se:4242",
   ];
 
-  /// Find a host that is available and version is compatible with the app's [version].
+  /// A client for the first host that answers and is compatible with
+  /// [version].
   ///
-  /// Throws if no such host was found.
+  /// Throws [OutOfDate] if a host answered but none was compatible, and
+  /// [NoHostAvailable] if none answered.
   static Future<MusbxApiClient> getClient() async {
-    /// Whether at least one host is available.
+    // Whether at least one host answered.
     bool hostAvailable = false;
 
     for (String hostUrl in _hostUrls) {

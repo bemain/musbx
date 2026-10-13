@@ -16,9 +16,9 @@ class PitchDetectorResult {
   final double confidence;
 }
 
-/// Defines a contract on how a pitch can be obtained
-/// Detect a pitch from audio data.
+/// A way of detecting a pitch in audio data.
 abstract class PitchAlgorithm {
+  /// The pitch in [audioBuffer], or `null` if none could be detected.
   FutureOr<PitchDetectorResult?> getPitch(final Float32List audioBuffer);
 }
 

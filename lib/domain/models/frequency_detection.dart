@@ -11,9 +11,9 @@ class FrequencyDetection {
   /// When this data was recorded.
   final DateTime time;
 
-  /// Waveform data.
+  /// The audio the frequency was detected in.
   final AudioFrame frame;
 
-  /// The pitch detected, if any.
+  /// The frequency detected, in Hz, or `null` if none could be.
   final double? frequency;
 }

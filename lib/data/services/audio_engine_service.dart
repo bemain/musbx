@@ -14,6 +14,7 @@ class AudioEngineService {
 
   final SoLoud _soLoud;
 
+  /// Create the service, initializing the engine.
   static Future<AudioEngineService> create({SoLoud? soLoud}) async {
     final s = soLoud ?? SoLoud.instance;
 
@@ -25,6 +26,8 @@ class AudioEngineService {
   Future<AudioSource> loadAsset(String key) => _soLoud.loadAsset(key);
   Future<void> unload(AudioSource source) => _soLoud.disposeSource(source);
 
+  /// Start every one of [sources] paused and looping, in one voice group so
+  /// that they are paused, resumed and sped up together.
   SoundGroup createSound(Map<StemType?, AudioSource> sources) {
     // Activate filters. This needs to be done before the sound is played.
     sources.forEach((stem, source) {
@@ -62,12 +65,16 @@ class AudioEngineService {
     );
   }
 
+  /// Play [source] once at [atTime] on the engine's clock.
+  ///
+  /// See [getEngineTime].
   SoundHandle schedule(
     AudioSource source,
     Duration atTime, {
     double volume = 1.0,
   }) => _soLoud.playScheduled(source, atTime, volume: volume);
 
+  /// Stop [sound] and free its sources.
   Future<void> stop(SoundGroup sound) async {
     await Future.wait([
       for (var handle in sound.handles.values) _soLoud.stop(handle),
@@ -87,7 +94,11 @@ class AudioEngineService {
   Duration getPosition(SoundGroup sound) =>
       _soLoud.getPosition(sound.handles.values.first);
 
+  /// The mixer's clock, which sounds are scheduled against. Only advances
+  /// while the engine is mixing.
   Duration getEngineTime() => _soLoud.getEngineTime();
+
+  /// The time on [getEngineTime]'s clock of what is being heard right now.
   Duration getPlayheadTime() => _soLoud.getPlayheadTime();
 
   void seek(SoundGroup sound, Duration position) {
@@ -108,6 +119,10 @@ class AudioEngineService {
         .value;
   }
 
+  /// Transpose [sound] by [value] semitones.
+  ///
+  /// Compensates for the pitch shift the current speed causes, so this has to
+  /// be called again whenever the speed changes.
   void setPitch(SoundGroup sound, double value) {
     for (final stem in sound.sources.keys) {
       sound.sources[stem]?.filters.pitchShiftFilter
@@ -149,6 +164,7 @@ class AudioEngineService {
     _soLoud.setVolume(sound.handles[stem]!, volume);
   }
 
+  /// An empty, paused group of tones. See [setTones].
   ToneGroup createTones() {
     final SoundHandle groupHandle = _soLoud.createVoiceGroup();
     if (groupHandle.isError) {
@@ -162,6 +178,11 @@ class AudioEngineService {
     );
   }
 
+  /// Make [group] sound one tone per entry in [frequencies], adding and
+  /// removing tones as needed.
+  ///
+  /// Returns the updated group, which replaces [group]. Tones that are added
+  /// start paused.
   Future<ToneGroup> setTones(
     ToneGroup group,
     List<double> frequencies,
@@ -203,6 +224,7 @@ class AudioEngineService {
   void pauseTones(ToneGroup group) =>
       _soLoud.setPause(group.groupHandle, true);
 
+  /// Stop every tone in [group] and free the group.
   Future<void> stopTones(ToneGroup group) async {
     await Future.wait([
       for (var handle in group.handles) _soLoud.stop(handle),

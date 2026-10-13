@@ -36,8 +36,7 @@ lib/
 ```
 
 Dependencies are wired in `lib/config/dependencies.dart` and injected with
-`package:provider`. Nothing is a global singleton except `Metronome.instance`,
-`Tuner.instance` and `Drone.instance`, which are being migrated away from.
+`package:provider`. Nothing is a global singleton.
 
 ### Key pieces
 
@@ -45,16 +44,23 @@ Dependencies are wired in `lib/config/dependencies.dart` and injected with
 
 - `SongRepository` — the library, backed by a `HistoryHandler` so it doubles as
   a play history.
-- `AudioRepository` — turns a `Song`'s `AudioReference` (`UrlAudio`,
-  `FileAudio`, `BytesAudio`) into a playable `AudioSource`, caching the audio.
+- `AudioRepository` — fetches a `Song`'s `AudioReference` (`UrlAudio`,
+  `FileAudio`, `BytesAudio`) into a single cached file.
 - `PlaybackRepository` — the loaded song and everything the user can do to it.
   A demixed song plays as one sound per stem, driven through a single SoLoud
-  voice group. Audible state is read from `SongPreferences` on load and written
-  back on unload.
+  voice group. The `LoadSong` and `UnloadSong` use cases restore and save its
+  `SongPreferences`.
 - `DemixRepository` — at most one `DemixingProcess` per song; processes survive
   a rebuild of the provider tree.
 - `AnalysisRepository` — chords (server-side) and waveform (local, mobile only),
   both cached on disk.
+
+**Tools** (`lib/data/repositories/`)
+
+- `MetronomeRepository` — schedules ticks ahead on the SoLoud engine clock.
+- `TunerRepository` — runs microphone frames through `PitchDetector`.
+- `DroneRepository` — sustained tones at intervals above a root.
+- `SettingsRepository` — app-wide preferences, persisted as they change.
 
 **Musbx API** (`lib/data/services/musbx_api/`)
 
@@ -124,7 +130,7 @@ flutter build apk --release             # Android release build
 - Theming: Material 3 with dynamic colors. Read colors from
   `Theme.of(context).colorScheme`; the sliders and waveform read
   `PositionSliderStyle` out of the theme extensions.
-- Theme mode is persisted through `SettingsRepository.themeModeNotifier`.
+- Theme mode is persisted through `SettingsRepository.themeMode`.
 - Shared widgets live in `lib/widgets/`; `ResultBuilder` builds from a pending
   `Result`, and `PermissionBuilder` gates a feature behind a `Permission`.
 

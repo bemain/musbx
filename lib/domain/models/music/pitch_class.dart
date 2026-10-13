@@ -90,9 +90,9 @@ class PitchClass {
 
   /// Creates a pitch class with the given [chroma].
   ///
-  /// Tries using the [preferredAccidental], and fallbacks to the most
-  /// common one (meaning the one found in a key close to C in the circle of fifths)
-  /// if the given [chroma] could not be achieved using the preferred accidental.
+  /// Tries using the [preferredAccidental], and falls back to the most common
+  /// one (meaning the one found in a key close to C in the circle of fifths)
+  /// if the given [chroma] cannot be spelled with the preferred accidental.
   factory PitchClass.fromChroma(
     Chroma chroma, {
     Accidental? preferredAccidental,
@@ -163,8 +163,9 @@ class PitchClass {
     return PitchClass(natural, accidental ?? Accidental.natural);
   }
 
-  /// The "quality" of the pitches in this pitch class.
-  /// Due to enharmonic equivalence, many pitch classes (e.g F# and Gb) share the same chroma.
+  /// The chroma of the pitches in this pitch class.
+  ///
+  /// Enharmonic pitch classes (e.g. F♯ and G♭) share the same chroma.
   Chroma get chroma => naturalClass.chroma.transposed(accidental.alteration);
 
   /// How far above C this pitch class sits, between `0` and `11`.
@@ -176,8 +177,8 @@ class PitchClass {
 
   /// Transpose this pitch class a number of semitones.
   ///
-  /// Uses the [preferredAccidental] if one is required, and fallbacks to the one used by
-  /// the major key corresponding to this pitch class if not specified.
+  /// Uses the [preferredAccidental] if one is required, and falls back to the
+  /// one used by the major key on this pitch class if not specified.
   PitchClass transposed(int semitones, {Accidental? preferredAccidental}) =>
       PitchClass.fromChroma(
         chroma.transposed(semitones),

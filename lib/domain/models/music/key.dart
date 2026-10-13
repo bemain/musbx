@@ -64,18 +64,18 @@ class Key {
     Chroma.fSharp => 6,
   };
 
-  /// All the notes in this ḱey.
+  /// All the notes in this key.
   Iterable<PitchClass> get notes =>
       type.intervalPattern.map((interval) => tonic.transposed(interval));
 
-  /// The key parallel to this one.
-  /// It contains the same [notes] as this, but has a different [tonic] and [type].
+  /// The relative key: the same [notes] as this, but a different [tonic] and
+  /// [type].
   Key get parallel => switch (type) {
     KeyType.major => Key(tonic.transposed(-3), KeyType.minor),
     KeyType.minor => Key(tonic.transposed(3), KeyType.major),
   };
 
-  /// Returns [this] if this is major, or [parallel] otherwise.
+  /// This key if it is major, or its relative major otherwise.
   Key get _majorParallel => type == KeyType.major ? this : parallel;
 
   /// Transpose this key a number of semitones.

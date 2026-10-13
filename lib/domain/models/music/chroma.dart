@@ -18,9 +18,11 @@ enum Chroma {
   /// How far above C this chroma sits, between `0` and `11`.
   final int semitonesFromC;
 
-  /// The number of perfect fifths from this chroma and c, following the circle of fifths.
+  /// The number of perfect fifths between C and this chroma, following the
+  /// circle of fifths.
   ///
-  /// Returns a negative number if the fifths are descending (if this key would introduce flat accidentals)
+  /// Negative if the fifths are descending, i.e. if a major key on this chroma
+  /// has flats.
   int get fifthsFromC => [
     for (var i = -5; i <= 6; i++) i,
   ].firstWhere((i) => (i * 7) % 12 == semitonesFromC);

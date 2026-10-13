@@ -35,6 +35,7 @@ class MediaNotificationService extends OptionalService {
   @override
   bool get isEnabled => _handler != null;
 
+  /// Create the service, registering the notification with the platform.
   static Future<MediaNotificationService> create() async {
     // Initialize audio handler
     final h = await AudioService.init<_Handler>(
@@ -52,6 +53,7 @@ class MediaNotificationService extends OptionalService {
     return MediaNotificationService._(h);
   }
 
+  /// A service with no notification behind it.
   static MediaNotificationService disabled() =>
       MediaNotificationService._(null);
 
@@ -63,6 +65,8 @@ class MediaNotificationService extends OptionalService {
   Stream<void> get notificationClicked => _clicked.stream;
 
   /// What the user pressed on the notification or lock screen.
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled].
   Stream<MediaCommand> get commands {
     throwIfDisabled();
     return _handler!.commands;
@@ -70,11 +74,14 @@ class MediaNotificationService extends OptionalService {
 
   /// Show [state] in the notification, or remove the notification when it is
   /// `null`.
+  ///
+  /// Throws [ServiceDisabled] when this service is [disabled].
   void update(MediaNotificationState? state) {
     throwIfDisabled();
     _handler!.update(state);
   }
 
+  /// Stop listening for taps and close [notificationClicked] and [commands].
   Future<void> dispose() async {
     await _handler?.dispose();
     await _subscription.cancel();
@@ -82,6 +89,8 @@ class MediaNotificationService extends OptionalService {
   }
 }
 
+/// Translates between `audio_service` and [MediaCommand]s and
+/// [MediaNotificationState]s.
 class _Handler extends BaseAudioHandler with SeekHandler {
   final _commands = StreamController<MediaCommand>.broadcast();
   Stream<MediaCommand> get commands => _commands.stream;

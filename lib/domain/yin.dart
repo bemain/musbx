@@ -8,8 +8,8 @@ import 'package:musbx/domain/pitch_algorithm.dart';
 ///
 /// Ported by Techpotatoes - Lucas Bento
 class Yin extends PitchAlgorithm {
-  /// The default YIN threshold value. Should be around 0.10~0.15. See YIN
-  /// paper for more information.
+  /// The YIN threshold. The YIN paper suggests 0.10–0.15; a higher value
+  /// accepts less periodic audio as pitched.
   static final double defaultThreshold = 0.20;
 
   /// The default size of an audio buffer (in samples).
@@ -66,6 +66,7 @@ class Yin extends PitchAlgorithm {
   }
 
   /// Implements the difference function as described in step 2 of the YIN
+  /// paper.
   void _difference(final List<double> audioBuffer) {
     final int bufferLength = _yinBuffer.length;
 

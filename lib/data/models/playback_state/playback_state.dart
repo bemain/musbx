@@ -9,8 +9,10 @@ part 'playback_state.g.dart';
 /// the song, a `null` start its beginning.
 typedef LoopSection = ({Duration? start, Duration? end});
 
+/// How a single stem is heard: whether it is on, and how loud.
 typedef StemData = ({bool enabled, double volume});
 
+/// A snapshot of the loaded song and everything the user has adjusted on it.
 @JsonSerializable()
 class PlaybackState {
   PlaybackState({

@@ -11,6 +11,11 @@ import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/domain/use_case/unload_song.dart';
 import 'package:musbx/utils/result.dart';
 
+/// Unload whatever is playing and load a song in its place, restoring the
+/// preferences it was left with.
+///
+/// Fetches the audio if it is not cached, and plays the stems instead when
+/// every one of them is.
 class LoadSong {
   LoadSong({
     required UnloadSong unloadSong,

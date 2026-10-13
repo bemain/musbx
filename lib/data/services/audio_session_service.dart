@@ -28,7 +28,7 @@ class AudioSessionService {
   AudioSessionService(this._session) {
     _session.interruptionEventStream.listen(_handleInterruption);
     _session.becomingNoisyEventStream.listen((_) {
-      // The user unplugged the headphones, so we should pause or lower the volume.
+      // The headphones were unplugged, so playback should not continue out loud.
       _controller.add(AudioSessionEvent.pause);
     });
   }
@@ -68,6 +68,7 @@ class AudioSessionService {
   final StreamController<AudioSessionEvent> _controller =
       StreamController.broadcast();
 
+  /// What the system wants playback to do, as it happens.
   late final Stream<AudioSessionEvent> eventStream = _controller.stream;
 
   void _handleInterruption(AudioInterruptionEvent event) {

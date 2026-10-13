@@ -15,12 +15,12 @@ import 'package:musbx/utils/result.dart';
 /// The song that is loaded, and everything the user can do to it while it
 /// plays.
 ///
-/// One song is loaded at a time. If it has been demixed, each stem is played as
+/// One song is loaded at a time. If it is loaded as stems, each is played as
 /// its own sound and the whole set is driven through a single voice group, so
 /// speed, pitch and seeking stay in lockstep; otherwise a single source is
 /// played. Either way the audible state — [speed], [pitch], [loopSection], the
-/// equalizer and the [stems] — is read from that song's [SongPreferences] on
-/// [load] and written back on [stop].
+/// equalizer and the [stems] — is restored from the [SongPreferences] passed to
+/// [load], and handed back by [readPreferences] for the caller to save.
 class PlaybackRepository extends ChangeNotifier {
   /// The minimum number of frequency bands.
   static const int minNumBands = 4;
@@ -40,8 +40,10 @@ class PlaybackRepository extends ChangeNotifier {
   /// The gain of a band that is left alone.
   static const double equalizerDefaultGain = 1.0;
 
+  /// How many bands the equalizer is split into unless the song says otherwise.
   static const int equalizerDefaultNumBands = 3;
 
+  /// The volume of a stem that is left alone.
   static const double stemDefaultVolume = 1.0;
 
   /// The stems that can be controlled without premium.
@@ -88,12 +90,17 @@ class PlaybackRepository extends ChangeNotifier {
 
   SoundGroup? _sound;
   PlaybackState? _state;
+
+  /// Everything about the loaded song, or `null` when nothing is loaded.
   PlaybackState? get state => _state;
 
+  /// The preferences the song was loaded with, which [readPreferences] builds
+  /// on so that fields this repository does not own are kept.
   SongPreferences? _preferences;
 
   late final Timer _positionUpdater;
 
+  /// The loaded song, or `null` when nothing is loaded.
   Song? get song => state?.song;
 
   /// Whether the loaded song is playing as separate stems rather than as one
@@ -210,11 +217,20 @@ class PlaybackRepository extends ChangeNotifier {
     }
   }
 
+  /// The stems that have settings, or `null` when nothing is loaded.
+  ///
+  /// A song that is not loaded as stems still has settings for them, kept for
+  /// when it is.
   Set<StemType>? get stems => _state?.stems.keys.toSet();
 
+  /// Whether [type] is heard, or `null` if it has no settings.
   bool? getStemEnabled(StemType type) => _state?.stems[type]?.enabled;
+
+  /// How loud [type] is, or `null` if it has no settings.
   double? getStemVolume(StemType type) => _state?.stems[type]?.volume;
 
+  /// Turn [type] on or off, or change its volume, leaving whatever is not
+  /// specified alone.
   void setStem(StemType type, {bool? enabled, double? volume}) => _updateState(
     stems: {
       ..._state!.stems,
@@ -314,11 +330,11 @@ class PlaybackRepository extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Unload whatever is playing and load [song], paused at wherever it was left
-  /// off.
+  /// Unload whatever is playing and load [song] paused, restoring
+  /// [preferences] if given.
   ///
-  /// Plays the demixed stems if the cache holds all of them, and the song as one
-  /// sound otherwise.
+  /// [files] maps each stem to its audio, or holds a single `null` entry to
+  /// play the song as one sound.
   @useResult
   Future<Result<void>> load(
     Song song,
@@ -361,8 +377,8 @@ class PlaybackRepository extends ChangeNotifier {
     }
   }
 
-  /// Stop and unload the current song.
-  /// TODO: Should I mark all functions that return Result with @useResult?
+  /// Stop and unload the current song, without saving its preferences.
+  // TODO: Should I mark all functions that return Result with @useResult?
   Future<Result<void>> stop() async {
     try {
       reset();
@@ -382,6 +398,7 @@ class PlaybackRepository extends ChangeNotifier {
     }
   }
 
+  /// The loaded song's audible state and position, as preferences to save.
   SongPreferences readPreferences() {
     final Map<int, double> gains = {};
     for (int band = 0; band < (numEqualizerBands ?? 0); band++) {

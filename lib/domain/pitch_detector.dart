@@ -4,7 +4,8 @@ import 'dart:typed_data';
 import 'package:musbx/domain/yin.dart';
 import 'package:musbx/utils/num_iterable_extension.dart';
 
-/// Detect a pitch in audio data.
+/// Detects the pitch in a stream of audio buffers, smoothing over the last few
+/// readings.
 class PitchDetector {
   PitchDetector({this.sampleRate = 22050, this.averageCount = 3});
 
@@ -16,9 +17,10 @@ class PitchDetector {
 
   final List<double?> _recent = [];
 
-  /// Use pitch detection to try and detect a pitch in the given [data], and feed the buffer.
+  /// Detect the pitch in [data] and remember it for smoothing later readings.
   ///
-  /// Returns a smoothed frequency, or `null` if not confident.
+  /// Returns the mean of the recent readings close to this one, or `null` if
+  /// no pitch was detected.
   double? add(Float32List data) {
     final double? detected = Yin(
       sampleRate.toDouble(),

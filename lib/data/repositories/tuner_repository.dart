@@ -10,9 +10,9 @@ import 'package:musbx/domain/pitch_detector.dart';
 /// Listens to the microphone and reports what pitch is being played.
 ///
 /// [dataStream] is where the work happens: each frame from the microphone is
-/// run through pitch detection, matched to the closest [Pitch] under the
-/// current [tuning] and [temperament], and kept in [dataBuffer] for the graphs
-/// to draw. Nothing is recorded until something listens.
+/// run through pitch detection and kept in [dataBuffer] for the graphs to draw.
+/// Matching a frequency to a [Pitch] is left to the reader, which knows the
+/// tuning. Nothing is recorded until something listens.
 class TunerRepository {
   TunerRepository({required ServiceLoader<AudioCaptureService> audioCapture})
     : _audioCapture = audioCapture;
@@ -31,14 +31,12 @@ class TunerRepository {
   /// macOS, so requesting permission there would never complete. On macOS
   /// access is instead granted by the `com.apple.security.device.audio-input`
   /// entitlement, which the system prompts for on first use.
-  /// TODO: Move to ViewModel
+  // TODO: Move to ViewModel
   bool hasPermission = Platform.isLinux || Platform.isMacOS;
 
-  /// The recent data recorded from the [dataStream]. [bufferLength] data entries are kept.
+  /// The last [bufferLength] readings from [dataStream].
   ///
-  /// Note that this won't receive any data until streaming is started.
-  /// For a [Stream] that automatically starts streaming when listened to,
-  /// use [dataStream].
+  /// Only filled while [dataStream] is listened to.
   final List<FrequencyDetection> dataBuffer = [];
 
   /// The realtime data recorded from the microphone.
@@ -85,7 +83,7 @@ class TunerRepository {
     }
   }
 
-  /// The most recent pitch detected, or `null` until one has been.
+  /// The most recent reading, or `null` until there has been one.
   FrequencyDetection? latestReading;
 
   /// Stop listening to the microphone and end [dataStream].

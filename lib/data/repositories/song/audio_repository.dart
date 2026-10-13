@@ -18,8 +18,8 @@ class AudioRepository {
 
   final SongCache _songCache;
 
-  /// Fetch [song]'s audio unless it is already cached, and load it into the
-  /// audio engine.
+  /// The cached file holding [song]'s audio, fetched first unless it is
+  /// already there.
   Future<Result<File>> resolve(Song song) async {
     try {
       CacheFile cacheFile = _songCache.audio(song);

@@ -12,8 +12,8 @@ class AuthInterceptor extends Interceptor {
   final Dio dio;
   Future<String?>? _refreshTokenFuture;
 
-  /// Helper for persisting access tokens.
-  /// TODO: Use a persistent storage such as FlutterSecureStorage
+  /// The current access token, shared by every client and held in memory only.
+  // TODO: Use a persistent storage such as FlutterSecureStorage
   static String? accessToken;
   AuthInterceptor(this.dio);
 
@@ -57,7 +57,7 @@ class AuthInterceptor extends Interceptor {
   }
 
   bool _shouldRefresh(RequestOptions requestOptions) {
-    // Avoid refreshing again if it"s the refresh token call
+    // Avoid refreshing again if it's the refresh token call
     return !requestOptions.path.contains("/token");
   }
 
@@ -95,7 +95,7 @@ class AuthInterceptor extends Interceptor {
       accessToken = response.data!['access_token'] as String;
       return accessToken;
     } catch (e) {
-      // If fail, remove token or force user to re-log
+      // Drop the rejected token, so later requests go out without one
       accessToken = null;
       return null;
     } finally {

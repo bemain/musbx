@@ -4,7 +4,7 @@ import 'package:musbx/data/services/musbx_api/jobs/job.dart';
 import 'package:musbx/utils/utils.dart';
 
 /// Result from an analyzing job.
-/// The keys are timestamps, and the values are chords.
+/// The keys are timestamps in seconds, and the values are chords.
 typedef AnalyzeJobResult = Map<double, String>;
 
 /// A [JobReport] for a chord analysis job.
