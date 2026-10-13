@@ -21,13 +21,12 @@ class MetronomeNotificationAdapter {
   }) : _notifications = notifications,
        _metronome = metronome,
        _settings = settings {
+    // In case a notification is still present from the previous launch, kill it
+    unawaited(notifications.cancel(NotificationChannel.metronomeControls));
+
     _lifecycleListener = AppLifecycleListener(
       onHide: () async {
         if (metronome.isPlaying) await _updateNotification();
-      },
-      onDetach: () async {
-        // FIXME: This doesn't work... The future never completes
-        await notifications.cancelAll();
       },
     );
 
@@ -74,27 +73,20 @@ class MetronomeNotificationAdapter {
     final state = _currentState;
     if (state == _postedState) return;
 
-    final result = await _notifications.post(
-      AppNotification(
-        channel: NotificationChannel.metronomeControls,
-        title: "Metronome",
-        summary: state.isPlaying ? "Playing" : "Paused",
-        body:
-            "${state.higher} ${state.higher == 1 ? "beat" : "beats"} • ${state.bpm} bpm",
-        actions: [
-          if (!state.isPlaying)
-            NotificationAction(
-              key: "play",
-              label: "Play",
-            )
-          else
-            NotificationAction(
-              key: "pause",
-              label: "Pause",
+    // Shown only while playing, since on Android the notification keeps a
+    // foreground service running, which a paused metronome has no use for.
+    final result = state.isPlaying
+        ? await _notifications.post(
+            AppNotification(
+              channel: NotificationChannel.metronomeControls,
+              title: "Metronome",
+              summary: "Playing",
+              body:
+                  "${state.higher} ${state.higher == 1 ? "beat" : "beats"} • ${state.bpm} bpm",
+              actionSet: NotificationActionSet.metronomePlaying,
             ),
-        ],
-      ),
-    );
+          )
+        : await _notifications.cancel(NotificationChannel.metronomeControls);
 
     if (result is Ok) _postedState = state;
   }
@@ -111,13 +103,13 @@ class MetronomeNotificationAdapter {
   }
 
   late final StreamSubscription<NotificationActionTapped> _actions;
-  void _onAction(NotificationActionTapped action) {
+  void _onAction(NotificationActionTapped tapped) {
     navigationShell.goBranch(Routes.branches.indexOf(Routes.metronome));
-    switch (action.key) {
-      case "play":
-        _metronome.resume();
-      case "pause":
+    switch (tapped.action) {
+      case NotificationAction.pause:
         _metronome.pause();
+      case null:
+        break;
     }
   }
 
