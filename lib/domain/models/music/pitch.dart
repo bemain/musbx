@@ -54,7 +54,7 @@ class Pitch {
 
   /// How many cents this pitch is above [frequency].
   double offsetFrom(double frequency) =>
-      1200 * log(this.frequency / frequency) / log2e;
+      1200 * log(this.frequency / frequency) / ln2;
 
   /// Parse [string] as a pitch.
   ///

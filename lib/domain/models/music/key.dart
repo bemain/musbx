@@ -49,8 +49,7 @@ class Key {
     Chroma.aSharp ||
     Chroma.dSharp ||
     Chroma.gSharp ||
-    Chroma.cSharp ||
-    Chroma.fSharp => Accidental.flat,
+    Chroma.cSharp => Accidental.flat,
   };
 
   /// The number of accidentals that this key signature introduces.

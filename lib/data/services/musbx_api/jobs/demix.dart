@@ -34,7 +34,7 @@ class DemixJobReport extends JobReport<DemixJobResult> {
     super.id, {
     required super.status,
     super.result,
-    Object? error,
+    super.error,
     required this.step,
     this.progress = 0,
   }) : super(task: JobTask.demix);

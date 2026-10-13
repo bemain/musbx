@@ -36,9 +36,8 @@ class AudioSessionService {
   final AudioSession _session;
 
   static Future<AudioSessionService> create({AudioSession? session}) async {
-    // Configure audio session
-    final session = await AudioSession.instance;
-    await session.configure(
+    final s = session ?? await AudioSession.instance;
+    await s.configure(
       AudioSessionConfiguration(
         avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
         avAudioSessionCategoryOptions:
@@ -58,7 +57,7 @@ class AudioSessionService {
       ),
     );
 
-    return AudioSessionService(session);
+    return AudioSessionService(s);
   }
 
   /// Claim or release audio focus. Claim it before playing, release it when
