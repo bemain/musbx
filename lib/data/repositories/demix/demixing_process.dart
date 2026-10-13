@@ -32,20 +32,6 @@ enum DemixingStep {
   downloading,
 }
 
-/// A demixing failure that the user can be told about as-is.
-sealed class DemixingError implements Exception {}
-
-final class NoServerFound extends DemixingError {
-  @override
-  String toString() =>
-      "No Musbx API server capable of demixing could be found";
-}
-
-final class ServerError extends DemixingError {
-  @override
-  String toString() => "The Musbx API server was unable to demix the song";
-}
-
 /// Upload, separate and download stem files for a [song].
 class DemixingProcess extends Process<Map<StemType, CacheFile>> {
   DemixingProcess(

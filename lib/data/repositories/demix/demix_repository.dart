@@ -50,10 +50,7 @@ class DemixRepository extends ChangeNotifier {
   Future<bool> hasStems(Song song) async => await stemsFor(song) != null;
 
   /// The cached stem files for [song], or `null` unless all of them are present.
-  Future<Map<StemType, CacheFile>?> stemsFor(
-    Song song, {
-    String fileExtension = "mp3",
-  }) async {
+  Future<Map<StemType, CacheFile>?> stemsFor(Song song) async {
     final stems = {
       for (final stem in StemType.values) stem: _cache.stem(song, stem),
     };
