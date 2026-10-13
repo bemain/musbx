@@ -190,7 +190,7 @@ List<SingleChildWidget> _repositories = [
     ),
   ),
 
-  Provider(
+  ChangeNotifierProvider(
     create: (context) => SettingsRepository(sharedPreferences: context.read()),
   ),
 ];

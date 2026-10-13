@@ -21,10 +21,12 @@ class MetronomeNotificationIndicator extends StatelessWidget {
       valueListenable: context
           .read<NotificationRepository>()
           .hasPermissionNotifier,
-      builder: (context, hasPermission, child) => ValueListenableBuilder(
-        valueListenable: settings.metronome.showNotificationNotifier,
-        builder: (context, showNotification, child) {
-          if (showNotification && hasPermission) return const SizedBox();
+      builder: (context, hasPermission, child) => ListenableBuilder(
+        listenable: settings.metronome,
+        builder: (context, child) {
+          if (settings.metronome.showNotification && hasPermission) {
+            return const SizedBox();
+          }
 
           return IconButton(
             onPressed: () async {

@@ -56,35 +56,35 @@ class MetronomeSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SettingsRepository settings = context.read();
+    final MetronomeSettings settings = context
+        .read<SettingsRepository>()
+        .metronome;
 
-    return SettingsSubPage(
-      title: Text("Metronome settings"),
-      children: [
-        SettingsGroup(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: settings.metronome.showNotificationNotifier,
-              builder: (context, showNotification, child) => ListTile(
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, child) => SettingsSubPage(
+        title: Text("Metronome settings"),
+        children: [
+          SettingsGroup(
+            children: [
+              ListTile(
                 leading: Icon(Symbols.notification_settings),
                 title: Text("Show notification"),
                 subtitle: Text(
                   "Control the Metronome from the notifications drawer",
                 ),
                 onTap: () {
-                  settings.metronome.showNotification =
-                      !settings.metronome.showNotification;
+                  settings.showNotification = !settings.showNotification;
                 },
                 trailing: Switch(
-                  value: settings.metronome.showNotification,
-                  onChanged: (value) =>
-                      settings.metronome.showNotification = value,
+                  value: settings.showNotification,
+                  onChanged: (value) => settings.showNotification = value,
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -104,155 +104,153 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
     _cacheSize = _measureCache();
   });
 
-  SettingsRepository get settings => context.read();
+  SongSettings get settings => context.read<SettingsRepository>().songs;
 
   @override
   Widget build(BuildContext context) {
     final SongRepository songs = context.read();
 
-    return SettingsSubPage(
-      title: Text("Songs settings"),
-      children: [
-        SettingsGroup(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: settings.songs.demixAutomaticallyNotifier,
-              builder: (context, demixAutomatically, child) => ListTile(
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, child) => SettingsSubPage(
+        title: Text("Songs settings"),
+        children: [
+          SettingsGroup(
+            children: [
+              ListTile(
                 leading: Icon(Symbols.piano),
                 title: Text("Split new songs"),
                 subtitle: Text(
                   "Automatically split songs into instruments",
                 ),
                 onTap: () {
-                  settings.songs.demixAutomatically =
-                      !settings.songs.demixAutomatically;
+                  settings.demixAutomatically = !settings.demixAutomatically;
                 },
                 trailing: Switch(
-                  value: settings.songs.demixAutomatically,
-                  onChanged: (value) =>
-                      settings.songs.demixAutomatically = value,
+                  value: settings.demixAutomatically,
+                  onChanged: (value) => settings.demixAutomatically = value,
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
 
-        SettingsGroup(
-          children: [
-            ListenableBuilder(
-              listenable: songs,
-              builder: (context, child) => FutureBuilder<int>(
-                future: _cacheSize,
-                builder: (context, snapshot) {
-                  final cacheSize = snapshot.data ?? 0;
+          SettingsGroup(
+            children: [
+              ListenableBuilder(
+                listenable: songs,
+                builder: (context, child) => FutureBuilder<int>(
+                  future: _cacheSize,
+                  builder: (context, snapshot) {
+                    final cacheSize = snapshot.data ?? 0;
 
-                  return ListTile(
-                    enabled: songs.isNotEmpty && cacheSize > 0,
-                    leading: Icon(Symbols.cloud_off),
-                    title: Text("Free up storage"),
-                    onTap: () async {
-                      final bool? shouldContinue = await showDialog<bool>(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            icon: Icon(Symbols.cloud_off),
-                            title: Text("Clear cache?"),
-                            content: Text(
-                              "Offloading songs will free up some space on your device. Loading a song will take longer the next time.",
-                            ),
-                            actions: [
-                              FilledButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop(false);
-                                },
-                                child: Text("Cancel"),
+                    return ListTile(
+                      enabled: songs.isNotEmpty && cacheSize > 0,
+                      leading: Icon(Symbols.cloud_off),
+                      title: Text("Free up storage"),
+                      onTap: () async {
+                        final bool? shouldContinue = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              icon: Icon(Symbols.cloud_off),
+                              title: Text("Clear cache?"),
+                              content: Text(
+                                "Offloading songs will free up some space on your device. Loading a song will take longer the next time.",
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop(true);
-                                },
-                                child: Text("Proceed"),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-
-                      if (shouldContinue == true && context.mounted) {
-                        // Make sure the song is not open
-                        libraryNavigatorKey.currentState?.popUntil(
-                          (route) => route.isFirst,
+                              actions: [
+                                FilledButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(false);
+                                  },
+                                  child: Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(true);
+                                  },
+                                  child: Text("Proceed"),
+                                ),
+                              ],
+                            );
+                          },
                         );
 
-                        // Remove cache
-                        final ClearSongCache clearSongCache = context.read();
-                        for (final song in songs.getAll()) {
-                          await clearSongCache.call(song);
+                        if (shouldContinue == true && context.mounted) {
+                          // Make sure the song is not open
+                          libraryNavigatorKey.currentState?.popUntil(
+                            (route) => route.isFirst,
+                          );
+
+                          // Remove cache
+                          final ClearSongCache clearSongCache = context.read();
+                          for (final song in songs.getAll()) {
+                            await clearSongCache.call(song);
+                          }
+
+                          if (!mounted) return;
+                          _refresh();
                         }
-
-                        if (!mounted) return;
-                        _refresh();
-                      }
-                    },
-                  );
-                },
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-            ListenableBuilder(
-              listenable: songs,
-              builder: (context, child) => ListTile(
-                enabled: songs.isNotEmpty,
-                leading: Icon(Symbols.delete_sweep),
-                title: Text("Remove all songs"),
-                onTap: () async {
-                  final bool? shouldContinue = await showDialog<bool>(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        icon: Icon(Symbols.delete_sweep),
-                        title: Text("Clear songs?"),
-                        content: Text(
-                          "Are you sure you want to remove all songs from your library?\n\nThis action cannot be undone.",
-                        ),
-                        actions: [
-                          FilledButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(false);
-                            },
-                            child: Text("Cancel"),
+              ListenableBuilder(
+                listenable: songs,
+                builder: (context, child) => ListTile(
+                  enabled: songs.isNotEmpty,
+                  leading: Icon(Symbols.delete_sweep),
+                  title: Text("Remove all songs"),
+                  onTap: () async {
+                    final bool? shouldContinue = await showDialog<bool>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          icon: Icon(Symbols.delete_sweep),
+                          title: Text("Clear songs?"),
+                          content: Text(
+                            "Are you sure you want to remove all songs from your library?\n\nThis action cannot be undone.",
                           ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(true);
-                            },
-                            child: Text("Proceed"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-
-                  if (shouldContinue == true && context.mounted) {
-                    // Make sure the song is not open
-                    libraryNavigatorKey.currentState?.popUntil(
-                      (route) => route.isFirst,
+                          actions: [
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(false);
+                              },
+                              child: Text("Cancel"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(true);
+                              },
+                              child: Text("Proceed"),
+                            ),
+                          ],
+                        );
+                      },
                     );
 
-                    final DeleteSong deleteSong = context.read();
+                    if (shouldContinue == true && context.mounted) {
+                      // Make sure the song is not open
+                      libraryNavigatorKey.currentState?.popUntil(
+                        (route) => route.isFirst,
+                      );
 
-                    for (final song in songs.getAll()) {
-                      await deleteSong.call(song);
+                      final DeleteSong deleteSong = context.read();
+
+                      for (final song in songs.getAll()) {
+                        await deleteSong.call(song);
+                      }
+
+                      if (!mounted) return;
+                      _refresh();
                     }
-
-                    if (!mounted) return;
-                    _refresh();
-                  }
-                },
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -263,55 +261,54 @@ class TunerSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SettingsRepository settings = context.read();
+    final TunerSettings settings = context.read<SettingsRepository>().tuner;
 
-    return SettingsSubPage(
-      title: Text("Tuner settings"),
-      children: [
-        SettingsGroup(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: settings.tuner.tuningNotifier,
-              builder: (context, tuning, child) => ListTile(
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, child) => SettingsSubPage(
+        title: Text("Tuner settings"),
+        children: [
+          SettingsGroup(
+            children: [
+              ListTile(
                 leading: Icon(CustomIcons.tuning_fork),
                 title: Text("Tuning"),
                 subtitle: Text(
-                  "${tuning.frequency.toStringAsFixed(0)} Hz",
+                  "${settings.tuning.frequency.toStringAsFixed(0)} Hz",
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => TuningSelector(
-                      initialValue: tuning,
-                      onSelection: (value) => settings.tuner.tuning = value,
+                      initialValue: settings.tuning,
+                      onSelection: (value) => settings.tuning = value,
                     ),
                   );
                 },
               ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: settings.tuner.preferredAccidentalNotifier,
-              builder: (context, accidental, child) => ListTile(
+              ListTile(
                 leading: Icon(CustomIcons.accidentals),
                 title: Text("Preferred accidentals"),
                 subtitle: Text(
-                  AccidentalSelector.accidentalDescription(accidental),
+                  AccidentalSelector.accidentalDescription(
+                    settings.preferredAccidental,
+                  ),
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => AccidentalSelector(
-                      initialValue: accidental,
+                      initialValue: settings.preferredAccidental,
                       onSelection: (value) =>
-                          settings.tuner.preferredAccidental = value,
+                          settings.preferredAccidental = value,
                     ),
                   );
                 },
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

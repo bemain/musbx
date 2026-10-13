@@ -50,52 +50,49 @@ class TunerPageState extends State<TunerPage> {
 
     return StreamBuilder(
       stream: tuner.dataStream,
-      builder: (context, snapshot) => ValueListenableBuilder(
-        valueListenable: settings.tuner.tuningNotifier,
-        builder: (context, tuning, child) => ValueListenableBuilder(
-          valueListenable: settings.tuner.temperamentNotifier,
-          builder: (context, temperament, child) {
-            return Scaffold(
-              appBar: const DefaultAppBar(),
-              body: Padding(
-                padding: const EdgeInsets.only(
-                  left: 8,
-                  right: 8,
-                  bottom: 8,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FlatCard(
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 32),
-                          _buildPitchLabel(context),
-                          const SizedBox(height: 32),
-                          TunerGauge(
-                            reading: tuner.latestReading == null
-                                ? null
-                                : _tunerReading(tuner.latestReading!),
-                            showPitchText: false,
-                          ),
-                          const SizedBox(height: 16),
-                          const Divider(),
-                          PitchGraph(
-                            data: [
-                              for (final detection in tuner.dataBuffer)
-                                _tunerReading(detection),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+      builder: (context, snapshot) => ListenableBuilder(
+        listenable: settings.tuner,
+        builder: (context, child) {
+          return Scaffold(
+            appBar: const DefaultAppBar(),
+            body: Padding(
+              padding: const EdgeInsets.only(
+                left: 8,
+                right: 8,
+                bottom: 8,
               ),
-            );
-          },
-        ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FlatCard(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 32),
+                        _buildPitchLabel(context),
+                        const SizedBox(height: 32),
+                        TunerGauge(
+                          reading: tuner.latestReading == null
+                              ? null
+                              : _tunerReading(tuner.latestReading!),
+                          showPitchText: false,
+                        ),
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        PitchGraph(
+                          data: [
+                            for (final detection in tuner.dataBuffer)
+                              _tunerReading(detection),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

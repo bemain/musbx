@@ -128,19 +128,19 @@ class SettingsPage extends StatelessWidget {
 
           SettingsGroup(
             children: [
-              ValueListenableBuilder(
-                valueListenable: settings.themeModeNotifier,
-                builder: (context, themeMode, child) => ListTile(
+              ListenableBuilder(
+                listenable: settings,
+                builder: (context, child) => ListTile(
                   leading: Icon(Symbols.routine),
                   title: Text("Theme"),
                   subtitle: Text(
-                    ThemeSelector.themeDescription(themeMode),
+                    ThemeSelector.themeDescription(settings.themeMode),
                   ),
                   onTap: () async {
                     await showAlertSheet<void>(
                       context: context,
                       builder: (context) => ThemeSelector(
-                        initialValue: themeMode,
+                        initialValue: settings.themeMode,
                         onSelection: (value) => settings.themeMode = value,
                       ),
                     );

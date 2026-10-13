@@ -77,16 +77,16 @@ class _MyAppState extends State<MyApp> {
           darkDynamic,
         );
 
-        return ValueListenableBuilder(
-          valueListenable: context
-              .read<SettingsRepository>()
-              .themeModeNotifier,
-          builder: (context, themeMode, child) => MaterialApp.router(
+        final SettingsRepository settings = context.read();
+
+        return ListenableBuilder(
+          listenable: settings,
+          builder: (context, child) => MaterialApp.router(
             title: "Musician's Toolbox",
             theme: lightTheme,
             darkTheme: darkTheme,
             routerConfig: _router,
-            themeMode: themeMode,
+            themeMode: settings.themeMode,
             restorationScopeId: "app",
             builder: (context, child) {
               final ColorScheme colors = Theme.of(context).colorScheme;
