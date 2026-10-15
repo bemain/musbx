@@ -41,7 +41,7 @@ class PlaybackRepository extends ChangeNotifier {
   static const double equalizerDefaultGain = 1.0;
 
   /// How many bands the equalizer is split into unless the song says otherwise.
-  static const int equalizerDefaultNumBands = 3;
+  static const int equalizerDefaultNumBands = 5;
 
   /// The volume of a part that is left alone.
   static const double partDefaultVolume = 1.0;
@@ -272,7 +272,14 @@ class PlaybackRepository extends ChangeNotifier {
     Map<Part, PartData>? parts,
   }) {
     if (song != null) {
-      _state = PlaybackState(song: song, isPlaying: false);
+      _state = PlaybackState(
+        song: song,
+        isPlaying: false,
+        equalizerGain: List.filled(
+          equalizerDefaultNumBands,
+          equalizerDefaultGain,
+        ),
+      );
       reset();
     }
 
@@ -357,12 +364,28 @@ class PlaybackRepository extends ChangeNotifier {
       // Load preferences
       _preferences = preferences;
       preferences ??= SongPreferences();
+
+      // Saved loop ends can lie past the end of the audio, which is shorter
+      // when played as parts.
+      final Duration length = _audioEngine.getDuration(sound);
+      Duration? clampToLength(Duration? time) => switch (time) {
+        null => null,
+        _ when time.isNegative => Duration.zero,
+        _ when time > length => length,
+        _ => time,
+      };
+      final Duration? loopStart = clampToLength(preferences.loopStart);
+      Duration? loopEnd = clampToLength(preferences.loopEnd);
+      if (loopStart != null && loopEnd != null && loopEnd < loopStart) {
+        loopEnd = loopStart;
+      }
+
       _updateState(
         song: song,
         position: preferences.position,
         speed: preferences.speed?.clamp(0.5, 2.0),
         pitch: preferences.pitch?.clamp(-12, 12),
-        loopSection: (start: preferences.loopStart, end: preferences.loopEnd),
+        loopSection: (start: loopStart, end: loopEnd),
         equalizerGain: List.generate(
           preferences.numEqualizerBands?.clamp(minNumBands, maxNumBands) ??
               equalizerDefaultNumBands,

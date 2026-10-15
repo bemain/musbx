@@ -147,13 +147,15 @@ class PositionSlider extends StatelessWidget {
       context,
     ).extension<PositionSliderStyle>()!;
 
+    final int durationMs = playback.duration?.inMilliseconds ?? 0;
+    double fraction(Duration? time, double fallback) {
+      if (time == null || durationMs <= 0) return fallback;
+      return (time.inMilliseconds / durationMs).clamp(0.0, 1.0);
+    }
+
     return HighlightedSectionSliderTrackShape(
-      highlightStart:
-          (playback.loopSection?.start?.inMilliseconds ?? 0) /
-          (playback.duration?.inMilliseconds ?? 1.0),
-      highlightEnd:
-          (playback.loopSection?.end?.inMilliseconds ?? 0) /
-          (playback.duration?.inMilliseconds ?? 1.0),
+      highlightStart: fraction(playback.loopSection?.start, 0.0),
+      highlightEnd: fraction(playback.loopSection?.end, 1.0),
       nonHighlightColor: style.nonLoopedTrackColor,
       disabledNonHighlightColor: style.disabledNonLoopedTrackColor,
     );
