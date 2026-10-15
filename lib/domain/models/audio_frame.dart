@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
+/// One buffer of microphone audio, and the two views of it the tuner draws.
 class AudioFrame {
-  /// Data recorded from the microphone at a given [time].
   AudioFrame({
     DateTime? time,
     required this.data,
@@ -12,12 +12,12 @@ class AudioFrame {
   /// When this data was recorded.
   final DateTime time;
 
-  /// The streamed audio data.
+  /// The recorded samples.
   final Float32List data;
 
-  /// Waveform data.
+  /// The waveform of [data], as the recorder computed it for drawing.
   final Float32List wave;
 
-  /// FFT Data.
+  /// The frequency spectrum of [data].
   final Float32List fft;
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
+import 'package:provider/provider.dart';
 
+/// Widget for displaying the number of beat and the [Metronome]'s current count.
 class CountDisplay extends StatefulWidget {
-  /// Widget for displaying the number of beat and the [Metronome]'s current count.
   const CountDisplay({super.key});
 
   @override
@@ -11,29 +12,7 @@ class CountDisplay extends StatefulWidget {
 }
 
 class CountDisplayState extends State<CountDisplay> {
-  final Metronome metronome = Metronome.instance;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Listen for changes to:
-    // - higher: change number of circles
-    // - count: change which circle is highlighted.
-    metronome.higherNotifier.addListener(_onUpdate);
-    metronome.countNotifier.addListener(_onUpdate);
-  }
-
-  @override
-  void dispose() {
-    metronome.higherNotifier.removeListener(_onUpdate);
-    metronome.countNotifier.removeListener(_onUpdate);
-    super.dispose();
-  }
-
-  void _onUpdate() {
-    setState(() {});
-  }
+  MetronomeRepository get metronome => context.read();
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +21,7 @@ class CountDisplayState extends State<CountDisplay> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: List.generate(metronome.higher, (index) {
         return Icon(
-          (metronome.count == index)
+          (metronome.beat == index)
               ? Symbols.radio_button_checked
               : Symbols.circle, // Highlight current beat
           color: Theme.of(context).colorScheme.primary,

@@ -15,15 +15,18 @@ enum NaturalPitchClass {
 
   const NaturalPitchClass(this.abbreviation, this.chroma);
 
+  /// The letter naming this pitch class.
   final String abbreviation;
 
   /// The chroma that this pitch class belongs to.
   final Chroma chroma;
 }
 
+/// A set of all pitches that share the same [chroma].
+///
+/// Due to enharmonic equivalence, they can belong to different
+/// [NaturalPitchClass]es and have different [accidental]s.
 class PitchClass {
-  /// A set of all pitches that share the same [chroma].
-  /// Due to enharmonic equivalence, they can belong to different [NaturalPitchClass]es and have different [accidental]s.
   const PitchClass(this.naturalClass, [this.accidental = Accidental.natural]);
 
   /// The "natural" pitch class (the seven pitch classes represented by just a letter)
@@ -87,13 +90,19 @@ class PitchClass {
 
   /// Creates a pitch class with the given [chroma].
   ///
-  /// Tries using the [preferredAccidental], and fallbacks to the most
-  /// common one (meaning the one found in a key close to C in the circle of fifths)
-  /// if the given [chroma] could not be achieved using the preferred accidental.
+  /// Natural chromas are always spelled without an accidental. Others try
+  /// using the [preferredAccidental], and fall back to the most common one
+  /// (meaning the one found in a key close to C in the circle of fifths) if the
+  /// given [chroma] cannot be spelled with the preferred accidental.
   factory PitchClass.fromChroma(
     Chroma chroma, {
     Accidental? preferredAccidental,
   }) {
+    final NaturalPitchClass? natural = NaturalPitchClass.values
+        .where((natural) => natural.chroma == chroma)
+        .firstOrNull;
+    if (natural != null) return PitchClass(natural);
+
     if (preferredAccidental != null) {
       NaturalPitchClass? preferredNatural = NaturalPitchClass.values
           .where(
@@ -160,10 +169,12 @@ class PitchClass {
     return PitchClass(natural, accidental ?? Accidental.natural);
   }
 
-  /// The "quality" of the pitches in this pitch class.
-  /// Due to enharmonic equivalence, many pitch classes (e.g F# and Gb) share the same chroma.
+  /// The chroma of the pitches in this pitch class.
+  ///
+  /// Enharmonic pitch classes (e.g. F♯ and G♭) share the same chroma.
   Chroma get chroma => naturalClass.chroma.transposed(accidental.alteration);
 
+  /// How far above C this pitch class sits, between `0` and `11`.
   int get semitonesFromC => chroma.semitonesFromC;
 
   /// The name of this pitch class.
@@ -172,8 +183,8 @@ class PitchClass {
 
   /// Transpose this pitch class a number of semitones.
   ///
-  /// Uses the [preferredAccidental] if one is required, and fallbacks to the one used by
-  /// the major key corresponding to this pitch class if not specified.
+  /// Uses the [preferredAccidental] if one is required, and falls back to the
+  /// one used by the major key on this pitch class if not specified.
   PitchClass transposed(int semitones, {Accidental? preferredAccidental}) =>
       PitchClass.fromChroma(
         chroma.transposed(semitones),

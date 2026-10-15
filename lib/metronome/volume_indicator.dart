@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
+import 'package:provider/provider.dart';
 
+/// A button muting the metronome, which makes it vibrate the beat instead.
 class VolumeIndicator extends StatefulWidget {
   const VolumeIndicator({super.key});
 
@@ -10,7 +12,7 @@ class VolumeIndicator extends StatefulWidget {
 }
 
 class _VolumeIndicatorState extends State<VolumeIndicator> {
-  final Metronome metronome = Metronome.instance;
+  MetronomeRepository get metronome => context.read();
 
   @override
   Widget build(BuildContext context) {

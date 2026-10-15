@@ -44,16 +44,20 @@ class _AdUnits {
 
 /// Loads the ads shown to users without premium.
 ///
-/// Ads are optional. [disabled] returns a service that loads nothing, so a
-/// platform without an ad SDK behaves like a user who has paid to remove ads.
+/// Ads are optional. [disabled] returns a service with no ad units behind it,
+/// for a platform without an ad SDK.
 class AdService extends OptionalService {
-  AdService._(this._adUnits);
-
-  @override
-  bool get isEnabled => _adUnits != null;
+  AdService._(this.__adUnits);
 
   /// The ad units to load from, or `null` when this service is disabled.
-  final _AdUnits? _adUnits;
+  final _AdUnits? __adUnits;
+  _AdUnits get _adUnits {
+    throwIfDisabled();
+    return __adUnits!;
+  }
+
+  @override
+  bool get isEnabled => __adUnits != null;
 
   /// Create the service, initializing the ad SDK.
   ///
@@ -68,30 +72,19 @@ class AdService extends OptionalService {
     return AdService._(_AdUnits.forPlatform(Platform.operatingSystem));
   }
 
-  /// A service that loads no ads, for when ads are unavailable or switched off.
+  /// A service with no ad units behind it, for when ads are unavailable or
+  /// switched off.
   static AdService disabled() => AdService._(null);
-
-  // TODO: Remove once we introduce `provider`.
-  static late final AdService instance;
-  static Future<void> initialize() async {
-    try {
-      instance = await create();
-    } catch (error) {
-      debugPrint("[ADS] Disabled, initialization failed: $error");
-      instance = disabled();
-    }
-  }
 
   /// Show a full-screen ad, and wait until the user dismisses it.
   ///
-  /// Returns whether an ad was shown. This is `false` when the service is
-  /// disabled, when no ad could be loaded, and when the ad failed to appear —
-  /// all of which are routine, so callers should carry on rather than retry.
-  Future<bool> showInterstitial() async {
+  /// Throws when no ad could be loaded, when the ad failed to appear, and
+  /// [ServiceDisabled] when this service is [disabled] — all of which are
+  /// routine, so callers should carry on rather than retry.
+  Future<void> showInterstitial() async {
     final ad = await _loadInterstitial();
-    if (ad == null) return false;
 
-    final dismissed = Completer<bool>();
+    final dismissed = Completer<void>();
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (ad) {},
       onAdImpression: (ad) {},
@@ -99,11 +92,11 @@ class AdService extends OptionalService {
       onAdFailedToShowFullScreenContent: (ad, error) {
         debugPrint("[ADS] InterstitialAd failed to show: $error");
         ad.dispose();
-        dismissed.complete(false);
+        dismissed.completeError(error);
       },
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        dismissed.complete(true);
+        dismissed.complete();
       },
     );
 
@@ -112,64 +105,52 @@ class AdService extends OptionalService {
     } catch (error) {
       debugPrint("[ADS] InterstitialAd failed to show: $error");
       await ad.dispose();
-      return false;
+      rethrow;
     }
 
-    return dismissed.future;
+    return await dismissed.future;
   }
 
   /// Load an interstitial ad, ready to be shown.
   ///
-  /// Returns `null` when this service is disabled or no ad could be loaded,
-  /// which happens whenever AdMob has nothing to fill the request with.
+  /// Throws when no ad could be loaded, which happens whenever AdMob has
+  /// nothing to fill the request with, and [ServiceDisabled] when this service
+  /// is [disabled].
   ///
   /// The returned ad holds native resources and nothing disposes it, so the
   /// caller has to, whether or not it ends up being shown.
-  Future<InterstitialAd?> _loadInterstitial() async {
-    if (_adUnits == null) return null;
+  Future<InterstitialAd> _loadInterstitial() async {
+    Completer<InterstitialAd> completer = Completer();
 
-    Completer<InterstitialAd?> completer = Completer();
-
-    try {
-      await InterstitialAd.load(
-        adUnitId: _adUnits.interstitial,
-        request: const AdRequest(),
-        adLoadCallback: InterstitialAdLoadCallback(
-          onAdLoaded: (ad) => completer.complete(ad),
-          onAdFailedToLoad: (error) {
-            debugPrint("[ADS] InterstitialAd failed to load: $error");
-            completer.complete(null);
-          },
-        ),
-      );
-    } catch (error) {
-      debugPrint("[ADS] Unable to request an InterstitialAd: $error");
-      return null;
-    }
+    await InterstitialAd.load(
+      adUnitId: _adUnits.interstitial,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) => completer.complete(ad),
+        onAdFailedToLoad: (error) {
+          debugPrint("[ADS] InterstitialAd failed to load: $error");
+          completer.completeError(error);
+        },
+      ),
+    );
 
     return await completer.future;
   }
 
   /// Load a banner ad sized for a slot [width] pixels wide.
   ///
-  /// Returns `null` when this service is disabled, when the size cannot be
-  /// resolved for the current screen, or when no ad could be loaded.
+  /// Throws when the size cannot be resolved for the current screen, when no ad
+  /// could be loaded, and [ServiceDisabled] when this service is [disabled].
   ///
   /// The returned ad holds native resources for as long as it is displayed, so
   /// the caller must dispose it once it stops being shown.
-  Future<BannerAd?> loadBanner({required int width}) async {
-    if (_adUnits == null) return null;
-
+  Future<BannerAd> loadBanner({required int width}) async {
     final AdSize? size;
-    try {
-      size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
-    } catch (error) {
-      debugPrint("[ADS] Unable to size anchored banner: $error");
-      return null;
-    }
-    if (size == null) return null;
+    size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
 
-    final completer = Completer<BannerAd?>();
+    if (size == null) throw Exception("Unable to size anchored banner ad.");
+
+    final completer = Completer<BannerAd>();
     final ad = BannerAd(
       size: size,
       adUnitId: _adUnits.banner,
@@ -179,18 +160,13 @@ class AdService extends OptionalService {
         onAdFailedToLoad: (ad, error) {
           debugPrint("[ADS] BannerAd failed to load: $error");
           ad.dispose();
-          completer.complete(null);
+          completer.completeError(error);
         },
       ),
     );
-    try {
-      await ad.load();
-    } catch (error) {
-      debugPrint("[ADS] Unable to request a BannerAd: $error");
-      await ad.dispose();
-      return null;
-    }
 
-    return completer.future;
+    await ad.load();
+
+    return await completer.future;
   }
 }

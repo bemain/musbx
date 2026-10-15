@@ -63,17 +63,6 @@ post_install do |installer|
         'PERMISSION_MEDIA_LIBRARY=1',
       ]
 
-    end 
+    end
   end
-
-  # (BeMain) Pod motification 1 by package awesome_notifications
-  awesome_pod_file = File.expand_path(File.join('plugins', 'awesome_notifications', 'ios', 'Scripts', 'AwesomePodFile'), '.symlinks')
-  require awesome_pod_file
-  update_awesome_pod_build_settings(installer)
-
 end
-
-# (BeMain) Pod motification 2 by package awesome_notifications
-awesome_pod_file = File.expand_path(File.join('plugins', 'awesome_notifications', 'ios', 'Scripts', 'AwesomePodFile'), '.symlinks')
-require awesome_pod_file
-update_awesome_main_target_settings('Runner', File.dirname(File.realpath(__FILE__)), flutter_root)

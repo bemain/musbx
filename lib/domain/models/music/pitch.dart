@@ -1,17 +1,20 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:musbx/domain/models/music/accidental.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
 import 'package:musbx/domain/models/music/temperament.dart';
 
+/// A musical tone at a specific frequency.
 @immutable
 class Pitch {
-  /// Representation of a musical tone with a specific frequency.
   const Pitch(
     this.pitchClass,
     this.octave,
     this.frequency,
   );
 
+  /// Concert A, the reference the tuner is calibrated against by default.
   const Pitch.a440()
     : pitchClass = const PitchClass.a(),
       octave = 4,
@@ -23,10 +26,11 @@ class Pitch {
   /// The octave of the pitch, in [scientific pitch notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation).
   final int octave;
 
-  /// The frequency of the pitch.
+  /// The frequency of the pitch, in Hz.
   final double frequency;
 
-  /// Get the pitch closest to a specific [frequency].
+  /// The pitch closest to [frequency] under [tuning] and [temperament],
+  /// carrying [frequency] itself rather than the pitch's exact one.
   factory Pitch.closest(
     double frequency, {
     Pitch tuning = const Pitch.a440(),
@@ -48,6 +52,10 @@ class Pitch {
     );
   }
 
+  /// How many cents this pitch is above [frequency].
+  double offsetFrom(double frequency) =>
+      1200 * log(this.frequency / frequency) / ln2;
+
   /// Parse [string] as a pitch.
   ///
   /// Throws a [FormatException] if [string] is not a valid pitch.
@@ -57,9 +65,10 @@ class Pitch {
     return pitch;
   }
 
-  /// Parse [string] as a pitch class. See [abbreviation] for how the string should be formatted, e.g. A#4@440Hz.
+  /// Parse [string] as a pitch, in the format [toString] produces, e.g.
+  /// "A#4@440Hz".
   ///
-  /// Returns `null` if [string] is not a valid pitch class.
+  /// Returns `null` if [string] is not a valid pitch.
   static Pitch? tryParse(String string) {
     final match = RegExp(
       r"^([A-G][b♭#♯]?)(\d+)@(\d+(\.\d+)?)(Hz)?$",
@@ -74,6 +83,7 @@ class Pitch {
     return Pitch(pitchClass, octave, frequency);
   }
 
+  /// The name of this pitch in scientific pitch notation, e.g. "A♯4".
   String get abbreviation => "${pitchClass.abbreviation}$octave";
 
   /// The number of semitones between this and [other].

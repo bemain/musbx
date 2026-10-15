@@ -18,6 +18,7 @@ analyzer:
   errors:
     experimental_member_use: ignore
   exclude:
+    - "**/*.g.dart"
     - build/**
     - android/**
     - ios/**

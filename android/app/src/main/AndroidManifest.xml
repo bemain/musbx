@@ -58,6 +58,15 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
+        <!-- Required by flutter_local_notifications package, for notification actions. -->
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
+        <!-- Required by flutter_local_notifications package, for the metronome notification.
+             Stops with the task so its notification is removed when the app is swiped away. -->
+        <service
+            android:name="com.dexterous.flutterlocalnotifications.ForegroundService"
+            android:exported="false"
+            android:stopWithTask="true"
+            android:foregroundServiceType="mediaPlayback" />
         <!-- Added by google_mobile_ads package. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
@@ -92,8 +101,6 @@
     <!-- Required for file_picker to work on Android 13. -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
-    <!-- Required by awesome_notifications package. -->
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- Required by in_app_purchase package. -->
     <uses-permission android:name="com.android.vending.BILLING" />
 </manifest>

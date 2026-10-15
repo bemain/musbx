@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:musbx/data/services/permission_service.dart';
 import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 /// Gates a feature behind a [Permission], showing the user what is missing and
 /// how to grant it.
@@ -10,6 +11,8 @@ import 'package:musbx/widgets/widgets.dart';
 /// because the user granted it, or because the platform does not gate it at all.
 /// Rechecks whenever the app is resumed, so granting from the system settings
 /// takes effect without a restart.
+///
+/// TODO: This should not access [PermissionService] directly. We should create a repository.
 class PermissionBuilder extends StatefulWidget {
   const PermissionBuilder({
     super.key,
@@ -128,7 +131,7 @@ class PermissionBuilderState extends State<PermissionBuilder>
         additionalInfoText:
             "You need to give this permission from the System Settings.",
         buttonText: "Open Settings",
-        onButtonPressed: PermissionService.instance.openSettings,
+        onButtonPressed: context.read<PermissionService>().openSettings,
       );
     }
 
@@ -163,7 +166,9 @@ class PermissionBuilderState extends State<PermissionBuilder>
 
   /// Re-read the current status without prompting the user.
   Future<void> checkPermissionStatus() async {
-    var status = await PermissionService.instance.status(widget.permission);
+    var status = await context.read<PermissionService>().status(
+      widget.permission,
+    );
 
     // On Android, `PermissionService.status` cannot report permanentlyDenied;
     // only a request can (https://github.com/Baseflow/flutter-permission-handler/issues/568).
@@ -180,7 +185,9 @@ class PermissionBuilderState extends State<PermissionBuilder>
 
   /// Ask the user to grant the permission, showing the system prompt.
   Future<void> requestPermission() async {
-    var status = await PermissionService.instance.request(widget.permission);
+    var status = await context.read<PermissionService>().request(
+      widget.permission,
+    );
     _setStatus(status);
   }
 

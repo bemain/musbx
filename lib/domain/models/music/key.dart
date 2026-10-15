@@ -2,17 +2,20 @@ import 'package:musbx/domain/models/music/accidental.dart';
 import 'package:musbx/domain/models/music/chroma.dart';
 import 'package:musbx/domain/models/music/pitch_class.dart';
 
+/// The different types of keys.
+///
+/// This describes the relationship between the tonic and the remaining notes in
+/// the key.
 enum KeyType {
   major("", [0, 2, 4, 5, 7, 9, 11]),
   minor("m", [0, 2, 3, 5, 7, 8, 10]);
 
-  /// The different types of keys.
-  ///
-  /// This describes the relationship between the tonic and the remaining notes in the key.
   const KeyType(this.abbreviation, this.intervalPattern);
 
+  /// What is written after the tonic, e.g. "m". Empty for [major].
   final String abbreviation;
 
+  /// The semitones between the tonic and each note in the key.
   final List<int> intervalPattern;
 }
 
@@ -46,8 +49,7 @@ class Key {
     Chroma.aSharp ||
     Chroma.dSharp ||
     Chroma.gSharp ||
-    Chroma.cSharp ||
-    Chroma.fSharp => Accidental.flat,
+    Chroma.cSharp => Accidental.flat,
   };
 
   /// The number of accidentals that this key signature introduces.
@@ -61,18 +63,18 @@ class Key {
     Chroma.fSharp => 6,
   };
 
-  /// All the notes in this ḱey.
+  /// All the notes in this key.
   Iterable<PitchClass> get notes =>
       type.intervalPattern.map((interval) => tonic.transposed(interval));
 
-  /// The key parallel to this one.
-  /// It contains the same [notes] as this, but has a different [tonic] and [type].
+  /// The relative key: the same [notes] as this, but a different [tonic] and
+  /// [type].
   Key get parallel => switch (type) {
     KeyType.major => Key(tonic.transposed(-3), KeyType.minor),
     KeyType.minor => Key(tonic.transposed(3), KeyType.major),
   };
 
-  /// Returns [this] if this is major, or [parallel] otherwise.
+  /// This key if it is major, or its relative major otherwise.
   Key get _majorParallel => type == KeyType.major ? this : parallel;
 
   /// Transpose this key a number of semitones.
@@ -81,6 +83,7 @@ class Key {
     return Key(tonic.transposed(semitones), type);
   }
 
+  /// The name of this key, e.g. "F♯m".
   String get abbreviation => "${tonic.abbreviation}${type.abbreviation}";
 
   @override

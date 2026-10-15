@@ -8,14 +8,28 @@ enum NotificationChannel {
 }
 
 /// A button the user can tap on a notification.
-class NotificationAction {
-  const NotificationAction({required this.key, required this.label});
+enum NotificationAction {
+  /// Pause whatever the notification is controlling.
+  pause("Pause");
 
-  /// Identifies this action to the app when the user taps it.
-  final String key;
+  const NotificationAction(this.label);
 
   /// The text shown on the button.
   final String label;
+}
+
+/// The buttons a notification can offer, as one of a fixed set of combinations.
+///
+/// Fixed ahead of time because iOS only shows buttons from combinations
+/// registered before the app posts anything.
+enum NotificationActionSet {
+  /// Offered while the metronome is playing.
+  metronomePlaying([NotificationAction.pause]);
+
+  const NotificationActionSet(this.actions);
+
+  /// The buttons, in the order they appear.
+  final List<NotificationAction> actions;
 }
 
 /// A notification to show the user.
@@ -25,7 +39,7 @@ class AppNotification {
     required this.title,
     this.summary,
     required this.body,
-    this.actions = const [],
+    this.actionSet,
   });
 
   /// The channel to show this on, which decides how the system presents it and
@@ -42,18 +56,21 @@ class AppNotification {
   /// The detail below the [title].
   final String body;
 
-  /// Buttons offered on the notification, in the order they appear.
-  final List<NotificationAction> actions;
+  /// The buttons offered on the notification, or `null` for none.
+  final NotificationActionSet? actionSet;
 }
 
 /// Something the user did to a notification.
 class NotificationActionTapped {
-  const NotificationActionTapped({required this.channel, required this.key});
+  const NotificationActionTapped({
+    required this.channel,
+    required this.action,
+  });
 
   /// The channel of the notification that was tapped.
   final NotificationChannel channel;
 
-  /// The [NotificationAction.key] of the button the user tapped, or empty if
-  /// they tapped the notification itself rather than a button.
-  final String key;
+  /// The button the user tapped, or `null` if they tapped the notification
+  /// itself rather than a button.
+  final NotificationAction? action;
 }

@@ -1,4 +1,4 @@
-/// The state of an [Permission], with the same meaning on every platform.
+/// The state of a [Permission], with the same meaning on every platform.
 enum PermissionStatus {
   /// The permission has never been requested, so the system prompt has not been
   /// shown yet.

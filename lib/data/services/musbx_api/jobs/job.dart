@@ -1,11 +1,12 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/utils/utils.dart';
 
 /// The task that a job performs.
 enum JobTask {
-  /// The job demixes an audio file into multiple stems using demucs.
+  /// The job demixes an audio file into multiple parts using demucs.
   demix,
 
   /// The job performs chord analysis on an audio file.
@@ -71,8 +72,11 @@ class JobReport<T> {
   }
 }
 
+/// Work the server does on an uploaded file, identified by [id].
+///
+/// The server does not push updates, so progress is followed by asking for a
+/// [JobReport] over and over; [complete] does that until the job is done.
 abstract class Job<T> {
-  /// Representation of a job that the API performs.
   Job(this.dio, this.id);
 
   /// The Dio instance that handles the interaction with the API.
@@ -83,8 +87,17 @@ abstract class Job<T> {
 
   /// Get a status report for this job.
   Future<JobReport<T>> get() async {
-    final response = await dio.get<Json>("/job/$id");
-    return JobReport<T>.fromJson(response.data!);
+    try {
+      final response = await dio.get<Json>("/job/$id");
+      return JobReport<T>.fromJson(response.data!);
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    } on TypeError catch (_) {
+      throw MalformedResponse();
+    }
   }
 
   /// Download a file that is a result from this job.
@@ -93,20 +106,30 @@ abstract class Job<T> {
     File destination, {
     void Function(int received, int total)? onProgress,
   }) async {
-    final response = await dio.get<List<int>>(
-      "/job/$id/download/$name",
-      onReceiveProgress: onProgress,
-      options: Options(
-        responseType: ResponseType.bytes,
-        followRedirects: false,
-      ),
-    );
+    try {
+      final response = await dio.get<List<int>>(
+        "/job/$id/download/$name",
+        onReceiveProgress: onProgress,
+        options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: false,
+        ),
+      );
 
-    await destination.writeAsBytes(response.data!);
-    return destination;
+      await destination.writeAsBytes(response.data!);
+      return destination;
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    }
   }
 
-  /// Check the status of this job periodically until it completes and return it's result.
+  /// Check the status of this job periodically until it completes, and return
+  /// its result.
+  ///
+  /// Throws [RequestFailed] if the job fails or returns nothing.
   Future<T> complete({
     Duration checkStatusInterval = const Duration(milliseconds: 500),
   }) async {
@@ -116,10 +139,16 @@ abstract class Job<T> {
       report = await get();
     }
 
-    if (report.hasError) throw report.error!;
-    if (!report.hasResult) throw Exception("Job didn't return a result: $id");
+    if (report.hasError) {
+      return throw RequestFailed(report.error.toString());
+    }
 
-    return report.result!;
+    final result = report.result;
+    if (result == null) {
+      return throw RequestFailed("Job didn't return a result: $id");
+    }
+
+    return result;
   }
 
   @override

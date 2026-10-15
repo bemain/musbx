@@ -1,29 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/songs/equalizer/equalizer.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/songs/equalizer/equalizer_overlay.dart';
 import 'package:musbx/songs/equalizer/inactive_slider_track_shape.dart';
-import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/songs.dart';
+import 'package:provider/provider.dart';
 
-class EqualizerSliders extends StatelessWidget {
-  /// A widget used to control the gain on Equalizer's bands.
+/// A widget used to control the gain on Equalizer's bands.
+/// One vertical slider per equalizer band, with the response curve drawn over
+/// them.
+class EqualizerSliders extends StatefulWidget {
   const EqualizerSliders({super.key, this.enabled = true});
 
+  /// Whether the bands can be adjusted.
   final bool enabled;
 
   @override
-  Widget build(BuildContext context) {
-    final SongPlayer player = Songs.player!;
-    final EqualizerComponent equalizer = player.equalizer;
+  State<EqualizerSliders> createState() => _EqualizerSlidersState();
+}
 
+class _EqualizerSlidersState extends State<EqualizerSliders> {
+  PlaybackRepository get playback => context.read();
+
+  @override
+  Widget build(BuildContext context) {
     return RepaintBoundary(
       child: CustomPaint(
         painter: EqualizerOverlayPainter(
-          bands: equalizer.bands,
-          lineColor: enabled
+          bands: playback.numEqualizerBands == null
+              ? null
+              : {
+                  for (int i = 0; i < playback.numEqualizerBands!; i++)
+                    i:
+                        playback.getBandGain(i) ??
+                        PlaybackRepository.equalizerDefaultGain,
+                },
+          lineColor: widget.enabled
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.onSurface.withAlpha(0x61),
-          fillColor: enabled
+          fillColor: widget.enabled
               ? Theme.of(context).colorScheme.inversePrimary
               : null,
         ),
@@ -36,8 +49,8 @@ class EqualizerSliders extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              for (var band in equalizer.bands)
-                buildSlider(band, enabled: enabled),
+              for (int i = 0; i < playback.numEqualizerBands!; i++)
+                buildSlider(i, enabled: widget.enabled),
             ],
           ),
         ),
@@ -46,20 +59,19 @@ class EqualizerSliders extends StatelessWidget {
   }
 
   /// Build a [Slider] for controlling the gain on [band].
-  Widget buildSlider(EqualizerBand band, {bool enabled = true}) {
-    return ValueListenableBuilder(
-      valueListenable: band.gainNotifier,
-      builder: (context, value, child) {
-        return RotatedBox(
-          quarterTurns: -1,
-          child: Slider(
-            min: EqualizerBand.minGain,
-            max: EqualizerBand.maxGain,
-            value: band.gain,
-            onChanged: !enabled ? null : (value) => band.gain = value,
-          ),
-        );
-      },
+  Widget buildSlider(int band, {bool enabled = true}) {
+    return RotatedBox(
+      quarterTurns: -1,
+      child: Slider(
+        min: PlaybackRepository.equalizerMinGain,
+        max: PlaybackRepository.equalizerMaxGain,
+        value:
+            playback.getBandGain(band) ??
+            PlaybackRepository.equalizerDefaultGain,
+        onChanged: !enabled
+            ? null
+            : (value) => playback.setBandGain(band, value),
+      ),
     );
   }
 }

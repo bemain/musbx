@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/job.dart';
 import 'package:musbx/utils/utils.dart';
 
@@ -22,15 +24,17 @@ enum DemixStep {
 }
 
 /// Result from a demixing job.
-/// The keys are the name of the separated stems, and the values are the download URLs.
+/// The keys are the name of the separated parts, and the values are the download URLs.
 typedef DemixJobResult = Map<String, String>;
 
+/// A [JobReport] for a demixing job, which also says how far the separation has
+/// come.
 class DemixJobReport extends JobReport<DemixJobResult> {
   const DemixJobReport._(
     super.id, {
     required super.status,
     super.result,
-    Object? error,
+    super.error,
     required this.step,
     this.progress = 0,
   }) : super(task: JobTask.demix);
@@ -62,13 +66,22 @@ class DemixJobReport extends JobReport<DemixJobResult> {
   }
 }
 
-/// A job that demixes an audio file into multiple stems using demucs.
+/// A job that demixes an audio file into multiple parts using demucs.
 class DemixJob extends Job<DemixJobResult> {
   DemixJob(super.dio, super.id);
 
   @override
   Future<DemixJobReport> get() async {
-    final response = await dio.get<Json>("/job/$id");
-    return DemixJobReport.fromJson(response.data!);
+    try {
+      final response = await dio.get<Json>("/job/$id");
+      return DemixJobReport.fromJson(response.data!);
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    } on TypeError catch (_) {
+      throw MalformedResponse();
+    }
   }
 }

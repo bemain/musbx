@@ -2,24 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:pub_semver/pub_semver.dart';
 
-class NoHostAvailableException implements Exception {
-  final String? msg;
+/// A reason why no Musbx API server could be used.
+sealed class MusbxApiError implements Exception {}
 
-  const NoHostAvailableException([this.msg]);
-
+/// None of the known hosts answered.
+final class NoHostAvailable extends MusbxApiError {
   @override
-  String toString() => msg ?? "No host is available";
+  String toString() => "No Musbx API host is available";
 }
 
-class OutOfDateException implements Exception {
-  final String? msg;
-
-  const OutOfDateException([this.msg]);
-
+/// A host answered, but speaks a version of the API this app does not.
+final class OutOfDate extends MusbxApiError {
   @override
-  String toString() => msg ?? "The app is out of date with the server";
+  String toString() => "The app is out of date with the Musbx API server";
 }
 
+/// The known Musbx API servers, and which of them this app can talk to.
+/// TODO: This should be injected, not static
 class MusbxApi {
   /// The version of the API that this is compatible with.
   static final VersionConstraint version = VersionConstraint.parse("^0.4.0");
@@ -30,11 +29,13 @@ class MusbxApi {
     "http://musbx.agardh.se:4242",
   ];
 
-  /// Find a host that is available and version is compatible with the app's [version].
+  /// A client for the first host that answers and is compatible with
+  /// [version].
   ///
-  /// Throws if no such host was found.
+  /// Throws [OutOfDate] if a host answered but none was compatible, and
+  /// [NoHostAvailable] if none answered.
   static Future<MusbxApiClient> getClient() async {
-    /// Whether at least one host is available.
+    // Whether at least one host answered.
     bool hostAvailable = false;
 
     for (String hostUrl in _hostUrls) {
@@ -54,8 +55,6 @@ class MusbxApi {
       }
     }
 
-    throw hostAvailable
-        ? const OutOfDateException()
-        : const NoHostAvailableException();
+    return throw hostAvailable ? OutOfDate() : NoHostAvailable();
   }
 }
