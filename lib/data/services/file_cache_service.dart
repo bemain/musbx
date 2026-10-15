@@ -170,10 +170,10 @@ class CacheFile {
     try {
       await produce(_part);
       final stat = await _part.stat();
-      // Reject an empty part file
-      if (stat.type != FileSystemEntityType.notFound && stat.size > 0) {
-        await _part.rename(path);
+      if (stat.type == FileSystemEntityType.notFound || stat.size == 0) {
+        throw FileSystemException("Nothing was written to the file", path);
       }
+      await _part.rename(path);
     } catch (_) {
       if (await _part.exists()) await _part.delete();
       rethrow;
