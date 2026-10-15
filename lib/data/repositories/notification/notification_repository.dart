@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 import 'package:musbx/domain/models/notification.dart';
 import 'package:musbx/utils/result.dart';
 
@@ -16,15 +17,19 @@ abstract class NotificationRepository {
   set hasRequestedPermission(bool value);
 
   /// Request permission to show notifications, if it has not been given already.
+  @useResult
   Future<Result<bool>> requestPermission();
 
   /// Show [notification], replacing any earlier one with the same id.
+  @useResult
   Future<Result<void>> post(AppNotification notification);
 
   /// Remove the notification showing on [channel].
+  @useResult
   Future<Result<void>> cancel(NotificationChannel channel);
 
   /// Remove every notification the app is showing.
+  @useResult
   Future<Result<void>> cancelAll();
 
   /// What the user does with the notifications, while the app is running.

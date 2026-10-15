@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:meta/meta.dart';
 import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
@@ -33,6 +34,7 @@ abstract class TrackSearchRepository extends ChangeNotifier {
   /// The tracks matching [query].
   ///
   /// [Unavailable] when there is no search service on this device.
+  @useResult
   Future<Result<List<OnlineTrack>>> searchTracks(String query);
 }
 

@@ -14,6 +14,7 @@ import 'package:musbx/settings/settings_sub_pages.dart';
 import 'package:musbx/songs/library_page/library_page.dart';
 import 'package:musbx/songs/song_page/song_page.dart';
 import 'package:musbx/tuner/tuner_page.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -158,7 +159,11 @@ GoRouter router({required SharedPreferencesService sharedPreferences}) {
                   WidgetsBinding.instance.addPostFrameCallback((
                     _,
                   ) async {
-                    await context.read<UnloadSong>().call();
+                    if (await context.read<UnloadSong>().call() case Failure(
+                      :final error,
+                    )) {
+                      debugPrint("[SONGS] Unloading song failed; $error");
+                    }
                   });
 
                   return LibraryPage();

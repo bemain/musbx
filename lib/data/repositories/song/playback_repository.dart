@@ -341,7 +341,9 @@ class PlaybackRepository extends ChangeNotifier {
     Map<Part?, File> files, {
     SongPreferences? preferences,
   }) async {
-    if (_sound != null) await stop();
+    if (_sound != null) {
+      if (await stop() case final Failure<void> failure) return failure;
+    }
 
     try {
       final sources = {
@@ -378,7 +380,7 @@ class PlaybackRepository extends ChangeNotifier {
   }
 
   /// Stop and unload the current song, without saving its preferences.
-  // TODO: Should I mark all functions that return Result with @useResult?
+  @useResult
   Future<Result<void>> stop() async {
     try {
       reset();
@@ -420,7 +422,9 @@ class PlaybackRepository extends ChangeNotifier {
 
   @override
   Future<void> dispose() async {
-    await stop();
+    if (await stop() case Failure(:final error)) {
+      debugPrint("[PLAYBACK] Stopping on dispose failed; $error");
+    }
 
     _positionUpdater.cancel();
 

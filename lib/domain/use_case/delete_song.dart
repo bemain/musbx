@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
@@ -29,6 +30,7 @@ class DeleteSong {
   final PlaybackRepository _playback;
   final DemixRepository _demixing;
 
+  @useResult
   Future<Result<void>> call(Song song) async {
     try {
       if (_playback.song == song) {

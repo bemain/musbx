@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
@@ -20,6 +21,7 @@ class AudioRepository {
 
   /// The cached file holding [song]'s audio, fetched first unless it is
   /// already there.
+  @useResult
   Future<Result<File>> resolve(Song song) async {
     try {
       CacheFile cacheFile = _songCache.audio(song);

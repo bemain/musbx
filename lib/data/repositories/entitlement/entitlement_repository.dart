@@ -7,9 +7,9 @@ abstract class EntitlementRepository extends ChangeNotifier {
   /// Whether the user has bought the 'premium' product that unlocks access to premium features of the app.
   bool get hasPremium;
 
-  @useResult
   /// Take the user through buying premium. Returns whether they went through
   /// with it.
+  @useResult
   Future<Result<bool>> buyPremium();
 
   /// Restore all previous purchases.

@@ -99,7 +99,12 @@ class MetronomeNotificationAdapter {
 
     _postTimer?.cancel();
     _postedState = null;
-    await _notifications.cancel(NotificationChannel.metronomeControls);
+    if (await _notifications.cancel(
+          NotificationChannel.metronomeControls,
+        )
+        case Failure(:final error)) {
+      debugPrint("[NOTIFICATIONS] Cancelling notification failed; $error");
+    }
   }
 
   late final StreamSubscription<NotificationActionTapped> _actions;

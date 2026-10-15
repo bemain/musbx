@@ -93,8 +93,8 @@ class SongRepository extends ChangeNotifier {
   /// The song with this [id], if the library holds it.
   Song? getById(String id) => getWhere((song, _) => song.id == id).firstOrNull;
 
-  @useResult
   /// Add [song], or move it to the top if it is already in the library.
+  @useResult
   Future<Result<Song>> add(Song song) async {
     try {
       await _history.add(song);
@@ -104,8 +104,8 @@ class SongRepository extends ChangeNotifier {
     }
   }
 
-  @useResult
   /// Add a song read from a local [file], titled after the file name.
+  @useResult
   Future<Result<Song>> addFile(File file) async {
     try {
       return await add(
@@ -120,8 +120,8 @@ class SongRepository extends ChangeNotifier {
     }
   }
 
-  @useResult
   /// Add a song streamed from an online [track].
+  @useResult
   Future<Result<Song>> addTrack(OnlineTrack track) async {
     try {
       return await add(
@@ -138,8 +138,8 @@ class SongRepository extends ChangeNotifier {
     }
   }
 
-  @useResult
   /// Replace the stored song with the same id, keeping its place in the history.
+  @useResult
   Future<Result<Song>> update(Song song) async {
     try {
       await _history.update(song);
@@ -151,6 +151,7 @@ class SongRepository extends ChangeNotifier {
 
   /// Remove [song] from the library. Its cached files are left alone; see
   /// `DeleteSong` to be rid of those too.
+  @useResult
   Future<Result<void>> remove(Song song) async {
     try {
       await _history.remove(song);

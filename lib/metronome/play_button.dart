@@ -3,6 +3,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
 import 'package:musbx/data/repositories/notification/notification_repository.dart';
 import 'package:musbx/metronome/notification_indicator.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:provider/provider.dart';
 
 /// Play / pause button to start or stop the [Metronome].
@@ -58,7 +59,9 @@ class PlayButton extends StatelessWidget {
           ) ??
           false;
       if (!mayRequestPermission) return;
-      await notifications.requestPermission();
+      if (await notifications.requestPermission() case Failure(:final error)) {
+        debugPrint("[NOTIFICATIONS] Requesting permission failed; $error");
+      }
     }
   }
 }

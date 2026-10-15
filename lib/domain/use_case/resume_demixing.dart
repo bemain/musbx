@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/repositories/settings_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
@@ -24,6 +26,7 @@ class ResumeDemixing {
   final SongPreferencesRepository _preferences;
   final DemixRepository _demixing;
 
+  @useResult
   Future<Result<void>> call() async {
     try {
       for (final song in _songs.getAll()) {
@@ -32,7 +35,9 @@ class ResumeDemixing {
           _ => null,
         };
         if (prefs?.shouldDemix ?? _settings.songs.demixAutomatically) {
-          _demixing.start(song);
+          if (_demixing.start(song) case Failure(:final error)) {
+            debugPrint("[DEMIXER] Resuming demixing failed; $error");
+          }
         }
       }
       return Result.ok(null);

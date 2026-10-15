@@ -5,16 +5,16 @@ import 'package:musbx/utils/result.dart';
 
 /// The announcements shown to the user, and what they have read.
 abstract class AnnouncementRepository extends ChangeNotifier {
-  @useResult
   /// The most recently published announcement.
+  @useResult
   Future<Result<Announcement>> getLatest();
 
-  @useResult
   /// Every announcement ever published, newest first.
+  @useResult
   Future<Result<List<Announcement>>> getAll();
 
-  @useResult
   /// The announcements published after [readAt].
+  @useResult
   Future<Result<List<Announcement>>> getUnread();
 
   /// When the user last read the announcements.

@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/check_song_access.dart';
@@ -21,6 +22,7 @@ class PlaySong {
   final LoadSong _loadSong;
   final SongRepository _songs;
 
+  @useResult
   Future<Result<void>> call(Song song) async {
     if (!_access.canPlay(song)) return Result.accessRestricted();
 

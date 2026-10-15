@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/repositories/settings_repository.dart';
@@ -24,7 +25,9 @@ class AddSongToLibrary {
   Future<Result<Song>> call(Song song) async {
     final result = await _songs.add(song);
     if (result case Ok(:final value) when _settings.songs.demixAutomatically) {
-      _demixing.start(value);
+      if (_demixing.start(value) case Failure(:final error)) {
+        debugPrint("[DEMIXER] Starting demixing automatically failed; $error");
+      }
     }
     return result;
   }

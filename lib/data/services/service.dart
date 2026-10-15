@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 import 'package:musbx/utils/result.dart';
 
 /// Thrown when something is asked of a service that has nothing behind it.
@@ -43,6 +43,7 @@ abstract class OptionalService {
   ///
   /// [reason] reaches the user through [Unavailable.message], so it should read
   /// as the end of "This feature is currently unavailable; ...".
+  @useResult
   static Future<Result<T>> guard<T>(
     Future<T> Function() body,
     String reason,

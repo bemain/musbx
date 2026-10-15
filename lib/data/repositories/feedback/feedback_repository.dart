@@ -7,6 +7,7 @@ abstract class FeedbackRepository {
   @useResult
   Future<Result<void>> insert(String content);
 
+  @useResult
   Future<Result<void>> respond(Announcement announcement, String response);
 
   List<String> responses(Announcement announcement);

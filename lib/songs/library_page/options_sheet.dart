@@ -103,7 +103,9 @@ class _DemixingProgressIndicatorState
       child: IconButton(
         onPressed: () {
           demix.cancel(widget.song);
-          demix.start(widget.song);
+          if (demix.start(widget.song) case Failure(:final error)) {
+            debugPrint("[DEMIXER] Starting demixing failed; $error");
+          }
           setState(() {});
         },
         icon: const Icon(Symbols.piano_off),
@@ -312,10 +314,17 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                             child: const Text("Cancel"),
                           ),
                           FilledButton(
-                            onPressed: () {
-                              context.read<SongRepository>().remove(song);
+                            onPressed: () async {
+                              final removal = context
+                                  .read<SongRepository>()
+                                  .remove(song);
                               Navigator.of(context).pop();
                               Navigator.of(context).pop();
+                              if (await removal case Failure(:final error)) {
+                                debugPrint(
+                                  "[SONGS] Removing song failed; $error",
+                                );
+                              }
                             },
                             child: const Text("Remove"),
                           ),

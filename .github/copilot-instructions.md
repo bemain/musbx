@@ -82,6 +82,9 @@ Dependencies are wired in `lib/config/dependencies.dart` and injected with
 **`Result<T>`** (`lib/utils/result.dart`) — the outcome of anything that may
 fail. `Ok`, or a `Failure` subtype: `Unavailable`, `Cancelled`,
 `AccessRestricted`. Switch on it; the analyzer checks exhaustiveness.
+Annotate every function or method that returns a `Result` (or a `Future` of
+one) with `@useResult`, so a discarded failure is an analyzer warning. On an
+interface, annotate the abstract member; overrides inherit it.
 
 **`OptionalService`** (`lib/data/services/service.dart`) — a service that may
 have nothing behind it on a given device. Disabled instances throw

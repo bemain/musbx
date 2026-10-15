@@ -15,6 +15,7 @@ import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/song_preferences.dart';
 import 'package:musbx/routing/routes.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
@@ -191,7 +192,9 @@ Please update to the latest version to use the Demixer.""",
           if (playback.song != null) {
             setState(() {
               demixing.cancel(playback.song!);
-              demixing.start(playback.song!);
+              if (demixing.start(playback.song!) case Failure(:final error)) {
+                debugPrint("[DEMIXER] Restarting demixing failed; $error");
+              }
             });
           }
         },

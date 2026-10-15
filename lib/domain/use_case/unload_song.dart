@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/utils/result.dart';
@@ -14,6 +15,7 @@ class UnloadSong {
   final SongPreferencesRepository _songPreferences;
   final PlaybackRepository _playback;
 
+  @useResult
   Future<Result<void>> call() async {
     try {
       final song = _playback.song;
@@ -21,7 +23,9 @@ class UnloadSong {
 
       final prefs = _playback.readPreferences();
 
-      await _playback.stop();
+      if (await _playback.stop() case final Failure<void> failure) {
+        return failure;
+      }
 
       // Save preferences
       (await _songPreferences.write(song, prefs)).asOk;

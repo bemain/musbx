@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 import 'package:musbx/data/repositories/demix/demixing_process.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
@@ -22,6 +23,7 @@ class DemixRepository extends ChangeNotifier {
   /// Start demixing [song], or return the process already doing so.
   ///
   /// A cancelled process is replaced rather than resumed.
+  @useResult
   Result<DemixingProcess> start(Song song) {
     try {
       DemixingProcess? process = get(song);
@@ -38,6 +40,7 @@ class DemixRepository extends ChangeNotifier {
   }
 
   /// [start] every one of [songs].
+  @useResult
   Result<List<DemixingProcess>> startAll(Iterable<Song> songs) {
     try {
       return Result.ok(songs.map((song) => start(song).asOk).toList());

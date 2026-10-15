@@ -139,7 +139,6 @@ class NotificationPermissionRationale extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () {
-            notifications.requestPermission();
             Navigator.of(context).pop(true);
           },
           child: const Text("Allow"),

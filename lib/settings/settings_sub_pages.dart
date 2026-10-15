@@ -11,6 +11,7 @@ import 'package:musbx/routing/router.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:provider/provider.dart';
@@ -184,7 +185,13 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                           // Remove cache
                           final ClearSongCache clearSongCache = context.read();
                           for (final song in songs.getAll()) {
-                            await clearSongCache.call(song);
+                            if (await clearSongCache.call(song) case Failure(
+                              :final error,
+                            )) {
+                              debugPrint(
+                                "[SONGS] Clearing cache for ${song.id} failed; $error",
+                              );
+                            }
                           }
 
                           if (!mounted) return;
@@ -238,7 +245,13 @@ class _SongsSettingsPageState extends State<SongsSettingsPage> {
                       final DeleteSong deleteSong = context.read();
 
                       for (final song in songs.getAll()) {
-                        await deleteSong.call(song);
+                        if (await deleteSong.call(song) case Failure(
+                          :final error,
+                        )) {
+                          debugPrint(
+                            "[SONGS] Deleting ${song.id} failed; $error",
+                          );
+                        }
                       }
 
                       if (!mounted) return;

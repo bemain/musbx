@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 import 'package:musbx/utils/result.dart';
 
 /// A lengthy task, with progress tracking, cancellation and error handling.
@@ -75,6 +76,7 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   }
 
   /// Run [execute] and capture its outcome in [result].
+  @useResult
   Future<Result<T>> _execute() async {
     try {
       final value = await execute();
