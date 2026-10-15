@@ -38,6 +38,7 @@ abstract final class AppTheme {
       lightTheme.copyWith(
         textTheme: GoogleFonts.interTextTheme(lightTheme.textTheme),
         sliderTheme: lightTheme.sliderTheme.copyWith(
+          year2023: false,
           showValueIndicator: ShowValueIndicator.onDrag,
         ),
         iconTheme: lightTheme.iconTheme.copyWith(weight: 600),
