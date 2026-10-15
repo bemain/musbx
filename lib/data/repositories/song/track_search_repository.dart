@@ -50,7 +50,7 @@ class TrackSearchRepositorySoundCloud extends TrackSearchRepository {
   @override
   Future<Result<List<OnlineTrack>>> searchTracks(String query) =>
       OptionalService.guard(
-        () async => (await _apiClient.value.searchTracks(
+        () async => (await (await _apiClient.ready).searchTracks(
           query,
         )).map(_fromSoundCloud).toList(),
         "SoundCloud search service disabled",

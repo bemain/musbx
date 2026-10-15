@@ -39,7 +39,7 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   @override
   Future<Result<Announcement>> getLatest() async {
     return OptionalService.guard(
-      () => _supabase.value.getLatestAnnouncement(),
+      () async => (await _supabase.ready).getLatestAnnouncement(),
       "Supabase service disabled",
     );
   }
@@ -47,7 +47,7 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   @override
   Future<Result<List<Announcement>>> getAll() async {
     return OptionalService.guard(
-      () => _supabase.value.getAnnouncements(),
+      () async => (await _supabase.ready).getAnnouncements(),
       "Supabase service disabled",
     );
   }
@@ -57,7 +57,8 @@ class AnnouncementRepositoryRemote extends AnnouncementRepository {
   @override
   Future<Result<List<Announcement>>> getUnread() async {
     return OptionalService.guard(
-      () => _supabase.value.getAnnouncementsAfter(_readAtNotifier.value),
+      () async =>
+          (await _supabase.ready).getAnnouncementsAfter(_readAtNotifier.value),
       "Supabase service disabled",
     );
   }

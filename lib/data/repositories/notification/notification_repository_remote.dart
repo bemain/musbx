@@ -87,7 +87,7 @@ class NotificationRepositoryRemote extends NotificationRepository {
     if (!hasPermission) return Result.failed(PermissionException());
 
     return OptionalService.guard(
-      () => _notifications.value.post(notification),
+      () async => (await _notifications.ready).post(notification),
       "Notification service disabled",
     );
   }
@@ -95,7 +95,7 @@ class NotificationRepositoryRemote extends NotificationRepository {
   @override
   Future<Result<void>> cancel(NotificationChannel channel) async {
     return OptionalService.guard(
-      () => _notifications.value.cancel(channel),
+      () async => (await _notifications.ready).cancel(channel),
       "Notification service disabled",
     );
   }
@@ -103,7 +103,7 @@ class NotificationRepositoryRemote extends NotificationRepository {
   @override
   Future<Result<void>> cancelAll() async {
     return OptionalService.guard(
-      () => _notifications.value.cancelAll(),
+      () async => (await _notifications.ready).cancelAll(),
       "Notification service disabled",
     );
   }

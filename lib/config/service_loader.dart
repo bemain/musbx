@@ -43,6 +43,16 @@ class ServiceLoader<T extends OptionalService> extends ChangeNotifier {
   T _value;
   T get value => _value;
 
+  /// [value], once the attempt in flight, or a new one that [ensureAvailable]
+  /// allows, has finished.
+  ///
+  /// For calls made on demand, which would otherwise reach the fallback while
+  /// the service is still being created, e.g. right after launch.
+  Future<T> get ready async {
+    await ensureAvailable();
+    return _value;
+  }
+
   ServiceAvailability _availability = ServiceAvailability.unknown;
   ServiceAvailability get availability => _availability;
 
