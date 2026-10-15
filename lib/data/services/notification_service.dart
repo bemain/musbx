@@ -354,8 +354,10 @@ class NotificationService extends OptionalService {
   /// a second one. Like the channel key, an id must not change once released:
   /// notifications outlive an app update, so a new id strands the old
   /// notification on screen with nothing left able to address it.
+  ///
+  /// Never 0, which Android rejects for a foreground service's notification.
   static int idOf(NotificationChannel channel) => switch (channel) {
-    NotificationChannel.metronomeControls => 0,
+    NotificationChannel.metronomeControls => 1,
   };
 
   /// The channel stored under [id], or `null` if this app has no such channel.

@@ -88,7 +88,12 @@ class MetronomeNotificationAdapter {
           )
         : await _notifications.cancel(NotificationChannel.metronomeControls);
 
-    if (result is Ok) _postedState = state;
+    switch (result) {
+      case Ok():
+        _postedState = state;
+      case Failure(:final error):
+        debugPrint("[NOTIFICATIONS] Updating notification failed; $error");
+    }
   }
 
   Future<void> _onSettingsChanged() async {
