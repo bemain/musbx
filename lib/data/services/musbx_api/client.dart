@@ -101,12 +101,21 @@ class FileHandle {
 
 /// A client for interacting with a server hosting the Musbx API.
 class MusbxApiClient {
+  /// How long to wait for the server to accept a connection.
+  static const Duration connectTimeout = Duration(seconds: 5);
+
+  /// How long [version] waits for an answer. Kept short because it is how
+  /// [MusbxApi.getClient] tells a hung host from a working one; other requests
+  /// have no such limit, since downloads and jobs can take minutes.
+  static const Duration versionTimeout = Duration(seconds: 5);
+
   final Dio _dio;
 
   MusbxApiClient(String baseurl)
     : _dio = Dio(
         BaseOptions(
           baseUrl: baseurl,
+          connectTimeout: connectTimeout,
           receiveDataWhenStatusError: true,
         ),
       ) {
@@ -117,7 +126,10 @@ class MusbxApiClient {
 
   /// Get the version of the API.
   Future<Version> version() async {
-    final response = await _dio.get<Json>("/version");
+    final response = await _dio.get<Json>(
+      "/version",
+      options: Options(receiveTimeout: versionTimeout),
+    );
     return Version.parse(response.data!['version'] as String);
   }
 
