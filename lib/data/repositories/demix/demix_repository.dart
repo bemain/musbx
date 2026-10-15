@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:musbx/data/repositories/demix/demixing_process.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/utils/result.dart';
 
-/// The stems separated out of each song, and the demixing processes producing
+/// The parts separated out of each song, and the demixing processes producing
 /// them.
 ///
 /// At most one process runs per song; asking for one that is already running
@@ -56,18 +56,18 @@ class DemixRepository extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Whether every stem of [song] is present in the cache.
-  Future<bool> hasStems(Song song) async => await stemsFor(song) != null;
+  /// Whether every part of [song] is present in the cache.
+  Future<bool> hasParts(Song song) async => await partsFor(song) != null;
 
-  /// The cached stem files for [song], or `null` unless all of them are present.
-  Future<Map<StemType, CacheFile>?> stemsFor(Song song) async {
-    final stems = {
-      for (final stem in StemType.values) stem: _cache.stem(song, stem),
+  /// The cached part files for [song], or `null` unless all of them are present.
+  Future<Map<Part, CacheFile>?> partsFor(Song song) async {
+    final parts = {
+      for (final part in Part.values) part: _cache.part(song, part),
     };
     if ((await Future.wait(
-      stems.values.map((f) => f.exists()),
+      parts.values.map((f) => f.exists()),
     )).every((v) => v)) {
-      return stems;
+      return parts;
     }
     return null;
   }

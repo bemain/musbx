@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/utils/utils.dart';
 
 part 'playback_state.g.dart';
@@ -9,8 +9,8 @@ part 'playback_state.g.dart';
 /// the song, a `null` start its beginning.
 typedef LoopSection = ({Duration? start, Duration? end});
 
-/// How a single stem is heard: whether it is on, and how loud.
-typedef StemData = ({bool enabled, double volume});
+/// How a single part is heard: whether it is on, and how loud.
+typedef PartData = ({bool enabled, double volume});
 
 /// A snapshot of the loaded song and everything the user has adjusted on it.
 @JsonSerializable()
@@ -23,7 +23,7 @@ class PlaybackState {
     this.pitch = 0.0,
     this.loopSection = (start: null, end: null),
     this.equalizerGain = const [],
-    this.stems = const {},
+    this.parts = const {},
   });
 
   final Song song;
@@ -39,7 +39,7 @@ class PlaybackState {
 
   final List<double> equalizerGain;
 
-  final Map<StemType, StemData> stems;
+  final Map<Part, PartData> parts;
 
   /// Create a copy of this [PlaybackState] with the specified fields replaced
   /// with new values.
@@ -58,7 +58,7 @@ class PlaybackState {
     double? pitch,
     LoopSection? loopSection,
     List<double>? equalizerGain,
-    Map<StemType, StemData>? stems,
+    Map<Part, PartData>? parts,
   }) {
     return PlaybackState(
       song: song ?? this.song,
@@ -68,7 +68,7 @@ class PlaybackState {
       pitch: pitch ?? this.pitch,
       loopSection: loopSection ?? this.loopSection,
       equalizerGain: equalizerGain ?? this.equalizerGain,
-      stems: stems ?? this.stems,
+      parts: parts ?? this.parts,
     );
   }
 

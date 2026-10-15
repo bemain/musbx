@@ -27,7 +27,7 @@ class DemixingProgressIndicator extends StatefulWidget {
 
   final Song song;
 
-  /// Called once the stems are ready.
+  /// Called once the parts are ready.
   final void Function()? onDemixingComplete;
 
   @override
@@ -42,7 +42,7 @@ class _DemixingProgressIndicatorState
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: demix.hasStems(widget.song),
+      future: demix.hasParts(widget.song),
       builder: (context, snapshot) {
         if (snapshot.data != false) {
           // Already demixed or loading

@@ -24,9 +24,9 @@ SongPreferences _$SongPreferencesFromJson(Map<String, dynamic> json) =>
         (k, e) => MapEntry(int.parse(k), (e as num).toDouble()),
       ),
       shouldDemix: json['shouldDemix'] as bool?,
-      stems: (json['stems'] as Map<String, dynamic>?)?.map(
+      parts: (json['parts'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(
-          $enumDecode(_$StemTypeEnumMap, k),
+          $enumDecode(_$PartEnumMap, k),
           _$recordConvert(
             e,
             ($jsonValue) => (
@@ -50,8 +50,8 @@ Map<String, dynamic> _$SongPreferencesToJson(SongPreferences instance) =>
         (k, e) => MapEntry(k.toString(), e),
       ),
       'shouldDemix': instance.shouldDemix,
-      'stems': instance.stems?.map(
-        (k, e) => MapEntry(_$StemTypeEnumMap[k]!, <String, dynamic>{
+      'parts': instance.parts?.map(
+        (k, e) => MapEntry(_$PartEnumMap[k]!, <String, dynamic>{
           'enabled': e.enabled,
           'volume': e.volume,
         }),
@@ -61,11 +61,11 @@ Map<String, dynamic> _$SongPreferencesToJson(SongPreferences instance) =>
 $Rec _$recordConvert<$Rec>(Object? value, $Rec Function(Map) convert) =>
     convert(value as Map<String, dynamic>);
 
-const _$StemTypeEnumMap = {
-  StemType.vocals: 'vocals',
-  StemType.piano: 'piano',
-  StemType.guitar: 'guitar',
-  StemType.bass: 'bass',
-  StemType.drums: 'drums',
-  StemType.other: 'other',
+const _$PartEnumMap = {
+  Part.vocals: 'vocals',
+  Part.piano: 'piano',
+  Part.guitar: 'guitar',
+  Part.bass: 'bass',
+  Part.drums: 'drums',
+  Part.other: 'other',
 };

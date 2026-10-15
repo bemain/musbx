@@ -23,7 +23,7 @@ import 'package:musbx/widgets/flat_card.dart';
 import 'package:provider/provider.dart';
 
 /// The player for one song: the position slider and transport controls, above
-/// two tabs holding the stem controls and the waveform, chords, pitch and
+/// two tabs holding the part controls and the waveform, chords, pitch and
 /// speed.
 ///
 /// Loads [song] when first shown, and shimmers until it has finished loading.

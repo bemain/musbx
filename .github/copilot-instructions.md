@@ -47,7 +47,7 @@ Dependencies are wired in `lib/config/dependencies.dart` and injected with
 - `AudioRepository` — fetches a `Song`'s `AudioReference` (`UrlAudio`,
   `FileAudio`, `BytesAudio`) into a single cached file.
 - `PlaybackRepository` — the loaded song and everything the user can do to it.
-  A demixed song plays as one sound per stem, driven through a single SoLoud
+  A demixed song plays as one sound per part, driven through a single SoLoud
   voice group. The `LoadSong` and `UnloadSong` use cases restore and save its
   `SongPreferences`.
 - `DemixRepository` — at most one `DemixingProcess` per song; processes survive

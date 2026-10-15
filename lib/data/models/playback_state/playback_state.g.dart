@@ -35,10 +35,10 @@ PlaybackState _$PlaybackStateFromJson(Map<String, dynamic> json) =>
               ?.map((e) => (e as num).toDouble())
               .toList() ??
           const [],
-      stems:
-          (json['stems'] as Map<String, dynamic>?)?.map(
+      parts:
+          (json['parts'] as Map<String, dynamic>?)?.map(
             (k, e) => MapEntry(
-              $enumDecode(_$StemTypeEnumMap, k),
+              $enumDecode(_$PartEnumMap, k),
               _$recordConvert(
                 e,
                 ($jsonValue) => (
@@ -63,8 +63,8 @@ Map<String, dynamic> _$PlaybackStateToJson(PlaybackState instance) =>
         'start': instance.loopSection.start?.inMicroseconds,
       },
       'equalizerGain': instance.equalizerGain,
-      'stems': instance.stems.map(
-        (k, e) => MapEntry(_$StemTypeEnumMap[k]!, <String, dynamic>{
+      'parts': instance.parts.map(
+        (k, e) => MapEntry(_$PartEnumMap[k]!, <String, dynamic>{
           'enabled': e.enabled,
           'volume': e.volume,
         }),
@@ -74,11 +74,11 @@ Map<String, dynamic> _$PlaybackStateToJson(PlaybackState instance) =>
 $Rec _$recordConvert<$Rec>(Object? value, $Rec Function(Map) convert) =>
     convert(value as Map<String, dynamic>);
 
-const _$StemTypeEnumMap = {
-  StemType.vocals: 'vocals',
-  StemType.piano: 'piano',
-  StemType.guitar: 'guitar',
-  StemType.bass: 'bass',
-  StemType.drums: 'drums',
-  StemType.other: 'other',
+const _$PartEnumMap = {
+  Part.vocals: 'vocals',
+  Part.piano: 'piano',
+  Part.guitar: 'guitar',
+  Part.bass: 'bass',
+  Part.drums: 'drums',
+  Part.other: 'other',
 };

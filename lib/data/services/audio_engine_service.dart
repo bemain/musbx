@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/data/models/sound_group.dart';
-import 'package:musbx/domain/models/stem_type.dart';
+import 'package:musbx/domain/models/part.dart';
 
 /// Owns the SoLoud audio engine, which has to be initialized once before any
 /// sound can be played.
@@ -27,9 +27,9 @@ class AudioEngineService {
 
   /// Start every one of [sources] paused and looping, in one voice group so
   /// that they are paused, resumed and sped up together.
-  SongPartsGroup createSound(Map<StemType?, AudioSource> sources) {
+  SongPartsGroup createSound(Map<Part?, AudioSource> sources) {
     // Activate filters. This needs to be done before the sound is played.
-    sources.forEach((stem, source) {
+    sources.forEach((part, source) {
       for (var filter in [
         source.filters.pitchShiftFilter,
         source.filters.parametricEqFilter,
@@ -38,7 +38,7 @@ class AudioEngineService {
       }
     });
 
-    final Map<StemType?, SoundHandle> handles = {
+    final Map<Part?, SoundHandle> handles = {
       for (final e in sources.entries)
         e.key: _soLoud.play(
           e.value,
@@ -157,13 +157,13 @@ class AudioEngineService {
     }
   }
 
-  double? getStemVolume(SongPartsGroup sound, StemType? stem) =>
-      !sound.parts.contains(stem)
+  double? getPartVolume(SongPartsGroup sound, Part? part) =>
+      !sound.parts.contains(part)
       ? null
-      : _soLoud.getVolume(sound.handles[sound.parts.indexOf(stem)]);
-  void setStemVolume(SongPartsGroup sound, StemType? stem, double volume) {
-    if (!sound.parts.contains(stem)) return;
-    _soLoud.setVolume(sound.handles[sound.parts.indexOf(stem)], volume);
+      : _soLoud.getVolume(sound.handles[sound.parts.indexOf(part)]);
+  void setPartVolume(SongPartsGroup sound, Part? part, double volume) {
+    if (!sound.parts.contains(part)) return;
+    _soLoud.setVolume(sound.handles[sound.parts.indexOf(part)], volume);
   }
 
   /// An empty, paused group of tones. See [setTones].

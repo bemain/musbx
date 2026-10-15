@@ -24,7 +24,7 @@ enum DemixStep {
 }
 
 /// Result from a demixing job.
-/// The keys are the name of the separated stems, and the values are the download URLs.
+/// The keys are the name of the separated parts, and the values are the download URLs.
 typedef DemixJobResult = Map<String, String>;
 
 /// A [JobReport] for a demixing job, which also says how far the separation has
@@ -66,7 +66,7 @@ class DemixJobReport extends JobReport<DemixJobResult> {
   }
 }
 
-/// A job that demixes an audio file into multiple stems using demucs.
+/// A job that demixes an audio file into multiple parts using demucs.
 class DemixJob extends Job<DemixJobResult> {
   DemixJob(super.dio, super.id);
 

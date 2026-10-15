@@ -1,11 +1,11 @@
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/domain/models/stem_type.dart';
 
 /// Where each song's files live on disk.
 ///
 /// Split by durability: preferences are persistent, while everything that can be
-/// fetched or computed again — the audio, its stems, the chords and the waveform
+/// fetched or computed again — the audio, its parts, the chords and the waveform
 /// — is scratch, and may be purged by the operating system or by the user
 /// clearing the cache.
 class SongCache {
@@ -34,9 +34,9 @@ class SongCache {
   CacheFile audio(Song song, {String extension = "mp3"}) =>
       _source(song).file("audio.$extension");
 
-  /// One of this song's separated stems.
-  CacheFile stem(Song song, StemType stem, {String extension = "mp3"}) =>
-      _source(song).file("${stem.name}.$extension");
+  /// One of this song's separated parts.
+  CacheFile part(Song song, Part part, {String extension = "mp3"}) =>
+      _source(song).file("${part.name}.$extension");
 
   /// How much space this song's regenerable files take, in bytes.
   Future<int> size(Song song) => _scratch(song).size();

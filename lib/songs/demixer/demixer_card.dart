@@ -11,9 +11,9 @@ import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
+import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/song_preferences.dart';
-import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/routing/routes.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
@@ -279,8 +279,8 @@ This only needs to be done once, so loading the song next time will be much fast
   }
 }
 
-/// The stem controls for the loaded song, or the demixing progress while its
-/// stems are still being separated.
+/// The part controls for the loaded song, or the demixing progress while its
+/// parts are still being separated.
 class DemixerCard extends StatelessWidget {
   const DemixerCard({super.key});
 
@@ -319,7 +319,7 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// The button resetting every stem, shown above the stem controls.
+  /// The button resetting every part, shown above the part controls.
   Widget buildHeader(BuildContext context) {
     final PlaybackRepository playback = context.read();
 
@@ -331,20 +331,20 @@ class DemixerCard extends StatelessWidget {
           builder: (context, child) => IconButton(
             iconSize: 20,
             onPressed:
-                playback.stems?.every(
-                      (stem) =>
-                          playback.getStemEnabled(stem) == true &&
-                          playback.getStemVolume(stem) ==
-                              PlaybackRepository.stemDefaultVolume,
+                playback.parts?.every(
+                      (part) =>
+                          playback.getPartEnabled(part) == true &&
+                          playback.getPartVolume(part) ==
+                              PlaybackRepository.partDefaultVolume,
                     ) ??
                     true
                 ? null
                 : () {
-                    for (StemType stem in playback.stems ?? []) {
-                      playback.setStem(
-                        stem,
+                    for (Part part in playback.parts ?? []) {
+                      playback.setPart(
+                        part,
                         enabled: true,
-                        volume: PlaybackRepository.stemDefaultVolume,
+                        volume: PlaybackRepository.partDefaultVolume,
                       );
                     }
                   },
@@ -355,7 +355,7 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// The controls for each stem of the loaded song.
+  /// The controls for each part of the loaded song.
   Widget buildBody(BuildContext context) {
     final PlaybackRepository playback = context.read();
 
@@ -364,8 +364,7 @@ class DemixerCard extends StatelessWidget {
       builder: (context, child) {
         return Column(
           children: [
-            for (StemType stem in playback.stems ?? [])
-              StemControls(stem: stem),
+            for (Part part in playback.parts ?? []) PartControls(part: part),
           ],
         );
       },
@@ -373,47 +372,47 @@ class DemixerCard extends StatelessWidget {
   }
 }
 
-/// Widget for enabling/disabling and changing the volume of a demixer [stem].
-class StemControls extends StatefulWidget {
-  const StemControls({super.key, required this.stem});
+/// Widget for enabling/disabling and changing the volume of a demixer [part].
+class PartControls extends StatefulWidget {
+  const PartControls({super.key, required this.part});
 
-  /// The stem this widget controls.
-  final StemType stem;
+  /// The part this widget controls.
+  final Part part;
 
   @override
-  State<StatefulWidget> createState() => StemControlsState();
+  State<StatefulWidget> createState() => PartControlsState();
 }
 
-class StemControlsState extends State<StemControls> {
+class PartControlsState extends State<PartControls> {
   PlaybackRepository get playback => context.read();
   EntitlementRepository get entitlement => context.read();
 
-  StemType get stem => widget.stem;
+  Part get part => widget.part;
 
   @override
   Widget build(BuildContext context) {
     if (!playback.isMulti) return const SizedBox();
 
-    /// Whether this stem is allowed to be accessed.
+    /// Whether this part is allowed to be accessed.
     final bool accessAllowed =
         entitlement.hasPremium ||
         playback.song?.id == demoSong.id ||
-        PlaybackRepository.freeStems.contains(stem);
+        PlaybackRepository.freeParts.contains(part);
 
-    /// Whether all other stems are disabled
-    final bool allOtherStemsDisabled =
-        playback.stems
-            ?.where((stem) => stem != this.stem)
-            .every((stem) => playback.getStemEnabled(stem) ?? false) ??
+    /// Whether all other parts are disabled
+    final bool allOtherPartsDisabled =
+        playback.parts
+            ?.where((part) => part != this.part)
+            .every((part) => playback.getPartEnabled(part) ?? false) ??
         false;
 
     return ListenableBuilder(
       listenable: playback,
       builder: (context, child) {
-        final bool enabled = playback.getStemEnabled(stem) ?? true;
+        final bool enabled = playback.getPartEnabled(part) ?? true;
         final double volume =
-            playback.getStemVolume(stem) ??
-            PlaybackRepository.stemDefaultVolume;
+            playback.getPartVolume(part) ??
+            PlaybackRepository.partDefaultVolume;
         return Row(
           children: [
             SizedBox(width: 12),
@@ -424,10 +423,10 @@ class StemControlsState extends State<StemControls> {
                   return;
                 }
 
-                for (StemType stem in playback.stems ?? []) {
-                  playback.setStem(stem, enabled: allOtherStemsDisabled);
+                for (Part part in playback.parts ?? []) {
+                  playback.setPart(part, enabled: allOtherPartsDisabled);
                 }
-                playback.setStem(stem, enabled: !allOtherStemsDisabled);
+                playback.setPart(part, enabled: !allOtherPartsDisabled);
               },
               child: Stack(
                 alignment: Alignment.bottomRight,
@@ -441,16 +440,16 @@ class StemControlsState extends State<StemControls> {
                       }
 
                       if (volume == 0) {
-                        playback.setStem(
-                          stem,
+                        playback.setPart(
+                          part,
                           enabled: true,
-                          volume: PlaybackRepository.stemDefaultVolume,
+                          volume: PlaybackRepository.partDefaultVolume,
                         );
                       } else {
-                        playback.setStem(stem, enabled: !enabled);
+                        playback.setPart(part, enabled: !enabled);
                       }
                     },
-                    icon: Icon(getStemIcon(stem)),
+                    icon: Icon(getPartIcon(part)),
                   ),
                   if (!accessAllowed)
                     Align(
@@ -482,11 +481,11 @@ class StemControlsState extends State<StemControls> {
                     return;
                   }
 
-                  playback.setStem(stem, enabled: true);
+                  playback.setPart(part, enabled: true);
                 },
                 onChanged: (value) {
                   if (!accessAllowed) return;
-                  playback.setStem(stem, volume: value);
+                  playback.setPart(part, volume: value);
                 },
               ),
             ),
@@ -496,14 +495,14 @@ class StemControlsState extends State<StemControls> {
     );
   }
 
-  IconData getStemIcon(StemType stem) {
-    return switch (stem) {
-      StemType.vocals => CustomIcons.microphone,
-      StemType.piano => Symbols.piano,
-      StemType.guitar => CustomIcons.guitar_head,
-      StemType.bass => CustomIcons.bass_head,
-      StemType.drums => CustomIcons.snare,
-      StemType.other => Symbols.music_note,
+  IconData getPartIcon(Part part) {
+    return switch (part) {
+      Part.vocals => CustomIcons.microphone,
+      Part.piano => Symbols.piano,
+      Part.guitar => CustomIcons.guitar_head,
+      Part.bass => CustomIcons.bass_head,
+      Part.drums => CustomIcons.snare,
+      Part.other => Symbols.music_note,
     };
   }
 

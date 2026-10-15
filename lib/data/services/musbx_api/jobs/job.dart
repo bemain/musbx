@@ -6,7 +6,7 @@ import 'package:musbx/utils/utils.dart';
 
 /// The task that a job performs.
 enum JobTask {
-  /// The job demixes an audio file into multiple stems using demucs.
+  /// The job demixes an audio file into multiple parts using demucs.
   demix,
 
   /// The job performs chord analysis on an audio file.

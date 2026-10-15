@@ -6,15 +6,15 @@ import 'package:musbx/data/repositories/demix/demix_repository.dart';
 import 'package:musbx/data/repositories/song/audio_repository.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
+import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/domain/use_case/unload_song.dart';
 import 'package:musbx/utils/result.dart';
 
 /// Unload whatever is playing and load a song in its place, restoring the
 /// preferences it was left with.
 ///
-/// Fetches the audio if it is not cached, and plays the stems instead when
+/// Fetches the audio if it is not cached, and plays the parts instead when
 /// every one of them is.
 class LoadSong {
   LoadSong({
@@ -44,12 +44,12 @@ class LoadSong {
 
     try {
       final File file = (await _audio.resolve(song)).asOk;
-      final stems = await _demix.stemsFor(song);
+      final parts = await _demix.partsFor(song);
 
-      final Map<StemType?, File> files;
-      if (stems != null) {
+      final Map<Part?, File> files;
+      if (parts != null) {
         files = {
-          for (final e in stems.entries) e.key: File(e.value.path),
+          for (final e in parts.entries) e.key: File(e.value.path),
         };
       } else {
         files = {null: file};

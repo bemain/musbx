@@ -10,7 +10,7 @@ import 'package:musbx/utils/result.dart';
 
 /// Free up the space a song takes without removing it from the library.
 ///
-/// Drops the downloaded audio, its stems and the analysis results, and stops
+/// Drops the downloaded audio, its parts and the analysis results, and stops
 /// the song from being demixed again on its own. Its preferences are kept, so
 /// reopening it restores where the user was.
 class ClearSongCache {

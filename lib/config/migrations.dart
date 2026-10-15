@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
+import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song_preferences.dart';
-import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -122,13 +122,13 @@ class Migrations {
       });
     }
 
-    final Map<StemType, ({bool enabled, double volume})> stems = {};
+    final Map<Part, ({bool enabled, double volume})> parts = {};
     if (demixer is Json) {
       demixer.forEach((key, value) {
-        final StemType? type = StemType.values.asNameMap()[key];
+        final Part? type = Part.values.asNameMap()[key];
         if (type == null || value is! Json) return;
 
-        stems[type] = (
+        parts[type] = (
           enabled: value["enabled"] is bool ? value["enabled"] as bool : true,
           volume: _toDouble(value["volume"]) ?? 0.5,
         );
@@ -144,7 +144,7 @@ class Migrations {
       numEqualizerBands: equalizer is Json ? _toInt(equalizer["bands"]) : null,
       equalizerGains: gains.isEmpty ? null : gains,
       shouldDemix: json["demix"] is bool ? json["demix"] as bool : null,
-      stems: stems.isEmpty ? null : stems,
+      parts: parts.isEmpty ? null : parts,
     );
   }
 

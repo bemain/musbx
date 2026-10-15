@@ -10,8 +10,8 @@ import 'package:musbx/data/services/musbx_api/jobs/demix.dart';
 import 'package:musbx/data/services/musbx_api/jobs/job.dart';
 import 'package:musbx/data/services/musbx_api/musbx_api.dart';
 import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
-import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/utils/process.dart';
 
 /// The stages a [DemixingProcess] passes through, in order.
@@ -22,18 +22,18 @@ enum DemixingStep {
   /// The song is being uploaded to the server.
   uploading,
 
-  /// The server has begun separating the song into stems.
+  /// The server has begun separating the song into parts.
   separating,
 
-  /// The server is compressing the stem files.
+  /// The server is compressing the part files.
   compressing,
 
-  /// The stem files are being downloaded.
+  /// The part files are being downloaded.
   downloading,
 }
 
-/// Upload, separate and download stem files for a [song].
-class DemixingProcess extends Process<Map<StemType, CacheFile>> {
+/// Upload, separate and download part files for a [song].
+class DemixingProcess extends Process<Map<Part, CacheFile>> {
   DemixingProcess(
     this.song, {
     required SongCache cache,
@@ -69,7 +69,7 @@ class DemixingProcess extends Process<Map<StemType, CacheFile>> {
   }
 
   @override
-  Future<Map<StemType, CacheFile>> execute() async {
+  Future<Map<Part, CacheFile>> execute() async {
     stepNotifier.value = DemixingStep.findingHost;
 
     final MusbxApiClient client = await MusbxApi.getClient();
@@ -124,20 +124,20 @@ class DemixingProcess extends Process<Map<StemType, CacheFile>> {
 
     breakIfCancelled();
 
-    // Download stem files
+    // Download part files
     stepNotifier.value = DemixingStep.downloading;
     stepProgressNotifier.value = 0;
 
     /// The progress of each of the download operations.
     Map<String, double> downloadProgress = {};
 
-    final Map<StemType, CacheFile> files = Map.fromEntries(
+    final Map<Part, CacheFile> files = Map.fromEntries(
       await Future.wait(
-        report.result!.keys.map((stemName) async {
+        report.result!.keys.map((partName) async {
           final response = await job.dio.get<List<int>>(
-            report.result![stemName]!,
+            report.result![partName]!,
             onReceiveProgress: (received, total) {
-              downloadProgress[stemName] = received / total;
+              downloadProgress[partName] = received / total;
               final totalProgress = downloadProgress.values.reduce(
                 (a, b) => a + b,
               );
@@ -150,15 +150,15 @@ class DemixingProcess extends Process<Map<StemType, CacheFile>> {
             ),
           );
 
-          final StemType stem = StemType.values.firstWhere(
-            (stem) => stem.name == stemName,
+          final Part part = Part.values.firstWhere(
+            (part) => part.name == partName,
           );
 
-          final CacheFile destination = _cache.stem(song, stem);
+          final CacheFile destination = _cache.part(song, part);
           await destination.writeBytes(response.data!);
 
           return MapEntry(
-            stem,
+            part,
             destination,
           );
         }),

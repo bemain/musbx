@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:musbx/domain/models/stem_type.dart';
+import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/utils/utils.dart';
 
 part 'song_preferences.g.dart';
@@ -21,7 +21,7 @@ class SongPreferences {
     this.numEqualizerBands,
     this.equalizerGains,
     this.shouldDemix,
-    this.stems,
+    this.parts,
   });
 
   /// Where playback was left off.
@@ -49,12 +49,12 @@ class SongPreferences {
   /// `SongSettings.demixAutomatically`.
   final bool? shouldDemix;
 
-  /// How loud each stem was, and whether it was heard at all.
-  final Map<StemType, ({bool enabled, double volume})>? stems;
+  /// How loud each part was, and whether it was heard at all.
+  final Map<Part, ({bool enabled, double volume})>? parts;
 
   /// A copy with the given fields replaced.
   ///
-  /// [equalizerGains] and [stems] are merged into the existing ones rather than
+  /// [equalizerGains] and [parts] are merged into the existing ones rather than
   /// replacing them wholesale.
   SongPreferences copyWith({
     Duration? position,
@@ -65,7 +65,7 @@ class SongPreferences {
     int? numEqualizerBands,
     Map<int, double>? equalizerGains,
     bool? shouldDemix,
-    Map<StemType, ({bool enabled, double volume})>? stems,
+    Map<Part, ({bool enabled, double volume})>? parts,
   }) {
     return SongPreferences(
       position: position ?? this.position,
@@ -78,7 +78,7 @@ class SongPreferences {
           ? this.equalizerGains
           : {...?this.equalizerGains, ...equalizerGains},
       shouldDemix: shouldDemix ?? this.shouldDemix,
-      stems: stems == null ? this.stems : {...?this.stems, ...stems},
+      parts: parts == null ? this.parts : {...?this.parts, ...parts},
     );
   }
 

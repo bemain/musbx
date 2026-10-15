@@ -1,5 +1,5 @@
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:musbx/domain/models/stem_type.dart';
+import 'package:musbx/domain/models/part.dart';
 
 /// Sounds played through one voice group, so that they are paused, resumed and
 /// sped up together.
@@ -30,7 +30,7 @@ class SongPartsGroup extends SoundGroup {
     required super.groupHandle,
   });
 
-  final List<StemType?> parts;
+  final List<Part?> parts;
 }
 
 /// The generated tones the drone plays.

@@ -7,19 +7,19 @@ import 'package:musbx/data/models/playback_state/playback_state.dart';
 import 'package:musbx/data/models/sound_group.dart';
 import 'package:musbx/data/services/audio_engine_service.dart';
 import 'package:musbx/data/services/audio_session_service.dart';
+import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/song_preferences.dart';
-import 'package:musbx/domain/models/stem_type.dart';
 import 'package:musbx/utils/result.dart';
 
 /// The song that is loaded, and everything the user can do to it while it
 /// plays.
 ///
-/// One song is loaded at a time. If it is loaded as stems, each is played as
+/// One song is loaded at a time. If it is loaded as parts, each is played as
 /// its own sound and the whole set is driven through a single voice group, so
 /// speed, pitch and seeking stay in lockstep; otherwise a single source is
 /// played. Either way the audible state — [speed], [pitch], [loopSection], the
-/// equalizer and the [stems] — is restored from the [SongPreferences] passed to
+/// equalizer and the [parts] — is restored from the [SongPreferences] passed to
 /// [load], and handed back by [readPreferences] for the caller to save.
 class PlaybackRepository extends ChangeNotifier {
   /// The minimum number of frequency bands.
@@ -43,15 +43,15 @@ class PlaybackRepository extends ChangeNotifier {
   /// How many bands the equalizer is split into unless the song says otherwise.
   static const int equalizerDefaultNumBands = 3;
 
-  /// The volume of a stem that is left alone.
-  static const double stemDefaultVolume = 1.0;
+  /// The volume of a part that is left alone.
+  static const double partDefaultVolume = 1.0;
 
-  /// The stems that can be controlled without premium.
-  static const List<StemType> freeStems = [
-    StemType.vocals,
-    StemType.bass,
-    StemType.drums,
-    StemType.other,
+  /// The parts that can be controlled without premium.
+  static const List<Part> freeParts = [
+    Part.vocals,
+    Part.bass,
+    Part.drums,
+    Part.other,
   ];
 
   PlaybackRepository({
@@ -103,7 +103,7 @@ class PlaybackRepository extends ChangeNotifier {
   /// The loaded song, or `null` when nothing is loaded.
   Song? get song => state?.song;
 
-  /// Whether the loaded song is playing as separate stems rather than as one
+  /// Whether the loaded song is playing as separate parts rather than as one
   /// sound.
   bool get isMulti => (_sound?.handles.length ?? 0) > 1;
 
@@ -217,26 +217,26 @@ class PlaybackRepository extends ChangeNotifier {
     }
   }
 
-  /// The stems that have settings, or `null` when nothing is loaded.
+  /// The parts that have settings, or `null` when nothing is loaded.
   ///
-  /// A song that is not loaded as stems still has settings for them, kept for
+  /// A song that is not loaded as parts still has settings for them, kept for
   /// when it is.
-  Set<StemType>? get stems => _state?.stems.keys.toSet();
+  Set<Part>? get parts => _state?.parts.keys.toSet();
 
   /// Whether [type] is heard, or `null` if it has no settings.
-  bool? getStemEnabled(StemType type) => _state?.stems[type]?.enabled;
+  bool? getPartEnabled(Part type) => _state?.parts[type]?.enabled;
 
   /// How loud [type] is, or `null` if it has no settings.
-  double? getStemVolume(StemType type) => _state?.stems[type]?.volume;
+  double? getPartVolume(Part type) => _state?.parts[type]?.volume;
 
   /// Turn [type] on or off, or change its volume, leaving whatever is not
   /// specified alone.
-  void setStem(StemType type, {bool? enabled, double? volume}) => _updateState(
-    stems: {
-      ..._state!.stems,
+  void setPart(Part type, {bool? enabled, double? volume}) => _updateState(
+    parts: {
+      ..._state!.parts,
       type: (
-        enabled: enabled ?? _state!.stems[type]?.enabled ?? true,
-        volume: volume ?? _state!.stems[type]?.volume ?? stemDefaultVolume,
+        enabled: enabled ?? _state!.parts[type]?.enabled ?? true,
+        volume: volume ?? _state!.parts[type]?.volume ?? partDefaultVolume,
       ),
     },
   );
@@ -254,9 +254,9 @@ class PlaybackRepository extends ChangeNotifier {
         _state!.equalizerGain.length,
         (_) => equalizerDefaultGain,
       ),
-      stems: {
-        for (var type in StemType.values)
-          type: (enabled: true, volume: PlaybackRepository.stemDefaultVolume),
+      parts: {
+        for (var type in Part.values)
+          type: (enabled: true, volume: PlaybackRepository.partDefaultVolume),
       },
     );
   }
@@ -269,7 +269,7 @@ class PlaybackRepository extends ChangeNotifier {
     double? pitch,
     LoopSection? loopSection,
     List<double>? equalizerGain,
-    Map<StemType, StemData>? stems,
+    Map<Part, PartData>? parts,
   }) {
     if (song != null) {
       _state = PlaybackState(song: song, isPlaying: false);
@@ -285,7 +285,7 @@ class PlaybackRepository extends ChangeNotifier {
       pitch: pitch,
       loopSection: loopSection,
       equalizerGain: equalizerGain,
-      stems: stems,
+      parts: parts,
     );
 
     if (_sound case final sound?) {
@@ -301,17 +301,17 @@ class PlaybackRepository extends ChangeNotifier {
         });
       }
 
-      if (stems != null) {
+      if (parts != null) {
         for (var type in sound.parts) {
-          final data = stems[type];
+          final data = parts[type];
           if (data?.enabled ?? true) {
-            _audioEngine.setStemVolume(
+            _audioEngine.setPartVolume(
               _sound!,
               type,
-              data?.volume ?? stemDefaultVolume,
+              data?.volume ?? partDefaultVolume,
             );
           } else {
-            _audioEngine.setStemVolume(_sound!, type, 0.0);
+            _audioEngine.setPartVolume(_sound!, type, 0.0);
           }
         }
       }
@@ -333,12 +333,12 @@ class PlaybackRepository extends ChangeNotifier {
   /// Unload whatever is playing and load [song] paused, restoring
   /// [preferences] if given.
   ///
-  /// [files] maps each stem to its audio, or holds a single `null` entry to
+  /// [files] maps each part to its audio, or holds a single `null` entry to
   /// play the song as one sound.
   @useResult
   Future<Result<void>> load(
     Song song,
-    Map<StemType?, File> files, {
+    Map<Part?, File> files, {
     SongPreferences? preferences,
   }) async {
     if (_sound != null) await stop();
@@ -366,7 +366,7 @@ class PlaybackRepository extends ChangeNotifier {
               equalizerDefaultNumBands,
           (i) => preferences?.equalizerGains?[i] ?? equalizerDefaultGain,
         ),
-        stems: preferences.stems,
+        parts: preferences.parts,
       );
 
       await _audioSession.setActive(true);
@@ -414,7 +414,7 @@ class PlaybackRepository extends ChangeNotifier {
       loopEnd: loopSection?.end,
       numEqualizerBands: numEqualizerBands,
       equalizerGains: gains,
-      stems: state?.stems ?? {},
+      parts: state?.parts ?? {},
     );
   }
 
