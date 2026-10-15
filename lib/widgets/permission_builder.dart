@@ -11,6 +11,8 @@ import 'package:provider/provider.dart';
 /// because the user granted it, or because the platform does not gate it at all.
 /// Rechecks whenever the app is resumed, so granting from the system settings
 /// takes effect without a restart.
+///
+/// TODO: This should not access [PermissionService] directly. We should create a repository.
 class PermissionBuilder extends StatefulWidget {
   const PermissionBuilder({
     super.key,

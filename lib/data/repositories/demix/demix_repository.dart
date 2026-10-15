@@ -4,6 +4,7 @@ import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/stem_type.dart';
+import 'package:musbx/utils/result.dart';
 
 /// The stems separated out of each song, and the demixing processes producing
 /// them.
@@ -21,20 +22,29 @@ class DemixRepository extends ChangeNotifier {
   /// Start demixing [song], or return the process already doing so.
   ///
   /// A cancelled process is replaced rather than resumed.
-  DemixingProcess start(Song song) {
-    DemixingProcess? process = get(song);
-    if (process?.isCancelled == true) process = null;
+  Result<DemixingProcess> start(Song song) {
+    try {
+      DemixingProcess? process = get(song);
+      if (process?.isCancelled == true) process = null;
 
-    process ??= DemixingProcess(song, cache: _cache);
+      process ??= DemixingProcess(song, cache: _cache);
 
-    _processes[song] = process;
-    notifyListeners();
-    return process;
+      _processes[song] = process;
+      notifyListeners();
+      return Result.ok(process);
+    } catch (e, s) {
+      return Result.failed(e, s);
+    }
   }
 
   /// [start] every one of [songs].
-  List<DemixingProcess> startAll(Iterable<Song> songs) =>
-      songs.map(start).toList();
+  Result<List<DemixingProcess>> startAll(Iterable<Song> songs) {
+    try {
+      return Result.ok(songs.map((song) => start(song).asOk).toList());
+    } catch (e, s) {
+      return Result.failed(e, s);
+    }
+  }
 
   /// The process demixing [song], if there is one.
   DemixingProcess? get(Song song) => _processes[song];

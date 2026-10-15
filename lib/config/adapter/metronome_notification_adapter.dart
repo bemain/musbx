@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
 import 'package:musbx/data/repositories/notification/notification_repository.dart';
 import 'package:musbx/data/repositories/settings_repository.dart';
 import 'package:musbx/domain/models/notification.dart';

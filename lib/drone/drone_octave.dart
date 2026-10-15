@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/repositories/drone_repository.dart';
+import 'package:musbx/data/repositories/drone/drone_repository.dart';
 import 'package:provider/provider.dart';
 
 /// Buttons for moving the drone's root an octave up or down.

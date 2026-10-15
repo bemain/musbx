@@ -46,12 +46,16 @@ class SongRepository extends ChangeNotifier {
       file: fileCache.persistent.file("songs/history.json"),
       fromJson: (json) {
         if (json is! Json) {
-          throw "[LIBRARY] Incorrectly formatted entry in history file: ($json)";
+          throw FormatException(
+            "[LIBRARY] Incorrectly formatted entry in history file: ($json)",
+          );
         }
         try {
           return Song.fromJson(json);
         } catch (error) {
-          throw "[LIBRARY] History entry ($json) could not be parsed as a Song; $error";
+          throw FormatException(
+            "[LIBRARY] History entry ($json) could not be parsed as a Song; $error",
+          );
         }
       },
       toJson: (value) => value.toJson(),

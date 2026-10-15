@@ -3,9 +3,8 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
-import 'package:musbx/data/models/feedback/feedback_entry.dart';
-import 'package:musbx/data/services/shared_preferences_service.dart';
-import 'package:musbx/data/services/supabase_service.dart';
+import 'package:musbx/data/repositories/feedback/feedback_repository.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -44,14 +43,14 @@ class AnnouncementTile extends StatefulWidget {
   final bool isUnread;
 
   /// Called with the user's answer when they respond to the poll.
-  final void Function(String response)? onResponseSent;
+  final void Function(List<String> responses)? onResponseSent;
 
   @override
   State<AnnouncementTile> createState() => _AnnouncementTileState();
 }
 
 class _AnnouncementTileState extends State<AnnouncementTile> {
-  SupabaseService get supabase => context.read();
+  FeedbackRepository get feedback => context.read();
 
   /// The currently selected responses.
   /// The special value '[otherFieldName]' signifies that the 'Other' option is
@@ -61,14 +60,6 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
 
   /// Stands in for the free-text "Other" option among the poll's answers.
   static const otherFieldName = "__other__";
-
-  late final PersistentValue<String>? sentResponse =
-      widget.announcement == null
-      ? null
-      : context.read<SharedPreferencesService>().value<String>(
-          "announcements/${widget.announcement!.id}/response",
-          initialValue: "",
-        );
 
   String formatDate(DateTime d) =>
       "${d.day} ${AnnouncementTile.months[d.month - 1].toUpperCase()}${d.year != DateTime.now().year ? " ${d.year}" : ""}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}";
@@ -83,6 +74,7 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
   Widget build(BuildContext context) {
     if (widget.announcement == null) return _buildPlaceholder(context);
     final Announcement announcement = widget.announcement!;
+    final List<String> responses = feedback.responses(announcement);
 
     final ThemeData theme = Theme.of(context);
 
@@ -120,18 +112,17 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
             _markdownText(context, announcement.content ?? ""),
 
             // Already sent response
-            if (sentResponse?.value.isEmpty == false) ...[
+            if (responses.isEmpty == false) ...[
               SizedBox(height: 4),
               Text(
                 "You responded:",
                 style: Theme.of(context).textTheme.labelMedium,
               ),
-              _markdownText(context, sentResponse?.value ?? ""),
+              _markdownText(context, responses.join(", ")),
             ],
 
             // Available responses
-            if (announcement.responses != null &&
-                sentResponse?.value.isEmpty == true) ...[
+            if (announcement.responses != null && responses.isEmpty) ...[
               _buildResponses(context, announcement),
               ListenableBuilder(
                 listenable: otherFieldController,
@@ -156,13 +147,15 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
                                 .toList();
 
                             for (final response in responses) {
-                              await supabase.insertFeedback(
-                                FeedbackEntry(
-                                  content: response,
-                                  responseTo: announcement.id,
-                                  sentBy: supabase.currentUser?.id,
-                                ),
+                              final res = await feedback.respond(
+                                announcement,
+                                response,
                               );
+                              if (res case Failure(:final error)) {
+                                debugPrint(
+                                  "[Feedback] Sending feedback failed: $error",
+                                );
+                              }
                             }
 
                             if (context.mounted) {
@@ -171,15 +164,10 @@ class _AnnouncementTileState extends State<AnnouncementTile> {
                                 leading: Icon(Symbols.celebration),
                                 title: Text("Thank you for your response!"),
                               );
+                              setState(() {});
                             }
 
-                            final response = responses.join(", ");
-
-                            setState(() {
-                              sentResponse?.value = response;
-                            });
-
-                            widget.onResponseSent?.call(response);
+                            widget.onResponseSent?.call(responses);
                           },
                     child: Text("Submit"),
                   ),

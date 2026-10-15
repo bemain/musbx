@@ -12,12 +12,12 @@ import 'package:musbx/data/repositories/analysis/analysis_repository_remote.dart
 import 'package:musbx/data/repositories/announcement/announcement_repository.dart';
 import 'package:musbx/data/repositories/announcement/announcement_repository_remote.dart';
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
-import 'package:musbx/data/repositories/drone_repository.dart';
+import 'package:musbx/data/repositories/drone/drone_repository.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository_remote.dart';
 import 'package:musbx/data/repositories/feedback/feedback_repository.dart';
 import 'package:musbx/data/repositories/feedback/feedback_repository_remote.dart';
-import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
 import 'package:musbx/data/repositories/notification/notification_repository.dart';
 import 'package:musbx/data/repositories/notification/notification_repository_remote.dart';
 import 'package:musbx/data/repositories/settings_repository.dart';
@@ -26,7 +26,7 @@ import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
 import 'package:musbx/data/repositories/song/track_search_repository.dart';
-import 'package:musbx/data/repositories/tuner_repository.dart';
+import 'package:musbx/data/repositories/tuner/tuner_repository.dart';
 import 'package:musbx/data/services/ad_service.dart';
 import 'package:musbx/data/services/analytics_service.dart';
 import 'package:musbx/data/services/audio_capture_service.dart';
@@ -187,7 +187,10 @@ List<SingleChildWidget> _repositories = [
   ),
   Provider(
     create: (context) =>
-        FeedbackRepositoryRemote(supabase: context.read())
+        FeedbackRepositoryRemote(
+              sharedPreferences: context.read(),
+              supabase: context.read(),
+            )
             as FeedbackRepository,
   ),
   Provider(

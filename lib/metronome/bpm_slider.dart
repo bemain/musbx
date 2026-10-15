@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
 import 'package:provider/provider.dart';
 
 /// Slider for adjusting [Metronome]'s bpm.

@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/settings_repository.dart';
-import 'package:musbx/data/repositories/tuner_repository.dart';
+import 'package:musbx/data/repositories/tuner/tuner_repository.dart';
 import 'package:musbx/domain/models/frequency_detection.dart';
 import 'package:musbx/domain/models/permission.dart';
 import 'package:musbx/tuner/pitch_graph.dart';

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:volume_controller/volume_controller.dart';
 

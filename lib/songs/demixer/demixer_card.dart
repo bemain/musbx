@@ -65,7 +65,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
           return buildDemixDisabled();
         }
 
-        DemixingProcess? process = demixing.start(song);
+        DemixingProcess process = demixing.start(song).asOk;
 
         return ListenableBuilder(
           listenable: process,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
 import 'package:musbx/data/repositories/notification/notification_repository.dart';
 import 'package:musbx/metronome/notification_indicator.dart';
 import 'package:provider/provider.dart';

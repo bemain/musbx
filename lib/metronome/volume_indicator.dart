@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
 import 'package:provider/provider.dart';
 
 /// A button muting the metronome, which makes it vibrate the beat instead.

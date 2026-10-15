@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
 import 'package:musbx/metronome/bpm_buttons.dart';
 import 'package:musbx/metronome/bpm_slider.dart';
 import 'package:musbx/metronome/bpm_tapper.dart';

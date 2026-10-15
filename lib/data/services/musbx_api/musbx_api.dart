@@ -18,6 +18,7 @@ final class OutOfDate extends MusbxApiError {
 }
 
 /// The known Musbx API servers, and which of them this app can talk to.
+/// TODO: This should be injected, not static
 class MusbxApi {
   /// The version of the API that this is compatible with.
   static final VersionConstraint version = VersionConstraint.parse("^0.4.0");

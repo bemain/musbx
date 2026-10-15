@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/repositories/metronome_repository.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
 import 'package:provider/provider.dart';
 
 /// Widget for displaying the number of beat and the [Metronome]'s current count.
