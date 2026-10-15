@@ -88,7 +88,7 @@ class PlaybackRepository extends ChangeNotifier {
   final AudioEngineService _audioEngine;
   final AudioSessionService _audioSession;
 
-  SoundGroup? _sound;
+  SongPartsGroup? _sound;
   PlaybackState? _state;
 
   /// Everything about the loaded song, or `null` when nothing is loaded.
@@ -302,7 +302,7 @@ class PlaybackRepository extends ChangeNotifier {
       }
 
       if (stems != null) {
-        for (var type in sound.handles.keys) {
+        for (var type in sound.parts) {
           final data = stems[type];
           if (data?.enabled ?? true) {
             _audioEngine.setStemVolume(
@@ -348,7 +348,7 @@ class PlaybackRepository extends ChangeNotifier {
         for (final e in files.entries)
           e.key: await _audioEngine.loadFile(e.value),
       };
-      final SoundGroup sound = _audioEngine.createSound(sources);
+      final SongPartsGroup sound = _audioEngine.createSound(sources);
 
       _sound = sound;
 

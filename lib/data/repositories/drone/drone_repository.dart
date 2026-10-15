@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:musbx/data/models/tone_group.dart';
+import 'package:musbx/data/models/sound_group.dart';
 import 'package:musbx/data/services/audio_engine_service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/music/pitch.dart';
@@ -127,14 +127,14 @@ class DroneRepository extends ChangeNotifier {
 
   void pause() {
     if (!_isPlaying) return;
-    _audioEngine.pauseTones(_tones);
+    _audioEngine.pause(_tones);
     _isPlaying = false;
     notifyListeners();
   }
 
   void resume() {
     if (_isPlaying) return;
-    _audioEngine.resumeTones(_tones);
+    _audioEngine.resume(_tones);
     _isPlaying = true;
     notifyListeners();
   }
@@ -147,7 +147,7 @@ class DroneRepository extends ChangeNotifier {
       [for (final pitch in pitches) pitch.frequency],
       waveform,
     );
-    if (isPlaying) _audioEngine.resumeTones(_tones);
+    if (isPlaying) _audioEngine.resume(_tones);
     if (intervals.isEmpty) pause();
     notifyListeners();
   }
@@ -155,7 +155,7 @@ class DroneRepository extends ChangeNotifier {
   @override
   void dispose() {
     unawaited(
-      _pendingTones.then((_) => _audioEngine.stopTones(_tones)),
+      _pendingTones.then((_) => _audioEngine.stop(_tones)),
     );
 
     tuningNotifier.dispose();

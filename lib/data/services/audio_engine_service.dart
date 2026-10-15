@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/data/models/sound_group.dart';
-import 'package:musbx/data/models/tone_group.dart';
 import 'package:musbx/domain/models/stem_type.dart';
 
 /// Owns the SoLoud audio engine, which has to be initialized once before any
@@ -28,7 +27,7 @@ class AudioEngineService {
 
   /// Start every one of [sources] paused and looping, in one voice group so
   /// that they are paused, resumed and sped up together.
-  SoundGroup createSound(Map<StemType?, AudioSource> sources) {
+  SongPartsGroup createSound(Map<StemType?, AudioSource> sources) {
     // Activate filters. This needs to be done before the sound is played.
     sources.forEach((stem, source) {
       for (var filter in [
@@ -58,9 +57,10 @@ class AudioEngineService {
       groupHandle,
       handles.values.toList(),
     );
-    return SoundGroup(
-      sources: sources,
-      handles: handles,
+    return SongPartsGroup(
+      parts: sources.keys.toList(),
+      sources: sources.values.toList(),
+      handles: handles.values.toList(),
       groupHandle: groupHandle,
     );
   }
@@ -77,8 +77,8 @@ class AudioEngineService {
   /// Stop [sound] and free its sources.
   Future<void> stop(SoundGroup sound) async {
     await Future.wait([
-      for (var handle in sound.handles.values) _soLoud.stop(handle),
-      for (var source in sound.sources.values) unload(source),
+      for (var handle in sound.handles) _soLoud.stop(handle),
+      for (var source in sound.sources) unload(source),
     ]);
     _soLoud.destroyVoiceGroup(sound.groupHandle);
   }
@@ -88,11 +88,11 @@ class AudioEngineService {
   void resume(SoundGroup sound) => _soLoud.setPause(sound.groupHandle, false);
   void pause(SoundGroup sound) => _soLoud.setPause(sound.groupHandle, true);
 
-  Duration getDuration(SoundGroup sound) =>
-      _soLoud.getLength(sound.sources.values.first);
+  Duration getDuration(SongPartsGroup sound) =>
+      _soLoud.getLength(sound.sources.first);
 
-  Duration getPosition(SoundGroup sound) =>
-      _soLoud.getPosition(sound.handles.values.first);
+  Duration getPosition(SongPartsGroup sound) =>
+      _soLoud.getPosition(sound.handles.first);
 
   /// The mixer's clock, which sounds are scheduled against. Only advances
   /// while the engine is mixing.
@@ -101,10 +101,10 @@ class AudioEngineService {
   /// The time on [getEngineTime]'s clock of what is being heard right now.
   Duration getPlayheadTime() => _soLoud.getPlayheadTime();
 
-  void seek(SoundGroup sound, Duration position) {
-    sound.handles.forEach((stem, handle) {
+  void seek(SongPartsGroup sound, Duration position) {
+    for (final handle in sound.handles) {
       _soLoud.seek(handle, position);
-    });
+    }
   }
 
   double getSpeed(SoundGroup sound) =>
@@ -114,8 +114,8 @@ class AudioEngineService {
   }
 
   double getPitch(SoundGroup sound) {
-    return sound.sources.values.first.filters.pitchShiftFilter
-        .semitones(soundHandle: sound.handles.values.first)
+    return sound.sources.first.filters.pitchShiftFilter
+        .semitones(soundHandle: sound.handles.first)
         .value;
   }
 
@@ -124,44 +124,46 @@ class AudioEngineService {
   /// Compensates for the pitch shift the current speed causes, so this has to
   /// be called again whenever the speed changes.
   void setPitch(SoundGroup sound, double value) {
-    for (final stem in sound.sources.keys) {
-      sound.sources[stem]?.filters.pitchShiftFilter
-              .semitones(soundHandle: sound.handles[stem])
+    for (int i = 0; i < sound.handles.length; i += 1) {
+      sound.sources[i].filters.pitchShiftFilter
+              .semitones(soundHandle: sound.handles[i])
               .value =
           value - 12 * (log(getSpeed(sound)) / ln2);
     }
   }
 
   int getNumBands(SoundGroup sound) {
-    return sound.sources.values.first.filters.parametricEqFilter
-        .numBands(soundHandle: sound.handles.values.first)
+    return sound.sources.first.filters.parametricEqFilter
+        .numBands(soundHandle: sound.handles.first)
         .value
         .toInt();
   }
 
   void setNumBands(SoundGroup sound, int value) {
-    sound.sources.values.first.filters.parametricEqFilter
-        .numBands(soundHandle: sound.handles.values.first)
-        .value = value
-        .toDouble();
+    for (int i = 0; i < sound.handles.length; i += 1) {
+      sound.sources[i].filters.parametricEqFilter
+          .numBands(soundHandle: sound.handles[i])
+          .value = value
+          .toDouble();
+    }
   }
 
   void setBandGain(SoundGroup sound, int band, double gain) {
-    sound.sources.forEach((type, source) {
-      source.filters.parametricEqFilter
-              .bandGain(band, soundHandle: sound.handles[type])
+    for (int i = 0; i < sound.handles.length; i += 1) {
+      sound.sources[i].filters.parametricEqFilter
+              .bandGain(band, soundHandle: sound.handles[i])
               .value =
           gain;
-    });
+    }
   }
 
-  double? getStemVolume(SoundGroup sound, StemType? stem) =>
-      sound.handles[stem] == null
+  double? getStemVolume(SongPartsGroup sound, StemType? stem) =>
+      !sound.parts.contains(stem)
       ? null
-      : _soLoud.getVolume(sound.handles[stem]!);
-  void setStemVolume(SoundGroup sound, StemType? stem, double volume) {
-    if (sound.handles[stem] == null) return;
-    _soLoud.setVolume(sound.handles[stem]!, volume);
+      : _soLoud.getVolume(sound.handles[sound.parts.indexOf(stem)]);
+  void setStemVolume(SongPartsGroup sound, StemType? stem, double volume) {
+    if (!sound.parts.contains(stem)) return;
+    _soLoud.setVolume(sound.handles[sound.parts.indexOf(stem)], volume);
   }
 
   /// An empty, paused group of tones. See [setTones].
@@ -217,20 +219,6 @@ class AudioEngineService {
       handles: handles,
       groupHandle: group.groupHandle,
     );
-  }
-
-  void resumeTones(ToneGroup group) =>
-      _soLoud.setPause(group.groupHandle, false);
-  void pauseTones(ToneGroup group) =>
-      _soLoud.setPause(group.groupHandle, true);
-
-  /// Stop every tone in [group] and free the group.
-  Future<void> stopTones(ToneGroup group) async {
-    await Future.wait([
-      for (var handle in group.handles) _soLoud.stop(handle),
-      for (var source in group.sources) unload(source),
-    ]);
-    _soLoud.destroyVoiceGroup(group.groupHandle);
   }
 
   Future<void> dispose() async {
