@@ -56,8 +56,10 @@ class ErrorInterceptor extends Interceptor {
   ) async {
     final String? data = err.response?.data is List<int>
         ? utf8.decode(err.response?.data as List<int>)
-        : err.response?.data.toString();
-    debugPrint("[MUSBX API] Error occured: $data");
+        : err.response?.data?.toString();
+    debugPrint(
+      "[MUSBX API] Error occured: ${data ?? err.message ?? err.type.name}",
+    );
 
     return handler.next(err);
   }
