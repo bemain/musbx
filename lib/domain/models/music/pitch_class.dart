@@ -90,13 +90,19 @@ class PitchClass {
 
   /// Creates a pitch class with the given [chroma].
   ///
-  /// Tries using the [preferredAccidental], and falls back to the most common
-  /// one (meaning the one found in a key close to C in the circle of fifths)
-  /// if the given [chroma] cannot be spelled with the preferred accidental.
+  /// Natural chromas are always spelled without an accidental. Others try
+  /// using the [preferredAccidental], and fall back to the most common one
+  /// (meaning the one found in a key close to C in the circle of fifths) if the
+  /// given [chroma] cannot be spelled with the preferred accidental.
   factory PitchClass.fromChroma(
     Chroma chroma, {
     Accidental? preferredAccidental,
   }) {
+    final NaturalPitchClass? natural = NaturalPitchClass.values
+        .where((natural) => natural.chroma == chroma)
+        .firstOrNull;
+    if (natural != null) return PitchClass(natural);
+
     if (preferredAccidental != null) {
       NaturalPitchClass? preferredNatural = NaturalPitchClass.values
           .where(
