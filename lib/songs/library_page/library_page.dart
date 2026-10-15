@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/domain/models/online_track.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/check_song_access.dart';
+import 'package:musbx/routing/routes.dart';
+import 'package:musbx/songs/library_page/online_track_search.dart';
 import 'package:musbx/songs/library_page/search_bar.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
-import 'package:musbx/songs/library_page/soundcloud_search.dart';
 import 'package:musbx/songs/library_page/upload_file_button.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/announcements_page.dart';
 import 'package:musbx/widgets/default_app_bar.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
@@ -61,6 +65,33 @@ class LibraryPage extends StatelessWidget {
     );
   }
 
+  /// Let the user search for a track online, add the one they pick to the
+  /// library, and open it.
+  ///
+  /// The search starts from [query] when given.
+  Future<void> pickSong(BuildContext context, {String? query}) async {
+    OnlineTrack? track = await showSearch<OnlineTrack?>(
+      context: context,
+      delegate: OnlineTrackSearchDelegate(),
+      useRootNavigator: true,
+      query: query ?? "",
+    );
+
+    if (track == null) return;
+
+    if (!context.mounted) return;
+    switch (await context.read<SongRepository>().addTrack(track)) {
+      case Ok(value: final song):
+        if (context.mounted) context.go(Routes.song(song.id));
+
+      case Failure(:final error):
+        debugPrint(
+          "[Library] Unable to add track to library; $error",
+        );
+      // TODO: Show error snackbar
+    }
+  }
+
   Widget _buildLoadSongFAB(BuildContext context, {Object? heroTag}) {
     return SpeedDial.extended(
       heroTag: heroTag,
@@ -72,7 +103,7 @@ class LibraryPage extends StatelessWidget {
 
         return !restricted;
       },
-      onExpandedPressed: () => SoundCloudSearch.pickSong(context),
+      onExpandedPressed: () => pickSong(context),
       expandedChild: const Icon(Symbols.search),
       expandedLabel: const Text("Search"),
       children: [

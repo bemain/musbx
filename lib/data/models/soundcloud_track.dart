@@ -47,6 +47,9 @@ class SoundCloudTrack {
   /// The policy of the track (e.g. SNIP for tracks that only provide a preview).
   final String? policy;
 
+  /// Whether only a short excerpt of the track can be streamed.
+  bool get isPreview => policy == "SNIP";
+
   /// List of available transcoding formats for this track.
   final List<SoundCloudTrackTranscoding> transcodings;
 

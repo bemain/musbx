@@ -1,71 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:html_unescape/html_unescape.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/data/models/soundcloud_track.dart';
-import 'package:musbx/data/repositories/song/song_repository.dart';
-import 'package:musbx/data/services/file_cache_service.dart';
-import 'package:musbx/data/services/soundcloud_api_client.dart';
-import 'package:musbx/routing/routes.dart';
+import 'package:musbx/data/repositories/song/track_search_repository.dart';
+import 'package:musbx/domain/models/online_track.dart';
 import 'package:musbx/songs/library_page/search_bar.dart';
-import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/result.dart';
+import 'package:musbx/widgets/result_builder.dart';
 import 'package:musbx/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
-/// Provides functionality for searching and downloading SoundCloud tracks.
-class SoundCloudSearch {
-  /// Opens a SoundCloud search interface and allows the user to pick a song.
-  ///
-  /// This method displays a search dialog where users can search for tracks
-  /// on SoundCloud. When a track is selected, it's automatically added to
-  /// the user's library and the song page is opened.
-  ///
-  /// Optionally you can specify an initial search [query].
-  static Future<void> pickSong(BuildContext context, {String? query}) async {
-    SoundCloudTrack? track = await showSearch<SoundCloudTrack?>(
-      context: context,
-      delegate: SoundCloudSearchDelegate(),
-      useRootNavigator: true,
-      query: query ?? "",
-    );
-
-    if (track == null) return;
-
-    if (!context.mounted) return;
-    switch (await context.read<SongRepository>().addTrack(track)) {
-      case Ok(value: final song):
-        if (context.mounted) context.go(Routes.song(song.id));
-
-      case Failure(:final error):
-        debugPrint(
-          "[SoundCloud] Unable to add track to library; $error",
-        );
-      // TODO: Show error snackbar
-    }
-  }
-
-  /// The history of previous search SoundCloud queries.
-  static HistoryHandler<String> history(BuildContext context) =>
-      HistoryHandler<String>(
-        file: context.read<FileCacheService>().persistent.file(
-          "soundcloud_search_history.json",
-        ),
-        fromJson: (json) => json as String,
-        toJson: (value) => value,
-      );
-
-  /// The tracks matching [query].
-  static Future<List<SoundCloudTrack>> searchTracks(
-    String query, {
-    required BuildContext context,
-  }) => context.read<SoundCloudApiClient>().searchTracks(query);
-}
-
-/// A search delegate that provides the SoundCloud search interface.
-class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
-  SoundCloudSearchDelegate()
+/// Searches for tracks online, suggesting previous queries as the user types.
+///
+/// Closes with the track the user picked, or `null` if they went back.
+class OnlineTrackSearchDelegate extends SearchDelegate<OnlineTrack?> {
+  OnlineTrackSearchDelegate()
     : super(
         searchFieldLabel: "Search online",
         keyboardType: TextInputType.text,
@@ -102,7 +50,9 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (SoundCloudSearch.history(context).entries.isEmpty && query.isEmpty) {
+    final TrackSearchRepository search = context.read();
+
+    if (search.history.entries.isEmpty && query.isEmpty) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: SizedBox(
@@ -125,7 +75,7 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
       );
     }
 
-    final searchHistory = SoundCloudSearch.history(context).sorted().where(
+    final searchHistory = search.history.sorted().where(
       (e) => e.toLowerCase().contains(query.toLowerCase()),
     );
 
@@ -161,30 +111,24 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
 
   @override
   Widget buildResults(BuildContext context) {
-    if (!context.read<SoundCloudApiClient>().isEnabled) {
-      return InfoPage(
-        icon: Icon(Symbols.search_off),
-        text: "Search is currently unavailable. Try again later.",
-      );
-    }
+    final TrackSearchRepository search = context.read();
 
-    return FutureBuilder<List<SoundCloudTrack>>(
-      future: SoundCloudSearch.searchTracks(query, context: context),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return ErrorPage(
-            text: "Search failed. ${snapshot.error}",
-          );
-        }
-        if (!snapshot.hasData) {
-          return ListView(
-            children: List.filled(10, SoundCloudTrackListItem(track: null)),
-          );
-        }
-
-        List<SoundCloudTrack> results = snapshot.data!;
-
-        if (results.isEmpty) {
+    return ResultBuilder<List<OnlineTrack>>(
+      future: search.searchTracks(query),
+      failure: (context, error) => switch (error) {
+        UnavailableException() => InfoPage(
+          icon: Icon(Symbols.search_off),
+          text: "Search is currently unavailable. Try again later.",
+        ),
+        _ => ErrorPage(
+          text: "Search failed. $error",
+        ),
+      },
+      loading: (context) => ListView(
+        children: List.filled(10, OnlineTrackTile(track: null)),
+      ),
+      ok: (context, tracks) {
+        if (tracks.isEmpty) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -200,44 +144,34 @@ class SoundCloudSearchDelegate extends SearchDelegate<SoundCloudTrack?> {
         }
 
         return ListView(
-          children: results.map((track) {
-            return SoundCloudTrackListItem(
-              track: track,
-              onTap: () async {
-                await SoundCloudSearch.history(context).add(query.trim());
-                if (context.mounted) close(context, track);
-              },
-            );
-          }).toList(),
+          children: [
+            for (final track in tracks)
+              OnlineTrackTile(
+                track: track,
+                onTap: () async {
+                  await search.history.add(query.trim());
+                  if (context.mounted) close(context, track);
+                },
+              ),
+          ],
         );
       },
     );
   }
 }
 
-/// A list item widget that displays a SoundCloud track in search results.
-///
-/// This widget shows track information including artwork, title, artist,
-/// duration, and download status. It handles loading states with placeholder
-/// content and provides visual feedback for user interactions.
-/// One SoundCloud track in a list of search results. Shimmers as a placeholder
-/// when [track] is `null`.
-class SoundCloudTrackListItem extends StatelessWidget {
-  /// HTML unescaper for cleaning up track titles and artist names.
-  static final HtmlUnescape htmlUnescape = HtmlUnescape();
-
-  /// Creates a new SoundCloud track list item.
-  const SoundCloudTrackListItem({
+/// One track in a list of search results. Shimmers as a placeholder when
+/// [track] is `null`.
+class OnlineTrackTile extends StatelessWidget {
+  const OnlineTrackTile({
     super.key,
     required this.track,
     this.onTap,
   });
 
-  /// The SoundCloud track to display, or null for loading state.
   /// The track to show, or `null` to shimmer as a placeholder.
-  final SoundCloudTrack? track;
+  final OnlineTrack? track;
 
-  /// Callback function called when the item is tapped.
   /// Called when the item is tapped.
   final void Function()? onTap;
 
@@ -258,9 +192,9 @@ class SoundCloudTrackListItem extends StatelessWidget {
                   height: 64,
                 ),
               )
-            : track!.artworkUrl != null
+            : track!.artUri != null
             ? Image.network(
-                track!.artworkUrl!,
+                track!.artUri!.toString(),
                 width: 64,
                 height: 64,
                 fit: BoxFit.cover,
@@ -272,7 +206,7 @@ class SoundCloudTrackListItem extends StatelessWidget {
       title: track == null
           ? const TextPlaceholder()
           : Text(
-              htmlUnescape.convert(track!.title),
+              track!.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -287,9 +221,9 @@ class SoundCloudTrackListItem extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 children: [
-                  if (track!.username != null)
+                  if (track!.artist != null)
                     TextSpan(
-                      text: htmlUnescape.convert(track!.username!),
+                      text: track!.artist!,
                     ),
                   if (duration != null)
                     TextSpan(
@@ -299,7 +233,7 @@ class SoundCloudTrackListItem extends StatelessWidget {
                         fontSize: 12,
                       ),
                     ),
-                  if (track!.policy == "SNIP")
+                  if (track!.isPreview)
                     WidgetSpan(
                       alignment: PlaceholderAlignment.middle,
                       child: Icon(
@@ -328,7 +262,7 @@ class SoundCloudTrackListItem extends StatelessWidget {
   }
 
   /// Returns the duration formatted as "MM:SS".
-  String? formatDuration(SoundCloudTrack? track) {
+  String? formatDuration(OnlineTrack? track) {
     if (track?.duration == null) return null;
     final minutes = track!.duration!.inMinutes;
     final seconds = track.duration!.inSeconds.remainder(60);

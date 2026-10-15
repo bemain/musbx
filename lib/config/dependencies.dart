@@ -25,6 +25,7 @@ import 'package:musbx/data/repositories/song/audio_repository.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/repositories/song/track_search_repository.dart';
 import 'package:musbx/data/repositories/tuner_repository.dart';
 import 'package:musbx/data/services/ad_service.dart';
 import 'package:musbx/data/services/analytics_service.dart';
@@ -197,6 +198,14 @@ List<SingleChildWidget> _repositories = [
               permissionService: context.read(),
             )
             as NotificationRepository,
+  ),
+  ChangeNotifierProvider(
+    create: (context) =>
+        TrackSearchRepositorySoundCloud(
+              apiClient: context.read(),
+              fileCache: context.read(),
+            )
+            as TrackSearchRepository,
   ),
   Provider(
     create: (context) => SongPreferencesRepository(songCache: context.read()),

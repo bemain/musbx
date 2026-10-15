@@ -3,10 +3,9 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
-import 'package:html_unescape/html_unescape.dart';
 import 'package:meta/meta.dart';
-import 'package:musbx/data/models/soundcloud_track.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/domain/models/online_track.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/utils/history_handler.dart';
 import 'package:musbx/utils/result.dart';
@@ -118,20 +117,16 @@ class SongRepository extends ChangeNotifier {
   }
 
   @useResult
-  /// Add a song streamed from a SoundCloud [track].
-  Future<Result<Song>> addTrack(SoundCloudTrack track) async {
+  /// Add a song streamed from an online [track].
+  Future<Result<Song>> addTrack(OnlineTrack track) async {
     try {
       return await add(
         Song(
-          id: track.id.toString(),
-          title: HtmlUnescape().convert(track.title),
-          artist: track.username == null
-              ? null
-              : HtmlUnescape().convert(track.username!),
-          artUri: track.artworkUrl != null
-              ? Uri.tryParse(track.artworkUrl!)
-              : null,
-          audio: UrlAudio(Uri.parse(track.permalinkUrl)),
+          id: track.id,
+          title: track.title,
+          artist: track.artist,
+          artUri: track.artUri,
+          audio: UrlAudio(track.sourceUrl),
         ),
       );
     } catch (e, s) {
