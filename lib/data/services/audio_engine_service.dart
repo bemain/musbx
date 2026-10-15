@@ -76,8 +76,12 @@ class AudioEngineService {
 
   /// Stop [sound] and free its sources.
   Future<void> stop(SoundGroup sound) async {
+    // SoLoud only completes a stop once it matches the ended voice to its
+    // source, so the sources must outlive their voices.
     await Future.wait([
       for (var handle in sound.handles) _soLoud.stop(handle),
+    ]);
+    await Future.wait([
       for (var source in sound.sources) unload(source),
     ]);
     _soLoud.destroyVoiceGroup(sound.groupHandle);
