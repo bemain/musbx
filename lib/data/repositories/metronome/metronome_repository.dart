@@ -168,8 +168,13 @@ class MetronomeRepository extends ChangeNotifier {
     final Duration horizon = _audioEngine.getEngineTime() + _scheduleAhead;
     final int current = _count;
 
-    // Schedule
-    for (int count = current + 1; _beatTime(count) < horizon; count++) {
+    // Schedule. The next tick is always scheduled, even beyond [horizon],
+    // because the engine clock stops once nothing is playing or scheduled.
+    for (
+      int count = current + 1;
+      count == current + 1 || _beatTime(count) < horizon;
+      count++
+    ) {
       // Sound
       if (_scheduled.containsKey(count)) continue;
       _scheduled[count] = _audioEngine.schedule(
