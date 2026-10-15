@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_m3shapes/flutter_m3shapes.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/demix/demix_repository.dart';
@@ -14,7 +13,7 @@ import 'package:musbx/data/services/musbx_api/musbx_api.dart';
 import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/song_preferences.dart';
-import 'package:musbx/routing/routes.dart';
+import 'package:musbx/domain/use_case/load_song.dart';
 import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
@@ -38,18 +37,28 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
   SongPreferencesRepository get preferences => context.read();
   SettingsRepository get settings => context.read();
 
-  Future<void> _setDemix(
-    Song song,
-    bool value, {
-    SongPreferences? prefs,
-  }) async {
-    prefs ??= (await preferences.read(
-      song,
-    )).asOk;
+  Future<void> _setDemix(Song song, bool value) async {
+    final prefs = (await preferences.read(song)).asOk;
     (await preferences.write(
       song,
-      (prefs ?? SongPreferences()).copyWith(shouldDemix: false),
+      (prefs ?? SongPreferences()).copyWith(shouldDemix: value),
     )).asOk;
+  }
+
+  /// The process demixing [song], or `null` if demixing it is disabled.
+  ///
+  /// Starting the process notifies [DemixRepository]'s listeners, so this must
+  /// not run during build.
+  Future<Result<DemixingProcess?>> _startDemixing(Song song) async {
+    try {
+      final prefs = (await preferences.read(song)).asOk;
+      final demix = prefs?.shouldDemix ?? settings.songs.demixAutomatically;
+      if (!demix) return Result.ok(null);
+
+      return Result.ok(demixing.start(song).asOk);
+    } catch (e, s) {
+      return Result.failed(e, s);
+    }
   }
 
   @override
@@ -58,15 +67,9 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
     if (song == null) return buildDemixDisabled();
 
     return ResultBuilder(
-      future: preferences.read(song),
-      ok: (context, prefs) {
-        final demix = prefs?.shouldDemix ?? settings.songs.demixAutomatically;
-
-        if (!demix) {
-          return buildDemixDisabled();
-        }
-
-        DemixingProcess process = demixing.start(song).asOk;
+      future: _startDemixing(song),
+      ok: (context, process) {
+        if (process == null) return buildDemixDisabled();
 
         return ListenableBuilder(
           listenable: process,
@@ -107,14 +110,21 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
                 process.isRunning
                     ? TextButton(
                         onPressed: () async {
-                          await _setDemix(song, false, prefs: prefs);
+                          await _setDemix(song, false);
                           if (mounted) setState(() {});
                         },
                         child: const Text("Cancel"),
                       )
                     : FilledButton(
-                        onPressed: () {
-                          context.replace(Routes.song(song.id));
+                        // Reloads in place: navigating to the same route keeps
+                        // this page's state, so it would not load again.
+                        onPressed: () async {
+                          if (await context.read<LoadSong>().call(song)
+                              case Failure(:final error)) {
+                            await showExceptionDialog(
+                              SongCouldNotBeLoadedDialog(error: error),
+                            );
+                          }
                         },
                         child: const Text("Reload"),
                       ),
@@ -155,12 +165,12 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
           textAlign: TextAlign.center,
         ),
         OutlinedButton(
-          onPressed: () {
-            if (playback.song != null) {
-              setState(() {
-                _setDemix(playback.song!, true);
-              });
-            }
+          onPressed: () async {
+            final song = playback.song;
+            if (song == null) return;
+
+            await _setDemix(song, true);
+            if (mounted) setState(() {});
           },
           child: const Text("Continue anyway"),
         ),
