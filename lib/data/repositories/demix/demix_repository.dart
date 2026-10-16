@@ -63,15 +63,5 @@ class DemixRepository extends ChangeNotifier {
   Future<bool> hasParts(Song song) async => await partsFor(song) != null;
 
   /// The cached part files for [song], or `null` unless all of them are present.
-  Future<Map<Part, CacheFile>?> partsFor(Song song) async {
-    final parts = {
-      for (final part in Part.values) part: _cache.part(song, part),
-    };
-    if ((await Future.wait(
-      parts.values.map((f) => f.exists()),
-    )).every((v) => v)) {
-      return parts;
-    }
-    return null;
-  }
+  Future<Map<Part, CacheFile>?> partsFor(Song song) => _cache.parts(song);
 }

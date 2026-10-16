@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_soloud/flutter_soloud.dart' show AudioSource;
 import 'package:meta/meta.dart';
 import 'package:musbx/data/models/playback_state/playback_state.dart';
 import 'package:musbx/data/models/sound_group.dart';
@@ -59,12 +60,14 @@ class PlaybackRepository extends ChangeNotifier {
     required AudioSessionService audioSession,
   }) : _audioEngine = audioEngine,
        _audioSession = audioSession {
-    _audioSession.eventStream.listen((event) {
+    _audioSessionEvents = _audioSession.eventStream.listen((event) {
       switch (event) {
-        case AudioSessionEvent.resume || AudioSessionEvent.unduck:
-          resume();
         case AudioSessionEvent.pause || AudioSessionEvent.duck:
+          _resumeAfterInterruption = isPlaying;
           pause();
+        case AudioSessionEvent.resume || AudioSessionEvent.unduck:
+          if (_resumeAfterInterruption) resume();
+          _resumeAfterInterruption = false;
       }
     });
 
@@ -87,6 +90,11 @@ class PlaybackRepository extends ChangeNotifier {
 
   final AudioEngineService _audioEngine;
   final AudioSessionService _audioSession;
+  late final StreamSubscription<AudioSessionEvent> _audioSessionEvents;
+
+  /// Whether the song was playing when the current interruption began, so that
+  /// its end does not start a song the user had paused.
+  bool _resumeAfterInterruption = false;
 
   SongPartsGroup? _sound;
   PlaybackState? _state;
@@ -210,10 +218,10 @@ class PlaybackRepository extends ChangeNotifier {
     if (numEqualizerBands case final bands? when band < bands) {
       // TODO: Move to ViewModel?
       final double clamped = gain.clamp(equalizerMinGain, equalizerMaxGain);
-      final gains = _state!.equalizerGain;
-      gains[band] = clamped;
 
-      _updateState(equalizerGain: gains);
+      _updateState(
+        equalizerGain: [..._state!.equalizerGain]..[band] = clamped,
+      );
     }
   }
 
@@ -242,8 +250,9 @@ class PlaybackRepository extends ChangeNotifier {
   );
 
   /// Return everything the user can adjust to its default, and rewind to the
-  /// start. The song stays loaded.
+  /// start. The song stays loaded. Does nothing when no song is loaded.
   void reset() {
+    if (_state == null) return;
     _updateState(
       isPlaying: false,
       position: Duration.zero,
@@ -352,12 +361,14 @@ class PlaybackRepository extends ChangeNotifier {
       if (await stop() case final Failure<void> failure) return failure;
     }
 
+    final Map<Part?, AudioSource> sources = {};
+    SongPartsGroup? created;
     try {
-      final sources = {
-        for (final e in files.entries)
-          e.key: await _audioEngine.loadFile(e.value),
-      };
+      for (final e in files.entries) {
+        sources[e.key] = await _audioEngine.loadFile(e.value);
+      }
       final SongPartsGroup sound = _audioEngine.createSound(sources);
+      created = sound;
 
       _sound = sound;
 
@@ -397,8 +408,29 @@ class PlaybackRepository extends ChangeNotifier {
       await _audioSession.setActive(true);
       return Result.ok(null);
     } catch (e, s) {
-      // TODO: Dispose handles already played
+      _sound = null;
+      _state = null;
+      _preferences = null;
+      await _release(created, sources.values);
+      notifyListeners();
       return Result.failed(e, s);
+    }
+  }
+
+  /// Free what a failed [load] got as far as creating, so that the next load
+  /// starts from nothing.
+  Future<void> _release(
+    SongPartsGroup? sound,
+    Iterable<AudioSource> sources,
+  ) async {
+    try {
+      if (sound != null) {
+        await _audioEngine.stop(sound);
+      } else {
+        await Future.wait(sources.map(_audioEngine.unload));
+      }
+    } catch (error) {
+      debugPrint("[PLAYBACK] Releasing a failed load failed; $error");
     }
   }
 
@@ -450,6 +482,7 @@ class PlaybackRepository extends ChangeNotifier {
     }
 
     _positionUpdater.cancel();
+    await _audioSessionEvents.cancel();
 
     super.dispose();
   }

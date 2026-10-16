@@ -69,8 +69,10 @@ abstract class Process<T extends Object> extends ChangeNotifier {
   /// Tell this process to terminate as soon as possible.
   ///
   /// [result] becomes [Cancelled] immediately, but [execute] keeps running
-  /// until it reaches its next [breakIfCancelled].
+  /// until it reaches its next [breakIfCancelled]. Does nothing once the
+  /// process has finished.
   void cancel() {
+    if (!isRunning) return;
     _result = Result.cancelled();
     notifyListeners();
   }
@@ -86,7 +88,6 @@ abstract class Process<T extends Object> extends ChangeNotifier {
       if (_result != null) return _result!;
       _result = Result.cancelled();
     } catch (e, s) {
-      assert(e is Exception);
       if (_result != null) return _result!;
       _result = Result.failed(e, s);
     }

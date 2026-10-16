@@ -38,6 +38,13 @@ class SongCache {
   CacheFile part(Song song, Part part, {String extension = "mp3"}) =>
       _source(song).file("${part.name}.$extension");
 
+  /// Every one of this song's [part]s, or `null` unless all of them are cached.
+  Future<Map<Part, CacheFile>?> parts(Song song) async {
+    final files = {for (final p in Part.values) p: part(song, p)};
+    final exists = await Future.wait(files.values.map((f) => f.exists()));
+    return exists.every((e) => e) ? files : null;
+  }
+
   /// How much space this song's regenerable files take, in bytes.
   Future<int> size(Song song) => _scratch(song).size();
 

@@ -22,12 +22,12 @@ class FeedbackRepositoryRemote extends FeedbackRepository {
   @override
   Future<Result<void>> insert(String content) async {
     return OptionalService.guard(
-      () => _supabase.value.insertFeedback(
-        FeedbackEntry(
-          content: content,
-          sentBy: _supabase.value.currentUser?.id,
-        ),
-      ),
+      () async {
+        final supabase = await _supabase.ready;
+        await supabase.insertFeedback(
+          FeedbackEntry(content: content, sentBy: supabase.currentUser?.id),
+        );
+      },
       "Supabase service disabled",
     );
   }
@@ -41,19 +41,20 @@ class FeedbackRepositoryRemote extends FeedbackRepository {
   @override
   Future<Result<void>> respond(Announcement announcement, String response) {
     return OptionalService.guard(
-      () {
+      () async {
+        final supabase = await _supabase.ready;
+        await supabase.insertFeedback(
+          FeedbackEntry(
+            content: response,
+            responseTo: announcement.id,
+            sentBy: supabase.currentUser?.id,
+          ),
+        );
+
         _responses(announcement).value = [
           ..._responses(announcement).value,
           response,
         ];
-
-        return _supabase.value.insertFeedback(
-          FeedbackEntry(
-            content: response,
-            responseTo: announcement.id,
-            sentBy: _supabase.value.currentUser?.id,
-          ),
-        );
       },
       "Supabase service disabled",
     );

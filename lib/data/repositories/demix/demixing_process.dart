@@ -72,6 +72,10 @@ class DemixingProcess extends Process<Map<Part, CacheFile>> {
   Future<Map<Part, CacheFile>> execute() async {
     stepNotifier.value = DemixingStep.findingHost;
 
+    if (await _cache.parts(song) case final cached?) return cached;
+
+    breakIfCancelled();
+
     final MusbxApiClient client = await MusbxApi.getClient();
 
     breakIfCancelled();
@@ -134,6 +138,9 @@ class DemixingProcess extends Process<Map<Part, CacheFile>> {
     final Map<Part, CacheFile> files = Map.fromEntries(
       await Future.wait(
         report.result!.keys.map((partName) async {
+          final Part part =
+              Part.values.asNameMap()[partName] ?? (throw MalformedResponse());
+
           final response = await job.dio.get<List<int>>(
             report.result![partName]!,
             onReceiveProgress: (received, total) {
@@ -150,12 +157,10 @@ class DemixingProcess extends Process<Map<Part, CacheFile>> {
             ),
           );
 
-          final Part part = Part.values.firstWhere(
-            (part) => part.name == partName,
-          );
+          final data = response.data ?? (throw MalformedResponse());
 
           final CacheFile destination = _cache.part(song, part);
-          await destination.writeBytes(response.data!);
+          await destination.writeBytes(data);
 
           return MapEntry(
             part,

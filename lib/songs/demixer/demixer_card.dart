@@ -45,6 +45,22 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
     )).asOk;
   }
 
+  /// The song [_process] was started for.
+  Song? _processSong;
+
+  /// The result of [_startDemixing] for [_processSong].
+  ///
+  /// Kept across builds, which the player triggers on every change to
+  /// playback, so that the card does not reload each time. Cleared to start
+  /// over.
+  Future<Result<DemixingProcess?>>? _process;
+
+  Future<Result<DemixingProcess?>> _processFor(Song song) {
+    if (_process case final process? when song == _processSong) return process;
+    _processSong = song;
+    return _process = _startDemixing(song);
+  }
+
   /// The process demixing [song], or `null` if demixing it is disabled.
   ///
   /// Starting the process notifies [DemixRepository]'s listeners, so this must
@@ -67,7 +83,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
     if (song == null) return buildDemixDisabled();
 
     return ResultBuilder(
-      future: _startDemixing(song),
+      future: _processFor(song),
       ok: (context, process) {
         if (process == null) return buildDemixDisabled();
 
@@ -110,8 +126,9 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
                 process.isRunning
                     ? TextButton(
                         onPressed: () async {
+                          demixing.cancel(song);
                           await _setDemix(song, false);
-                          if (mounted) setState(() {});
+                          if (mounted) setState(() => _process = null);
                         },
                         child: const Text("Cancel"),
                       )
@@ -170,7 +187,7 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
             if (song == null) return;
 
             await _setDemix(song, true);
-            if (mounted) setState(() {});
+            if (mounted) setState(() => _process = null);
           },
           child: const Text("Continue anyway"),
         ),
@@ -199,14 +216,12 @@ Please update to the latest version to use the Demixer.""",
       ),
       OutlinedButton(
         onPressed: () {
-          if (playback.song != null) {
-            setState(() {
-              demixing.cancel(playback.song!);
-              if (demixing.start(playback.song!) case Failure(:final error)) {
-                debugPrint("[DEMIXER] Restarting demixing failed; $error");
-              }
-            });
-          }
+          final song = playback.song;
+          if (song == null) return;
+
+          // The next build starts a new process in place of the failed one.
+          demixing.cancel(song);
+          setState(() => _process = null);
         },
         child: const Text("Retry"),
       ),

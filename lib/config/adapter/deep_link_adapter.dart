@@ -51,6 +51,11 @@ class DeepLinkAdapter {
   }
 
   Future<void> _open(Song song) async {
+    if (!_checkSongAccess.canPlay(song)) {
+      await showExceptionDialog(const MusicPlayerAccessRestrictedDialog());
+      return;
+    }
+
     if (await _songs.add(song) case Failure(:final error)) {
       debugPrint(
         "[Launch handler] Error occured while adding song '$song': $error",
@@ -58,13 +63,7 @@ class DeepLinkAdapter {
       return;
     }
 
-    if (_checkSongAccess.isRestricted) {
-      await showExceptionDialog(
-        const MusicPlayerAccessRestrictedDialog(),
-      );
-    } else {
-      await navigatorKey.currentContext?.push(Routes.song(song.id));
-    }
+    await navigatorKey.currentContext?.push(Routes.song(song.id));
   }
 
   /// Stop opening incoming songs.

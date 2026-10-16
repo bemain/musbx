@@ -7,6 +7,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/use_case/play_song.dart';
+import 'package:musbx/domain/use_case/unload_song.dart';
 import 'package:musbx/routing/routes.dart';
 import 'package:musbx/songs/analyzer/waveform_card.dart';
 import 'package:musbx/songs/demixer/demixer_card.dart';
@@ -46,14 +47,37 @@ class _SongPageState extends State<SongPage> {
   void initState() {
     super.initState();
     final PlaySong playSong = context.read();
+    // Read now, since the page has usually been left by the time a load that
+    // timed out finishes.
+    final PlaybackRepository playback = context.read();
+    final UnloadSong unloadSong = context.read();
     // Deferred so that the notifications emitted by unloading the previous
     // song do not fire during the build phase.
-    _loading = Future.microtask(() => playSong.call(widget.song)).timeout(
+    final load = Future.microtask(() => playSong.call(widget.song));
+    _loading = load.timeout(
       SongPage.loadTimeout,
-      onTimeout: () => Result.failed(
-        TimeoutException("Loading the song took too long"),
-      ),
+      onTimeout: () {
+        unawaited(load.then((_) => _unloadLateSong(playback, unloadSong)));
+        return Result.failed(
+          TimeoutException("Loading the song took too long"),
+        );
+      },
     );
+  }
+
+  /// Unload [SongPage.song] if it finished loading after this page gave up on
+  /// it, so that it does not linger with nothing showing it.
+  Future<void> _unloadLateSong(
+    PlaybackRepository playback,
+    UnloadSong unloadSong,
+  ) async {
+    if (playback.song != widget.song) return;
+
+    if (await unloadSong.call() case Failure(:final error)) {
+      debugPrint(
+        "[SONGS] Unloading a song that loaded too late failed; $error",
+      );
+    }
   }
 
   @override
