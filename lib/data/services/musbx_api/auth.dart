@@ -1,0 +1,106 @@
+import 'package:dio/dio.dart';
+import 'package:musbx/keys.dart';
+import 'package:musbx/utils/utils.dart';
+
+/// Attaches the access token to every request, and renews it once when the
+/// server rejects it.
+///
+/// A 401 on anything but the token endpoint triggers a single refresh that all
+/// waiting requests share, after which the original request is replayed with the
+/// new token. Failing that, the error is passed on untouched.
+class AuthInterceptor extends Interceptor {
+  final Dio dio;
+  Future<String?>? _refreshTokenFuture;
+
+  /// The current access token, shared by every client and held in memory only.
+  // TODO: Use a persistent storage such as FlutterSecureStorage
+  static String? accessToken;
+  AuthInterceptor(this.dio);
+
+  @override
+  Future<void> onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    if (accessToken?.isNotEmpty == true) {
+      options.headers['Authorization'] = "Bearer $accessToken";
+    }
+    handler.next(options);
+  }
+
+  @override
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    if (_isUnauthorized(err) && _shouldRefresh(err.requestOptions)) {
+      // Attempt refresh if not already happening
+      _refreshTokenFuture ??= _refreshAccessToken();
+
+      final newToken = await _refreshTokenFuture;
+      if (newToken != null) {
+        // Retry the original request
+        final clonedRequest = _retryRequest(err.requestOptions, newToken);
+        try {
+          final response = await dio.fetch<dynamic>(clonedRequest);
+          return handler.resolve(response);
+        } catch (e) {
+          return handler.next(e as DioException);
+        }
+      }
+    }
+    return handler.next(err);
+  }
+
+  bool _isUnauthorized(DioException err) {
+    return err.response?.statusCode == 401;
+  }
+
+  bool _shouldRefresh(RequestOptions requestOptions) {
+    // Avoid refreshing again if it's the refresh token call
+    return !requestOptions.path.contains("/token");
+  }
+
+  RequestOptions _retryRequest(RequestOptions options, String newToken) {
+    // Inject auth
+    final newHeaders = Map<String, dynamic>.from(options.headers);
+    newHeaders['Authorization'] = "Bearer $newToken";
+
+    if (options.data is FormData) {
+      // Clone form data as it cannot be reused
+      final FormData oldData = options.data as FormData;
+      final FormData newData = FormData();
+
+      newData.fields.addAll(oldData.fields);
+      for (MapEntry<String, MultipartFile> file in oldData.files) {
+        newData.files.add(MapEntry(file.key, file.value.clone()));
+      }
+      options.data = newData;
+    }
+
+    return options.copyWith(headers: newHeaders);
+  }
+
+  Future<String?> _refreshAccessToken() async {
+    try {
+      final response = await dio.post<Json>(
+        "/token",
+        data: {
+          "grant_type": "password",
+          "username": "user",
+          "password": musbxApiKey,
+        },
+        options: Options(contentType: Headers.formUrlEncodedContentType),
+      );
+      accessToken = response.data!['access_token'] as String;
+      return accessToken;
+    } catch (e) {
+      // Drop the rejected token, so later requests go out without one
+      accessToken = null;
+      return null;
+    } finally {
+      // Allow future refresh attempts next time 401 is encountered
+      _refreshTokenFuture = null;
+    }
+  }
+}

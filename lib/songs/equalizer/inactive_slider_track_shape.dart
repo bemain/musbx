@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 /// A [SliderTrackShape] that looks like the inactive part of [Slider]'s default track.
+/// A slider track drawn entirely in the inactive colour, so that the part below
+/// the thumb is not highlighted.
 class InactiveSliderTrackShape extends SliderTrackShape
     with BaseSliderTrackShape {
   @override

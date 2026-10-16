@@ -2,9 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+/// A slider track that draws the section between [highlightStart] and
+/// [highlightEnd] in the usual track colours and the rest in
+/// [nonHighlightColor], used to mark the looped section.
 class HighlightedSectionSliderTrackShape extends SliderTrackShape
     with BaseSliderTrackShape {
-  /// Highlights a section of a Slider's track.
   HighlightedSectionSliderTrackShape({
     required this.highlightStart,
     required this.highlightEnd,
@@ -30,8 +32,10 @@ class HighlightedSectionSliderTrackShape extends SliderTrackShape
   /// The color used for the part of the track that is not highlighted when the slider is disabled.
   final Color disabledNonHighlightColor;
 
+  /// The radius of the dot marking the end of the track.
   final double stopIndicatorRadius;
 
+  /// The gap left between the highlighted section and the rest of the track.
   final double highlightGap;
 
   @override

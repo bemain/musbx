@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_m3shapes/flutter_m3shapes.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/demixer/demixer.dart';
-import 'package:musbx/songs/demixer/demixing_process.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
-import 'package:musbx/songs/musbx_api/musbx_api.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/song.dart';
-import 'package:musbx/songs/player/song_player.dart';
-import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/utils/purchases.dart';
+import 'package:musbx/data/repositories/demix/demix_repository.dart';
+import 'package:musbx/data/repositories/demix/demixing_process.dart';
+import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
+import 'package:musbx/data/repositories/song/playback_repository.dart';
+import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/services/musbx_api/musbx_api.dart';
+import 'package:musbx/domain/models/part.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/models/song_preferences.dart';
+import 'package:musbx/domain/use_case/load_song.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/widgets/custom_icons.dart';
 import 'package:musbx/widgets/exception_dialogs.dart';
 import 'package:musbx/widgets/flat_card.dart';
+import 'package:musbx/widgets/result_builder.dart';
+import 'package:provider/provider.dart';
 
+/// Follows the demixing of the loaded song, and offers to start, cancel or retry
+/// it.
 class DemixingProcessIndicator extends StatefulWidget {
-  const DemixingProcessIndicator({super.key, required this.player});
-
-  final SinglePlayer player;
-
-  Song get song => player.song;
+  const DemixingProcessIndicator({super.key});
 
   @override
   State<DemixingProcessIndicator> createState() =>
@@ -30,69 +32,124 @@ class DemixingProcessIndicator extends StatefulWidget {
 }
 
 class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
-  bool get demix => widget.player.demix ?? Songs.demixAutomatically;
+  DemixRepository get demixing => context.read();
+  PlaybackRepository get playback => context.read();
+  SongPreferencesRepository get preferences => context.read();
+  SettingsRepository get settings => context.read();
+
+  Future<void> _setDemix(Song song, bool value) async {
+    final prefs = (await preferences.read(song)).asOk;
+    (await preferences.write(
+      song,
+      (prefs ?? SongPreferences()).copyWith(shouldDemix: value),
+    )).asOk;
+  }
+
+  /// The song [_process] was started for.
+  Song? _processSong;
+
+  /// The result of [_startDemixing] for [_processSong].
+  ///
+  /// Kept across builds, which the player triggers on every change to
+  /// playback, so that the card does not reload each time. Cleared to start
+  /// over.
+  Future<Result<DemixingProcess?>>? _process;
+
+  Future<Result<DemixingProcess?>> _processFor(Song song) {
+    if (_process case final process? when song == _processSong) return process;
+    _processSong = song;
+    return _process = _startDemixing(song);
+  }
+
+  /// The process demixing [song], or `null` if demixing it is disabled.
+  ///
+  /// Starting the process notifies [DemixRepository]'s listeners, so this must
+  /// not run during build.
+  Future<Result<DemixingProcess?>> _startDemixing(Song song) async {
+    try {
+      final prefs = (await preferences.read(song)).asOk;
+      final demix = prefs?.shouldDemix ?? settings.songs.demixAutomatically;
+      if (!demix) return Result.ok(null);
+
+      return Result.ok(demixing.start(song).asOk);
+    } catch (e, s) {
+      return Result.failed(e, s);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (!demix) {
-      return buildDemixDisabled();
-    }
+    final song = playback.song;
+    if (song == null) return buildDemixDisabled();
 
-    DemixingProcess? process = DemixingProcesses.start(widget.song);
+    return ResultBuilder(
+      future: _processFor(song),
+      ok: (context, process) {
+        if (process == null) return buildDemixDisabled();
 
-    return ListenableBuilder(
-      listenable: process,
-      builder: (context, child) {
-        if (process.hasError) {
-          if (process.error is OutOfDateException) return buildOutOfDate();
+        return ListenableBuilder(
+          listenable: process,
+          builder: (context, child) {
+            if (process.hasError) {
+              if (process.error is OutOfDate) return buildOutOfDate();
 
-          return buildError();
-        }
+              return buildError();
+            }
 
-        return Column(
-          children: [
-            Expanded(child: SizedBox()),
-            buildCookie(
-              child: ValueListenableBuilder(
-                valueListenable: process.progressNotifier,
-                builder: (context, progress, child) => CircularLoadingCheck(
-                  progress: progress,
-                  isComplete: process.isComplete,
-                  size: 96,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 40,
-              child: Center(
-                child: ValueListenableBuilder(
-                  valueListenable: process.stepNotifier,
-                  builder: (context, step, child) =>
-                      buildLoadingText(context, process),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            process.isActive
-                ? TextButton(
-                    onPressed: () {
-                      setState(() {
-                        widget.player.demix = false;
-                      });
-                    },
-                    child: const Text("Cancel"),
-                  )
-                : FilledButton(
-                    onPressed: () {
-                      context.replace(Routes.song(widget.song.id));
-                    },
-                    child: const Text("Reload"),
+            return Column(
+              children: [
+                Expanded(child: SizedBox()),
+                buildCookie(
+                  child: ValueListenableBuilder(
+                    valueListenable: process.progressNotifier,
+                    builder: (context, progress, child) =>
+                        CircularLoadingCheck(
+                          progress: progress,
+                          isComplete: !process.isRunning,
+                          size: 96,
+                        ),
                   ),
-            Expanded(child: SizedBox()),
-            const SizedBox(height: 24),
-          ],
+                ),
+
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 40,
+                  child: Center(
+                    child: ValueListenableBuilder(
+                      valueListenable: process.stepNotifier,
+                      builder: (context, step, child) =>
+                          buildLoadingText(context, process),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                process.isRunning
+                    ? TextButton(
+                        onPressed: () async {
+                          demixing.cancel(song);
+                          await _setDemix(song, false);
+                          if (mounted) setState(() => _process = null);
+                        },
+                        child: const Text("Cancel"),
+                      )
+                    : FilledButton(
+                        // Reloads in place: navigating to the same route keeps
+                        // this page's state, so it would not load again.
+                        onPressed: () async {
+                          if (await context.read<LoadSong>().call(song)
+                              case Failure(:final error)) {
+                            await showExceptionDialog(
+                              SongCouldNotBeLoadedDialog(error: error),
+                            );
+                          }
+                        },
+                        child: const Text("Reload"),
+                      ),
+                Expanded(child: SizedBox()),
+                const SizedBox(height: 24),
+              ],
+            );
+          },
         );
       },
     );
@@ -125,10 +182,12 @@ class _DemixingProcessIndicatorState extends State<DemixingProcessIndicator> {
           textAlign: TextAlign.center,
         ),
         OutlinedButton(
-          onPressed: () {
-            setState(() {
-              widget.player.demix = true;
-            });
+          onPressed: () async {
+            final song = playback.song;
+            if (song == null) return;
+
+            await _setDemix(song, true);
+            if (mounted) setState(() => _process = null);
           },
           child: const Text("Continue anyway"),
         ),
@@ -157,10 +216,12 @@ Please update to the latest version to use the Demixer.""",
       ),
       OutlinedButton(
         onPressed: () {
-          setState(() {
-            DemixingProcesses.cancel(widget.song);
-            DemixingProcesses.start(widget.song);
-          });
+          final song = playback.song;
+          if (song == null) return;
+
+          // The next build starts a new process in place of the failed one.
+          demixing.cancel(song);
+          setState(() => _process = null);
         },
         child: const Text("Retry"),
       ),
@@ -168,7 +229,7 @@ Please update to the latest version to use the Demixer.""",
   }
 
   Widget buildLoadingText(BuildContext context, DemixingProcess process) {
-    if (!process.isActive) {
+    if (!process.isRunning) {
       return const Text(
         "The song has been split into instruments. To complete the loading process, reload the page.",
         textAlign: TextAlign.center,
@@ -176,7 +237,6 @@ Please update to the latest version to use the Demixer.""",
     }
 
     switch (process.step) {
-      case DemixingStep.checkingCache:
       case DemixingStep.findingHost:
         return buildLoadingTextWithInfoButton(context, "Preparing...");
       case DemixingStep.uploading:
@@ -247,12 +307,16 @@ This only needs to be done once, so loading the song next time will be much fast
   }
 }
 
+/// The part controls for the loaded song, or the demixing progress while its
+/// parts are still being separated.
 class DemixerCard extends StatelessWidget {
   const DemixerCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (Songs.player == null) {
+    final PlaybackRepository playback = context.read();
+
+    if (playback.song == null) {
       return ShimmerLoading(
         child: FlatCard(
           color: Theme.of(context).colorScheme.surfaceContainer,
@@ -261,14 +325,12 @@ class DemixerCard extends StatelessWidget {
       );
     }
 
-    final SongPlayer player = Songs.player!;
-
     return FlatCard(
       child: Padding(
         padding: const EdgeInsets.only(top: 8, right: 8, left: 8),
         child: () {
-          if (player is SinglePlayer) {
-            return DemixingProcessIndicator(player: player);
+          if (!playback.isMulti) {
+            return DemixingProcessIndicator();
           }
 
           return Column(
@@ -285,26 +347,33 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// Assumes [Songs.player] is a [MultiPlayer].
+  /// The button resetting every part, shown above the part controls.
   Widget buildHeader(BuildContext context) {
-    final MultiPlayer player = Songs.player! as MultiPlayer;
+    final PlaybackRepository playback = context.read();
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        ValueListenableBuilder(
-          valueListenable: player.demixer.stemsNotifier,
-          builder: (context, stems, child) => IconButton(
+        ListenableBuilder(
+          listenable: playback,
+          builder: (context, child) => IconButton(
             iconSize: 20,
             onPressed:
-                stems.every(
-                  (stem) => stem.enabled && stem.volume == Stem.defaultVolume,
-                )
+                playback.parts?.every(
+                      (part) =>
+                          playback.getPartEnabled(part) == true &&
+                          playback.getPartVolume(part) ==
+                              PlaybackRepository.partDefaultVolume,
+                    ) ??
+                    true
                 ? null
                 : () {
-                    for (Stem stem in stems) {
-                      stem.volume = Stem.defaultVolume;
-                      stem.enabled = true;
+                    for (Part part in playback.parts ?? []) {
+                      playback.setPart(
+                        part,
+                        enabled: true,
+                        volume: PlaybackRepository.partDefaultVolume,
+                      );
                     }
                   },
             icon: const Icon(Symbols.refresh),
@@ -314,139 +383,154 @@ class DemixerCard extends StatelessWidget {
     );
   }
 
-  /// Assumes [Songs.player] is a [MultiPlayer].
+  /// The controls for each part of the loaded song.
   Widget buildBody(BuildContext context) {
-    final MultiPlayer player = Songs.player! as MultiPlayer;
+    final PlaybackRepository playback = context.read();
 
-    return ValueListenableBuilder(
-      valueListenable: player.demixer.stemsNotifier,
-      builder: (context, stems, child) => ListView(
-        children: [
-          for (Stem stem in player.demixer.stems) StemControls(stem: stem),
-        ],
-      ),
+    return ListenableBuilder(
+      listenable: playback,
+      builder: (context, child) {
+        return Column(
+          children: [
+            for (Part part in playback.parts ?? []) PartControls(part: part),
+          ],
+        );
+      },
     );
   }
 }
 
-class StemControls extends StatefulWidget {
-  /// Widget for enabling/disabling and changing the volume of a demixer [stem].
-  const StemControls({super.key, required this.stem});
+/// Widget for enabling/disabling and changing the volume of a demixer [part].
+class PartControls extends StatefulWidget {
+  const PartControls({super.key, required this.part});
+
+  /// The part this widget controls.
+  final Part part;
 
   @override
-  State<StatefulWidget> createState() => StemControlsState();
-
-  /// The stem this widget controls.
-  final Stem stem;
+  State<StatefulWidget> createState() => PartControlsState();
 }
 
-class StemControlsState extends State<StemControls> {
-  SongPlayer player = Songs.player!;
+class PartControlsState extends State<PartControls> {
+  PlaybackRepository get playback => context.read();
+  EntitlementRepository get entitlement => context.read();
 
-  Stem get stem => widget.stem;
+  Part get part => widget.part;
 
   @override
   Widget build(BuildContext context) {
-    if (this.player is! MultiPlayer) return const SizedBox();
-    final MultiPlayer player = this.player as MultiPlayer;
+    if (!playback.isMulti) return const SizedBox();
 
-    /// Whether this stem is allowed to be accessed.
+    /// Whether this part is allowed to be accessed.
     final bool accessAllowed =
-        Purchases.hasPremium ||
-        player.song.id == demoSong.id ||
-        DemixerComponent.freeStems.contains(stem.type);
+        entitlement.hasPremium ||
+        playback.song?.id == demoSong.id ||
+        PlaybackRepository.freeParts.contains(part);
 
-    /// Whether all other stems are disabled
-    final bool allOtherStemsDisabled = player.demixer.stems
-        .where((stem) => stem != this.stem)
-        .every((stem) => !stem.enabled);
+    /// Whether all other parts are disabled
+    final bool allOtherPartsDisabled =
+        playback.parts
+            ?.where((part) => part != this.part)
+            .every((part) => playback.getPartEnabled(part) ?? false) ??
+        false;
 
-    return ValueListenableBuilder(
-      valueListenable: stem.volumeNotifier,
-      builder: (context, volume, child) => Row(
-        children: [
-          SizedBox(width: 12),
-          GestureDetector(
-            onLongPress: () {
-              if (!Purchases.hasPremium && player.song.id != demoSong.id) {
-                return;
-              }
-
-              for (Stem stem in player.demixer.stems) {
-                stem.enabled = allOtherStemsDisabled;
-              }
-              stem.enabled = !allOtherStemsDisabled;
-            },
-            child: Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                IconButton.filledTonal(
-                  isSelected: stem.enabled && stem.volume != 0,
-                  onPressed: () {
-                    if (!accessAllowed) {
-                      showAccessRestrictedDialog(context);
-                      return;
-                    }
-
-                    if (stem.volume == 0) {
-                      stem.volume = Stem.defaultVolume;
-                      stem.enabled = true;
-                    } else {
-                      stem.enabled = !stem.enabled;
-                    }
-                  },
-                  icon: Icon(getStemIcon(stem.type)),
-                ),
-                if (!accessAllowed)
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        iconSize: 16,
-                        onPressed: () {
-                          showAccessRestrictedDialog(context);
-                        },
-                        icon: Icon(Symbols.lock),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Slider(
-              value: !stem.enabled ? 0 : volume,
-              onChangeStart: (value) {
-                if (!accessAllowed) {
-                  showAccessRestrictedDialog(context);
+    return ListenableBuilder(
+      listenable: playback,
+      builder: (context, child) {
+        final bool enabled = playback.getPartEnabled(part) ?? true;
+        final double volume =
+            playback.getPartVolume(part) ??
+            PlaybackRepository.partDefaultVolume;
+        return Row(
+          children: [
+            SizedBox(width: 12),
+            GestureDetector(
+              onLongPress: () {
+                if (!entitlement.hasPremium &&
+                    playback.song?.id != demoSong.id) {
                   return;
                 }
 
-                stem.enabled = true;
+                for (Part part in playback.parts ?? []) {
+                  playback.setPart(part, enabled: allOtherPartsDisabled);
+                }
+                playback.setPart(part, enabled: !allOtherPartsDisabled);
               },
-              onChanged: (value) {
-                if (!accessAllowed) return;
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  IconButton.filledTonal(
+                    isSelected: enabled && volume != 0,
+                    onPressed: () {
+                      if (!accessAllowed) {
+                        showAccessRestrictedDialog(context);
+                        return;
+                      }
 
-                stem.volume = value;
-              },
+                      if (volume == 0) {
+                        playback.setPart(
+                          part,
+                          enabled: true,
+                          volume: PlaybackRepository.partDefaultVolume,
+                        );
+                      } else {
+                        playback.setPart(part, enabled: !enabled);
+                      }
+                    },
+                    icon: Icon(getPartIcon(part)),
+                  ),
+                  if (!accessAllowed)
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          iconSize: 16,
+                          onPressed: () {
+                            showAccessRestrictedDialog(context);
+                          },
+                          icon: Icon(Symbols.lock),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+            Expanded(
+              child: Slider(
+                min: 0.0,
+                max: 2.0,
+                value: !enabled ? 0 : volume,
+                onChangeStart: (value) {
+                  if (!accessAllowed) {
+                    showAccessRestrictedDialog(context);
+                    return;
+                  }
+
+                  playback.setPart(part, enabled: true);
+                },
+                onChanged: (value) {
+                  if (!accessAllowed) return;
+                  playback.setPart(part, volume: value);
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  IconData getStemIcon(StemType stem) {
-    return switch (stem) {
-      StemType.vocals => CustomIcons.microphone,
-      StemType.piano => Symbols.piano,
-      StemType.guitar => CustomIcons.guitar_head,
-      StemType.bass => CustomIcons.bass_head,
-      StemType.drums => CustomIcons.snare,
-      StemType.other => Symbols.music_note,
+  IconData getPartIcon(Part part) {
+    return switch (part) {
+      Part.vocals => CustomIcons.microphone,
+      Part.piano => Symbols.piano,
+      Part.guitar => CustomIcons.guitar_head,
+      Part.bass => CustomIcons.bass_head,
+      Part.drums => CustomIcons.snare,
+      Part.other => Symbols.music_note,
     };
   }
 

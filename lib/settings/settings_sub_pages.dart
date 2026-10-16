@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/drone/drone.dart';
-import 'package:musbx/metronome/metronome.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/data/repositories/drone/drone_repository.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/domain/use_case/clear_song_cache.dart';
+import 'package:musbx/domain/use_case/delete_song.dart';
+import 'package:musbx/routing/router.dart';
 import 'package:musbx/settings/selectors.dart';
 import 'package:musbx/settings/settings_page.dart';
 import 'package:musbx/settings/slide_from_right_transition_page.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/songs.dart';
-import 'package:musbx/tuner/tuner.dart';
+import 'package:musbx/utils/result.dart';
 import 'package:musbx/utils/utils.dart';
 import 'package:musbx/widgets/custom_icons.dart';
+import 'package:provider/provider.dart';
 
+/// Build a settings route that slides in from the right.
 SlideFromRightTransitionPage Function(BuildContext, GoRouterState)
-settingsPageBuilder(Widget child) => (context, state) {
-  return SlideFromRightTransitionPage(
-    key: state.pageKey,
-    child: child,
-  );
-};
+settingsPageBuilder(Widget Function(BuildContext context) builder) =>
+    (context, state) {
+      return SlideFromRightTransitionPage(
+        key: state.pageKey,
+        child: builder(context),
+      );
+    };
 
+/// A settings page below the top level, with a back button and its own title.
 class SettingsSubPage extends StatelessWidget {
   const SettingsSubPage({
     super.key,
@@ -28,8 +34,10 @@ class SettingsSubPage extends StatelessWidget {
     required this.children,
   });
 
+  /// The heading of the page.
   final Widget? title;
 
+  /// The settings shown on the page.
   final List<Widget> children;
 
   @override
@@ -43,301 +51,353 @@ class SettingsSubPage extends StatelessWidget {
   }
 }
 
+/// Settings for the metronome.
 class MetronomeSettingsPage extends StatelessWidget {
   const MetronomeSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SettingsSubPage(
-      title: Text("Metronome settings"),
-      children: [
-        SettingsGroup(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: Metronome.instance.showNotificationNotifier,
-              builder: (context, showNotification, child) => ListTile(
+    final MetronomeSettings settings = context
+        .read<SettingsRepository>()
+        .metronome;
+
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, child) => SettingsSubPage(
+        title: Text("Metronome settings"),
+        children: [
+          SettingsGroup(
+            children: [
+              ListTile(
                 leading: Icon(Symbols.notification_settings),
                 title: Text("Show notification"),
                 subtitle: Text(
                   "Control the Metronome from the notifications drawer",
                 ),
                 onTap: () {
-                  Metronome.instance.showNotification =
-                      !Metronome.instance.showNotification;
+                  settings.showNotification = !settings.showNotification;
                 },
                 trailing: Switch(
-                  value: Metronome.instance.showNotification,
-                  onChanged: (value) =>
-                      Metronome.instance.showNotification = value,
+                  value: settings.showNotification,
+                  onChanged: (value) => settings.showNotification = value,
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-class SongsSettingsPage extends StatelessWidget {
+/// Settings for the song library, including how much space it takes up on disk.
+class SongsSettingsPage extends StatefulWidget {
   const SongsSettingsPage({super.key});
 
   @override
+  State<SongsSettingsPage> createState() => _SongsSettingsPageState();
+}
+
+class _SongsSettingsPageState extends State<SongsSettingsPage> {
+  late Future<int> _cacheSize = _measureCache();
+  Future<int> _measureCache() => context.read<SongCache>().totalSize();
+  void _refresh() => setState(() {
+    _cacheSize = _measureCache();
+  });
+
+  SongSettings get settings => context.read<SettingsRepository>().songs;
+
+  @override
   Widget build(BuildContext context) {
-    return SettingsSubPage(
-      title: Text("Songs settings"),
-      children: [
-        SettingsGroup(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: Songs.demixAutomaticallyNotifier,
-              builder: (context, demixAutomatically, child) => ListTile(
+    final SongRepository songs = context.read();
+
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, child) => SettingsSubPage(
+        title: Text("Songs settings"),
+        children: [
+          SettingsGroup(
+            children: [
+              ListTile(
                 leading: Icon(Symbols.piano),
                 title: Text("Split new songs"),
                 subtitle: Text(
                   "Automatically split songs into instruments",
                 ),
                 onTap: () {
-                  Songs.demixAutomatically = !Songs.demixAutomatically;
+                  settings.demixAutomatically = !settings.demixAutomatically;
                 },
                 trailing: Switch(
-                  value: Songs.demixAutomatically,
-                  onChanged: (value) => Songs.demixAutomatically = value,
+                  value: settings.demixAutomatically,
+                  onChanged: (value) => settings.demixAutomatically = value,
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
 
-        SettingsGroup(
-          children: [
-            ListenableBuilder(
-              listenable: SongLibrary.history,
-              builder: (context, child) => ListTile(
-                enabled:
-                    SongLibrary.history.entries.isNotEmpty &&
-                    SongLibrary.history.entries.values.every(
-                      (song) => song.hasCache,
-                    ),
-                leading: Icon(Symbols.cloud_off),
-                title: Text("Free up storage"),
-                onTap: () async {
-                  final bool? shouldContinue = await showDialog<bool>(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        icon: Icon(Symbols.cloud_off),
-                        title: Text("Clear cache?"),
-                        content: Text(
-                          "Offloading songs will free up some space on your device. Loading a song will take longer the next time.",
-                        ),
-                        actions: [
-                          FilledButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(false);
-                            },
-                            child: Text("Cancel"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(true);
-                            },
-                            child: Text("Proceed"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
+          SettingsGroup(
+            children: [
+              ListenableBuilder(
+                listenable: songs,
+                builder: (context, child) => FutureBuilder<int>(
+                  future: _cacheSize,
+                  builder: (context, snapshot) {
+                    final cacheSize = snapshot.data ?? 0;
 
-                  if (shouldContinue == true) {
-                    // Make sure a song is not open
-                    Navigation.navigationShell.goBranch(
-                      Navigation.currentBranch.value,
-                      initialLocation: true,
+                    return ListTile(
+                      enabled: songs.isNotEmpty && cacheSize > 0,
+                      leading: Icon(Symbols.cloud_off),
+                      title: Text("Free up storage"),
+                      onTap: () async {
+                        final bool? shouldContinue = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              icon: Icon(Symbols.cloud_off),
+                              title: Text("Clear cache?"),
+                              content: Text(
+                                "Offloading songs will free up some space on your device. Loading a song will take longer the next time.",
+                              ),
+                              actions: [
+                                FilledButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(false);
+                                  },
+                                  child: Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(true);
+                                  },
+                                  child: Text("Proceed"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (shouldContinue == true && context.mounted) {
+                          // Make sure the song is not open
+                          libraryNavigatorKey.currentState?.popUntil(
+                            (route) => route.isFirst,
+                          );
+
+                          // Remove cache
+                          final ClearSongCache clearSongCache = context.read();
+                          for (final song in songs.getAll()) {
+                            if (await clearSongCache.call(song) case Failure(
+                              :final error,
+                            )) {
+                              debugPrint(
+                                "[SONGS] Clearing cache for ${song.id} failed; $error",
+                              );
+                            }
+                          }
+
+                          if (!mounted) return;
+                          _refresh();
+                        }
+                      },
+                    );
+                  },
+                ),
+              ),
+              ListenableBuilder(
+                listenable: songs,
+                builder: (context, child) => ListTile(
+                  enabled: songs.isNotEmpty,
+                  leading: Icon(Symbols.delete_sweep),
+                  title: Text("Remove all songs"),
+                  onTap: () async {
+                    final bool? shouldContinue = await showDialog<bool>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          icon: Icon(Symbols.delete_sweep),
+                          title: Text("Clear songs?"),
+                          content: Text(
+                            "Are you sure you want to remove all songs from your library?\n\nThis action cannot be undone.",
+                          ),
+                          actions: [
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(false);
+                              },
+                              child: Text("Cancel"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(true);
+                              },
+                              child: Text("Proceed"),
+                            ),
+                          ],
+                        );
+                      },
                     );
 
-                    for (final song
-                        in SongLibrary.history.entries.values.toList()) {
-                      await song.clearCache();
+                    if (shouldContinue == true && context.mounted) {
+                      // Make sure the song is not open
+                      libraryNavigatorKey.currentState?.popUntil(
+                        (route) => route.isFirst,
+                      );
+
+                      final DeleteSong deleteSong = context.read();
+
+                      for (final song in songs.getAll()) {
+                        if (await deleteSong.call(song) case Failure(
+                          :final error,
+                        )) {
+                          debugPrint(
+                            "[SONGS] Deleting ${song.id} failed; $error",
+                          );
+                        }
+                      }
+
+                      if (!mounted) return;
+                      _refresh();
                     }
-                  }
-                },
+                  },
+                ),
               ),
-            ),
-            ListenableBuilder(
-              listenable: SongLibrary.history,
-              builder: (context, child) => ListTile(
-                enabled: SongLibrary.history.entries.isNotEmpty,
-                leading: Icon(Symbols.delete_sweep),
-                title: Text("Remove all songs"),
-                onTap: () async {
-                  final bool? shouldContinue = await showDialog<bool>(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        icon: Icon(Symbols.delete_sweep),
-                        title: Text("Clear songs?"),
-                        content: Text(
-                          "Are you sure you want to remove all songs from your library?\n\nThis action cannot be undone.",
-                        ),
-                        actions: [
-                          FilledButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(false);
-                            },
-                            child: Text("Cancel"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(true);
-                            },
-                            child: Text("Proceed"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-
-                  if (shouldContinue == true) {
-                    // Make sure a song is not open
-                    Navigation.navigationShell.goBranch(
-                      Navigation.currentBranch.value,
-                      initialLocation: true,
-                    );
-
-                    await SongLibrary.history.clear();
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
+/// Settings for the tuner.
 class TunerSettingsPage extends StatelessWidget {
   const TunerSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SettingsSubPage(
-      title: Text("Tuner settings"),
-      children: [
-        SettingsGroup(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: Tuner.instance.tuningNotifier,
-              builder: (context, tuning, child) => ListTile(
+    final TunerSettings settings = context.read<SettingsRepository>().tuner;
+
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, child) => SettingsSubPage(
+        title: Text("Tuner settings"),
+        children: [
+          SettingsGroup(
+            children: [
+              ListTile(
                 leading: Icon(CustomIcons.tuning_fork),
                 title: Text("Tuning"),
                 subtitle: Text(
-                  "${tuning.frequency.toStringAsFixed(0)} Hz",
+                  "${settings.tuning.frequency.toStringAsFixed(0)} Hz",
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => TuningSelector(
-                      tuningNotifier: Tuner.instance.tuningNotifier,
+                      initialValue: settings.tuning,
+                      onSelection: (value) => settings.tuning = value,
                     ),
                   );
                 },
               ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: Tuner.instance.preferredAccidentalNotifier,
-              builder: (context, accidental, child) => ListTile(
+              ListTile(
                 leading: Icon(CustomIcons.accidentals),
                 title: Text("Preferred accidentals"),
                 subtitle: Text(
-                  AccidentalSelector.accidentalDescription(accidental),
+                  AccidentalSelector.accidentalDescription(
+                    settings.preferredAccidental,
+                  ),
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => AccidentalSelector(
-                      accidentalNotifier:
-                          Tuner.instance.preferredAccidentalNotifier,
+                      initialValue: settings.preferredAccidental,
+                      onSelection: (value) =>
+                          settings.preferredAccidental = value,
                     ),
                   );
                 },
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
+/// Settings for the drone.
 class DroneSettingsPage extends StatelessWidget {
   const DroneSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SettingsSubPage(
-      title: Text("Drone settings"),
-      children: [
-        SettingsGroup(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: Drone.instance.tuningNotifier,
-              builder: (context, tuning, child) => ListTile(
+    final DroneRepository drone = context.read();
+
+    return ListenableBuilder(
+      listenable: drone,
+      builder: (context, child) => SettingsSubPage(
+        title: Text("Drone settings"),
+        children: [
+          SettingsGroup(
+            children: [
+              ListTile(
                 leading: Icon(CustomIcons.tuning_fork),
                 title: Text("Tuning"),
                 subtitle: Text(
-                  "${tuning.frequency.toStringAsFixed(0)} Hz",
+                  "${drone.tuning.frequency.toStringAsFixed(0)} Hz",
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => TuningSelector(
-                      tuningNotifier: Drone.instance.tuningNotifier,
+                      initialValue: drone.tuning,
+                      onSelection: (value) => drone.tuning = value,
                     ),
                   );
                 },
               ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: Drone.instance.temperamentNotifier,
-              builder: (context, temperament, child) => ListTile(
+
+              ListTile(
                 leading: Icon(Symbols.tune),
                 title: Text("Temperament"),
                 subtitle: Text(
-                  TemperamentSelector.temperamentDescription(temperament),
+                  TemperamentSelector.temperamentDescription(
+                    drone.temperament,
+                  ),
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => TemperamentSelector(
-                      temperamentNotifier: Drone.instance.temperamentNotifier,
+                      initialValue: drone.temperament,
+                      onSelection: (value) => drone.temperament = value,
                     ),
                   );
                 },
               ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: Drone.instance.waveformNotifier,
-              builder: (context, waveform, child) => ListTile(
-                leading: Icon(WaveformShapeSelector.waveformIcon(waveform)),
+              ListTile(
+                leading: Icon(
+                  WaveformShapeSelector.waveformIcon(drone.waveform),
+                ),
                 title: Text("Waveform shape"),
                 subtitle: Text(
-                  WaveformShapeSelector.waveformDescription(waveform),
+                  WaveformShapeSelector.waveformDescription(drone.waveform),
                 ),
                 onTap: () async {
                   await showAlertSheet<void>(
                     context: context,
                     builder: (context) => WaveformShapeSelector(
-                      waveformNotifier: Drone.instance.waveformNotifier,
+                      initialValue: drone.waveform,
+                      onSelection: (value) => drone.waveform = value,
                     ),
                   );
                 },
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

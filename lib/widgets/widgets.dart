@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:path_provider/path_provider.dart';
 
+/// An icon above a line of text, centred in the space it is given.
 class InfoPage extends StatelessWidget {
   const InfoPage({super.key, required this.icon, required this.text});
 
@@ -31,6 +30,7 @@ class InfoPage extends StatelessWidget {
   }
 }
 
+/// An [InfoPage] reporting that something went wrong.
 class ErrorPage extends StatelessWidget {
   const ErrorPage({super.key, required this.text});
 
@@ -45,6 +45,7 @@ class ErrorPage extends StatelessWidget {
   }
 }
 
+/// An [InfoPage] shown while something is still loading.
 class LoadingPage extends StatelessWidget {
   const LoadingPage({super.key, required this.text});
 
@@ -66,46 +67,7 @@ Future<bool> isOnCellular() async {
       !connectivity.contains(ConnectivityResult.ethernet);
 }
 
-class Directories {
-  Directories._();
-
-  static late final Directory _tempDir;
-
-  static late final Directory _appDocsDir;
-
-  /// Get a temporary directory with the given [name].
-  ///
-  /// This does not check to make sure that the directory actually exists.
-  static Directory temporaryDir(String name) =>
-      Directory("${_tempDir.path}/$name/");
-
-  /// Get a application documents directory with the given [name].
-  ///
-  /// This does not check to make sure that the directory actually exists.
-  static Directory applicationDocumentsDir(String name) =>
-      Directory("${_appDocsDir.path}/$name/");
-
-  /// Resolve the paths to commonly used locations on the filesystem, which are
-  /// used by the methods provided by this class.
-  ///
-  /// Should be called during app launch.
-  static Future<void> initialize() async {
-    _tempDir = await getTemporaryDirectory();
-    try {
-      _appDocsDir = await getApplicationDocumentsDirectory();
-    } catch (e) {
-      debugPrint(
-        "[DIRECTORIES] Unable to get application documents; falling back to temporary directory. $e",
-      );
-      _appDocsDir = _tempDir;
-    }
-
-    debugPrint(
-      "[DIRECTORIES] Initialized with temporary directory at ${_tempDir.path}, application documents at ${_appDocsDir.path}",
-    );
-  }
-}
-
+/// An icon sized to fill whatever space it is given.
 class ExpandedIcon extends StatelessWidget {
   const ExpandedIcon(this.icon, {super.key, this.color, this.fill});
 
@@ -126,6 +88,7 @@ class ExpandedIcon extends StatelessWidget {
   }
 }
 
+/// A shimmering stand-in for a slider whose value is not known yet.
 class SliderPlaceholder extends StatelessWidget {
   const SliderPlaceholder({super.key, this.trackHeight = 4});
 
@@ -154,6 +117,7 @@ class SliderPlaceholder extends StatelessWidget {
   }
 }
 
+/// Show a snack bar with an optional [leading] icon before the [title].
 void showAlertSnackBar(
   BuildContext context, {
   Key? key,

@@ -1,12 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/songs/demixer/demixing_process.dart';
-import 'package:musbx/songs/demixer/process_handler.dart';
+import 'package:musbx/data/repositories/demix/demix_repository.dart';
+import 'package:musbx/data/repositories/demix/demixing_process.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/services/song_cache.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/domain/use_case/clear_song_cache.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/utils/result.dart';
+import 'package:provider/provider.dart';
 
+/// Follows the demixing of [song], showing which step it is on and how far it
+/// has come.
+///
+/// Offers to start demixing when nothing is running, and to cancel or retry once
+/// something is.
 class DemixingProgressIndicator extends StatefulWidget {
   const DemixingProgressIndicator({
     super.key,
@@ -16,6 +27,7 @@ class DemixingProgressIndicator extends StatefulWidget {
 
   final Song song;
 
+  /// Called once the parts are ready.
   final void Function()? onDemixingComplete;
 
   @override
@@ -25,17 +37,21 @@ class DemixingProgressIndicator extends StatefulWidget {
 
 class _DemixingProgressIndicatorState
     extends State<DemixingProgressIndicator> {
+  DemixRepository get demix => context.read();
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: widget.song.isDemixed,
+      future: demix.hasParts(widget.song),
       builder: (context, snapshot) {
         if (snapshot.data != false) {
           // Already demixed or loading
           return const SizedBox();
         }
 
-        DemixingProcess? process = DemixingProcesses.get(widget.song);
+        DemixingProcess? process = demix.get(
+          widget.song,
+        );
         if (process == null) return _buildNotDemixed(context);
 
         return ListenableBuilder(
@@ -45,13 +61,13 @@ class _DemixingProgressIndicatorState
               return _buildNotDemixed(context);
             }
 
-            if (process.isComplete) {
+            if (!process.isRunning) {
               widget.onDemixingComplete?.call();
             }
 
             return Tooltip(
               message:
-                  "This song ${process.isActive ? "is being" : "has been"} split into instruments.",
+                  "This song ${process.isRunning ? "is being" : "has been"} split into instruments.",
               child: ValueListenableBuilder(
                 valueListenable: process.progressNotifier,
                 builder: (context, progress, child) {
@@ -59,13 +75,13 @@ class _DemixingProgressIndicatorState
                     alignment: Alignment.center,
                     children: [
                       CircularLoadingCheck(
-                        isComplete: process.isComplete,
+                        isComplete: !process.isRunning,
                         progress: progress,
                       ),
-                      if (!process.isComplete)
+                      if (process.isRunning)
                         IconButton(
                           onPressed: () {
-                            DemixingProcesses.cancel(widget.song);
+                            demix.cancel(widget.song);
                             setState(() {});
                           },
                           icon: const Icon(Symbols.piano),
@@ -86,8 +102,10 @@ class _DemixingProgressIndicatorState
       message: "This song has not been split into instruments.",
       child: IconButton(
         onPressed: () {
-          DemixingProcesses.cancel(widget.song);
-          DemixingProcesses.start(widget.song);
+          demix.cancel(widget.song);
+          if (demix.start(widget.song) case Failure(:final error)) {
+            debugPrint("[DEMIXER] Starting demixing failed; $error");
+          }
           setState(() {});
         },
         icon: const Icon(Symbols.piano_off),
@@ -96,9 +114,12 @@ class _DemixingProgressIndicatorState
   }
 }
 
+/// A bottom sheet for one song: what it takes up on disk, whether it is demixed,
+/// and the options to clear its cache or delete it.
 class SongOptionsSheet extends StatefulWidget {
   const SongOptionsSheet({super.key, required this.song});
 
+  /// The song these options apply to.
   final Song song;
 
   @override
@@ -106,18 +127,27 @@ class SongOptionsSheet extends StatefulWidget {
 }
 
 class _SongOptionsSheetState extends State<SongOptionsSheet> {
+  late Future<int> _cacheSize = _measureCache();
+  Future<int> _measureCache() => context.read<SongCache>().size(widget.song);
+  void _refresh() => setState(() {
+    _cacheSize = _measureCache();
+  });
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: SongLibrary.history,
+      listenable: context.read<SongRepository>(),
       builder: (context, child) {
         // Any update to the history could be an update to *this* song.
         // Thus, we get the song from history each time we build instead of using
         // the song passed in the constructor.
         // For example, if the song is renamed while the sheet is open, it will
         // automatically be rebuilt with the correct information.
-        final Song? song = SongLibrary.history.entries.values
-            .where((song) => song.id == widget.song.id)
+        final Song? song = context
+            .read<SongRepository>()
+            .getWhere(
+              (song, _) => song.id == widget.song.id,
+            )
             .firstOrNull;
 
         if (song == null) {
@@ -188,9 +218,11 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                           TextButton(
                             onPressed: () {
                               if (controller.text.isNotEmpty) {
-                                SongLibrary.history.add(
-                                  song.copyWith(
-                                    title: controller.text,
+                                unawaited(
+                                  context.read<SongRepository>().add(
+                                    song.copyWith(
+                                      title: controller.text,
+                                    ),
                                   ),
                                 );
                               }
@@ -204,39 +236,57 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                   );
                 },
               ),
-              ListTile(
-                enabled: song.hasCache,
-                leading: const Icon(Symbols.cloud_off),
-                title: const Text("Clear cached files"),
-                onTap: () {
-                  showDialog<void>(
-                    context: context,
-                    useRootNavigator: true,
-                    builder: (context) {
-                      return AlertDialog(
-                        icon: const Icon(Symbols.cloud_off),
-                        title: const Text("Clear cache?"),
-                        content: const Text(
-                          "This will free up some space on your device. Loading this song will take longer the next time.",
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text("Cancel"),
-                          ),
-                          FilledButton(
-                            onPressed: () {
-                              song.clearCache();
-                              song.shouldDemix = false;
-                              SongLibrary.history.save();
-                              Navigator.of(context).pop();
-                              setState(() {});
-                            },
-                            child: const Text("Clear"),
-                          ),
-                        ],
+              FutureBuilder<int>(
+                future: _cacheSize,
+                builder: (context, snapshot) {
+                  final cacheSize = snapshot.data ?? 0;
+
+                  return ListTile(
+                    enabled: cacheSize > 0,
+                    leading: const Icon(Symbols.cloud_off),
+                    title: const Text("Clear cached files"),
+                    onTap: () {
+                      showDialog<void>(
+                        context: context,
+                        useRootNavigator: true,
+                        builder: (context) {
+                          return AlertDialog(
+                            icon: const Icon(Symbols.cloud_off),
+                            title: const Text("Clear cache?"),
+                            content: const Text(
+                              "This will free up some space on your device. Loading this song will take longer the next time.",
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text("Cancel"),
+                              ),
+                              FilledButton(
+                                onPressed: () async {
+                                  switch (await context
+                                      .read<ClearSongCache>()
+                                      .call(song)) {
+                                    case Ok():
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop();
+                                      }
+
+                                    case Failure(:final error):
+                                      debugPrint(
+                                        "[Songs] Couldn't clear cache: $error",
+                                      );
+                                    // TODO: Show error snackbar
+                                  }
+
+                                  _refresh();
+                                },
+                                child: const Text("Clear"),
+                              ),
+                            ],
+                          );
+                        },
                       );
                     },
                   );
@@ -264,10 +314,17 @@ class _SongOptionsSheetState extends State<SongOptionsSheet> {
                             child: const Text("Cancel"),
                           ),
                           FilledButton(
-                            onPressed: () {
-                              SongLibrary.history.remove(song);
+                            onPressed: () async {
+                              final removal = context
+                                  .read<SongRepository>()
+                                  .remove(song);
                               Navigator.of(context).pop();
                               Navigator.of(context).pop();
+                              if (await removal case Failure(:final error)) {
+                                debugPrint(
+                                  "[SONGS] Removing song failed; $error",
+                                );
+                              }
                             },
                             child: const Text("Remove"),
                           ),

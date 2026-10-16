@@ -1,0 +1,40 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:musbx/data/services/service.dart';
+
+/// Reports how the app is used to Firebase Analytics.
+///
+/// Analytics is optional. [disabled] returns a service that accepts every call
+/// and reports nothing, so callers never have to ask whether analytics is
+/// available before logging.
+class AnalyticsService extends OptionalService {
+  AnalyticsService._(this._firebase);
+
+  /// The Firebase handle, or `null` when this service is [disabled].
+  final FirebaseAnalytics? _firebase;
+
+  @override
+  bool get isEnabled => _firebase != null;
+
+  /// Create the service, reporting through an already initialized Firebase
+  /// [app].
+  ///
+  /// Returns a [disabled] service when there is no [app], as on platforms
+  /// without a Firebase configuration.
+  static Future<AnalyticsService> create({FirebaseApp? app}) async {
+    return (app == null)
+        ? disabled()
+        : AnalyticsService._(FirebaseAnalytics.instanceFor(app: app));
+  }
+
+  /// A service that discards everything logged to it, for when analytics is
+  /// unavailable or switched off.
+  static AnalyticsService disabled() => AnalyticsService._(null);
+
+  /// Log that the current screen has changed.
+  ///
+  /// Does nothing when this service is [disabled].
+  Future<void> logScreenView(String name) async {
+    await _firebase?.logScreenView(screenName: name);
+  }
+}

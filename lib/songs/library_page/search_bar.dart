@@ -2,18 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_m3shapes/flutter_m3shapes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/navigation.dart';
+import 'package:musbx/data/repositories/song/song_repository.dart';
+import 'package:musbx/data/repositories/song/track_search_repository.dart';
+import 'package:musbx/domain/models/online_track.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/routing/routes.dart';
+import 'package:musbx/songs/library_page/online_track_search.dart';
 import 'package:musbx/songs/library_page/song_tile.dart';
-import 'package:musbx/songs/library_page/soundcloud_search.dart';
-import 'package:musbx/songs/player/library.dart';
-import 'package:musbx/songs/player/song.dart';
+import 'package:musbx/utils/result.dart';
+import 'package:musbx/widgets/result_builder.dart';
+import 'package:provider/provider.dart';
 
+/// Searches the library as the user types, listing matching tracks found
+/// online below the songs already in it.
 class LibrarySearchBar extends StatefulWidget {
   const LibrarySearchBar({super.key});
 
   @override
   State<LibrarySearchBar> createState() => _LibrarySearchBarState();
 
+  /// The artwork stand-in for a search result that has none.
   static Widget placeholderIcon(BuildContext context, {Color? color}) {
     return M3Container.c4SidedCookie(
       color: color ?? Theme.of(context).colorScheme.surfaceContainerHigh,
@@ -31,12 +39,6 @@ class LibrarySearchBar extends StatefulWidget {
 
 class _LibrarySearchBarState extends State<LibrarySearchBar> {
   late final SearchController controller = SearchController();
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,13 +78,16 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
         }
 
         // History entries that match the search query
-        final Iterable<Song> songHistory = SongLibrary.history
-            .sorted(ascending: false)
+        final Iterable<Song> songHistory = context
+            .read<SongRepository>()
+            .getAll(order: GetOrder.descending)
             .where(
               (song) =>
                   song.title.toLowerCase().contains(query) ||
                   (song.artist?.toLowerCase().contains(query) ?? false),
             );
+
+        final TrackSearchRepository search = context.read();
 
         return [
           const SizedBox(height: 8),
@@ -98,42 +103,68 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
           if (songHistory.isNotEmpty) const Divider(),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Results online",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-          FutureBuilder(
-            future: SoundCloudSearch.searchTracks(
-              query,
-            ).timeout(Duration(seconds: 2), onTimeout: () => []),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) return SizedBox();
-
-              return Column(
+            child: ResultBuilder(
+              future: search
+                  .searchTracks(query)
+                  .timeout(
+                    Duration(seconds: 2),
+                    onTimeout: () => Result.cancelled(),
+                  ),
+              failure: (context, error) => const SizedBox(),
+              loading: (context) => Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (snapshot.hasData)
-                    for (final SoundCloudTrack track in snapshot.requireData)
-                      SoundCloudTrackListItem(
+                  Text(
+                    "Results online",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  for (var i = 0; i < 10; i++) OnlineTrackTile(track: null),
+                ],
+              ),
+              ok: (context, tracks) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Results online",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    for (final OnlineTrack track in tracks)
+                      OnlineTrackTile(
                         track: track,
                         onTap: () async {
                           this.controller.closeView(null);
-                          final Song song = await SongLibrary.addTrack(track);
-                          if (context.mounted) {
-                            context.go(Routes.song(song.id));
+                          final result = await context
+                              .read<SongRepository>()
+                              .addTrack(
+                                track,
+                              );
+                          switch (result) {
+                            case Ok(value: final song):
+                              if (context.mounted) {
+                                context.go(Routes.song(song.id));
+                              }
+                            case Failure(:final error):
+                              debugPrint(
+                                "[Library] Failed to add online track; $error",
+                              );
+                            // TODO: Show error snackbar
                           }
                         },
-                      )
-                  else
-                    for (var i = 0; i < 10; i++)
-                      SoundCloudTrackListItem(track: null),
-                ],
-              );
-            },
+                      ),
+                  ],
+                );
+              },
+            ),
           ),
         ];
       },
     );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 }

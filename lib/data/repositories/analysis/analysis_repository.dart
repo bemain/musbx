@@ -1,0 +1,18 @@
+import 'package:just_waveform/just_waveform.dart';
+import 'package:meta/meta.dart';
+import 'package:musbx/domain/models/music/chord.dart';
+import 'package:musbx/domain/models/song.dart';
+import 'package:musbx/utils/result.dart';
+
+/// Musical analysis of a song: what is being played, and what it looks like.
+abstract class AnalysisRepository {
+  /// The chord sounding at each point in time.
+  ///
+  /// A `null` chord marks a stretch where no chord could be identified.
+  @useResult
+  Future<Result<Map<Duration, Chord?>>> chords(Song song);
+
+  /// The amplitude envelope of the song, for drawing.
+  @useResult
+  Future<Result<Waveform>> waveform(Song song);
+}

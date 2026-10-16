@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_plus/material_plus.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:musbx/metronome/metronome.dart';
+import 'package:musbx/data/repositories/metronome/metronome_repository.dart';
+import 'package:provider/provider.dart';
 
+/// Buttons for adjusting [Metronome]'s bpm and a label showing the current bpm,
+/// arranged horizontally.
 class BpmButtons extends StatelessWidget {
-  /// Buttons for adjusting [Metronome]'s bpm and a label showing the current bpm,
-  /// arranged horizontally.
   const BpmButtons({super.key, this.iconSize = 25});
 
   /// Size of the buttons for adjusting bpm.
@@ -14,19 +15,17 @@ class BpmButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final MetronomeRepository metronome = context.read();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ContinuousButton(
           onContinuousPress: () {
-            Metronome.instance.bpm--;
-          },
-          onContinuousPressEnd: () {
-            Metronome.instance.reset();
+            metronome.bpm--;
           },
           child: IconButton(
             onPressed: () {
-              Metronome.instance.bpm--;
+              metronome.bpm--;
             },
             iconSize: iconSize,
             icon: const Icon(Symbols.remove),
@@ -38,14 +37,11 @@ class BpmButtons extends StatelessWidget {
         ),
         ContinuousButton(
           onContinuousPress: () {
-            Metronome.instance.bpm++;
-          },
-          onContinuousPressEnd: () {
-            Metronome.instance.reset();
+            metronome.bpm++;
           },
           child: IconButton(
             onPressed: () {
-              Metronome.instance.bpm++;
+              metronome.bpm++;
             },
             iconSize: iconSize,
             icon: const Icon(Symbols.add),
@@ -56,22 +52,18 @@ class BpmButtons extends StatelessWidget {
   }
 
   Widget buildBpmText(BuildContext context) {
+    final MetronomeRepository metronome = context.read();
+
     return SizedBox(
       width: 90,
-      child: ListenableBuilder(
-        listenable: Metronome.instance.bpmNotifier,
-        builder: (context, child) {
-          return NumberField<int>(
-            value: Metronome.instance.bpm,
-            style: Theme.of(context).textTheme.displayMedium,
-            min: Metronome.minBpm,
-            max: Metronome.maxBpm,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onSubmitted: (value) {
-              Metronome.instance.bpm = value;
-              Metronome.instance.reset();
-            },
-          );
+      child: NumberField<int>(
+        value: metronome.bpm,
+        style: Theme.of(context).textTheme.displayMedium,
+        min: MetronomeRepository.minBpm,
+        max: MetronomeRepository.maxBpm,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        onSubmitted: (value) {
+          metronome.bpm = value;
         },
       ),
     );

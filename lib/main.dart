@@ -3,47 +3,67 @@ import 'dart:async';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_plus/material_plus.dart';
-import 'package:musbx/analytics.dart';
-import 'package:musbx/database/database.dart';
-import 'package:musbx/navigation.dart';
-import 'package:musbx/songs/player/songs.dart';
+import 'package:musbx/config/dependencies.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
+import 'package:musbx/data/services/analytics_service.dart';
+import 'package:musbx/domain/use_case/resume_demixing.dart';
+import 'package:musbx/routing/router.dart';
 import 'package:musbx/theme.dart';
-import 'package:musbx/utils/launch_handler.dart';
-import 'package:musbx/utils/links.dart';
-import 'package:musbx/utils/notifications.dart';
-import 'package:musbx/utils/purchases.dart';
-import 'package:musbx/widgets/ads.dart';
-import 'package:musbx/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await PersistentValue.initialize();
-  await Directories.initialize();
-
-  await Database.initialize();
-  await Analytics.initialize();
-  await Purchases.intialize();
-
-  await Songs.initialize();
-  await Notifications.initialize();
-
-  Links.initialize();
-
-  await LaunchHandler.initialize();
-
-  // Google Ads
-  unawaited(Ads.initialize());
+  final providers = await loadProviders();
 
   // Lock screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: providers,
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+/// The app itself: the router, the theme, and the analytics that follow
+/// navigation.
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late GoRouter _router;
+
+  String _lastLoggedLocation = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _router = router(sharedPreferences: context.read());
+    _router.routerDelegate.addListener(() {
+      final location = _router.state.matchedLocation;
+      if (location != _lastLoggedLocation) {
+        _lastLoggedLocation = location;
+        // Report to analytics
+        context.read<AnalyticsService>().logScreenView(location);
+      }
+    });
+
+    unawaited(context.read<ResumeDemixing>().call());
+  }
+
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,14 +77,16 @@ class MyApp extends StatelessWidget {
           darkDynamic,
         );
 
-        return ValueListenableBuilder(
-          valueListenable: AppTheme.themeModeNotifier,
-          builder: (context, themeMode, child) => MaterialApp.router(
+        final SettingsRepository settings = context.read();
+
+        return ListenableBuilder(
+          listenable: settings,
+          builder: (context, child) => MaterialApp.router(
             title: "Musician's Toolbox",
             theme: lightTheme,
             darkTheme: darkTheme,
-            routerConfig: Navigation.router,
-            themeMode: themeMode,
+            routerConfig: _router,
+            themeMode: settings.themeMode,
             restorationScopeId: "app",
             builder: (context, child) {
               final ColorScheme colors = Theme.of(context).colorScheme;

@@ -1,0 +1,124 @@
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+import 'package:musbx/domain/models/music/accidental.dart';
+import 'package:musbx/domain/models/music/pitch_class.dart';
+import 'package:musbx/domain/models/music/temperament.dart';
+
+/// A musical tone at a specific frequency.
+@immutable
+class Pitch {
+  const Pitch(
+    this.pitchClass,
+    this.octave,
+    this.frequency,
+  );
+
+  /// Concert A, the reference the tuner is calibrated against by default.
+  const Pitch.a440()
+    : pitchClass = const PitchClass.a(),
+      octave = 4,
+      frequency = 440;
+
+  /// The name of the pitch.
+  final PitchClass pitchClass;
+
+  /// The octave of the pitch, in [scientific pitch notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation).
+  final int octave;
+
+  /// The frequency of the pitch, in Hz.
+  final double frequency;
+
+  /// The pitch closest to [frequency] under [tuning] and [temperament],
+  /// carrying [frequency] itself rather than the pitch's exact one.
+  factory Pitch.closest(
+    double frequency, {
+    Pitch tuning = const Pitch.a440(),
+    Temperament temperament = const EqualTemperament(),
+    Accidental? preferredAccidental,
+  }) {
+    assert(frequency > 0, "Frequency must be greater than 0");
+
+    final int semitones = temperament.scaleStep(frequency / tuning.frequency);
+    Pitch transposed = tuning.transposed(
+      semitones,
+      preferredAccidental: preferredAccidental,
+    );
+
+    return Pitch(
+      transposed.pitchClass,
+      transposed.octave,
+      frequency,
+    );
+  }
+
+  /// How many cents this pitch is above [frequency].
+  double offsetFrom(double frequency) =>
+      1200 * log(this.frequency / frequency) / ln2;
+
+  /// Parse [string] as a pitch.
+  ///
+  /// Throws a [FormatException] if [string] is not a valid pitch.
+  static Pitch parse(String string) {
+    final Pitch? pitch = tryParse(string);
+    if (pitch == null) throw FormatException("$string is not a valid Pitch");
+    return pitch;
+  }
+
+  /// Parse [string] as a pitch, in the format [toString] produces, e.g.
+  /// "A#4@440Hz".
+  ///
+  /// Returns `null` if [string] is not a valid pitch.
+  static Pitch? tryParse(String string) {
+    final match = RegExp(
+      r"^([A-G][b♭#♯]?)(\d+)@(\d+(\.\d+)?)(Hz)?$",
+    ).firstMatch(string);
+    if (match == null || match.groupCount < 3) return null;
+
+    final PitchClass? pitchClass = PitchClass.tryParse(match.group(1)!);
+    final int? octave = int.tryParse(match.group(2)!);
+    final double? frequency = double.tryParse(match.group(3)!);
+    if (pitchClass == null || octave == null || frequency == null) return null;
+
+    return Pitch(pitchClass, octave, frequency);
+  }
+
+  /// The name of this pitch in scientific pitch notation, e.g. "A♯4".
+  String get abbreviation => "${pitchClass.abbreviation}$octave";
+
+  /// The number of semitones between this and [other].
+  int semitonesTo(Pitch other) =>
+      (other.octave * 12 + other.pitchClass.semitonesFromC) -
+      (octave * 12 + pitchClass.semitonesFromC);
+
+  /// Transpose this pitch a number of semitones.
+  Pitch transposed(
+    int semitones, {
+    Temperament temperament = const EqualTemperament(),
+    Accidental? preferredAccidental,
+  }) {
+    return Pitch(
+      pitchClass.transposed(
+        semitones,
+        preferredAccidental: preferredAccidental,
+      ),
+      octave + ((pitchClass.chroma.semitonesFromC + semitones) / 12).floor(),
+      frequency * temperament.frequencyRatio(semitones),
+    );
+  }
+
+  @override
+  String toString() {
+    return "${pitchClass.abbreviation}$octave@${frequency}Hz";
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is Pitch &&
+      pitchClass == other.pitchClass &&
+      octave == other.octave &&
+      frequency == other.frequency;
+
+  @override
+  int get hashCode => Object.hash(pitchClass, octave, frequency);
+}

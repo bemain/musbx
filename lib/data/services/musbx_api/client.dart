@@ -1,0 +1,298 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:musbx/data/services/musbx_api/auth.dart';
+import 'package:musbx/data/services/musbx_api/jobs/analyze.dart';
+import 'package:musbx/data/services/musbx_api/jobs/demix.dart';
+import 'package:musbx/utils/utils.dart';
+import 'package:pub_semver/pub_semver.dart';
+
+/// Something that went wrong while talking to a Musbx API server.
+sealed class MusbxApiClientError implements Exception {}
+
+/// The server answered, but not with a success.
+final class BadStatusCode extends MusbxApiClientError {
+  BadStatusCode(this.code);
+
+  final int? code;
+
+  @override
+  String toString() => code != null
+      ? "The HTTP request returned status code $code, which is not a success"
+      : "The HTTP request returned a status code marking a failure";
+}
+
+/// The server could not be reached at all.
+final class ConnectionFailed extends MusbxApiClientError {
+  @override
+  String toString() => "Connecting to the Musbx API server failed";
+}
+
+/// The server's answer did not have the shape the client expected.
+final class MalformedResponse extends MusbxApiClientError {
+  @override
+  String toString() => "The server sent a response that could not be parsed";
+}
+
+/// The server understood the request and refused it, explaining why.
+final class RequestFailed extends MusbxApiClientError {
+  RequestFailed(this.message);
+
+  final String message;
+
+  @override
+  String toString() =>
+      "The server failed to process the request with message: $message";
+}
+
+/// Logs the body of every failed request. Changes nothing about the outcome.
+class ErrorInterceptor extends Interceptor {
+  @override
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    final String? data = err.response?.data is List<int>
+        ? utf8.decode(err.response?.data as List<int>)
+        : err.response?.data?.toString();
+    debugPrint(
+      "[MUSBX API] Error occured: ${data ?? err.message ?? err.type.name}",
+    );
+
+    return handler.next(err);
+  }
+}
+
+/// The status of a specific server hosting the Musbx API.
+class MusbxApiStatus {
+  const MusbxApiStatus._(this.version, {this.activeJobs = 0});
+
+  /// The version of the API.
+  final Version version;
+
+  /// The number of active jobs currently running on the server.
+  final int activeJobs;
+
+  factory MusbxApiStatus.fromJson(Json json) {
+    return MusbxApiStatus._(
+      Version.parse(json['version'] as String),
+      activeJobs: json['activeJobs'] as int,
+    );
+  }
+
+  @override
+  String toString() {
+    return "ApiStatus($version, activeJobs: $activeJobs)";
+  }
+}
+
+/// Handle to a file that has been uploaded to the API.
+class FileHandle {
+  const FileHandle._(this.handle);
+
+  /// The hash of the file that this points to.
+  final String handle;
+
+  factory FileHandle.fromJson(Json json) {
+    final file = json['file'];
+    return FileHandle._(file?['handle'] as String);
+  }
+}
+
+/// A client for interacting with a server hosting the Musbx API.
+class MusbxApiClient {
+  /// How long to wait for the server to accept a connection.
+  static const Duration connectTimeout = Duration(seconds: 5);
+
+  /// How long [version] waits for an answer. Kept short because it is how
+  /// [MusbxApi.getClient] tells a hung host from a working one; other requests
+  /// have no such limit, since downloads and jobs can take minutes.
+  static const Duration versionTimeout = Duration(seconds: 5);
+
+  final Dio _dio;
+
+  MusbxApiClient(String baseurl)
+    : _dio = Dio(
+        BaseOptions(
+          baseUrl: baseurl,
+          connectTimeout: connectTimeout,
+          receiveDataWhenStatusError: true,
+        ),
+      ) {
+    _dio.interceptors
+      ..add(AuthInterceptor(_dio))
+      ..add(ErrorInterceptor());
+  }
+
+  /// Get the version of the API.
+  Future<Version> version() async {
+    final response = await _dio.get<Json>(
+      "/version",
+      options: Options(receiveTimeout: versionTimeout),
+    );
+    return Version.parse(response.data!['version'] as String);
+  }
+
+  /// Get the status of the API.
+  Future<MusbxApiStatus> status() async {
+    final response = await _dio.get<Json>("/status");
+    return MusbxApiStatus.fromJson(response.data!);
+  }
+
+  /// Upload a [url] to the server.
+  ///
+  /// Returns a handle to the uploaded file, which can be used to perform jobs
+  /// on the file.
+  Future<FileHandle> uploadUrl(Uri url) async {
+    try {
+      final response = await _dio.post<Json>(
+        "/upload/url",
+        queryParameters: {
+          "url": url.toString(),
+        },
+      );
+      return FileHandle.fromJson(response.data!);
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    } on TypeError catch (_) {
+      throw MalformedResponse();
+    }
+  }
+
+  /// Upload a [file] to the server.
+  ///
+  /// Returns a handle to the uploaded file, which can be used to perform jobs
+  /// on the file.
+  Future<FileHandle> uploadFile(
+    File file, {
+    void Function(int count, int total)? onSendProgress,
+  }) async {
+    try {
+      final response = await _dio.post<Json>(
+        "/upload/file",
+        data: FormData.fromMap({
+          'file': await MultipartFile.fromFile(file.path),
+        }),
+        onSendProgress: onSendProgress,
+      );
+      return FileHandle.fromJson(response.data!);
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    } on TypeError catch (_) {
+      throw MalformedResponse();
+    }
+  }
+
+  /// Upload a [url] that can be processed by yt-dlp to the server.
+  ///
+  /// Returns a handle to the uploaded file, which can be used to perform jobs
+  /// on the file.
+  Future<FileHandle> uploadYtdlp(
+    Uri url, {
+    String fileType = "mp3",
+  }) async {
+    try {
+      final response = await _dio.post<Json>(
+        "/upload/yt-dlp",
+        queryParameters: {
+          "url": url.toString(),
+          "fileType": fileType,
+        },
+      );
+      return FileHandle.fromJson(response.data!);
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    } on TypeError catch (_) {
+      throw MalformedResponse();
+    }
+  }
+
+  /// Download the file behind [file] from the server into [destination].
+  Future<File> download(
+    FileHandle file,
+    File destination, {
+    void Function(int received, int total)? onProgress,
+  }) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        "/download",
+        queryParameters: {
+          "handle": file.handle,
+        },
+        onReceiveProgress: onProgress,
+        options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: false,
+        ),
+      );
+
+      await destination.create(recursive: true);
+      await destination.writeAsBytes(response.data!);
+      return destination;
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    }
+  }
+
+  /// Start a demixing job on an uploaded [file].
+  Future<DemixJob> demix(
+    FileHandle file, {
+    DemucsModel model = DemucsModel.htdemucs_6s,
+    DemixFileType fileType = DemixFileType.mp3,
+  }) async {
+    try {
+      final response = await _dio.post<Json>(
+        "/demix",
+        queryParameters: {
+          "handle": file.handle,
+          "model": model.name,
+          "fileType": fileType.name,
+        },
+      );
+      return DemixJob(_dio, response.data!['jobId'] as String);
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    } on TypeError catch (_) {
+      throw MalformedResponse();
+    }
+  }
+
+  /// Start an analyzing job on an uploaded [file].
+  Future<AnalyzeJob> analyze(
+    FileHandle file,
+  ) async {
+    try {
+      final response = await _dio.post<Json>(
+        "/analyze",
+        queryParameters: {
+          "handle": file.handle,
+        },
+      );
+      return AnalyzeJob(_dio, response.data!['jobId'] as String);
+    } on DioException catch (e) {
+      return throw switch (e.type) {
+        DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),
+        _ => ConnectionFailed(),
+      };
+    } on TypeError catch (_) {
+      throw MalformedResponse();
+    }
+  }
+}

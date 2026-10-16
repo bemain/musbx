@@ -4,10 +4,14 @@ import 'dart:ui';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:musbx/model/pitch.dart';
-import 'package:musbx/tuner/tuner.dart';
+import 'package:musbx/data/repositories/settings_repository.dart';
+import 'package:musbx/data/repositories/tuner/tuner_repository.dart';
+import 'package:musbx/domain/models/music/pitch.dart';
+import 'package:musbx/tuner/tuner_reading.dart';
 import 'package:musbx/tuner/waveform_graph.dart';
+import 'package:provider/provider.dart';
 
+/// How a [PitchGraph] is drawn.
 class PitchGraphStyle {
   PitchGraphStyle({
     this.continuous = false,
@@ -48,12 +52,12 @@ class PitchGraphStyle {
   final int renderTextThreshold;
 }
 
+/// Graph showing how the tuning of [data] has changed over time.
 class PitchGraph extends StatelessWidget {
-  /// Graph showing how the tuning of [frequencyHistory] has changed over time.
   const PitchGraph({super.key, required this.data});
 
   /// The frequencies to display.
-  final List<RecordingData> data;
+  final List<TunerReading> data;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +78,7 @@ class PitchGraph extends StatelessWidget {
                 ),
                 textPlacement: TextPlacement.top,
               ),
-              dataLength: Tuner.bufferLength,
+              dataLength: TunerRepository.bufferLength,
             ),
             size: const Size(double.infinity, 150),
           ),
@@ -86,13 +90,25 @@ class PitchGraph extends StatelessWidget {
                   context,
                 ).colorScheme.onSurface.withAlpha(0x1f),
               ),
-              chunks: Tuner.bufferLength * 2,
+              chunks: TunerRepository.bufferLength * 2,
               audioScale: 48.0,
             ),
             size: const Size(double.infinity, 150),
           ),
         ],
       ),
+    );
+  }
+
+  /// Get the pitch closest to the given [frequency].
+  Pitch? getClosestPitch(BuildContext context, double? frequency) {
+    if (frequency == null) return null;
+    final settings = context.read<SettingsRepository>().tuner;
+    return Pitch.closest(
+      frequency,
+      tuning: settings.tuning,
+      temperament: settings.temperament,
+      preferredAccidental: settings.preferredAccidental,
     );
   }
 }
@@ -109,11 +125,11 @@ enum TextPlacement {
   relative,
 }
 
+/// Paints a line showing how the tuning of [data] has changed over time.
+///
+/// Displays text showing the names of the closest [Pitch]es.
+/// Highlights the section where the tone is in tune in green.
 class PitchGraphPainter extends CustomPainter {
-  /// Paints a line showing the tuning of the frequencies in [frequencyHistory].
-  ///
-  /// Displays text showing the names of the closest [Pitch]es.
-  /// Highlights the section where the tone is in tune in green.
   PitchGraphPainter({
     required this.data,
     required this.style,
@@ -121,10 +137,13 @@ class PitchGraphPainter extends CustomPainter {
   });
 
   /// The data to render.
-  final List<RecordingData> data;
+  final List<TunerReading> data;
 
+  /// How to draw the graph.
   final PitchGraphStyle style;
 
+  /// How many entries the graph is scaled to fit. Defaults to however many there
+  /// currently are, which makes the line stretch as data comes in.
   final int? dataLength;
 
   late final Paint linePaint = Paint()
@@ -148,39 +167,41 @@ class PitchGraphPainter extends CustomPainter {
     canvas.drawRRect(
       RRect.fromLTRBR(
         0,
-        size.height * (0.5 - Tuner.inTuneThreshold / 100.0),
+        size.height * (0.5 - TunerRepository.inTuneThreshold / 100.0),
         size.width,
-        size.height * (0.5 + Tuner.inTuneThreshold / 100.0),
+        size.height * (0.5 + TunerRepository.inTuneThreshold / 100.0),
         const Radius.circular(5),
       ),
       inTunePaint,
     );
 
-    final List<double?> frequencies = data
+    final List<TunerReading> readings = data
         .sublist(max(0, data.length - size.width ~/ dataWidth - 3))
-        .map((e) => e.frequency)
         .toList()
         .reversed
         .toList();
 
     int i = 0;
-    for (final pitches in splitFrequenciesByNote(frequencies)) {
-      if (pitches == null) {
+    for (final byNote in splitFrequenciesByNote(readings)) {
+      if (byNote == null) {
         i++;
         continue;
       }
 
-      _drawChunk(pitches, canvas: canvas, size: size, startIndex: i);
-      i += pitches.length;
+      _drawChunk(byNote, canvas: canvas, size: size, startIndex: i);
+      i += byNote.length;
     }
   }
 
-  /// Split the [frequencies] into smaller chunks, where all frequencies in one chunk are closest to the same [Pitch].
-  List<List<Pitch>?> splitFrequenciesByNote(List<double?> frequencies) {
-    final List<List<Pitch>?> frequenciesByNote = [];
-    List<Pitch> chunk = [];
-    for (double? frequency in frequencies) {
-      if (frequency == null) {
+  /// Split the [pitches] into smaller chunks, where all frequencies in one chunk are closest to the same [Pitch].
+  List<List<TunerReading>?> splitFrequenciesByNote(
+    List<TunerReading> pitches,
+  ) {
+    final List<List<TunerReading>?> frequenciesByNote = [];
+    List<TunerReading> chunk = [];
+    for (TunerReading reading in pitches) {
+      final pitch = reading.pitch;
+      if (pitch == null) {
         if (chunk.isNotEmpty) {
           frequenciesByNote.add(chunk);
           chunk = [];
@@ -189,12 +210,12 @@ class PitchGraphPainter extends CustomPainter {
         continue;
       }
 
-      final Pitch pitch = Tuner.instance.getClosestPitch(frequency);
-      if (chunk.isEmpty || pitch.abbreviation == chunk.first.abbreviation) {
-        chunk.add(pitch);
+      if (chunk.isEmpty ||
+          pitch.abbreviation == chunk.first.pitch?.abbreviation) {
+        chunk.add(reading);
       } else {
         frequenciesByNote.add(chunk);
-        chunk = [pitch];
+        chunk = [reading];
       }
     }
     frequenciesByNote.add(chunk); // Add remaining
@@ -202,16 +223,16 @@ class PitchGraphPainter extends CustomPainter {
   }
 
   void _drawChunk(
-    List<Pitch> chunk, {
+    List<TunerReading> chunk, {
     int startIndex = 0,
     required Canvas canvas,
     required Size size,
   }) {
     final List<Offset> offsets = [
-      for (final (int i, Pitch pitch) in chunk.indexed)
+      for (final (int i, TunerReading reading) in chunk.indexed)
         calculatePointOffset(
           startIndex + i,
-          Tuner.instance.getPitchOffset(pitch),
+          reading.offset ?? 0.0,
           size,
         ),
     ];
@@ -228,12 +249,14 @@ class PitchGraphPainter extends CustomPainter {
       drawText(
         canvas,
         size,
-        chunk[offsets.length - 1].frequency,
+        chunk[offsets.length - 1],
         offsets.last,
       );
     }
   }
 
+  /// Where on the canvas the reading at [index] sits, given how many cents off it
+  /// is.
   Offset calculatePointOffset(int index, double pitchOffset, Size size) {
     double dataWidth = size.width / (dataLength ?? data.length);
     return Offset(
@@ -246,13 +269,13 @@ class PitchGraphPainter extends CustomPainter {
   void drawText(
     Canvas canvas,
     Size canvasSize,
-    double frequency,
-    Offset frequencyPosition,
+    TunerReading reading,
+    Offset position,
   ) {
-    final Pitch pitch = Tuner.instance.getClosestPitch(frequency);
+    if (reading.pitch == null) return;
 
     TextSpan span = TextSpan(
-      text: pitch.abbreviation,
+      text: reading.pitch!.abbreviation,
       style: style.textStyle ?? TextStyle(color: style.lineColor),
     );
     TextPainter textPainter = TextPainter(
@@ -265,8 +288,8 @@ class PitchGraphPainter extends CustomPainter {
       calculateTextOffset(
         canvasSize,
         textPainter,
-        frequency - pitch.frequency,
-        frequencyPosition,
+        reading.offset!,
+        position,
       ),
     );
   }
