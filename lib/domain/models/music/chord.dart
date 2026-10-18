@@ -159,10 +159,10 @@ class Chord {
 
   @override
   String toString() {
-    return "$root$quality"
+    return "${root.abbreviation}$quality"
         "${extension ?? ""}"
         "${alterations ?? ""}"
-        "${bassNote != root ? "/$bassNote" : ""}";
+        "${bassNote != root ? "/${bassNote.abbreviation}" : ""}";
   }
 
   @override

@@ -192,7 +192,7 @@ class PersistentValue<T> extends ValueNotifier<T> {
   @override
   T get value =>
       ((T == List<String>)
-          ? _preferences.getStringList(_key)?.cast<String>() as T?
+          ? _preferences.getStringList(_key)?.toList() as T?
           : _preferences.get(_key) as T?) ??
       _initialValue;
 
@@ -218,7 +218,10 @@ class PersistentValue<T> extends ValueNotifier<T> {
     if (newValue is String) _preferences.setString(_key, newValue);
     if (newValue is int) _preferences.setInt(_key, newValue);
     if (newValue is double) _preferences.setDouble(_key, newValue);
-    if (newValue is List<String>) _preferences.setStringList(_key, newValue);
+    // Copied, because the cache keeps whatever list it is handed.
+    if (newValue is List<String>) {
+      _preferences.setStringList(_key, newValue.toList());
+    }
 
     notifyListeners();
   }

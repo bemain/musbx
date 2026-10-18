@@ -44,6 +44,6 @@ void main() {
     test("scaleStep rounds up to the next octave when slightly flat", () {
       expect(temperament.scaleStep(1.99), 12);
       expect(temperament.scaleStep(0.995), 0);
-    }, skip: "Bug: scaleStep never considers the next octave's root");
+    });
   });
 }

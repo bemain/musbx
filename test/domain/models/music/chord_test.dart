@@ -72,23 +72,19 @@ void main() {
     expect(ChordExtension.tryParse("5"), isNull);
   });
 
-  test(
-    "toString writes the normalized chord symbol",
-    () {
-      final cases = {
-        "C": "C",
-        "F#m7": "F♯m7",
-        "Bbmaj7": "B♭Δ",
-        "Cmaj9": "CΔ9",
-        "Cm7b5": "Cm7♭5",
-        "C/G": "C/G",
-      };
-      cases.forEach((input, expected) {
-        expect(Chord.parse(input).toString(), expected, reason: input);
-      });
-    },
-    skip: "Bug: Chord.toString interpolates PitchClass, which has no toString",
-  );
+  test("toString writes the normalized chord symbol", () {
+    final cases = {
+      "C": "C",
+      "F#m7": "F♯m7",
+      "Bbmaj7": "B♭Δ",
+      "Cmaj9": "CΔ9",
+      "Cm7b5": "Cm7♭5",
+      "C/G": "C/G",
+    };
+    cases.forEach((input, expected) {
+      expect(Chord.parse(input).toString(), expected, reason: input);
+    });
+  });
 
   test("transposed moves the root and bass together", () {
     expect(Chord.parse("Am7").transposed(2), Chord.parse("Bm7"));

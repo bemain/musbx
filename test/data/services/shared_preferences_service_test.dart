@@ -34,7 +34,7 @@ void main() {
       value.value = list;
       list.add("b");
       expect(value.value, ["a"]);
-    }, skip: "Bug: SharedPreferencesWithCache keeps a reference to the list");
+    });
 
     test("rejects types that cannot be stored", () {
       expect(

@@ -75,7 +75,7 @@ void main() {
         playback.readPreferences().position,
         const Duration(seconds: 20),
       );
-    }, skip: "Bug: load seeks but never updates positionNotifier");
+    });
 
     test("clamps preferences into the allowed ranges", () async {
       await load(
