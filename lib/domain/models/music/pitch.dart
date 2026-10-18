@@ -65,7 +65,7 @@ class Pitch {
     return pitch;
   }
 
-  /// Parse [string] as a pitch, in the format [toString] produces, e.g.
+  /// Parse [string] as a pitch, in the format [serialize] produces, e.g.
   /// "A#4@440Hz".
   ///
   /// Returns `null` if [string] is not a valid pitch.
@@ -85,6 +85,12 @@ class Pitch {
 
   /// The name of this pitch in scientific pitch notation, e.g. "A♯4".
   String get abbreviation => "${pitchClass.abbreviation}$octave";
+
+  /// This pitch in the format [parse] reads, e.g. "A♯4@440.0Hz".
+  ///
+  /// Pitches are persisted in this format, so changing it makes stored ones
+  /// unreadable.
+  String serialize() => "${pitchClass.abbreviation}$octave@${frequency}Hz";
 
   /// The number of semitones between this and [other].
   int semitonesTo(Pitch other) =>
@@ -107,10 +113,10 @@ class Pitch {
     );
   }
 
+  /// The name and frequency, e.g. "A4 (440.0 Hz)", which tells a pitch apart
+  /// from a [PitchClass].
   @override
-  String toString() {
-    return "${pitchClass.abbreviation}$octave@${frequency}Hz";
-  }
+  String toString() => "$abbreviation ($frequency Hz)";
 
   @override
   bool operator ==(Object other) =>

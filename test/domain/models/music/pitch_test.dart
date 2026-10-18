@@ -77,6 +77,10 @@ void main() {
     });
   });
 
+  test("toString shows the name and frequency", () {
+    expect(const Pitch.a440().toString(), "A4 (440.0 Hz)");
+  });
+
   test("semitonesTo counts across octaves", () {
     final a4 = const Pitch.a440();
     final c5 = Pitch.parse("C5@523.25Hz");
@@ -85,13 +89,18 @@ void main() {
   });
 
   group("parse", () {
-    test("round-trips toString", () {
+    test("round-trips serialize", () {
       for (final pitch in [
         const Pitch.a440(),
         const Pitch(PitchClass.bFlat(), 3, 233.08),
       ]) {
-        expect(Pitch.parse(pitch.toString()), pitch);
+        expect(Pitch.parse(pitch.serialize()), pitch);
       }
+    });
+
+    test("reads the format stored by earlier versions", () {
+      expect(const Pitch.a440().serialize(), "A4@440.0Hz");
+      expect(Pitch.parse("A♯4@466.16Hz").frequency, 466.16);
     });
 
     test("accepts ASCII accidentals and a missing unit", () {

@@ -63,7 +63,7 @@ class TunerSettings extends ChangeNotifier {
         "tuner/tuning",
         initialValue: const Pitch(PitchClass.a(), 4, 440),
         from: Pitch.parse,
-        to: (pitch) => pitch.toString(),
+        to: (pitch) => pitch.serialize(),
       )..addListener(notifyListeners);
 
   /// The tuning system readings are matched against. Not persisted.

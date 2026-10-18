@@ -87,7 +87,7 @@ class Key {
   String get abbreviation => "${tonic.abbreviation}${type.abbreviation}";
 
   @override
-  String toString() => "Key(${tonic.abbreviation}, ${type.abbreviation})";
+  String toString() => abbreviation;
 
   @override
   bool operator ==(Object other) =>

@@ -48,6 +48,7 @@ void main() {
 
   test("abbreviation", () {
     expect(const Key.minor(PitchClass.fSharp()).abbreviation, "F♯m");
+    expect(const Key.minor(PitchClass.fSharp()).toString(), "F♯m");
     expect(const Key.major(PitchClass.bFlat()).abbreviation, "B♭");
   });
 }

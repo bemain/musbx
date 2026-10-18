@@ -192,6 +192,9 @@ class PitchClass {
       );
 
   @override
+  String toString() => abbreviation;
+
+  @override
   bool operator ==(Object other) =>
       other is PitchClass &&
       naturalClass == other.naturalClass &&

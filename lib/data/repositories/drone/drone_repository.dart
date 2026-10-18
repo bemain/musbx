@@ -45,7 +45,7 @@ class DroneRepository extends ChangeNotifier {
         "drone/tuning",
         initialValue: const Pitch(PitchClass.a(), 4, 440),
         from: Pitch.parse,
-        to: (pitch) => pitch.toString(),
+        to: (pitch) => pitch.serialize(),
       )..addListener(_onPitchesChanged);
 
   /// The shape of the generated tones, which decides their timbre.
