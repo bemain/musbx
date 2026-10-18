@@ -20,16 +20,13 @@ class FileCacheService {
   final Directory _applicationDocuments;
 
   /// Create the service and resolve the directories it caches files in.
-  static Future<FileCacheService> create() async {
-    final temp = await getTemporaryDirectory();
-    final appDocs = await getApplicationDocumentsDirectory();
-    debugPrint(
-      "[DIRECTORIES] Initialized with temporary directory at ${temp.path}, application documents at ${appDocs.path}",
-    );
-
+  static Future<FileCacheService> create({
+    Directory? scratch,
+    Directory? persistent,
+  }) async {
     return FileCacheService._(
-      temp,
-      appDocs,
+      scratch ?? await getTemporaryDirectory(),
+      persistent ?? await getApplicationDocumentsDirectory(),
     );
   }
 
