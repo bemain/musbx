@@ -22,12 +22,16 @@ class PurchaseService extends OptionalService {
     if (__inAppPurchase == null) return;
     final purchases = __inAppPurchase.purchaseStream;
 
-    _subscription = _processPurchases(purchases).listen(
-      _statusController.add,
-      onError: (Object error) {
-        debugPrint("[PURCHASES] Purchase stream error: $error");
-      },
-    );
+    // Expanded per update rather than looped over in one generator, which
+    // could only be cancelled once the store sent its next update.
+    _subscription = purchases
+        .asyncExpand(_processPurchases)
+        .listen(
+          _statusController.add,
+          onError: (Object error) {
+            debugPrint("[PURCHASES] Purchase stream error: $error");
+          },
+        );
   }
 
   /// The store connection, or `null` when this service is [disabled].
@@ -147,7 +151,7 @@ class PurchaseService extends OptionalService {
     return response.productDetails.first;
   }
 
-  /// Translate the store's purchase updates into entitlement statuses.
+  /// Translate one update from the store into entitlement statuses.
   ///
   /// Every purchase is completed, including ones for products this app does not
   /// recognize. A transaction that is never completed stays in the store's
@@ -155,56 +159,54 @@ class PurchaseService extends OptionalService {
   /// buy the same product.
   Stream<({Entitlement entitlement, EntitlementStatus status})>
   _processPurchases(
-    Stream<List<PurchaseDetails>> purchaseStream,
+    List<PurchaseDetails> purchases,
   ) async* {
-    await for (final purchases in purchaseStream) {
-      for (final purchase in purchases) {
-        final entitlement = _entitlementOf(purchase.productID);
-        if (entitlement != null) {
-          switch (purchase.status) {
-            case PurchaseStatus.purchased || PurchaseStatus.restored:
-              if (!await _verifyPurchase(purchase)) break;
+    for (final purchase in purchases) {
+      final entitlement = _entitlementOf(purchase.productID);
+      if (entitlement != null) {
+        switch (purchase.status) {
+          case PurchaseStatus.purchased || PurchaseStatus.restored:
+            if (!await _verifyPurchase(purchase)) break;
 
-              yield (
-                entitlement: entitlement,
-                status: EntitlementStatus.purchased,
-              );
-
-            case PurchaseStatus.pending:
-              // On iOS, the pending status is emitted immediately when the native payment dialog opens.
-              // On Android, it is emitted once the user has paid but the payment hasn't been verified yet.
-              if (Platform.isAndroid) {
-                yield (
-                  entitlement: entitlement,
-                  status: EntitlementStatus.pending,
-                );
-              }
-
-            case PurchaseStatus.canceled:
-              yield (
-                entitlement: entitlement,
-                status: EntitlementStatus.notPurchased,
-              );
-
-            case PurchaseStatus.error:
-              debugPrint(
-                "[PURCHASES] Purchasing $entitlement failed: "
-                "${purchase.error?.message ?? "no message given"}",
-              );
-              yield (
-                entitlement: entitlement,
-                status: EntitlementStatus.notPurchased,
-              );
-          }
-        }
-        if (purchase.pendingCompletePurchase) {
-          try {
-            await _inAppPurchase.completePurchase(purchase);
-          } catch (error) {
-            debugPrint(
-              "[PURCHASES] Unable to complete ${purchase.productID}: $error",
+            yield (
+              entitlement: entitlement,
+              status: EntitlementStatus.purchased,
             );
-          }
+
+          case PurchaseStatus.pending:
+            // On iOS, the pending status is emitted immediately when the native payment dialog opens.
+            // On Android, it is emitted once the user has paid but the payment hasn't been verified yet.
+            if (Platform.isAndroid) {
+              yield (
+                entitlement: entitlement,
+                status: EntitlementStatus.pending,
+              );
+            }
+
+          case PurchaseStatus.canceled:
+            yield (
+              entitlement: entitlement,
+              status: EntitlementStatus.notPurchased,
+            );
+
+          case PurchaseStatus.error:
+            debugPrint(
+              "[PURCHASES] Purchasing $entitlement failed: "
+              "${purchase.error?.message ?? "no message given"}",
+            );
+            yield (
+              entitlement: entitlement,
+              status: EntitlementStatus.notPurchased,
+            );
+        }
+      }
+      if (purchase.pendingCompletePurchase) {
+        try {
+          await _inAppPurchase.completePurchase(purchase);
+        } catch (error) {
+          debugPrint(
+            "[PURCHASES] Unable to complete ${purchase.productID}: $error",
+          );
         }
       }
     }

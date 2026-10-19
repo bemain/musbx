@@ -77,7 +77,7 @@ class AnalysisRepositoryRemote extends AnalysisRepository {
         ),
       );
     } catch (e, s) {
-      debugPrint("[ANALYZER] Chord analysis failed: $e'");
+      debugPrint("[ANALYZER] Chord analysis failed: $e");
       return Result.failed(e, s);
     }
   }

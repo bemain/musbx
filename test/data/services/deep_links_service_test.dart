@@ -64,6 +64,13 @@ void main() {
     });
   });
 
+  test("dispose completes when nothing ever listened", () {
+    final appLinks = MockAppLinks();
+    when(() => appLinks.uriLinkStream).thenAnswer((_) => const Stream.empty());
+
+    expect(DeepLinksService.createWith(appLinks).dispose(), completes);
+  });
+
   test("disabled emits nothing", () async {
     final disabled = DeepLinksService.disabled();
     expect(disabled.isEnabled, isFalse);

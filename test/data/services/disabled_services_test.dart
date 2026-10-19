@@ -18,14 +18,10 @@ void main() {
       expect(ads.showInterstitial(), throwsA(isA<ServiceDisabled>()));
     });
 
-    test(
-      "disabled refuses banners",
-      () {
-        final ads = AdService.disabled();
-        expect(ads.loadBanner(width: 320), throwsA(isA<ServiceDisabled>()));
-      },
-      skip: "loadBanner asks the ad SDK for a size before checking isEnabled",
-    );
+    test("disabled refuses banners", () {
+      final ads = AdService.disabled();
+      expect(ads.loadBanner(width: 320), throwsA(isA<ServiceDisabled>()));
+    });
   });
 
   group("AnalyticsService", () {

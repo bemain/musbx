@@ -145,6 +145,7 @@ class AdService extends OptionalService {
   /// The returned ad holds native resources for as long as it is displayed, so
   /// the caller must dispose it once it stops being shown.
   Future<BannerAd> loadBanner({required int width}) async {
+    final adUnitId = _adUnits.banner;
     final AdSize? size;
     size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
 
@@ -153,7 +154,7 @@ class AdService extends OptionalService {
     final completer = Completer<BannerAd>();
     final ad = BannerAd(
       size: size,
-      adUnitId: _adUnits.banner,
+      adUnitId: adUnitId,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) => completer.complete(ad as BannerAd),

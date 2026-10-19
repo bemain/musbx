@@ -125,6 +125,8 @@ class DeepLinksService extends OptionalService {
   /// meant for tests and for tearing the app down, not for a screen going away.
   Future<void> dispose() async {
     await _subscription?.cancel();
-    await _songController.close();
+    // Not awaited: closing only completes once a listener has seen it, and
+    // there may never have been one.
+    unawaited(_songController.close());
   }
 }

@@ -46,6 +46,7 @@ void main() {
   setUp(() async {
     store = MockInAppPurchase();
     updates = StreamController();
+    addTearDown(updates.close);
     when(store.isAvailable).thenAnswer((_) async => true);
     when(() => store.purchaseStream).thenAnswer((_) => updates.stream);
     when(store.restorePurchases).thenAnswer((_) async {});
@@ -62,8 +63,6 @@ void main() {
 
     purchases = await PurchaseService.createWith(store);
     addTearDown(purchases.dispose);
-    // Disposing waits for the store's stream to end.
-    addTearDown(updates.close);
   });
 
   test("an unreachable store gives a disabled service", () async {
@@ -162,6 +161,10 @@ void main() {
             ).captured.single
             as PurchaseParam;
     expect(param.productDetails.id, "premium");
+  });
+
+  test("dispose does not wait for the store's next update", () {
+    expect(purchases.dispose(), completes);
   });
 
   test("restore asks the store", () async {
