@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 
 /// Something the system wants playback to do, because of another app or a
 /// change in audio hardware.
@@ -35,9 +36,13 @@ class AudioSessionService {
 
   final AudioSession _session;
 
-  static Future<AudioSessionService> create({AudioSession? session}) async {
-    final s = session ?? await AudioSession.instance;
-    await s.configure(
+  static Future<AudioSessionService> create() async =>
+      createWith(await AudioSession.instance);
+
+  /// Create the service over [session], configuring it.
+  @visibleForTesting
+  static Future<AudioSessionService> createWith(AudioSession session) async {
+    await session.configure(
       AudioSessionConfiguration(
         avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
         avAudioSessionCategoryOptions:
@@ -57,7 +62,7 @@ class AudioSessionService {
       ),
     );
 
-    return AudioSessionService(s);
+    return AudioSessionService(session);
   }
 
   /// Claim or release audio focus. Claim it before playing, release it when

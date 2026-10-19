@@ -30,7 +30,7 @@ class MediaNotificationService extends OptionalService {
     );
   }
 
-  final _Handler? _handler;
+  final MediaNotificationHandler? _handler;
 
   @override
   bool get isEnabled => _handler != null;
@@ -38,8 +38,8 @@ class MediaNotificationService extends OptionalService {
   /// Create the service, registering the notification with the platform.
   static Future<MediaNotificationService> create() async {
     // Initialize audio handler
-    final h = await AudioService.init<_Handler>(
-      builder: () => _Handler(),
+    final h = await AudioService.init<MediaNotificationHandler>(
+      builder: () => MediaNotificationHandler(),
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'se.agardh.musbx.channel.songs',
         androidNotificationChannelName: 'Music playback',
@@ -91,7 +91,8 @@ class MediaNotificationService extends OptionalService {
 
 /// Translates between `audio_service` and [MediaCommand]s and
 /// [MediaNotificationState]s.
-class _Handler extends BaseAudioHandler with SeekHandler {
+@visibleForTesting
+class MediaNotificationHandler extends BaseAudioHandler with SeekHandler {
   final _commands = StreamController<MediaCommand>.broadcast();
   Stream<MediaCommand> get commands => _commands.stream;
 

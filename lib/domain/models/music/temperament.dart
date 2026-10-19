@@ -65,12 +65,16 @@ class PythagoreanTuning extends Temperament {
     final int octave = (log(frequencyRatio) / log(2)).floor();
     final double targetRatio = frequencyRatio / pow(2, octave);
 
-    double closestRatio = _ratios.first;
-    for (final double ratio in _ratios) {
-      if ((targetRatio - ratio).abs() < (targetRatio - closestRatio)) {
-        closestRatio = ratio;
+    // The next octave's root is a candidate too, so that a slightly flat
+    // octave is not named as the seventh below it.
+    final List<double> candidates = [..._ratios, 2];
+    int closestStep = 0;
+    for (int step = 1; step < candidates.length; step++) {
+      if ((targetRatio - candidates[step]).abs() <
+          (targetRatio - candidates[closestStep]).abs()) {
+        closestStep = step;
       }
     }
-    return octave * 12 + _ratios.indexOf(closestRatio);
+    return octave * 12 + closestStep;
   }
 }

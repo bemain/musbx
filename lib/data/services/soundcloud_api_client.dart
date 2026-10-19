@@ -59,23 +59,23 @@ class SoundCloudApiClient extends OptionalService {
   @override
   bool get isEnabled => __clientId != null;
 
-  /// Create the client, obtaining a [_clientId] unless one is supplied.
+  /// Create the client, obtaining a [_clientId].
   ///
   /// Performs network requests by way of [generateClientId], and throws if no
   /// client id could be found — which on a device that is offline at launch is
   /// the ordinary case, so callers are expected to fall back to [disabled]
   /// rather than propagate it.
-  ///
-  /// Supplying a [clientId] skips the scraping entirely, so a test needs no
-  /// network.
-  static Future<SoundCloudApiClient> create({
-    String baseUrl = "https://api-v2.soundcloud.com",
-    String? clientId,
-  }) async {
-    final c = clientId ?? await generateClientId();
+  static Future<SoundCloudApiClient> create() async =>
+      createWith(await generateClientId());
 
-    return SoundCloudApiClient._(baseUrl, c);
-  }
+  /// Create the client with [clientId], against the API at [baseUrl].
+  ///
+  /// Skips the scraping entirely, so a test needs no network.
+  @visibleForTesting
+  static SoundCloudApiClient createWith(
+    String clientId, {
+    String baseUrl = "https://api-v2.soundcloud.com",
+  }) => SoundCloudApiClient._(baseUrl, clientId);
 
   /// A service with no credentials behind it, for when none could be scraped.
   static SoundCloudApiClient disabled() => SoundCloudApiClient._("", null);

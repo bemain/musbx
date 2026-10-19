@@ -162,9 +162,7 @@ class PlaybackRepository extends ChangeNotifier {
 
   /// Jump to [position], clamped into [loopSection].
   void seek(Duration position) {
-    position = _clamp(position);
-    _updateState(position: position);
-    positionNotifier.value = position;
+    _updateState(position: _clamp(position));
   }
 
   /// How fast the song is played, as a fraction of its original tempo.
@@ -303,6 +301,7 @@ class PlaybackRepository extends ChangeNotifier {
       equalizerGain: equalizerGain,
       parts: parts,
     );
+    if (position != null) positionNotifier.value = position;
 
     if (_sound case final sound?) {
       if (speed != null) _audioEngine.setSpeed(sound, speed);

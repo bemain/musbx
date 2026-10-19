@@ -21,9 +21,14 @@ import 'package:musbx/utils/utils.dart';
 class AnalysisRepositoryRemote extends AnalysisRepository {
   AnalysisRepositoryRemote({
     required SongCache cache,
-  }) : _cache = cache;
+    @visibleForTesting
+    Future<MusbxApiClient> Function() getClient = MusbxApi.getClient,
+  }) : _cache = cache,
+       _getClient = getClient;
 
   final SongCache _cache;
+
+  final Future<MusbxApiClient> Function() _getClient;
 
   @override
   Future<Result<Map<Duration, Chord?>>> chords(Song song) async {
@@ -42,7 +47,7 @@ class AnalysisRepositoryRemote extends AnalysisRepository {
       }
 
       if (data == null) {
-        final client = await MusbxApi.getClient();
+        final client = await _getClient();
         // Perform chords identification
         final FileHandle file;
         switch (song.audio) {
@@ -72,7 +77,7 @@ class AnalysisRepositoryRemote extends AnalysisRepository {
         ),
       );
     } catch (e, s) {
-      debugPrint("[ANALYZER] Chord analysis failed: $e'");
+      debugPrint("[ANALYZER] Chord analysis failed: $e");
       return Result.failed(e, s);
     }
   }

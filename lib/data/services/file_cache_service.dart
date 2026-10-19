@@ -20,18 +20,17 @@ class FileCacheService {
   final Directory _applicationDocuments;
 
   /// Create the service and resolve the directories it caches files in.
-  static Future<FileCacheService> create() async {
-    final temp = await getTemporaryDirectory();
-    final appDocs = await getApplicationDocumentsDirectory();
-    debugPrint(
-      "[DIRECTORIES] Initialized with temporary directory at ${temp.path}, application documents at ${appDocs.path}",
-    );
+  static Future<FileCacheService> create() async => createWith(
+    scratch: await getTemporaryDirectory(),
+    persistent: await getApplicationDocumentsDirectory(),
+  );
 
-    return FileCacheService._(
-      temp,
-      appDocs,
-    );
-  }
+  /// Create the service over the given directories.
+  @visibleForTesting
+  static FileCacheService createWith({
+    required Directory scratch,
+    required Directory persistent,
+  }) => FileCacheService._(scratch, persistent);
 
   /// The root directory for regenerable data, such as downloaded audio and
   /// analysis results. The operating system may delete this at any time.

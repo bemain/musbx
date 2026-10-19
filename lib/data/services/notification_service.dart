@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:musbx/data/services/service.dart';
 import 'package:musbx/domain/models/notification.dart';
@@ -36,14 +37,18 @@ class NotificationService extends OptionalService {
   /// Returns a [disabled] service on platforms without notifications. Throws if
   /// the plugin cannot be initialized; since notifications are optional,
   /// callers should fall back to [disabled] rather than propagate that.
-  static Future<NotificationService> create({
-    FlutterLocalNotificationsPlugin? notifications,
-  }) async {
+  static Future<NotificationService> create() async {
     if (!Platform.isAndroid && !Platform.isIOS) return disabled();
 
-    final n = notifications ?? FlutterLocalNotificationsPlugin();
+    return createWith(FlutterLocalNotificationsPlugin());
+  }
 
-    await n.initialize(
+  /// Create the service over [notifications], whatever the platform.
+  @visibleForTesting
+  static Future<NotificationService> createWith(
+    FlutterLocalNotificationsPlugin notifications,
+  ) async {
+    await notifications.initialize(
       settings: InitializationSettings(
         android: const AndroidInitializationSettings("ic_notification"),
         // Permission is requested on the first press of play, not at launch.
@@ -61,10 +66,10 @@ class NotificationService extends OptionalService {
       onDidReceiveBackgroundNotificationResponse: _onResponse,
     );
 
-    await _registerAndroidChannels(n);
+    await _registerAndroidChannels(notifications);
     _listenForResponses();
 
-    return NotificationService._(n);
+    return NotificationService._(notifications);
   }
 
   static const _metronomeGroup = AndroidNotificationChannelGroup(

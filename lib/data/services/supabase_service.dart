@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
 import 'package:musbx/data/models/feedback/feedback_entry.dart';
 import 'package:musbx/data/services/service.dart';
@@ -35,25 +36,26 @@ class SupabaseService extends OptionalService {
   /// Performs network requests, and throws if the backend cannot be reached —
   /// which on a device that is offline at launch is the ordinary case, so
   /// callers are expected to fall back to [disabled] rather than propagate it.
+  static Future<SupabaseService> create() async {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      publishableKey: supabasePublishableKey,
+    );
+    return createWith(Supabase.instance.client);
+  }
+
+  /// Create the service over [client], signing in anonymously if it has no
+  /// session.
   ///
-  /// Supplying a [client] skips initializing the plugin along with it, so a
-  /// test needs neither the real configuration nor a network.
-  static Future<SupabaseService> create({
-    SupabaseClient? client,
-  }) async {
-    if (client == null) {
-      await Supabase.initialize(
-        url: supabaseUrl,
-        publishableKey: supabasePublishableKey,
-      );
-    }
-    final c = client ?? Supabase.instance.client;
-
-    if (c.auth.currentSession == null) {
-      await c.auth.signInAnonymously();
+  /// Skips initializing the plugin, so a test needs neither the real
+  /// configuration nor a network.
+  @visibleForTesting
+  static Future<SupabaseService> createWith(SupabaseClient client) async {
+    if (client.auth.currentSession == null) {
+      await client.auth.signInAnonymously();
     }
 
-    return SupabaseService._(c);
+    return SupabaseService._(client);
   }
 
   /// A service with no backend behind it, for when it could not be reached.
