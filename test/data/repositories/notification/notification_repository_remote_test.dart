@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/repositories/notification/notification_repository_remote.dart';
 import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
@@ -40,10 +39,7 @@ void main() {
     ).thenAnswer((_) async => status);
     final repository = NotificationRepositoryRemote(
       sharedPreferences: preferences,
-      notifications: ServiceLoader(
-        create: () async => service,
-        fallback: () => service,
-      ),
+      notifications: loaderOf(service, fallback: () => service),
       permissionService: permissions,
     );
     await pumpEventQueue();

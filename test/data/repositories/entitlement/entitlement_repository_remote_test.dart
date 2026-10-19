@@ -8,6 +8,8 @@ import 'package:musbx/data/services/purchase_service.dart';
 import 'package:musbx/domain/models/entitlement.dart';
 import 'package:musbx/utils/result.dart';
 
+import '../../../helpers/fixtures.dart';
+
 class MockPurchaseService extends Mock implements PurchaseService {}
 
 typedef Status = ({Entitlement entitlement, EntitlementStatus status});
@@ -34,8 +36,8 @@ void main() {
   });
 
   test("everything is unlocked where there is no store", () async {
-    final loader = ServiceLoader(
-      create: () async => PurchaseService.disabled(),
+    final loader = loaderOf(
+      PurchaseService.disabled(),
       fallback: PurchaseService.disabled,
     );
     final entitlements = EntitlementRepositoryRemote(purchase: loader);
@@ -60,10 +62,7 @@ void main() {
       when(() => store.restore()).thenAnswer((_) async {});
       when(() => store.buy(any())).thenAnswer((_) async => true);
 
-      loader = ServiceLoader(
-        create: () async => store,
-        fallback: PurchaseService.disabled,
-      );
+      loader = loaderOf(store, fallback: PurchaseService.disabled);
       entitlements = EntitlementRepositoryRemote(purchase: loader);
       addTearDown(entitlements.dispose);
       await loader.ensureAvailable();

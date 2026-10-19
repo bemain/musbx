@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/repositories/tuner/tuner_repository.dart';
 import 'package:musbx/data/services/audio_capture_service.dart';
 import 'package:musbx/data/services/service.dart';
@@ -24,10 +23,7 @@ void main() {
 
   TunerRepository create(AudioCaptureService service) {
     final repository = TunerRepository(
-      audioCapture: ServiceLoader(
-        create: () async => service,
-        fallback: () => service,
-      ),
+      audioCapture: loaderOf(service, fallback: () => service),
     );
     addTearDown(repository.dispose);
     return repository;

@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
 import 'package:musbx/data/repositories/announcement/announcement_repository_remote.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
@@ -8,8 +7,7 @@ import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/utils/result.dart';
 
 import '../../../helpers/fixtures.dart';
-
-class MockSupabaseService extends Mock implements SupabaseService {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   setUpAll(() => registerFallbackValue(DateTime(2000)));
@@ -20,8 +18,8 @@ void main() {
   AnnouncementRepositoryRemote create([SupabaseService? service]) =>
       AnnouncementRepositoryRemote(
         sharedPreferences: preferences,
-        supabase: ServiceLoader(
-          create: () async => service ?? supabase,
+        supabase: loaderOf(
+          service ?? supabase,
           fallback: SupabaseService.disabled,
         ),
       );
@@ -29,7 +27,6 @@ void main() {
   setUp(() async {
     supabase = MockSupabaseService();
     preferences = await createPreferences();
-    when(() => supabase.isEnabled).thenReturn(true);
   });
 
   test("markRead moves readAt forward, across restarts", () {

@@ -9,6 +9,7 @@ import 'package:musbx/data/repositories/demix/demixing_process.dart';
 import 'package:musbx/data/repositories/entitlement/entitlement_repository.dart';
 import 'package:musbx/data/services/audio_engine_service.dart';
 import 'package:musbx/data/services/audio_session_service.dart';
+import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/utils/result.dart';
 
@@ -100,6 +101,14 @@ class MockDemixRepository extends Mock implements DemixRepository {
 }
 
 class MockDemixingProcess extends Mock implements DemixingProcess {}
+
+/// An enabled Supabase backend with no signed-in user.
+class MockSupabaseService extends Mock implements SupabaseService {
+  MockSupabaseService() {
+    when(() => isEnabled).thenReturn(true);
+    when(() => currentUser).thenReturn(null);
+  }
+}
 
 class FakeEntitlementRepository extends EntitlementRepository {
   FakeEntitlementRepository({this.hasPremium = false});

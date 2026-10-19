@@ -68,13 +68,13 @@ class PythagoreanTuning extends Temperament {
     // The next octave's root is a candidate too, so that a slightly flat
     // octave is not named as the seventh below it.
     final List<double> candidates = [..._ratios, 2];
-    int closest = 0;
+    int closestStep = 0;
     for (int step = 1; step < candidates.length; step++) {
       if ((targetRatio - candidates[step]).abs() <
-          (targetRatio - candidates[closest]).abs()) {
-        closest = step;
+          (targetRatio - candidates[closestStep]).abs()) {
+        closestStep = step;
       }
     }
-    return octave * 12 + closest;
+    return octave * 12 + closestStep;
   }
 }

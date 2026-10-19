@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/models/soundcloud_track.dart';
 import 'package:musbx/data/repositories/song/track_search_repository.dart';
 import 'package:musbx/data/services/soundcloud_api_client.dart';
@@ -13,10 +12,7 @@ class MockSoundCloudApiClient extends Mock implements SoundCloudApiClient {}
 void main() {
   Future<TrackSearchRepository> create(SoundCloudApiClient client) async =>
       TrackSearchRepositorySoundCloud(
-        apiClient: ServiceLoader(
-          create: () async => client,
-          fallback: SoundCloudApiClient.disabled,
-        ),
+        apiClient: loaderOf(client, fallback: SoundCloudApiClient.disabled),
         fileCache: await createTempFileCache(),
       );
 

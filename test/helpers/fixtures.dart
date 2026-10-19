@@ -3,7 +3,9 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
@@ -18,6 +20,13 @@ Future<FileCacheService> createTempFileCache() async {
     persistent: Directory("${root.path}/persistent"),
   );
 }
+
+/// A [ServiceLoader] whose service starts as [fallback] and becomes [service]
+/// once loaded.
+ServiceLoader<T> loaderOf<T extends OptionalService>(
+  T service, {
+  required T Function() fallback,
+}) => ServiceLoader(create: () async => service, fallback: fallback);
 
 /// A [SharedPreferencesService] over an in-memory store holding [data].
 ///

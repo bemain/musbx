@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/models/announcement/announcement.dart';
 import 'package:musbx/data/models/feedback/feedback_entry.dart';
 import 'package:musbx/data/repositories/feedback/feedback_repository_remote.dart';
@@ -9,8 +8,7 @@ import 'package:musbx/data/services/supabase_service.dart';
 import 'package:musbx/utils/result.dart';
 
 import '../../../helpers/fixtures.dart';
-
-class MockSupabaseService extends Mock implements SupabaseService {}
+import '../../../helpers/mocks.dart';
 
 void main() {
   setUpAll(
@@ -24,8 +22,8 @@ void main() {
   FeedbackRepositoryRemote create([SupabaseService? service]) =>
       FeedbackRepositoryRemote(
         sharedPreferences: preferences,
-        supabase: ServiceLoader(
-          create: () async => service ?? supabase,
+        supabase: loaderOf(
+          service ?? supabase,
           fallback: SupabaseService.disabled,
         ),
       );
@@ -33,8 +31,6 @@ void main() {
   setUp(() async {
     supabase = MockSupabaseService();
     preferences = await createPreferences();
-    when(() => supabase.isEnabled).thenReturn(true);
-    when(() => supabase.currentUser).thenReturn(null);
     when(() => supabase.insertFeedback(any())).thenAnswer((_) async {});
   });
 
