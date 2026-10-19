@@ -15,7 +15,7 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 Future<FileCacheService> createTempFileCache() async {
   final root = await Directory.systemTemp.createTemp("musbx_test_");
   addTearDown(() => root.delete(recursive: true));
-  return FileCacheService.create(
+  return FileCacheService.createWith(
     scratch: Directory("${root.path}/scratch"),
     persistent: Directory("${root.path}/persistent"),
   );

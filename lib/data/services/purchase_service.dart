@@ -49,17 +49,22 @@ class PurchaseService extends OptionalService {
   /// Starts listening for purchase updates immediately: updates that arrive
   /// before anyone is listening are dropped, and the store redelivers
   /// transactions left unfinished by earlier sessions as soon as the app opens.
-  static Future<PurchaseService> create({
-    InAppPurchase? inAppPurchase,
-  }) async {
+  static Future<PurchaseService> create() async {
     if (!Platform.isAndroid && !Platform.isIOS && !Platform.isMacOS) {
       return disabled();
     }
 
-    final p = inAppPurchase ?? InAppPurchase.instance;
-    if (!await p.isAvailable()) return disabled();
+    return createWith(InAppPurchase.instance);
+  }
 
-    return PurchaseService._(p);
+  /// Create the service over [inAppPurchase], whatever the platform.
+  @visibleForTesting
+  static Future<PurchaseService> createWith(
+    InAppPurchase inAppPurchase,
+  ) async {
+    if (!await inAppPurchase.isAvailable()) return disabled();
+
+    return PurchaseService._(inAppPurchase);
   }
 
   /// A service with no store behind it, for when none is available.

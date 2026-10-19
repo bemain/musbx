@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_recorder/flutter_recorder.dart';
 import 'package:musbx/data/services/service.dart';
 import 'package:musbx/domain/models/audio_frame.dart';
@@ -53,19 +53,22 @@ class AudioCaptureService extends OptionalService {
   /// Throws if the recorder cannot be set up, which includes the device having
   /// no input at all. It does not start recording, so the microphone
   /// permission is not needed yet.
-  static Future<AudioCaptureService> create({
-    Recorder? recorder,
+  static Future<AudioCaptureService> create() => createWith(Recorder.instance);
+
+  /// Create the service over [recorder].
+  @visibleForTesting
+  static Future<AudioCaptureService> createWith(
+    Recorder recorder, {
     int sampleRate = 22050,
     PCMFormat format = PCMFormat.f32le,
   }) async {
-    final r = recorder ?? Recorder.instance;
-    await r.init(
+    await recorder.init(
       format: format,
       sampleRate: sampleRate,
       channels: RecorderChannels.mono,
     );
     return AudioCaptureService._(
-      r,
+      recorder,
       sampleRate: sampleRate,
       format: format,
     );

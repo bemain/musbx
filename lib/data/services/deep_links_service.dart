@@ -45,11 +45,12 @@ class DeepLinksService extends OptionalService {
   /// Listening starts here rather than when [songStream] is first subscribed
   /// to, because the operating system delivers the URI that launched the app
   /// once and does not repeat it.
-  static Future<DeepLinksService> create({AppLinks? appLinks}) async {
-    final a = appLinks ?? AppLinks();
+  static Future<DeepLinksService> create() async => createWith(AppLinks());
 
-    return DeepLinksService._(a);
-  }
+  /// Create the service over [appLinks].
+  @visibleForTesting
+  static DeepLinksService createWith(AppLinks appLinks) =>
+      DeepLinksService._(appLinks);
 
   /// A service that emits nothing, for platforms that open no files.
   static DeepLinksService disabled() => DeepLinksService._(null);

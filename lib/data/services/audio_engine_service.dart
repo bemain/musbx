@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:musbx/data/models/sound_group.dart';
 import 'package:musbx/domain/models/part.dart';
@@ -14,11 +15,13 @@ class AudioEngineService {
   final SoLoud _soLoud;
 
   /// Create the service, initializing the engine.
-  static Future<AudioEngineService> create({SoLoud? soLoud}) async {
-    final s = soLoud ?? SoLoud.instance;
+  static Future<AudioEngineService> create() => createWith(SoLoud.instance);
 
-    await s.init(bufferSize: 512);
-    return AudioEngineService._(s);
+  /// Create the service over [soLoud], initializing it.
+  @visibleForTesting
+  static Future<AudioEngineService> createWith(SoLoud soLoud) async {
+    await soLoud.init(bufferSize: 512);
+    return AudioEngineService._(soLoud);
   }
 
   Future<AudioSource> loadFile(File file) => _soLoud.loadFile(file.path);

@@ -44,6 +44,22 @@ void main() {
     test("scaleStep rounds up to the next octave when slightly flat", () {
       expect(temperament.scaleStep(1.99), 12);
       expect(temperament.scaleStep(0.995), 0);
+      expect(temperament.scaleStep(0.4975), -12);
+      expect(temperament.scaleStep(3.98), 24);
+    });
+
+    test("scaleStep stays on the octave when slightly sharp", () {
+      expect(temperament.scaleStep(2.01), 12);
+      expect(temperament.scaleStep(1.005), 0);
+      expect(temperament.scaleStep(0.5025), -12);
+    });
+
+    test("scaleStep splits the seventh and the octave halfway", () {
+      // Halfway between 243/128 and 2 is 1.9492.
+      expect(temperament.scaleStep(1.88), 11);
+      expect(temperament.scaleStep(1.94), 11);
+      expect(temperament.scaleStep(1.96), 12);
+      expect(temperament.scaleStep(0.97), -1);
     });
   });
 }
