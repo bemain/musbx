@@ -22,7 +22,7 @@ void main() {
 
   setUp(() async {
     cache = SongCache(fileCache: await createTempFileCache());
-    demixing = DemixRepository(cache: cache);
+    demixing = DemixRepository(cache: cache, musbxApi: offlineMusbxApi());
     song = urlSong("demix-${nextId++}");
     // With every part cached a process finishes without reaching the server.
     await cacheParts(song);
@@ -38,7 +38,10 @@ void main() {
   test("starting twice returns the running process", () {
     final first = demixing.start(song).asOk;
     expect(demixing.start(song).asOk, same(first));
-    expect(DemixRepository(cache: cache).get(song), same(first));
+    expect(
+      DemixRepository(cache: cache, musbxApi: offlineMusbxApi()).get(song),
+      same(first),
+    );
   });
 
   test("a cancelled process is replaced", () {

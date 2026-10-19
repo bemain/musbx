@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/utils/utils.dart';
 
@@ -80,6 +79,7 @@ abstract class Job<T> {
   Job(this.dio, this.id);
 
   /// The Dio instance that handles the interaction with the API.
+  @protected
   final Dio dio;
 
   /// The id of this job.
@@ -100,10 +100,9 @@ abstract class Job<T> {
     }
   }
 
-  /// Download a file that is a result from this job.
-  Future<File> downloadResultFile(
-    String name,
-    File destination, {
+  /// Download a result from this job.
+  Future<List<int>> downloadResult(
+    String name, {
     void Function(int received, int total)? onProgress,
   }) async {
     try {
@@ -116,8 +115,7 @@ abstract class Job<T> {
         ),
       );
 
-      await destination.writeAsBytes(response.data!);
-      return destination;
+      return response.data!;
     } on DioException catch (e) {
       return throw switch (e.type) {
         DioExceptionType.badResponse => BadStatusCode(e.response?.statusCode),

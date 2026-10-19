@@ -35,6 +35,7 @@ import 'package:musbx/data/services/audio_session_service.dart';
 import 'package:musbx/data/services/deep_links_service.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/media_notification_service.dart';
+import 'package:musbx/data/services/musbx_api_service.dart';
 import 'package:musbx/data/services/notification_service.dart';
 import 'package:musbx/data/services/permission_service.dart';
 import 'package:musbx/data/services/purchase_service.dart';
@@ -136,6 +137,7 @@ List<SingleChildWidget> _services = [
   ..._optional(SoundCloudApiClient.create, SoundCloudApiClient.disabled),
   ..._optional(SupabaseService.create, SupabaseService.disabled),
 
+  Provider(create: (context) => MusbxApiService()),
   Provider(create: (context) => SongCache(fileCache: context.read())),
 ];
 
@@ -156,7 +158,11 @@ List<SingleChildWidget> _optional<T extends OptionalService>(
 List<SingleChildWidget> _repositories = [
   Provider(
     create: (context) =>
-        AnalysisRepositoryRemote(cache: context.read()) as AnalysisRepository,
+        AnalysisRepositoryRemote(
+              cache: context.read(),
+              musbxApi: context.read(),
+            )
+            as AnalysisRepository,
   ),
   ChangeNotifierProvider(
     create: (context) =>
@@ -168,11 +174,13 @@ List<SingleChildWidget> _repositories = [
   ),
   Provider(
     create: (context) => AudioRepository(
+      musbxApi: context.read(),
       songCache: context.read(),
     ),
   ),
   ChangeNotifierProvider(
-    create: (context) => DemixRepository(cache: context.read()),
+    create: (context) =>
+        DemixRepository(cache: context.read(), musbxApi: context.read()),
   ),
   ChangeNotifierProvider(
     create: (context) => DroneRepository(

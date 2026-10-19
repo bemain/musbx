@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/demix.dart';
 import 'package:musbx/data/services/musbx_api/jobs/job.dart';
-import 'package:musbx/data/services/musbx_api/musbx_api.dart';
+import 'package:musbx/data/services/musbx_api_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
@@ -36,14 +35,17 @@ enum DemixingStep {
 class DemixingProcess extends Process<Map<Part, CacheFile>> {
   DemixingProcess(
     this.song, {
+    required MusbxApiService musbxApi,
     required SongCache cache,
     this.checkStatusInterval = const Duration(milliseconds: 300),
-  }) : _cache = cache;
+  }) : _musbxApi = musbxApi,
+       _cache = cache;
 
   final Song song;
 
   final Duration checkStatusInterval;
 
+  final MusbxApiService _musbxApi;
   final SongCache _cache;
 
   /// The progress of the current step.
@@ -76,7 +78,7 @@ class DemixingProcess extends Process<Map<Part, CacheFile>> {
 
     breakIfCancelled();
 
-    final MusbxApiClient client = await MusbxApi.getClient();
+    final MusbxApiClient client = await _musbxApi.client();
 
     breakIfCancelled();
 
@@ -137,13 +139,13 @@ class DemixingProcess extends Process<Map<Part, CacheFile>> {
 
     final Map<Part, CacheFile> files = Map.fromEntries(
       await Future.wait(
-        report.result!.keys.map((partName) async {
+        report.result!.map((partName) async {
           final Part part =
               Part.values.asNameMap()[partName] ?? (throw MalformedResponse());
 
-          final response = await job.dio.get<List<int>>(
-            report.result![partName]!,
-            onReceiveProgress: (received, total) {
+          final data = await job.downloadResult(
+            partName,
+            onProgress: (received, total) {
               downloadProgress[partName] = received / total;
               final totalProgress = downloadProgress.values.reduce(
                 (a, b) => a + b,
@@ -151,13 +153,7 @@ class DemixingProcess extends Process<Map<Part, CacheFile>> {
               stepProgressNotifier.value =
                   totalProgress / report.result!.length;
             },
-            options: Options(
-              responseType: ResponseType.bytes,
-              followRedirects: false,
-            ),
           );
-
-          final data = response.data ?? (throw MalformedResponse());
 
           final CacheFile destination = _cache.part(song, part);
           await destination.writeBytes(data);

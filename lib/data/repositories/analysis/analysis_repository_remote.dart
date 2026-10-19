@@ -6,7 +6,7 @@ import 'package:musbx/data/repositories/analysis/analysis_repository.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/analyze.dart';
-import 'package:musbx/data/services/musbx_api/musbx_api.dart';
+import 'package:musbx/data/services/musbx_api_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/music/chord.dart';
 import 'package:musbx/domain/models/song.dart';
@@ -21,14 +21,12 @@ import 'package:musbx/utils/utils.dart';
 class AnalysisRepositoryRemote extends AnalysisRepository {
   AnalysisRepositoryRemote({
     required SongCache cache,
-    @visibleForTesting
-    Future<MusbxApiClient> Function() getClient = MusbxApi.getClient,
+    required MusbxApiService musbxApi,
   }) : _cache = cache,
-       _getClient = getClient;
+       _musbxApi = musbxApi;
 
   final SongCache _cache;
-
-  final Future<MusbxApiClient> Function() _getClient;
+  final MusbxApiService _musbxApi;
 
   @override
   Future<Result<Map<Duration, Chord?>>> chords(Song song) async {
@@ -47,7 +45,7 @@ class AnalysisRepositoryRemote extends AnalysisRepository {
       }
 
       if (data == null) {
-        final client = await _getClient();
+        final client = await _musbxApi.client();
         // Perform chords identification
         final FileHandle file;
         switch (song.audio) {

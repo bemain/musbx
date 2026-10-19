@@ -16,7 +16,10 @@ void main() {
 
   setUp(() async {
     fileCache = await createTempFileCache();
-    audio = AudioRepository(songCache: SongCache(fileCache: fileCache));
+    audio = AudioRepository(
+      musbxApi: offlineMusbxApi(),
+      songCache: SongCache(fileCache: fileCache),
+    );
   });
 
   test("copies a local file into the cache", () async {

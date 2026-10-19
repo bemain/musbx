@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musbx/config/service_loader.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/musbx_api_service.dart';
 import 'package:musbx/data/services/service.dart';
 import 'package:musbx/data/services/shared_preferences_service.dart';
 import 'package:musbx/domain/models/song.dart';
@@ -27,6 +28,10 @@ ServiceLoader<T> loaderOf<T extends OptionalService>(
   T service, {
   required T Function() fallback,
 }) => ServiceLoader(create: () async => service, fallback: fallback);
+
+/// A [MusbxApiService] with no hosts, so asking it for a client fails with
+/// [NoHostAvailable] without touching the network.
+MusbxApiService offlineMusbxApi() => MusbxApiService(hostUrls: const []);
 
 /// A [SharedPreferencesService] over an in-memory store holding [data].
 ///

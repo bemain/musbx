@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
 import 'package:musbx/data/repositories/demix/demixing_process.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
+import 'package:musbx/data/services/musbx_api_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
@@ -14,9 +15,14 @@ import 'package:musbx/utils/result.dart';
 /// returns it rather than starting a second. Processes outlive the repository
 /// instance, so demixing survives a rebuild of the provider tree.
 class DemixRepository extends ChangeNotifier {
-  DemixRepository({required SongCache cache}) : _cache = cache;
+  DemixRepository({
+    required SongCache cache,
+    required MusbxApiService musbxApi,
+  }) : _cache = cache,
+       _musbxApi = musbxApi;
 
   final SongCache _cache;
+  final MusbxApiService _musbxApi;
 
   static final Map<Song, DemixingProcess> _processes = {};
 
@@ -29,7 +35,7 @@ class DemixRepository extends ChangeNotifier {
       DemixingProcess? process = get(song);
       if (process?.isCancelled == true) process = null;
 
-      process ??= DemixingProcess(song, cache: _cache);
+      process ??= DemixingProcess(song, cache: _cache, musbxApi: _musbxApi);
 
       _processes[song] = process;
       notifyListeners();

@@ -9,7 +9,7 @@ import 'package:musbx/data/repositories/settings_repository.dart';
 import 'package:musbx/data/repositories/song/playback_repository.dart';
 import 'package:musbx/data/repositories/song/song_preferences_repository.dart';
 import 'package:musbx/data/repositories/song/song_repository.dart';
-import 'package:musbx/data/services/musbx_api/musbx_api.dart';
+import 'package:musbx/data/services/musbx_api_service.dart';
 import 'package:musbx/domain/models/part.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/domain/models/song_preferences.dart';

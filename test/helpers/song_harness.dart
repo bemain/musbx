@@ -46,7 +46,10 @@ class SongHarness {
   final demixing = MockDemixRepository();
 
   late final preferences = SongPreferencesRepository(songCache: cache);
-  late final audio = AudioRepository(songCache: cache);
+  late final audio = AudioRepository(
+    musbxApi: offlineMusbxApi(),
+    songCache: cache,
+  );
   late final playback = PlaybackRepository(
     audioEngine: engine,
     audioSession: session,

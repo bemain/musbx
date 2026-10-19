@@ -23,9 +23,9 @@ enum DemixStep {
   saving,
 }
 
-/// Result from a demixing job.
-/// The keys are the name of the separated parts, and the values are the download URLs.
-typedef DemixJobResult = Map<String, String>;
+/// Result from a demixing job: the names of the separated parts, each of which
+/// can be fetched with [Job.downloadResult].
+typedef DemixJobResult = Set<String>;
 
 /// A [JobReport] for a demixing job, which also says how far the separation has
 /// come.
@@ -51,9 +51,7 @@ class DemixJobReport extends JobReport<DemixJobResult> {
     return DemixJobReport._(
       json['id'] as String,
       status: JobStatus.values.byName(json['status'] as String),
-      result: (json['result'] as Json?)?.map(
-        (key, value) => MapEntry(key, value as String),
-      ),
+      result: (json['result'] as List?)?.cast<String>().toSet(),
       error: json['error'] as Object?,
       step: DemixStep.values.byName(json['step'] as String),
       progress: json['progress'] as double,

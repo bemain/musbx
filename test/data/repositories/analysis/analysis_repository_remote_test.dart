@@ -6,11 +6,14 @@ import 'package:mocktail/mocktail.dart';
 import 'package:musbx/data/repositories/analysis/analysis_repository_remote.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
 import 'package:musbx/data/services/musbx_api/jobs/analyze.dart';
+import 'package:musbx/data/services/musbx_api_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/utils/result.dart';
 
 import '../../../helpers/fixtures.dart';
+
+class MockMusbxApiService extends Mock implements MusbxApiService {}
 
 class MockMusbxApiClient extends Mock implements MusbxApiClient {}
 
@@ -40,10 +43,9 @@ void main() {
     when(() => client.uploadFile(any())).thenAnswer((_) async => handle);
     when(() => client.analyze(handle)).thenAnswer((_) async => job);
     when(job.complete).thenAnswer((_) async => {0.0: "C", 1.5: "N"});
-    analysis = AnalysisRepositoryRemote(
-      cache: cache,
-      getClient: () async => client,
-    );
+    final musbxApi = MockMusbxApiService();
+    when(musbxApi.client).thenAnswer((_) async => client);
+    analysis = AnalysisRepositoryRemote(cache: cache, musbxApi: musbxApi);
   });
 
   Map<Duration, String?> named(Result<Map<Duration, Object?>> result) =>
@@ -90,7 +92,7 @@ void main() {
     test("fail when no server can be reached", () async {
       final unreachable = AnalysisRepositoryRemote(
         cache: cache,
-        getClient: () async => throw Exception("offline"),
+        musbxApi: offlineMusbxApi(),
       );
 
       expect(await unreachable.chords(urlSong("a")), isA<Failure<Object?>>());

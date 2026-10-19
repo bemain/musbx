@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:musbx/data/services/file_cache_service.dart';
 import 'package:musbx/data/services/musbx_api/client.dart';
-import 'package:musbx/data/services/musbx_api/musbx_api.dart';
+import 'package:musbx/data/services/musbx_api_service.dart';
 import 'package:musbx/data/services/song_cache.dart';
 import 'package:musbx/domain/models/song.dart';
 import 'package:musbx/utils/result.dart';
@@ -14,10 +14,13 @@ import 'package:musbx/utils/result.dart';
 /// up as one file in the cache, so a song is only ever fetched once.
 class AudioRepository {
   AudioRepository({
+    required MusbxApiService musbxApi,
     required SongCache songCache,
-  }) : _songCache = songCache;
+  }) : _musbxApi = musbxApi,
+       _songCache = songCache;
 
   final SongCache _songCache;
+  final MusbxApiService _musbxApi;
 
   /// The cached file holding [song]'s audio, fetched first unless it is
   /// already there.
@@ -30,7 +33,7 @@ class AudioRepository {
         (scratch) async {
           switch (song.audio) {
             case UrlAudio(:final url):
-              final MusbxApiClient client = await MusbxApi.getClient();
+              final MusbxApiClient client = await _musbxApi.client();
               final FileHandle handle = await client.uploadYtdlp(
                 url,
                 fileType: "mp3",
