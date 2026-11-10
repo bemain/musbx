@@ -1,18 +1,126 @@
+## [1.16.0] - 2026-11-10
+
+### 🚀 Features
+
+- *(tuner)* Create `AudioCaptureService` and `PitchDetector` use case
+- Create `FileCacheService` that handles the app's on-disk caches
+- Create `PermissionService` that translates between the platform's permission model and the app's
+- Create `AnalyticsService` that reports how the app is used
+- Create `AdsService` that facilitates showing ads
+- Create `PurchaseService` for buying entitlements
+- Create `NotificationService` that posts local notifications
+- Create `SharedPreferencesService` that persists values to disk
+- Create `SoundCloudApiClient` for searching SoundCloud
+- Create `YoutubeApiClient` for searching Youtube
+- Create `SupabaseService` for accessing announcements and feedback
+- Create `DeepLinkService` for loading songs from the outside
+- Move `Process` util out of `package:material_plus`
+- Create a proper `Result` class for signaling the outcome of an operation
+- Create Announcement and Feedback repositories
+- Create `EntitlementRepository` for unlocking premium
+- Create `NotificationRepository` for pushing notifications and requesting permission
+- Make all optional services throw when disabled instead of failing silently
+- Create `DeepLinkHandler` for opening songs the OS hands the app
+- Create `SongRepository`, replacing `SongLibrary`
+- Convert `Songs` and `SongPlayer` to repositories and use cases
+- Improve cache-related use cases
+- Create `AnalysisRepository` for chord and waveform extraction
+- Introduce `package:provider` to inject services and repositories
+- Migrate song preferences
+- Create use cases for loading a song
+- Reload repositories when the underlying services change
+- Create a class for storing playback state
+- Create `TunerRepository`
+- Complete `TunerRepository` implementation
+- Create `DroneRepository`
+- Create `MetronomeRepository`
+- Don't use separate notifiers for each setting
+- Migrate notifications to flutter_local_notifications
+- Remove unused youtube search
+- Move firebase initialization to composition root
+- Create `TrackSearchRepository` for searching SoundCloud
+- Make Song group and `ToneGroup` inherit from the same base class
+- Annotate all methods that return `Result`s with `@useResult`
+- Inject `MusbxApiService`
+
+### 🐛 Bug Fixes
+
+- Remove cupertino import
+- Fix lifecycle issues in `PermissionBuilder`
+- Initialize the `PaymentService`
+- Point to the `main` branch of `package:material_plus`
+- Make `SoundCloudApiClient` optional
+- Fix bugs and improve documentation
+- Indicate to the user when SoundCloud search is disabled
+- Make `AudioCaptureService` optional
+- Check result
+- Fix issues with playback classes
+- Correct tuner cents, demix job errors and audio session injection
+- Fix issues found by standards review
+- Time out unresponsive Musbx API hosts
+- Stop SoLoud voices before disposing their sources
+- Keep restored loop sections and equalizer bands valid
+- Fix demixer card build-phase notification and reload
+- Keep metronome playing below 70 bpm
+- Show the metronome notification on Android
+- Fail cache writes that produce an empty file
+- Spell natural pitch classes without an accidental
+- Use the 2024 slider design in the light theme
+- Log the cause of API errors that have no response body
+- Wait for optional services being created before using them
+- Fix issues found by code review
+- Fix bugs found by the data and domain tests
+- Fix bugs found by the service tests
+- Add picked files to the library again
+- Filter demixed songs once on a mixing bus
+
+### 📚 Documentation
+
+- *(website)* Fine tune Terms of service
+- Update the privacy policy link in README
+- Document the codebase and refresh the AI instructions
+- Bring data and domain layer documentation up to date
+
+### 🚜 Refactor
+
+- Move music theory models to their proper location
+- Move `MusbxApi` into services
+- Replace `Directories` with `FileCacheService`
+- Move the `AudioFrame` class into domain models
+- Rename `AdsService` to use singular form
+- Use singular form for `AnnouncementRepository`
+- Fix typo
+- Remove unused repository
+- Remove unused demixing errors, YoutubeVideo and stemsFor parameter
+- Rename `Stem` to `Part`
+- Make toString name music models as a musician would
+- Share test mocks and service loaders, name closestStep
+
+### 🧪 Testing
+
+- Cover the data and domain layers
+- Cover analysis, services and the octave fix
+- Cover MusbxApiService host selection
+
+### 💼 Other
+
+- Upgrade `pacakge:flutter_soloud`
 ## [1.15.1] - 2026-08-27
 
 ### 🐛 Bug Fixes
 
 - Wrap feedback field in `SafeArea`
 
-### 💼 Other
-
-- Fix the version of `package:material_plus` used
-- Fix invalid commit being locked
-
 ### ⚙️ Miscellaneous Tasks
 
 - *(release)* Use variables for tag name and notes to escape backticks
 - *(release)* V1.15.1+68 [skip ci]
+- *(release)* V1.15.1+69 [skip ci]
+
+### 💼 Other
+
+- Fix the version of `package:material_plus` used
+- Fix invalid commit being locked
 ## [1.15.0] - 2026-08-18
 
 ### 🚀 Features
@@ -33,15 +141,15 @@
 - Catch errors and refactor new widgets
 - Fix signin never executing and remove debugging code
 
-### 🚜 Refactor
-
-- Move `AnnouncementTile` to its own file
-
 ### 📚 Documentation
 
 - Add license
 - Render license as markdown
 - Create an announcement style guide
+
+### 🚜 Refactor
+
+- Move `AnnouncementTile` to its own file
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -80,14 +188,14 @@
 
 - Replace deprecated member
 
-### 💼 Other
-
-- Upgrade packages and build for iOS
-
 ### ⚙️ Miscellaneous Tasks
 
 - Use git-cliff action to generate changelog
 - *(release)* V1.14.4+64 [skip ci]
+
+### 💼 Other
+
+- Upgrade packages and build for iOS
 ## [1.14.3] - 2026-08-04
 
 ### 🚀 Features
@@ -102,16 +210,6 @@
 - *(songs)* Enable demixing bytes audio
 - Replace supabase anon key with publishable key
 
-### 💼 Other
-
-- Upgrade flutter
-- Fix firebase build error
-- Upgrade dependencies
-
-### 🚜 Refactor
-
-- Format files
-
 ### 📚 Documentation
 
 - Add `/get` permalink that redirects to app store
@@ -120,23 +218,33 @@
 - Add `/get` to navigation bar
 - Use snake case for all hosted assets
 
+### 🚜 Refactor
+
+- Format files
+
 ### ⚙️ Miscellaneous Tasks
 
 - Sort dependencies
 - *(release)* V1.14.3+63 [skip ci]
+
+### 💼 Other
+
+- Upgrade flutter
+- Fix firebase build error
+- Upgrade dependencies
 ## [1.14.2] - 2026-04-09
 
 ### 🚀 Features
 
 - *(songs)* Upgrade to `flutter_soloud` v4
 
-### 💼 Other
-
-- Upgrade `flutter_soloud`
-
 ### ⚙️ Miscellaneous Tasks
 
 - *(release)* V1.14.2+62 [skip ci]
+
+### 💼 Other
+
+- Upgrade `flutter_soloud`
 ## [1.14.1] - 2026-03-16
 
 ### 🐛 Bug Fixes
@@ -170,10 +278,6 @@
 - *(database)* Reduce modularization of database tables
 - *(announcements)* Minor fixes
 
-### 💼 Other
-
-- *(announcements)* Cleanup error message
-
 ### ⚙️ Miscellaneous Tasks
 
 - *(release)* V1.13.13+59 [skip ci]
@@ -182,16 +286,15 @@
 - Push to current branch, not necessarily `main`
 - Push to main
 - *(release)* V1.14.0+60 [skip ci]
+
+### 💼 Other
+
+- *(announcements)* Cleanup error message
 ## [1.13.13] - 2026-03-10
 
 ### 🐛 Bug Fixes
 
 - *(songs)* Specify that opening documents in place is supported
-
-### 💼 Other
-
-- Revert to older version of flutter_soloud
-- Upgrade flutter_soloud
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -206,6 +309,11 @@
 - Clean before build
 - Cleanup workflow files
 - *(release)* V1.13.13+58 [skip ci]
+
+### 💼 Other
+
+- Revert to older version of flutter_soloud
+- Upgrade flutter_soloud
 ## [1.13.12] - 2026-03-08
 
 ### 🚀 Features
@@ -221,12 +329,6 @@
 - *(songs)* Correct the padding around icon placeholder
 - *(songs)* Clarify slider behaviour when access is restricted
 
-### 💼 Other
-
-- Upgrade dependencies
-- Upgrade dependencies
-- Upgrade pods
-
 ### ⚙️ Miscellaneous Tasks
 
 - *(release)* V1.13.11+56 [skip ci]
@@ -234,6 +336,12 @@
 - Include commits in the changelog, not PRs
 - Set xcode version
 - *(release)* V1.13.12+57 [skip ci]
+
+### 💼 Other
+
+- Upgrade dependencies
+- Upgrade dependencies
+- Upgrade pods
 ## [1.13.11] - 2026-03-03
 
 ### 🚀 Features
@@ -248,10 +356,6 @@
 - *(songs)* Respect free limit on number of songs when opening files
 - *(songs)* Avoid re-initialization
 
-### 💼 Other
-
-- Perform pod repo update
-
 ### ⚙️ Miscellaneous Tasks
 
 - *(release)* V1.13.11+56 [skip ci]
@@ -259,6 +363,10 @@
 ### ◀️ Revert
 
 - Undo change to iOS build config
+
+### 💼 Other
+
+- Perform pod repo update
 ## [1.13.10] - 2026-02-27
 
 ### 🚀 Features
@@ -726,44 +834,28 @@
 - Move material_plus dependency to gitlab
 - *(settings)* Update accidental switcher text
 
-### 💼 Other
+### 📚 Documentation
 
-- *(ios)* Build on iOS
-- Version 1.4.3
-- Upgrade flutter
-- Version 1.4.4
-- Run on iOS
-- Version 1.4.5
-- Upgrade flutter
-- Remove deprecated imperative apply of Flutter's Gradle plugins
-- Run on iOS
-- Version 1.5.0
-- Version 1.6.0
-- Version 1.6.1
-- Version 1.7.0
-- Run on iOS
-- Version 1.7.0 on iOS
-- Upgrade flutter
-- Remove deprecated MultiDex declaration
-- Version 1.7.1
-- Upgrade gradle and java
-- Upgrade `awesome_notifications` package to avoid crash
-- Version 1.8.0
-- Version 1.9.0
-- Cleanup build configuration
-- Switch to flutter's beta channel
-- Remove dead code
-- Version 1.10.0
-- Run on iOS
-- Version 1.11.0
-- Build on iOS
-- Version 1.11.1
-- Version 1.12.0
-- Upgrade dependencies
-- Use a more modern android file structure
-- Version 1.12.1
-- Update properties for windows builds
-- Upgrade SoLoud
+- Introduce git naming conventions in README
+- Add optional issue reference to branch naming convertion
+- Add info about Commitizen tool to README
+- *(README)* Specify that the 'Fixes ...' footer can be used
+- *(demixer)* Update code documentation
+- *(music-player)* Document SpeedDial
+- *(music-player)* Improve logging when removing cached files
+- Fix link to Google Play badge
+- Update branch naming convention
+- *(pages)* Move GitHub pages site to the 'BeMain.github.io' repo
+- Clarify code documentation
+- Update outdated info in README
+- Update privacy policy
+- Fix Google Play badge
+- Add section about the search functionality
+- Add more social links
+- Update the theme
+- Fix social icons
+- Use default minima components
+- Update features list in README
 
 ### 🚜 Refactor
 
@@ -808,29 +900,6 @@
 - *(songs)* Remove old slowdowner sheet
 - *(songs)* Remove unused `helpText` property
 - Document parameter
-
-### 📚 Documentation
-
-- Introduce git naming conventions in README
-- Add optional issue reference to branch naming convertion
-- Add info about Commitizen tool to README
-- *(README)* Specify that the 'Fixes ...' footer can be used
-- *(demixer)* Update code documentation
-- *(music-player)* Document SpeedDial
-- *(music-player)* Improve logging when removing cached files
-- Fix link to Google Play badge
-- Update branch naming convention
-- *(pages)* Move GitHub pages site to the 'BeMain.github.io' repo
-- Clarify code documentation
-- Update outdated info in README
-- Update privacy policy
-- Fix Google Play badge
-- Add section about the search functionality
-- Add more social links
-- Update the theme
-- Fix social icons
-- Use default minima components
-- Update features list in README
 
 ### 🎨 Styling
 
@@ -920,3 +989,42 @@
 
 - Switch to flutter's stable channel because of build errors
 - Downgrade dependencies
+
+### 💼 Other
+
+- *(ios)* Build on iOS
+- Version 1.4.3
+- Upgrade flutter
+- Version 1.4.4
+- Run on iOS
+- Version 1.4.5
+- Upgrade flutter
+- Remove deprecated imperative apply of Flutter's Gradle plugins
+- Run on iOS
+- Version 1.5.0
+- Version 1.6.0
+- Version 1.6.1
+- Version 1.7.0
+- Run on iOS
+- Version 1.7.0 on iOS
+- Upgrade flutter
+- Remove deprecated MultiDex declaration
+- Version 1.7.1
+- Upgrade gradle and java
+- Upgrade `awesome_notifications` package to avoid crash
+- Version 1.8.0
+- Version 1.9.0
+- Cleanup build configuration
+- Switch to flutter's beta channel
+- Remove dead code
+- Version 1.10.0
+- Run on iOS
+- Version 1.11.0
+- Build on iOS
+- Version 1.11.1
+- Version 1.12.0
+- Upgrade dependencies
+- Use a more modern android file structure
+- Version 1.12.1
+- Update properties for windows builds
+- Upgrade SoLoud
