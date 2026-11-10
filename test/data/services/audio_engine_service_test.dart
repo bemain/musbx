@@ -35,12 +35,17 @@ void main() {
     engine = await AudioEngineService.createWith(soLoud);
   });
 
-  SongPartsGroup song() => SongPartsGroup(
-    parts: [null, Part.values.first],
-    sources: [MockAudioSource(), MockAudioSource()],
-    handles: const [SoundHandle(1), SoundHandle(2)],
-    groupHandle: const SoundHandle(100),
-  );
+  SongPartsGroup song() {
+    final bus = MockBus();
+    when(() => bus.soundHandle).thenReturn(const SoundHandle(50));
+    return SongPartsGroup(
+      parts: [null, Part.values.first],
+      sources: [MockAudioSource(), MockAudioSource()],
+      handles: const [SoundHandle(1), SoundHandle(2)],
+      groupHandle: const SoundHandle(100),
+      bus: bus,
+    );
+  }
 
   test("create initializes the engine with a small buffer", () {
     verify(() => soLoud.init(bufferSize: 512));
@@ -57,21 +62,31 @@ void main() {
       () => soLoud.disposeSource(sound.sources[0]),
       () => soLoud.disposeSource(sound.sources[1]),
       () => soLoud.destroyVoiceGroup(const SoundHandle(100)),
+      () => sound.bus.dispose(),
     ]);
   });
 
-  test("pause, resume and speed act on the whole group", () {
+  test("pause and resume act on the whole group and its bus", () {
     final sound = song();
 
     engine.pause(sound);
     engine.resume(sound);
-    engine.setSpeed(sound, 0.5);
 
     verifyInOrder([
       () => soLoud.setPause(const SoundHandle(100), true),
+      () => soLoud.setPause(const SoundHandle(50), true),
       () => soLoud.setPause(const SoundHandle(100), false),
-      () => soLoud.setRelativePlaySpeed(const SoundHandle(100), 0.5),
+      () => soLoud.setPause(const SoundHandle(50), false),
     ]);
+  });
+
+  test("speed acts on the parts, not the bus", () {
+    engine.setSpeed(song(), 0.5);
+
+    verify(() => soLoud.setRelativePlaySpeed(const SoundHandle(100), 0.5));
+    verifyNever(
+      () => soLoud.setRelativePlaySpeed(const SoundHandle(50), any()),
+    );
   });
 
   test("seek moves every part", () {

@@ -30,20 +30,20 @@ class AudioEngineService {
 
   /// Start every one of [sources] paused and looping, in one voice group so
   /// that they are paused, resumed and sped up together.
+  ///
+  /// The sources play through one bus that carries the pitch shift and
+  /// equalizer, so a demixed song filters its mix once rather than every part.
+  /// Filtering each part separately is too slow to keep up, and stutters.
   SongPartsGroup createSound(Map<Part?, AudioSource> sources) {
-    // Activate filters. This needs to be done before the sound is played.
-    sources.forEach((part, source) {
-      for (var filter in [
-        source.filters.pitchShiftFilter,
-        source.filters.parametricEqFilter,
-      ]) {
-        if (!filter.isActive) filter.activate();
-      }
-    });
+    final Bus bus = _soLoud.createMixingBus();
+    // Filters only reach voices started after they are activated.
+    bus.filters.pitchShiftFilter.activate();
+    bus.filters.parametricEqFilter.activate();
+    bus.playOnEngine(paused: true);
 
     final Map<Part?, SoundHandle> handles = {
       for (final e in sources.entries)
-        e.key: _soLoud.play(
+        e.key: bus.play(
           e.value,
           paused: true,
           looping: true,
@@ -65,6 +65,7 @@ class AudioEngineService {
       sources: sources.values.toList(),
       handles: handles.values.toList(),
       groupHandle: groupHandle,
+      bus: bus,
     );
   }
 
@@ -88,12 +89,22 @@ class AudioEngineService {
       for (var source in sound.sources) unload(source),
     ]);
     _soLoud.destroyVoiceGroup(sound.groupHandle);
+    if (sound case SongPartsGroup(:final bus)) bus.dispose();
   }
 
   void unschedule(SoundHandle handle) => _soLoud.stop(handle);
 
-  void resume(SoundGroup sound) => _soLoud.setPause(sound.groupHandle, false);
-  void pause(SoundGroup sound) => _soLoud.setPause(sound.groupHandle, true);
+  void resume(SoundGroup sound) => _setPause(sound, false);
+  void pause(SoundGroup sound) => _setPause(sound, true);
+
+  /// Pauses the bus along with the parts, so that its filters do not run on
+  /// silence while the song is paused.
+  void _setPause(SoundGroup sound, bool paused) {
+    _soLoud.setPause(sound.groupHandle, paused);
+    if (sound case SongPartsGroup(:final bus)) {
+      _soLoud.setPause(bus.soundHandle!, paused);
+    }
+  }
 
   Duration getDuration(SongPartsGroup sound) =>
       _soLoud.getLength(sound.sources.first);
@@ -120,48 +131,27 @@ class AudioEngineService {
     _soLoud.setRelativePlaySpeed(sound.groupHandle, speed);
   }
 
-  double getPitch(SoundGroup sound) {
-    return sound.sources.first.filters.pitchShiftFilter
-        .semitones(soundHandle: sound.handles.first)
-        .value;
-  }
+  double getPitch(SongPartsGroup sound) =>
+      sound.bus.filters.pitchShiftFilter.semitones().value;
 
   /// Transpose [sound] by [value] semitones.
   ///
   /// Compensates for the pitch shift the current speed causes, so this has to
   /// be called again whenever the speed changes.
-  void setPitch(SoundGroup sound, double value) {
-    for (int i = 0; i < sound.handles.length; i += 1) {
-      sound.sources[i].filters.pitchShiftFilter
-              .semitones(soundHandle: sound.handles[i])
-              .value =
-          value - 12 * (log(getSpeed(sound)) / ln2);
-    }
+  void setPitch(SongPartsGroup sound, double value) {
+    sound.bus.filters.pitchShiftFilter.semitones().value =
+        value - 12 * (log(getSpeed(sound)) / ln2);
   }
 
-  int getNumBands(SoundGroup sound) {
-    return sound.sources.first.filters.parametricEqFilter
-        .numBands(soundHandle: sound.handles.first)
-        .value
-        .toInt();
+  int getNumBands(SongPartsGroup sound) =>
+      sound.bus.filters.parametricEqFilter.numBands().value.toInt();
+
+  void setNumBands(SongPartsGroup sound, int value) {
+    sound.bus.filters.parametricEqFilter.numBands().value = value.toDouble();
   }
 
-  void setNumBands(SoundGroup sound, int value) {
-    for (int i = 0; i < sound.handles.length; i += 1) {
-      sound.sources[i].filters.parametricEqFilter
-          .numBands(soundHandle: sound.handles[i])
-          .value = value
-          .toDouble();
-    }
-  }
-
-  void setBandGain(SoundGroup sound, int band, double gain) {
-    for (int i = 0; i < sound.handles.length; i += 1) {
-      sound.sources[i].filters.parametricEqFilter
-              .bandGain(band, soundHandle: sound.handles[i])
-              .value =
-          gain;
-    }
+  void setBandGain(SongPartsGroup sound, int band, double gain) {
+    sound.bus.filters.parametricEqFilter.bandGain(band).value = gain;
   }
 
   double? getPartVolume(SongPartsGroup sound, Part? part) =>

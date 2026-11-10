@@ -28,9 +28,14 @@ class SongPartsGroup extends SoundGroup {
     required super.sources,
     required super.handles,
     required super.groupHandle,
+    required this.bus,
   });
 
   final List<Part?> parts;
+
+  /// The bus every part plays through, which carries the pitch shift and
+  /// equalizer.
+  final Bus bus;
 }
 
 /// The generated tones the drone plays.

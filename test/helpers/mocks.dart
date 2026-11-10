@@ -29,6 +29,7 @@ void registerFallbacks() {
     sources: const [],
     handles: const [],
     groupHandle: const SoundHandle(0),
+    bus: MockBus(),
   );
   registerFallbackValue(group);
   registerFallbackValue(_tones());
@@ -58,6 +59,7 @@ class MockAudioEngine extends Mock implements AudioEngineService {
         sources: sources.values.toList(),
         handles: [for (var i = 0; i < sources.length; i++) SoundHandle(i + 1)],
         groupHandle: const SoundHandle(100),
+        bus: MockBus(),
       );
     });
     when(() => getDuration(any())).thenReturn(duration);
@@ -78,6 +80,8 @@ class MockAudioEngine extends Mock implements AudioEngineService {
 
 /// An audio session whose events are sent through [events].
 class MockAudioSource extends Mock implements AudioSource {}
+
+class MockBus extends Mock implements Bus {}
 
 class MockAudioSession extends Mock implements AudioSessionService {
   MockAudioSession() {
