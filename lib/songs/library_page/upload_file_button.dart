@@ -36,11 +36,14 @@ class UploadSongButton extends SpeedDialChild {
   @override
   Widget assemble(BuildContext context, Animation<double> animation) {
     final SpeedDialAction action = SpeedDialAction(
+      // The speed dial closes on tap, unmounting [context], so everything
+      // needed from it is read before the first await.
       onPressed: (event) {
+        final SongRepository songs = context.read<SongRepository>();
         if (permissionGranted) {
-          pickFile(context);
+          pickFile(songs);
         } else {
-          pushPermissionBuilder(context);
+          pushPermissionBuilder(Navigator.of(context), songs);
         }
       },
       label: const Text("Upload"),
@@ -50,7 +53,7 @@ class UploadSongButton extends SpeedDialChild {
     return action.assemble(context, animation);
   }
 
-  Future<void> pickFile(BuildContext context) async {
+  Future<void> pickFile(SongRepository songs) async {
     // By some reason, setting type to FileType.audio causes the file picker to not show up on iOS.
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: Platform.isIOS ? FileType.any : FileType.audio,
@@ -68,8 +71,7 @@ class UploadSongButton extends SpeedDialChild {
       return;
     }
 
-    if (!context.mounted) return;
-    switch (await context.read<SongRepository>().addFile(File(file.path!))) {
+    switch (await songs.addFile(File(file.path!))) {
       case Ok(value: final song):
         navigatorKey.currentContext?.go(Routes.song(song.id));
       case Failure(:final error):
@@ -78,8 +80,11 @@ class UploadSongButton extends SpeedDialChild {
     }
   }
 
-  Future<void> pushPermissionBuilder(BuildContext context) async {
-    await Navigator.of(context).push(
+  Future<void> pushPermissionBuilder(
+    NavigatorState navigator,
+    SongRepository songs,
+  ) async {
+    await navigator.push(
       MaterialPageRoute<void>(
         builder: (context) => Scaffold(
           body: PermissionBuilder(
@@ -98,8 +103,8 @@ class UploadSongButton extends SpeedDialChild {
             onPermissionGranted: () {
               permissionGranted = true;
 
-              Navigator.of(context).pop();
-              pickFile(context);
+              navigator.pop();
+              pickFile(songs);
             },
           ),
         ),
