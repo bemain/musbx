@@ -118,15 +118,6 @@
       }
     },
     {
-      "identity" : "iosawncore",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/rafaelsetragni/IosAwnCore.git",
-      "state" : {
-        "revision" : "2253f8cad36e8020c409c82a13f7fd5b9ec49b5b",
-        "version" : "0.12.1"
-      }
-    },
-    {
       "identity" : "leveldb",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/firebase/leveldb.git",
